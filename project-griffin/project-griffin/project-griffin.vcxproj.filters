@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="application">
+      <UniqueIdentifier>{8be56cfd-25f3-4e11-a2a9-517dc708d9e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\impl">
+      <UniqueIdentifier>{3d22700f-947a-4c47-a98e-c58eeef231b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utility">
+      <UniqueIdentifier>{811970e0-03dd-4faf-9b2d-d9421328c38d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="component">
+      <UniqueIdentifier>{6d7e4970-d31b-403f-a97d-850df55be125}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders">
+      <UniqueIdentifier>{d3dd9c5f-5897-4f68-834b-224e6befb166}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\application\main.cpp">
+      <Filter>application</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\Render.cpp">
+      <Filter>application</Filter>
+    </ClCompile>
+    <ClCompile Include="source\component\Component.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+    <ClCompile Include="source\component\Entity.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="source\application\main.h">
+      <Filter>application</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utility\meta.h">
+      <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utility\enum.h">
+      <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="source\component\Entity.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="source\component\components.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utility\reflection.h">
+      <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\Render.h">
+      <Filter>application</Filter>
+    </ClInclude>
+    <ClInclude Include="source\component\Component.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="source\component\ComponentStore.h">
+      <Filter>component</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="data\shaders\SimpleVertexShader.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="data\shaders\SimpleFragmentShader.glsl">
+      <Filter>shaders</Filter>
+    </None>
+  </ItemGroup>
+</Project>
