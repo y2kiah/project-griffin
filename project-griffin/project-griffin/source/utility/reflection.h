@@ -122,6 +122,5 @@ struct ReflectionData {
 //		v(reflector::get_field_data<I::value>(c));
 //	}
 //};
-//
 
 #endif

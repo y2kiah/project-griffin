@@ -14,6 +14,7 @@ desired interface:
 
 typedef std::map<ComponentType, size_t>	ComponentStoreIndex;
 
+
 class Entity {
 public:
 	bool addComponent(ComponentType ct) {
@@ -38,6 +39,10 @@ public:
 		return componentMask[ct];
 	}
 
+	Entity::~Entity() {
+
+	}
+
 private:
 	ComponentMask		componentMask;
 	ComponentStoreIndex	components;
@@ -51,6 +56,16 @@ public:
 
 private:
 
+
 };
 
 #endif
+
+/**
+ *	Entity does not contain component data directly, it is a structure used to aggregate indexes
+ *	into the various component stores that hold component data. Entity will also provide a
+ *	convenient place to implement game object reflection, serialization, integration with scripting
+ *	engine, and possibly generating network packets.
+ *
+ *	Copyright © 2013 - Jeff Kiah - All rights reserved.
+ */

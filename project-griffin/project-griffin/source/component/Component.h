@@ -4,7 +4,7 @@
 
 #include "utility/reflection.h"
 
-#define COMPONENT_STORE_RESERVE	1000
+#define COMPONENT_STORE_RESERVE	100
 
 #define COMPONENT(name, ...) \
 	struct name { \
@@ -38,6 +38,11 @@
 					throw(std::runtime_error("Unknown component creation request")); \
 			} \
 			return newId; \
+		} \
+		\
+		size_t createComponent(const std::string &ctStr) { \
+			ComponentType ct = ComponentTypeToEnum(ctStr); \
+			return createComponent(ct); \
 		} \
 		\
 		explicit ComponentFactory() : \
