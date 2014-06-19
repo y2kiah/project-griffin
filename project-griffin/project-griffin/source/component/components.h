@@ -2,6 +2,7 @@
 #ifndef _COMPONENTS_H
 #define _COMPONENTS_H
 
+#include <vector>
 #include <bitset>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>

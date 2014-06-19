@@ -106,8 +106,8 @@ struct ReflectionData {
 	std::string description;
 
 	ReflectionData(FieldType type,
-		std::string&& name,
-		std::string&& description) :
+				   std::string&& name,
+				   std::string&& description) :
 		type(type),
 		name(std::move(name)),
 		description(std::move(description))

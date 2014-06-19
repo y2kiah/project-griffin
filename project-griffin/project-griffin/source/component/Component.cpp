@@ -23,4 +23,8 @@ void test_reflection() {
 	SDL_Log("bit_test = %s\n", bit_test.to_string().c_str());
 	SDL_Log("bit_and  = %s\n", bit_and.to_string().c_str());
 	SDL_Log("bit_res  = %s\n", bit_res.to_string().c_str());
+
+	struct Something { int x; };
+	SDL_Log("Person is POD = %d\n", std::is_pod<Person>::value);
+	SDL_Log("Something is POD = %d\n", std::is_pod<Something>::value);
 }

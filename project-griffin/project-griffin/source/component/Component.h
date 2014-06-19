@@ -23,9 +23,10 @@
 	STRIP(name)Store(COMPONENT_STORE_RESERVE)
 
 #define COMPONENT_FACTORY_CASE(r, data, name) \
-	case ComponentType::STRIP(name)_T: \
-		newId = STRIP(name)Store.createComponent(); \
-		break;
+	case ComponentType::STRIP(name)_T: { \
+		newId = STRIP(name)Store.addComponent(); \
+		break; \
+	}
 
 #define COMPONENT_FACTORY(SEQ) \
 	class ComponentFactory { \
