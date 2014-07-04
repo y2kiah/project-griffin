@@ -1,6 +1,6 @@
 #pragma once
-#ifndef _RENDER_H
-#define _RENDER_H
+#ifndef RENDER_H
+#define RENDER_H
 
 #include <string>
 

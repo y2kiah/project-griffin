@@ -1,6 +1,6 @@
 #pragma once
-#ifndef _ENUM_H
-#define _ENUM_H
+#ifndef ENUM_H
+#define ENUM_H
 
 #include <boost/preprocessor/seq/for_each.hpp>
 #include <boost/preprocessor/control/if.hpp>
@@ -22,7 +22,7 @@
 		BOOST_PP_SEQ_FOR_EACH(ENUM_VAL, postfix, SEQ) \
 		last_##name##_enum \
 	}; \
-	const int name##Count = BOOST_PP_SEQ_SIZE(SEQ); \
+	static const int name##Count = BOOST_PP_SEQ_SIZE(SEQ); \
 	static const char* name##ToString(const enum name eel) { \
 		switch (eel) { \
 			BOOST_PP_SEQ_FOR_EACH(ENUM_TO_STRING, postfix, SEQ) \

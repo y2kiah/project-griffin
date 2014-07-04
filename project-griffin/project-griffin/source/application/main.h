@@ -1,3 +1,7 @@
+#pragma once
+#ifndef MAIN_H
+#define MAIN_H
+
 #include <vector>
 #include <SDL.h>
 
@@ -97,3 +101,5 @@ public:
 };
 
 extern void showErrorBox(const char *text, const char *caption);
+
+#endif

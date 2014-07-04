@@ -5,12 +5,12 @@ desired interface:
 */
 
 #pragma once
-#ifndef _ENTITY_H
-#define _ENTITY_H
+#ifndef ENTITY_H
+#define ENTITY_H
 
 #include <map>
 #include <memory>
-#include "Component.h"
+#include "components.h"
 
 typedef std::map<ComponentType, size_t>	ComponentStoreIndex;
 

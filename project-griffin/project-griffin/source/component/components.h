@@ -1,6 +1,6 @@
 #pragma once
-#ifndef _COMPONENTS_H
-#define _COMPONENTS_H
+#ifndef COMPONENTS_H
+#define COMPONENTS_H
 
 #include <vector>
 #include <bitset>
@@ -26,9 +26,10 @@ COMPONENT(Orientation,
 )
 
 COMPONENT(Person,
-	(int, (age, (FieldType::int_T, ("The description here", NIL)))),
-	(float, (speed, (FieldType::float_T, ("The description 2 here", NIL)))),
-	(std::vector<int>, (stuff, (FieldType::vector_T, ("The description 3 here", NIL))))
+	(int, (age, (FieldType::int_T, ("Person's age in years", NIL)))),
+	(float, (speed, (FieldType::float_T, ("How fast person walks in ft/s", NIL)))),
+	(std::string, (name, (FieldType::string_T, ("Person's name", NIL)))),
+	(std::vector<int>, (stuff, (FieldType::vectorInt_T, ("Person's integer stuff", NIL))))
 )
 
 #endif

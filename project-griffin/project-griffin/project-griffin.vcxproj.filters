@@ -20,6 +20,9 @@
     <Filter Include="shaders">
       <UniqueIdentifier>{d3dd9c5f-5897-4f68-834b-224e6befb166}</UniqueIdentifier>
     </Filter>
+    <Filter Include="component\impl">
+      <UniqueIdentifier>{4eadde8f-4ea1-457a-8706-7d3e88e0a766}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">
@@ -34,13 +37,13 @@
     <ClCompile Include="source\component\Entity.cpp">
       <Filter>component</Filter>
     </ClCompile>
+    <ClCompile Include="source\application\impl\Timer_win32.cpp">
+      <Filter>application\impl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\application\main.h">
       <Filter>application</Filter>
-    </ClInclude>
-    <ClInclude Include="source\utility\meta.h">
-      <Filter>utility</Filter>
     </ClInclude>
     <ClInclude Include="source\utility\enum.h">
       <Filter>utility</Filter>
@@ -63,6 +66,27 @@
     <ClInclude Include="source\component\ComponentStore.h">
       <Filter>component</Filter>
     </ClInclude>
+    <ClInclude Include="source\utility\algorithms.h">
+      <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="source\component\ComponentFactory.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utility\concurrent_queue.h">
+      <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utility\concurrency.h">
+      <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utility\JsonSerializer.h">
+      <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utility\prettyprint.h">
+      <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="source\application\Timer.h">
+      <Filter>application</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="data\shaders\SimpleVertexShader.glsl">
@@ -70,6 +94,9 @@
     </None>
     <None Include="data\shaders\SimpleFragmentShader.glsl">
       <Filter>shaders</Filter>
+    </None>
+    <None Include="source\application\impl\Timer_win32.inl">
+      <Filter>application\impl</Filter>
     </None>
   </ItemGroup>
 </Project>
