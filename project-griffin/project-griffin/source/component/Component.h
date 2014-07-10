@@ -3,6 +3,7 @@
 #define COMPONENT_H
 
 #include "utility/reflection.h"
+#include <SDL_log.h>
 
 #define COMPONENT_STORE_RESERVE	100
 

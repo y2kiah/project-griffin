@@ -14,8 +14,9 @@
 #ifndef CONCURRENCY_H
 #define CONCURRENCY_H
 
-#include <mutex>
 #include <thread>
+#include <mutex>
+#include <future>
 #include "concurrent_queue.h"
 
 /**

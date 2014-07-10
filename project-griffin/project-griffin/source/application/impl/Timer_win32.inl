@@ -1,6 +1,5 @@
-/* Timer_win32.inl
-Author: Jeff Kiah
-Orig.Date: 5/21/12
+/**
+* @author	Jeff Kiah
 */
 #pragma once
 #ifndef TIMER_WIN32_INL
@@ -10,7 +9,7 @@ Orig.Date: 5/21/12
 #define WIN32_LEAN_AND_MEAN	// defined in project settings
 #endif
 
-#include "Application/Timer.h"
+#include "../Timer.h"
 #include "Windows.h"
 #include <crtdbg.h>
 #include <cassert>

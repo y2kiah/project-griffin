@@ -31,22 +31,22 @@ auto getMemberVal(const T& t, F f) -> decltype(t.*f()) {
 	return t.*f();
 }
 
-// test tuple iteration
-struct print {
-	template<typename T>
-	void operator()(const vector<T>& v) const {
-		std::cout << "[ ";
-		for (auto p : v) {
-			std::cout << p << (p != v.back() ? ", " : "");
-		}
-		std::cout << " ]\n";
-	}
-
-	template<typename T>
-	void operator()(const T& t) const {
-		std::cout << t << std::endl;
-	}
+// example cast objects
+template <int Ct>
+struct component_type {
+	typedef void type;
 };
+
+template <>
+struct component_type<2> {
+	typedef Person* type;
+};
+
+template <typename T, int Ct>
+auto component_cast(T* x) -> decltype(component_type<Ct>::type)
+{
+	return reinterpret_cast<component_type<Ct>::type>(x);
+}
 
 /**
 * The following two functions demonstrate the performance difference between iterating through
@@ -61,16 +61,14 @@ void addTestComponents() {
 	
 	timer.start();
 	// store 100,000 components in a ComponentStore
-	for (int i = 0; i < numTestComponents; ++i) {
-		componentIds.emplace_back(personStore.createComponent());
-	}
+	componentIds = personStore.createComponents(numTestComponents);
 	timer.stop();
 	SDL_Log("**********\ncreate components in store\ntime = %f ms\ncounts = %lld\n\n", timer.millisecondsPassed(), timer.countsPassed());
 
 	timer.start();
 	// store 100,000 components on the heap
 	for (int i = 0; i < numTestComponents; ++i) {
-		personHeap.emplace_back(new Person{});
+		personHeap.push_back(std::unique_ptr<Person>(new Person{0}));
 	}
 	timer.stop();
 	SDL_Log("**********\ncreate components on heap\ntime = %f ms\ncounts = %lld\n\n", timer.millisecondsPassed(), timer.countsPassed());
@@ -79,6 +77,7 @@ void addTestComponents() {
 void profileTestComponents() {
 	int age = 0;
 
+	personStore.getComponent(componentIds.back()).age = 10;
 	timer.start();
 	for (int i = 0; i < numTestComponents; ++i) {
 		age += personStore.getComponent(componentIds[i]).age;
@@ -87,7 +86,7 @@ void profileTestComponents() {
 	SDL_Log("**********\nloop components with external id\ntime = %f ms\ncounts = %lld\n\n", timer.millisecondsPassed(), timer.countsPassed());
 	SDL_Log("age=%d\n", age); // use age so it doesn't compile away in release build test
 
-	const auto& cmp = personStore.getComponents();
+	auto cmp = personStore.getComponents().getItems();
 	timer.start();
 	for (int i = 0; i < numTestComponents; ++i) {
 		age += cmp[i].second.age;
@@ -96,6 +95,7 @@ void profileTestComponents() {
 	SDL_Log("**********\nloop components inner array\ntime = %f ms\ncounts = %lld\n\n", timer.millisecondsPassed(), timer.countsPassed());
 	SDL_Log("age=%d\n", age);
 
+	personHeap.back()->age = 5;
 	timer.start();
 	for (int i = 0; i < numTestComponents; ++i) {
 		age += personHeap[i]->age;
@@ -112,10 +112,11 @@ void test_reflection() {
 	addTestComponents();
 	profileTestComponents();
 
-	//SDL_Log(personStore.to_string().c_str());
+	SDL_Log(personStore.to_string().c_str());
 	Person& person = personStore.getComponent(componentIds[0]);
 	
-	auto & personProps = Person::Reflection::getProperties();
+	auto& personProps = Person::Reflection::getProperties();
+	personProps.emplace_back(FieldType::bool_T, "added", "added this to properties at runtime", sizeof(bool));
 	auto vals = Person::Reflection::getAllValues(person);
 
 	SDL_Log("%s:\n", Person::Reflection::getClassType().c_str());
@@ -149,20 +150,35 @@ void test_reflection() {
 	// output person properties
 	SDL_Log("%s {\n", Person::Reflection::getClassType().c_str());
 	for (auto p : Person::Reflection::getProperties()) {
-		SDL_Log("  %s %s : %s\n", FieldTypeToString(p.type), p.name.c_str(), p.description.c_str());
+		SDL_Log("  %s %s (%d): %s\n", FieldTypeToString(p.type), p.name.c_str(),
+				p.size, p.description.c_str());
 	}
 	SDL_Log("}\n\n");
 
 	// testing tuple for_each
-	//using namespace std;
 	using namespace boost::fusion;
-	for_each(vals, print{});
 	std::ostringstream oss;
 	oss << vals;
 	SDL_Log("\n\n%s\n\n", oss.str().c_str());
 
 	std::ofstream ofs;
 	ofs.open("test.txt", std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
-	ofs.write((const char*)&s, sizeof(s));
+	ofs.write(reinterpret_cast<const char*>(&s), sizeof(s));
 	ofs.close();
+
+	// testing ComponentId comparisons
+	// we want the ComponentType portion to sort at a higher priority than the index or generation,
+	vector<ComponentId> sortIds = {
+			{{{0, 0, ComponentType::Person_T, 0}}},
+			{{{0, 0, ComponentType::Orientation_T, 0}}},
+			{{{0xFFFFFFFF, 0xFFFF, ComponentType::Orientation_T, 0}}},
+			{{{50, 1, ComponentType::Person_T, 1}}},
+			{{{5, 1, ComponentType::Person_T, 0}}},
+			{{{5, 1, ComponentType::Position_T, 0}}},
+			{{{5, 3, ComponentType::Orientation_T, 0}}}
+		};
+	std::sort(sortIds.begin(), sortIds.end());
+	oss.clear();
+	oss << sortIds;
+	SDL_Log(oss.str().c_str());
 }

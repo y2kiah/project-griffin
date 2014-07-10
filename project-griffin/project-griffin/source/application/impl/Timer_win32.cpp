@@ -1,7 +1,7 @@
 /**
 * @author	Jeff Kiah
 */
-#include "Application/Timer.h"
+#include "../Timer.h"
 
 #if defined(_WIN32)
 

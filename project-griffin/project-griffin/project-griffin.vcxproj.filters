@@ -23,6 +23,12 @@
     <Filter Include="component\impl">
       <UniqueIdentifier>{4eadde8f-4ea1-457a-8706-7d3e88e0a766}</UniqueIdentifier>
     </Filter>
+    <Filter Include="test">
+      <UniqueIdentifier>{4606fcbf-46e5-4ddc-ac84-2cc2652f67ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utility\impl">
+      <UniqueIdentifier>{ea34148e-c179-4a59-91c1-d1a165498389}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">
@@ -87,6 +93,20 @@
     <ClInclude Include="source\application\Timer.h">
       <Filter>application</Filter>
     </ClInclude>
+    <ClInclude Include="source\test\Test.h">
+      <Filter>test</Filter>
+    </ClInclude>
+    <ClInclude Include="source\component\SlotMap.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="source\component\impl\SlotMap.inl">
+      <Filter>component\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="source\application\impl\Timer_win32.inl" />
+    <ClInclude Include="source\component\impl\ComponentStore.inl" />
+    <ClInclude Include="source\utility\Profile.h">
+      <Filter>utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="data\shaders\SimpleVertexShader.glsl">
@@ -94,9 +114,6 @@
     </None>
     <None Include="data\shaders\SimpleFragmentShader.glsl">
       <Filter>shaders</Filter>
-    </None>
-    <None Include="source\application\impl\Timer_win32.inl">
-      <Filter>application\impl</Filter>
     </None>
   </ItemGroup>
 </Project>

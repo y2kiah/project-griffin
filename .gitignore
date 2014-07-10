@@ -59,6 +59,9 @@ ipch/
 *.vsp
 *.vspx
 
+# Preprocessor output files
+*.i
+
 # Guidance Automation Toolkit
 *.gpState
 
