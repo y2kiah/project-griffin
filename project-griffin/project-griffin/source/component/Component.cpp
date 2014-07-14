@@ -89,7 +89,7 @@ void profileTestComponents() {
 	auto cmp = personStore.getComponents().getItems();
 	timer.start();
 	for (int i = 0; i < numTestComponents; ++i) {
-		age += cmp[i].second.age;
+		age += cmp[i].age;
 	}
 	timer.stop();
 	SDL_Log("**********\nloop components inner array\ntime = %f ms\ncounts = %lld\n\n", timer.millisecondsPassed(), timer.countsPassed());

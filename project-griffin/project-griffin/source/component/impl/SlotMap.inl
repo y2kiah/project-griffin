@@ -25,6 +25,7 @@ template <typename T>
 IdSet_T SlotMap<T>::createItems(int n)
 {
 	m_items.reserve(m_items.size() + n); // pre-reserve the space we need (if not already there)
+	m_meta.reserve(m_meta.size() + n);
 
 	IdSet_T outerIds(n);
 	std::generate_n(outerIds.begin(), n, [this](){ return createItem(); });
@@ -70,7 +71,8 @@ Id_T SlotMap<T>::addItem(T&& i)
 		outerId.index = outerIndex;
 	}
 
-	m_items.emplace_back(outerId.index, std::forward<T>(i));
+	m_items.push_back(std::forward<T>(i));
+	m_meta.push_back({ outerId.index });
 
 	return outerId;
 }
@@ -110,10 +112,15 @@ void SlotMap<T>::removeItem(Id_T outerId)
 	// remove the component by swapping with the last element, then pop_back
 	if (items.size() > 1) {
 		std::swap(m_items.at(innerIndex), m_items.back());
+		std::swap(m_meta.at(innerIndex), m_meta.back());
+
 		// fix the ComponentId index of the swapped component
-		m_sparseIds[m_items.at(innerIndex).first].index = innerIndex;
+		m_sparseIds[m_meta.at(innerIndex).denseToSparse].index = innerIndex;
 	}
-	m_items.pop_back(); // do I really need to do this? it could be faster to just decrement a size counter and leave the memory untouched (not run any potential destructor on the component object, if it has one)
+
+	// do I really need to do this? it could be faster to just decrement a size counter and leave the memory untouched (not run any potential destructor on the component object, if it has one)
+	m_items.pop_back();
+	m_meta.pop_back();
 }
 
 /**
@@ -131,7 +138,7 @@ inline T& SlotMap<T>::getItem(Id_T outerId)
 	assert(innerIndex < m_items.size() && "inner index out of range");
 	/**/
 
-	return m_items[innerId.index].second;
+	return m_items[innerId.index];
 }
 
 #endif

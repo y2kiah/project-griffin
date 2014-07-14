@@ -43,18 +43,23 @@ template <typename T>
 class SlotMap {
 public:
 	// Typedefs
-	typedef pair<uint32_t, T> Pair_T; // first = dense-to-sparse index, second = item
-	typedef vector<Pair_T> DenseSet_T;
+	struct Meta_T {
+		uint32_t denseToSparse;
+	};
+
+	typedef vector<T> DenseSet_T;
+	typedef vector<Meta_T> MetaSet_T;
 
 	// Functions
 
 	/**
 	* accessors
 	*/
-	inline const DenseSet_T& getItems() const         { return m_items; }
-	inline const IdSet_T&    getIds() const           { return m_sparseIds; }
-	inline uint32_t          getFreeListFront() const { return m_freeListFront; }
-	inline uint32_t          getFreeListBack() const  { return m_freeListBack; }
+	const DenseSet_T& getItems() const         { return m_items; }
+	const MetaSet_T&  getMeta() const          { return m_meta; }
+	const IdSet_T&    getIds() const           { return m_sparseIds; }
+	uint32_t          getFreeListFront() const { return m_freeListFront; }
+	uint32_t          getFreeListBack() const  { return m_freeListBack; }
 
 	/**
 	* create one item with default initialization
@@ -95,6 +100,7 @@ public:
 
 		m_sparseIds.reserve(reserveCount);
 		m_items.reserve(reserveCount);
+		m_meta.reserve(reserveCount);
 	}
 
 private:
@@ -116,6 +122,7 @@ private:
 
 	IdSet_T		m_sparseIds;	// stores a list of ids
 	DenseSet_T	m_items;		// stores items of type T
+	MetaSet_T	m_meta;			// stores Meta_T type for each item
 };
 
 #include "impl/SlotMap.inl"

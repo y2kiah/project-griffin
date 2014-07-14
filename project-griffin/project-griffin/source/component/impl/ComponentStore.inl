@@ -29,6 +29,7 @@ std::string ComponentStore<T>::to_string() const {
 
 	auto ids = components.getIds();
 	auto cmps = components.getItems();
+	auto meta = components.getMeta();
 
 	// print componentIds array
 	oss << "ComponentStore<" << T::Reflection::getClassType() << ">: {\ncomponentIds: [";
@@ -39,8 +40,8 @@ std::string ComponentStore<T>::to_string() const {
 
 	// print denseToSparse values
 	oss << "],\ndenseToSparse: [ ";
-	for (int c = 0; c < std::min(10, static_cast<int>(cmps.size())); ++c) {
-		oss << cmps[c].first << ", ";
+	for (int c = 0; c < std::min(10, static_cast<int>(meta.size())); ++c) {
+		oss << meta[c].denseToSparse << ", ";
 	}
 	if (cmps.size() > 10) { oss << "... n=" << cmps.size(); }
 	oss << " ],\nfreeListFront: " << components.getFreeListFront() << ",\nfreeListBack: "
