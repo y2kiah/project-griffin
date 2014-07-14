@@ -9,7 +9,6 @@
 #include <vector>
 
 using std::vector;
-using std::pair;
 
 /**
 * @free 0 if active, 1 if slot is part of freelist, only applicable to inner ids
@@ -39,17 +38,18 @@ typedef vector<Id_T> IdSet_T;
 /**
 *
 */
-template <typename T, typename InverseId_T>
+template <typename T/*, typename ForeignId_T*/> // use SFINAE to make ForeignId_T optional (pass nullptr)
 class SlotMap {
 public:
 	// Typedefs
 	struct Meta_T {
 		uint32_t	denseToSparse;
-		InverseId_T	inverseId;
+		//ForeignId_T	foreignId;
 	};
 
 	typedef vector<T> DenseSet_T;
 	typedef vector<Meta_T> MetaSet_T;
+	//typedef boost::flat_map<ForeignId_T, Id_T> ForeignIdMap_T;
 
 	// Functions
 
@@ -65,24 +65,28 @@ public:
 	/**
 	* create one item with default initialization
 	*/
-	inline Id_T createItem() {
-		return addItem(T{});
+	inline Id_T createItem(/*ForeignId_T foreignId*/) {
+		return addItem(T{}/*, foreignId*/);
 	}
 
 	/**
 	* create n items with default initialization and return a vector of their ids
+	* @n {int} number of items to create
 	*/
-	IdSet_T createItems(int n);
+	IdSet_T createItems(int n/*, ForeignId_T foreignId*/);
 
 	/**
 	* add one item, moving the provided i into the store, return id
 	*/
-	Id_T addItem(T&& i);
+	Id_T addItem(T&& i/*, ForeignId_T foreignId*/);
 
 	/**
 	* remove the item identified by the provided outerId
 	*/
 	void removeItem(Id_T outerId);
+
+	void removeItems(const IdSet_T& outerIds) {}
+	//void removeItems(ForeignId_T foreignId) {}
 
 	/**
 	* Get a direct reference to a stored item by outerId
@@ -121,7 +125,7 @@ private:
 
 	uint16_t	m_itemTypeId;	// the Id_T::typeId to use for ids produced by this SlotMap<T>
 
-	IdSet_T		m_sparseIds;	// stores a list of ids
+	IdSet_T		m_sparseIds;	// stores a set of Id_T
 	DenseSet_T	m_items;		// stores items of type T
 	MetaSet_T	m_meta;			// stores Meta_T type for each item
 };
