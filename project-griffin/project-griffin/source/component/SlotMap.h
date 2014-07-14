@@ -2,8 +2,8 @@
 * @author	Jeff Kiah
 */
 #pragma once
-#ifndef SLOTMAP_SET
-#define SLOTMAP_SET
+#ifndef SLOTMAP_H
+#define SLOTMAP_H
 
 #include <cstdint>
 #include <vector>
@@ -39,12 +39,13 @@ typedef vector<Id_T> IdSet_T;
 /**
 *
 */
-template <typename T>
+template <typename T, typename InverseId_T>
 class SlotMap {
 public:
 	// Typedefs
 	struct Meta_T {
-		uint32_t denseToSparse;
+		uint32_t	denseToSparse;
+		InverseId_T	inverseId;
 	};
 
 	typedef vector<T> DenseSet_T;
@@ -55,11 +56,11 @@ public:
 	/**
 	* accessors
 	*/
-	const DenseSet_T& getItems() const         { return m_items; }
-	const MetaSet_T&  getMeta() const          { return m_meta; }
-	const IdSet_T&    getIds() const           { return m_sparseIds; }
-	uint32_t          getFreeListFront() const { return m_freeListFront; }
-	uint32_t          getFreeListBack() const  { return m_freeListBack; }
+	const DenseSet_T&	getItems() const			{ return m_items; }
+	const MetaSet_T&	getMeta() const				{ return m_meta; }
+	const IdSet_T&		getIds() const				{ return m_sparseIds; }
+	uint32_t			getFreeListFront() const	{ return m_freeListFront; }
+	uint32_t			getFreeListBack() const		{ return m_freeListBack; }
 
 	/**
 	* create one item with default initialization

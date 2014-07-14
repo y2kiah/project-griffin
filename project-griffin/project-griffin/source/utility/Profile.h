@@ -5,13 +5,14 @@
 #include <cstdint>
 #include <string>
 #include <vector>
-#include <unordered_map>
+#include <thread>
+#include <boost/container/flat_map.hpp>
 #include <application/Timer.h>
 
 using std::string;
 using std::wstring;
 using std::vector;
-using std::unordered_map;
+using boost::container::flat_map;
 
 struct FrameData {
 	uint32_t m_frame = 0;		// number of the frame being captured
@@ -22,9 +23,13 @@ struct FrameData {
 class ProfileAggregate {
 public:
 
-	void invoke(uint64_t countsPassed) {
+	void invoke(uint64_t countsPassed, uint32_t frame) {
 		++m_invocations;
 		m_countsCumulative += countsPassed;
+
+		if (m_collectFrameData) {
+			m_frameData.push_back({frame, countsPassed, 0});
+		}
 	}
 
 private:
@@ -32,8 +37,9 @@ private:
 	// Member Variables
 	uint32_t m_frames = 0;					// total frames that this code block has been run in
 	uint32_t m_invocations = 0;				// total invocations of the code block
-	uint64_t m_countsCumulative = 0;		// cumulative counts of all invocations
+	bool m_collectFrameData = false;
 
+	uint64_t m_countsCumulative = 0;		// cumulative counts of all invocations
 	uint32_t m_countsMax = 0;
 	uint32_t m_countsMin = 0xFFFFFFFF;
 	
@@ -44,7 +50,7 @@ private:
 	// track something like framesSkipped or distance between frames, so we can find code that is
 	// expensive but runs infrequently possibly causing stutters
 
-	vector<FrameData> m_frames; // should be able to turn on/off the capture of per-frame data at runtime
+	vector<FrameData> m_frameData; // should be able to turn on/off the capture of per-frame data at runtime
 
 	// calculated data
 	// * msPerFrameAvg
@@ -57,8 +63,11 @@ private:
 	// * %parent frame
 };
 
-typedef unordered_map<string, ProfileAggregate> AggregateMap;
-
+/**
+* maps thread id hash to the ProfileAggregates for the thread
+*/
+typedef vector<ProfileAggregate> ProfileAggregateSet;
+typedef flat_map<size_t, ProfileAggregateSet> AggregateMap;
 
 template <typename T>
 class AutoLister {
@@ -109,23 +118,30 @@ private:
 * the profile was taken on over its lifetime.
 * std::this_thread::get_id().hash() can be used to identify the thread, but how to
 */
-struct Profile : AutoLister<Profile> {
-	Timer	m_timer;	// cross-platform high perf timer
-	string	m_name;		// name of this profile
-	wstring	m_file;		// source file (from macro)
-	int		m_line;		// line number of profile start (from macro)
+struct Profile : AutoStacker<Profile> {
+	uint32_t	m_frame;	// frame the code block is called under
+	uint64_t	m_startCounts;
+	string		m_name;		// name of this profile
+	wstring		m_file;		// source file (from macro)
+	int			m_line;		// line number of profile start (from macro)
 
+	static Timer& s_timer;
 	static AggregateMap& s_aggregate;
 
-	Profile() {
-		static unordered_map<string, ProfileAggregate> aggregate;
+	Profile(uint32_t frame) :
+		m_frame(frame)
+	{
+		static Timer timer;
+		static AggregateMap aggregate;
+		s_timer = timer;
 		s_aggregate = aggregate;
 
-		m_timer.start();
+		m_startCounts = s_timer.queryCounts();
 	}
 	~Profile() {
-		m_timer.stop();
-		s_aggregate[""].invoke(m_timer.countsPassed());
+		uint64_t countsPassed = s_timer.countsSince(m_startCounts);
+		auto threadAggregates = s_aggregate[std::this_thread::get_id().hash()];
+		threadAggregates[].invoke(countsPassed, m_frame);
 	}
 };
 
