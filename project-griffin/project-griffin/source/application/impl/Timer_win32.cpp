@@ -5,25 +5,26 @@
 
 #if defined(_WIN32)
 
-//#include "Utility/Debug.h"
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN	// defined in project settings
+#endif
+
 #include <cmath>
+#include <cassert>
+#include "Windows.h"
 
 // Static Variables
 
 int64_t Timer::sTimerFreq = 0;
 double Timer::sSecondsPerCount = 0;
 double Timer::sMillisecondsPerCount = 0;
-#ifndef NDEBUG
 bool Timer::sInitialized = false;
-#endif
 
 // Static Functions
 
-#ifndef NDEBUG
-/*void Timer::assertInitialized() {
+void Timer::assertInitialized() {
 	assert(sInitialized && "Timer_win32 is not initialized");
-}*/
-#endif
+}
 
 int64_t Timer::timerFreq()
 {
@@ -71,30 +72,29 @@ double Timer::secondsBetween(int64_t startCounts, int64_t stopCounts)
 
 bool Timer::initHighPerfTimer()
 {
-	SetThreadAffinityMask(GetCurrentThread(), 1);
+	if (!sInitialized) {
+		SetThreadAffinityMask(GetCurrentThread(), 1);
 
-	// get high performance counter frequency
-	BOOL result = QueryPerformanceFrequency((LARGE_INTEGER *)&sTimerFreq);
-	if (result == 0 || sTimerFreq == 0) {
-		//debugPrintf("Timer::initTimer: QueryPerformanceFrequency failed (error %d)\n", GetLastError());
-		return false;
+		// get high performance counter frequency
+		BOOL result = QueryPerformanceFrequency((LARGE_INTEGER *)&sTimerFreq);
+		if (result == 0 || sTimerFreq == 0) {
+			//debugPrintf("Timer::initTimer: QueryPerformanceFrequency failed (error %d)\n", GetLastError());
+			return false;
+		}
+
+		sSecondsPerCount = 1.0 / static_cast<double>(sTimerFreq);
+		sMillisecondsPerCount = sSecondsPerCount * 1000.0;
+
+		// test counter function
+		int64_t dummy = 0;
+		result = QueryPerformanceCounter((LARGE_INTEGER *)&dummy);
+		if (result == 0) {
+			//debugPrintf("Timer::initTimer: QueryPerformanceCounter failed (error %d)\n", GetLastError());
+			return false;
+		}
+
+		sInitialized = true;
 	}
-
-	sSecondsPerCount = 1.0 / static_cast<double>(sTimerFreq);
-	sMillisecondsPerCount = sSecondsPerCount * 1000.0;
-
-	// test counter function
-	int64_t dummy = 0;
-	result = QueryPerformanceCounter((LARGE_INTEGER *)&dummy);
-	if (result == 0) {
-		//debugPrintf("Timer::initTimer: QueryPerformanceCounter failed (error %d)\n", GetLastError());
-		return false;
-	}
-
-	#ifndef NDEBUG
-	sInitialized = true;
-	#endif
-
 	return true;
 }
 
@@ -104,7 +104,6 @@ void Timer::start()
 {
 	assertInitialized();
 
-	//mStopTickCount = mStartTickCount;
 	mCountsPassed = 0;
 	mMillisecondsPassed = 0;
 	mSecondsPassed = 0;
@@ -128,6 +127,24 @@ double Timer::stop()
 	mMillisecondsPassed = mSecondsPassed * 1000.0;
 	
 	return mMillisecondsPassed;
+}
+
+int64_t Timer::currentCounts() const
+{
+	assertInitialized();
+
+	int64_t now = 0;
+	QueryPerformanceCounter((LARGE_INTEGER *)&now);
+	return now - mStartCounts;
+}
+
+double Timer::currentSeconds() const
+{
+	assertInitialized();
+
+	int64_t now = 0;
+	QueryPerformanceCounter((LARGE_INTEGER *)&now);
+	return static_cast<double>(now - mStartCounts) * sSecondsPerCount;
 }
 
 #endif // ifdef _WIN32

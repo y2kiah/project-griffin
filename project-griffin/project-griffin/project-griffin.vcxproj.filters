@@ -102,10 +102,11 @@
     <ClInclude Include="source\component\impl\SlotMap.inl">
       <Filter>component\impl</Filter>
     </ClInclude>
-    <ClInclude Include="source\application\impl\Timer_win32.inl" />
-    <ClInclude Include="source\component\impl\ComponentStore.inl" />
     <ClInclude Include="source\utility\Profile.h">
       <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="source\component\impl\ComponentStore.inl">
+      <Filter>component\impl</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -107,8 +107,6 @@ void profileTestComponents() {
 }
 
 void test_reflection() {
-	Timer::initHighPerfTimer();
-
 	addTestComponents();
 	profileTestComponents();
 

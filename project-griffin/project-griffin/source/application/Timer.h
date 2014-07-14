@@ -7,59 +7,48 @@
 
 #include <cstdint>
 
-#define DISCREPANCY_MS_CHECK 2
-
 /**
 *
 */
 class Timer {
-	private:
-		// Static Variables
-		static int64_t	sTimerFreq;
-		static double	sSecondsPerCount;
-		static double	sMillisecondsPerCount;
-		
-		#ifndef NDEBUG
-		static bool		sInitialized;
-		#endif
+public:
+	// Static Functions
+	static int64_t	timerFreq();
+	static double	secondsPerCount();
+	static int64_t	queryCounts();
+	static int64_t	countsSince(int64_t startCounts);
+	static double	secondsSince(int64_t startCounts);
+	static double	secondsBetween(int64_t startCounts, int64_t stopCounts);
+	static bool		initHighPerfTimer();
 
-		// Member Variables
-		int64_t			mStartCounts, mStopCounts, mCountsPassed;	// high res timer, set by QPC on windows
-		//uint64_t		mStartTickCount, mStopTickCount;			// low res timer, set by GetTickCount64 on windows to check for QPC jumps
-		double			mMillisecondsPassed;
-		double			mSecondsPassed;
+	static void		assertInitialized(); // asserts when NDEBUG is not defined
 
-	public:
-		// Static Functions
-		static int64_t	timerFreq();
-		static double	secondsPerCount();
-		static int64_t	queryCounts();
-		static int64_t	countsSince(int64_t startCounts);
-		static double	secondsSince(int64_t startCounts);
-		static double	secondsBetween(int64_t startCounts, int64_t stopCounts);
-		static bool		initHighPerfTimer();
+	// Functions
+	int64_t			startCounts() const			{ return mStartCounts; }
+	int64_t			stopCounts() const			{ return mStopCounts; }
+	int64_t			countsPassed() const		{ return mCountsPassed; }
+	double			millisecondsPassed() const	{ return mMillisecondsPassed; }
+	double			secondsPassed() const		{ return mSecondsPassed; }
 
-		static inline void assertInitialized(); // in debug mode asserts make sure static functions aren't called before init
+	void			start();
+	double			stop();
+	void			reset() { mStartCounts = mStopCounts = mCountsPassed = 0; mMillisecondsPassed = mSecondsPassed = 0.0; }
+	int64_t			currentCounts() const;
+	double			currentSeconds() const;
 
-		// Functions
-		inline int64_t	startCounts() const;
-		inline int64_t	stopCounts() const;
-		inline int64_t	countsPassed() const;
-		inline double	millisecondsPassed() const;
-		inline double	secondsPassed() const;
+private:
+	// Static Variables
+	static int64_t	sTimerFreq;
+	static double	sSecondsPerCount;
+	static double	sMillisecondsPerCount;
+	static bool		sInitialized;
 
-		void			start();
-		double			stop();
-		inline void		reset();
-		inline int64_t	currentCounts() const;
-		inline double	currentSeconds() const;
-
-		// Constructor
-		explicit Timer();
+	// Member Variables
+	int64_t			mStartCounts = 0;
+	int64_t			mStopCounts = 0;
+	int64_t			mCountsPassed = 0;	// high res timer, set by QPC on windows
+	double			mMillisecondsPassed = 0.0;
+	double			mSecondsPassed = 0.0;
 };
-
-#if defined(_WIN32)
-#include "impl/Timer_win32.inl"
-#endif
 
 #endif // _TIMER_H

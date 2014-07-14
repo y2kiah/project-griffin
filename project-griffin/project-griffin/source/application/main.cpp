@@ -5,6 +5,7 @@
 #include <GL/glew.h>
 //#include <GL/glcorearb.h>
 #include "main.h"
+#include "Timer.h"
 #include <SOIL.h>
 #include "component/components.h"
 #include "render/Render.h"
@@ -17,6 +18,8 @@ using std::string;
 
 int main(int argc, char *argv[])
 {
+	Timer::initHighPerfTimer();
+
 	try {
 		SDLApplication app(PROGRAM_NAME);
 
