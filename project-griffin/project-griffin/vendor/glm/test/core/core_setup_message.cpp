@@ -1,14 +1,14 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// OpenGL Mathematics Copyright (c) 2005 - 2013 G-Truc Creation (www.g-truc.net)
+// OpenGL Mathematics Copyright (c) 2005 - 2014 G-Truc Creation (www.g-truc.net)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Created : 2011-05-31
-// Updated : 2011-05-31
+// Updated : 2013-08-27
 // Licence : This source is under MIT License
 // File    : test/core/setup_message.cpp
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define GLM_MESSAGES
-#include <glm/glm.hpp>
+#include <glm/vec3.hpp>
 #include <iostream>
 
 int test_compiler()
@@ -17,42 +17,22 @@ int test_compiler()
 	
 	if(GLM_COMPILER & GLM_COMPILER_VC)
 	{
-		std::cout << "GLM_COMPILER_VC" << std::endl;	
-
 		switch(GLM_COMPILER)
 		{
-		case GLM_COMPILER_VC2:
-			std::cout << "GLM_COMPILER_VC2" << std::endl;	
+		case GLM_COMPILER_VC8:
+			std::cout << "GLM_COMPILER_VC8" << std::endl;	
 			break;
-		case GLM_COMPILER_VC4:
-			std::cout << "GLM_COMPILER_VC4" << std::endl;	
+		case GLM_COMPILER_VC9:
+			std::cout << "GLM_COMPILER_VC9" << std::endl;	
 			break;
-		case GLM_COMPILER_VC5:
-			std::cout << "GLM_COMPILER_VC5" << std::endl;	
+		case GLM_COMPILER_VC10:
+			std::cout << "GLM_COMPILER_VC10" << std::endl;	
 			break;
-		case GLM_COMPILER_VC6:
-			std::cout << "GLM_COMPILER_VC6" << std::endl;	
+		case GLM_COMPILER_VC11:
+			std::cout << "GLM_COMPILER_VC11" << std::endl;	
 			break;
-		case GLM_COMPILER_VC2002:
-			std::cout << "GLM_COMPILER_VC2002" << std::endl;	
-			break;
-		case GLM_COMPILER_VC2003:
-			std::cout << "GLM_COMPILER_VC2003" << std::endl;	
-			break;
-		case GLM_COMPILER_VC2005:
-			std::cout << "GLM_COMPILER_VC2005" << std::endl;	
-			break;
-		case GLM_COMPILER_VC2008:
-			std::cout << "GLM_COMPILER_VC2008" << std::endl;	
-			break;
-		case GLM_COMPILER_VC2010:
-			std::cout << "GLM_COMPILER_VC2010" << std::endl;	
-			break;
-		case GLM_COMPILER_VC2012:
-			std::cout << "GLM_COMPILER_VC2012" << std::endl;	
-			break;
-		case GLM_COMPILER_VC2013:
-			std::cout << "GLM_COMPILER_VC2013" << std::endl;
+		case GLM_COMPILER_VC12:
+			std::cout << "GLM_COMPILER_VC12" << std::endl;
 			break;
 		default:
 			std::cout << "Visual C++ version not detected" << std::endl;
@@ -62,22 +42,8 @@ int test_compiler()
 	}
 	else if(GLM_COMPILER & GLM_COMPILER_GCC)
 	{
-		std::cout << "GLM_COMPILER_GCC" << std::endl;	
-
 		switch(GLM_COMPILER)
 		{
-		case GLM_COMPILER_GCC30:
-			std::cout << "GLM_COMPILER_GCC30" << std::endl;	
-			break;
-		case GLM_COMPILER_GCC31:
-			std::cout << "GLM_COMPILER_GCC31" << std::endl;	
-			break;
-		case GLM_COMPILER_GCC32:
-			std::cout << "GLM_COMPILER_GCC32" << std::endl;	
-			break;
-		case GLM_COMPILER_GCC33:
-			std::cout << "GLM_COMPILER_GCC33" << std::endl;	
-			break;
 		case GLM_COMPILER_GCC34:
 			std::cout << "GLM_COMPILER_GCC34" << std::endl;	
 			break;
@@ -120,43 +86,12 @@ int test_compiler()
 			break;
 		}
 	}
-	else if(GLM_COMPILER & GLM_COMPILER_BC)
-	{
-		std::cout << "GLM_COMPILER_BC" << std::endl;	
-
-		switch(GLM_COMPILER)
-		{
-		case GLM_COMPILER_BCB4:
-			std::cout << "GLM_COMPILER_BCB4" << std::endl;	
-			break;
-		case GLM_COMPILER_BCB5:
-			std::cout << "GLM_COMPILER_BCB5" << std::endl;	
-			break;
-		case GLM_COMPILER_BCB6:
-			std::cout << "GLM_COMPILER_BCB6" << std::endl;	
-			break;
-		case GLM_COMPILER_BCB2009:
-			std::cout << "GLM_COMPILER_BCB2009" << std::endl;	
-			break;
-		default:
-			std::cout << "Borland C++ version not detected" << std::endl;
-			Error += 1;
-			break;
-		}
-	}
-	else if(GLM_COMPILER & GLM_COMPILER_CODEWARRIOR)
-	{
-		std::cout << "GLM_COMPILER_CODEWARRIOR" << std::endl;	
-	}
 	else if(GLM_COMPILER & GLM_COMPILER_CUDA)
 	{
 		std::cout << "GLM_COMPILER_CUDA" << std::endl;		
 	}
 	else if(GLM_COMPILER & GLM_COMPILER_CLANG)
 	{
-#       ifdef __clang_major__
-            std::cout << "GLM_COMPILER_CLANG " << __clang_major__ << "." << __clang_minor__ << std::endl;
-#       endif
 		switch(GLM_COMPILER)
 		{
 		case GLM_COMPILER_CLANG26:
@@ -177,25 +112,28 @@ int test_compiler()
 		case GLM_COMPILER_CLANG31:
 			std::cout << "GLM_COMPILER_CLANG31" << std::endl;		
 			break;
-        case GLM_COMPILER_CLANG32:
-            std::cout << "GLM_COMPILER_CLANG32" << std::endl;
-            break;
-        case GLM_COMPILER_CLANG33:
-            std::cout << "GLM_COMPILER_CLANG33" << std::endl;
-            break;
-        case GLM_COMPILER_CLANG40:
-            std::cout << "GLM_COMPILER_CLANG40" << std::endl;
-            break;
-        case GLM_COMPILER_CLANG41:
-            std::cout << "GLM_COMPILER_CLANG41" << std::endl;
-            break;
-        case GLM_COMPILER_CLANG42:
-            std::cout << "GLM_COMPILER_CLANG42" << std::endl;
-            break;
-        case GLM_COMPILER_CLANG43:
-            std::cout << "GLM_COMPILER_CLANG43" << std::endl;
-            break;
-        default:
+		case GLM_COMPILER_CLANG32:
+			std::cout << "GLM_COMPILER_CLANG32" << std::endl;
+			break;
+		case GLM_COMPILER_CLANG33:
+			std::cout << "GLM_COMPILER_CLANG33" << std::endl;
+			break;
+		case GLM_COMPILER_CLANG40:
+			std::cout << "GLM_COMPILER_CLANG40" << std::endl;
+			break;
+		case GLM_COMPILER_CLANG41:
+			std::cout << "GLM_COMPILER_CLANG41" << std::endl;
+			break;
+		case GLM_COMPILER_CLANG42:
+			std::cout << "GLM_COMPILER_CLANG42" << std::endl;
+			break;
+		case GLM_COMPILER_CLANG43:
+			std::cout << "GLM_COMPILER_CLANG43" << std::endl;
+			break;
+		case GLM_COMPILER_CLANG50:
+			std::cout << "GLM_COMPILER_CLANG50" << std::endl;
+			break;
+		default:
 			std::cout << "Clang version not detected" << std::endl;
 			break;
 		}
@@ -207,29 +145,28 @@ int test_compiler()
 	}
 	else if(GLM_COMPILER & GLM_COMPILER_INTEL)
 	{
-		std::cout << "GLM_COMPILER_INTEL" << std::endl;	
 		switch(GLM_COMPILER)
 		{
 		case GLM_COMPILER_INTEL9:
-			std::cout << "GLM_COMPILER_INTEL9" << std::endl;		
+			std::cout << "GLM_COMPILER_INTEL9" << std::endl;
 			break;
 		case GLM_COMPILER_INTEL10_0:
-			std::cout << "GLM_COMPILER_INTEL10_0" << std::endl;		
+			std::cout << "GLM_COMPILER_INTEL10_0" << std::endl;
 			break;
 		case GLM_COMPILER_INTEL10_1:
-			std::cout << "GLM_COMPILER_INTEL10_1" << std::endl;		
+			std::cout << "GLM_COMPILER_INTEL10_1" << std::endl;
 			break;
 		case GLM_COMPILER_INTEL11_0:
-			std::cout << "GLM_COMPILER_INTEL11_0" << std::endl;		
+			std::cout << "GLM_COMPILER_INTEL11_0" << std::endl;
 			break;
 		case GLM_COMPILER_INTEL11_1:
-			std::cout << "GLM_COMPILER_INTEL11_1" << std::endl;		
+			std::cout << "GLM_COMPILER_INTEL11_1" << std::endl;
 			break;
 		case GLM_COMPILER_INTEL12_1:
-			std::cout << "GLM_COMPILER_INTEL12_1" << std::endl;		
+			std::cout << "GLM_COMPILER_INTEL12_1" << std::endl;
 			break;
 		case GLM_COMPILER_INTEL13_0:
-			std::cout << "GLM_COMPILER_INTEL13_0" << std::endl;		
+			std::cout << "GLM_COMPILER_INTEL13_0" << std::endl;
 			break;
 		default:
 			std::cout << "Intel compiler version not detected" << std::endl;
@@ -253,11 +190,42 @@ int test_model()
 	Error += ((sizeof(void*) == 4) && (GLM_MODEL == GLM_MODEL_32)) || ((sizeof(void*) == 8) && (GLM_MODEL == GLM_MODEL_64)) ? 0 : 1;
 	
 	if(GLM_MODEL == GLM_MODEL_32)
-		std::cout << "GLM_MODEL_32" << std::endl;	
+		std::cout << "GLM_MODEL_32" << std::endl;
 	else if(GLM_MODEL == GLM_MODEL_64)
-		std::cout << "GLM_MODEL_64" << std::endl;	
+		std::cout << "GLM_MODEL_64" << std::endl;
 	
 	return Error;
+}
+
+int test_instruction_set()
+{
+	int Error = 0;
+
+	std::cout << "GLM_ARCH: ";
+
+	if(GLM_ARCH == GLM_ARCH_PURE)
+		std::cout << "GLM_ARCH_PURE ";
+	if(GLM_ARCH & GLM_ARCH_AVX2)
+		std::cout << "GLM_ARCH_AVX2 ";
+	if(GLM_ARCH & GLM_ARCH_AVX)
+		std::cout << "GLM_ARCH_AVX ";
+	if(GLM_ARCH & GLM_ARCH_AVX)
+		std::cout << "GLM_ARCH_SSE4 ";
+	if(GLM_ARCH & GLM_ARCH_SSE3)
+		std::cout << "GLM_ARCH_SSE3 ";
+	if(GLM_ARCH & GLM_ARCH_SSE2)
+		std::cout << "GLM_ARCH_SSE2 ";
+
+	std::cout << std::endl;
+
+	return Error;
+}
+
+int test_cpp_version()
+{
+	std::cout << "__cplusplus: " << __cplusplus << std::endl;
+	
+	return 0;
 }
 
 int test_operators()
@@ -270,12 +238,34 @@ int test_operators()
 	return (S && !R) ? 0 : 1;
 }
 
+template <typename T>
+struct vec
+{
+
+};
+
+template <template <typename> class C, typename T>
+struct Class
+{
+
+};
+
+template <typename T>
+struct Class<vec, T>
+{
+
+};
+
 int main()
 {
+	//Class<vec, float> C;
+
 	int Error = 0;
 
+	Error += test_cpp_version();
 	Error += test_compiler();
 	Error += test_model();
+	Error += test_instruction_set();
 	Error += test_operators();
 	
 	return Error;

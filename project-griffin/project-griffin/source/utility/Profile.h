@@ -15,7 +15,7 @@ using std::vector;
 using boost::container::flat_map;
 
 struct FrameData {
-	uint32_t m_frame = 0;		// number of the frame being captured
+	int32_t m_frame = 0;		// number of the frame being captured
 	uint32_t m_counts = 0;
 	uint32_t m_invocations = 0; // stores invocations per frame (good indication of the "hotness" of the code block)
 };

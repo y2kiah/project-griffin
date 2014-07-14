@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// OpenGL Mathematics Copyright (c) 2005 - 2013 G-Truc Creation (www.g-truc.net)
+// OpenGL Mathematics Copyright (c) 2005 - 2014 G-Truc Creation (www.g-truc.net)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Created : 2011-05-25
 // Updated : 2011-05-25
@@ -7,8 +7,8 @@
 // File    : test/core/type_length.cpp
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
-#include <glm/gtc/half_float.hpp>
 
 int test_length_mat_non_squared()
 {
@@ -27,13 +27,6 @@ int test_length_mat_non_squared()
 	Error += glm::dmat3x4().length() == 3 ? 0 : 1;
 	Error += glm::dmat4x2().length() == 4 ? 0 : 1;
 	Error += glm::dmat4x3().length() == 4 ? 0 : 1;
-	
-	Error += glm::hmat2x3().length() == 2 ? 0 : 1;
-	Error += glm::hmat2x4().length() == 2 ? 0 : 1;
-	Error += glm::hmat3x2().length() == 3 ? 0 : 1;
-	Error += glm::hmat3x4().length() == 3 ? 0 : 1;
-	Error += glm::hmat4x2().length() == 4 ? 0 : 1;
-	Error += glm::hmat4x3().length() == 4 ? 0 : 1;
 	
 	return Error;
 }
@@ -56,13 +49,6 @@ int test_length_mat()
 	Error += glm::dmat3x3().length() == 3 ? 0 : 1;
 	Error += glm::dmat4x4().length() == 4 ? 0 : 1;
 	
-	Error += glm::hmat2().length() == 2 ? 0 : 1;
-	Error += glm::hmat3().length() == 3 ? 0 : 1;
-	Error += glm::hmat4().length() == 4 ? 0 : 1;
-	Error += glm::hmat2x2().length() == 2 ? 0 : 1;
-	Error += glm::hmat3x3().length() == 3 ? 0 : 1;
-	Error += glm::hmat4x4().length() == 4 ? 0 : 1;
-	
 	return Error;
 }
 
@@ -81,11 +67,7 @@ int test_length_vec()
 
 	Error += glm::uvec2().length() == 2 ? 0 : 1;
 	Error += glm::uvec3().length() == 3 ? 0 : 1;
-	Error += glm::uvec4().length() == 4 ? 0 : 1;
-
-	Error += glm::hvec2().length() == 2 ? 0 : 1;
-	Error += glm::hvec3().length() == 3 ? 0 : 1;
-	Error += glm::hvec4().length() == 4 ? 0 : 1;
+	Error += glm::uvec4().length() == 4 ? 0 : 1;	
 	
 	Error += glm::dvec2().length() == 2 ? 0 : 1;
 	Error += glm::dvec3().length() == 3 ? 0 : 1;

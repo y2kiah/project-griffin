@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// OpenGL Mathematics Copyright (c) 2005 - 2013 G-Truc Creation (www.g-truc.net)
+// OpenGL Mathematics Copyright (c) 2005 - 2014 G-Truc Creation (www.g-truc.net)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Created : 2011-05-31
 // Updated : 2011-05-31
@@ -7,8 +7,10 @@
 // File    : test/core/setup_precision_highp.cpp
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+#define GLM_FORCE_INLINE
 #define GLM_PRECISION_HIGHP_FLOAT
 #include <glm/glm.hpp>
+#include <glm/ext.hpp>
 
 static int test_mat()
 {
@@ -42,12 +44,24 @@ static int test_vec()
 	return Error;
 }
 
+static int test_dvec()
+{
+	int Error = 0;
+	
+	Error += sizeof(glm::dvec2) == sizeof(glm::highp_dvec2) ? 0 : 1;
+	Error += sizeof(glm::dvec3) == sizeof(glm::highp_dvec3) ? 0 : 1;
+	Error += sizeof(glm::dvec4) == sizeof(glm::highp_dvec4) ? 0 : 1;
+	
+	return Error;
+}
+
 int main()
 {
 	int Error = 0;
 
 	Error += test_mat();
 	Error += test_vec();
+	Error += test_dvec();
 	
 	return Error;
 }

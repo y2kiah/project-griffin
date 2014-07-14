@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// OpenGL Mathematics Copyright (c) 2005 - 2013 G-Truc Creation (www.g-truc.net)
+// OpenGL Mathematics Copyright (c) 2005 - 2014 G-Truc Creation (www.g-truc.net)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Created : 2011-09-01
 // Updated : 2011-09-01
@@ -7,6 +7,7 @@
 // File    : test/gtx/string_cast.cpp
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <iostream>
@@ -15,10 +16,6 @@
 int test_string_cast_scalar()
 {
 	int Error = 0;	
-
-	glm::half A1(1.0);
-	std::string A2 = glm::to_string(A1);
-	Error += A2 != std::string("half(1.0000)") ? 1 : 0;
 	
 	float B1(1.0);
 	std::string B2 = glm::to_string(B1);
@@ -58,18 +55,6 @@ int test_string_cast_vector()
 	glm::ivec4 F1(1, 2, 3, 4);
 	std::string F2 = glm::to_string(F1);
 	Error += F2 != std::string("ivec4(1, 2, 3, 4)") ? 1 : 0;
-	
-	glm::hvec2 G1(1, 2);
-	std::string G2 = glm::to_string(G1);
-	Error += G2 != std::string("hvec2(1.0000, 2.0000)") ? 1 : 0;
-	
-	glm::hvec3 H1(1, 2, 3);
-	std::string H2 = glm::to_string(H1);
-	Error += H2 != std::string("hvec3(1.0000, 2.0000, 3.0000)") ? 1 : 0;
-	
-	glm::hvec4 I1(1, 2, 3, 4);
-	std::string I2 = glm::to_string(I1);
-	Error += I2 != std::string("hvec4(1.0000, 2.0000, 3.0000, 4.0000)") ? 1 : 0;
 	
 	glm::dvec2 J1(1, 2);
 	std::string J2 = glm::to_string(J1);
