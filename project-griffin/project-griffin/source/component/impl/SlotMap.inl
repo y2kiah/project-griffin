@@ -19,8 +19,8 @@ inline bool operator> (Id_T a, Id_T b) { return (a.value >  b.value); }
 // class ContiguousSet 
 
 /**
-* create n items with default initialization and return a vector of their ids
-*/
+ * create n items with default initialization and return a vector of their ids
+ */
 template <typename T>
 IdSet_T SlotMap<T>::createItems(int n)
 {
@@ -34,8 +34,8 @@ IdSet_T SlotMap<T>::createItems(int n)
 }
 
 /**
-* add one item, moving the provided i into the store, return id
-*/
+ * add one item, moving the provided i into the store, return id
+ */
 template <typename T>
 Id_T SlotMap<T>::addItem(T&& i)
 {
@@ -78,8 +78,8 @@ Id_T SlotMap<T>::addItem(T&& i)
 }
 
 /**
-* remove the item identified by the provided outerId
-*/
+ * remove the item identified by the provided outerId
+ */
 template <typename T>
 void SlotMap<T>::removeItem(Id_T outerId)
 {
@@ -115,7 +115,7 @@ void SlotMap<T>::removeItem(Id_T outerId)
 		std::swap(m_meta.at(innerIndex), m_meta.back());
 
 		// fix the ComponentId index of the swapped component
-		m_sparseIds[m_meta.at(innerIndex).denseToSparse].index = innerIndex;
+		m_sparseIds[m_meta.at(innerIndex).m_denseToSparse].index = innerIndex;
 	}
 
 	// do I really need to do this? it could be faster to just decrement a size counter and leave the memory untouched (not run any potential destructor on the component object, if it has one)
@@ -124,8 +124,8 @@ void SlotMap<T>::removeItem(Id_T outerId)
 }
 
 /**
-* Get a direct reference to a stored item by outerId
-*/
+ * Get a direct reference to a stored item by outerId
+ */
 template <typename T>
 inline T& SlotMap<T>::getItem(Id_T outerId)
 {

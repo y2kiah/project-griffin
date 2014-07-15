@@ -1,4 +1,5 @@
-#include "components.h"
+#include <component/components.h>
+#include <vector>
 #include <tuple>
 #include <SDL_log.h>
 #include <boost/fusion/adapted/std_tuple.hpp>
@@ -6,6 +7,7 @@
 #include <utility/prettyprint.h>
 #include <fstream>
 #include <memory>
+#include <utility/Profile.h>
 
 #include <application/Timer.h>
 

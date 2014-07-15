@@ -37,14 +37,17 @@
     <ClCompile Include="source\render\Render.cpp">
       <Filter>application</Filter>
     </ClCompile>
-    <ClCompile Include="source\component\Component.cpp">
-      <Filter>component</Filter>
-    </ClCompile>
-    <ClCompile Include="source\component\Entity.cpp">
-      <Filter>component</Filter>
-    </ClCompile>
     <ClCompile Include="source\application\impl\Timer_win32.cpp">
       <Filter>application\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\component\impl\Component.cpp">
+      <Filter>component\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\component\impl\Entity.cpp">
+      <Filter>component\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\utility\impl\Profile.cpp">
+      <Filter>utility\impl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -107,6 +110,9 @@
     </ClInclude>
     <ClInclude Include="source\component\impl\ComponentStore.inl">
       <Filter>component\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utility\AutoLister.h">
+      <Filter>utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

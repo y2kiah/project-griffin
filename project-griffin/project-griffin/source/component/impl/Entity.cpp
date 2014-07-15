@@ -1,5 +1,10 @@
-#include "Entity.h"
+/**
+ * @file	Entity.cpp
+ * @author	Jeff Kiah
+ */
 #include <mutex>
+#include <memory>
+#include <component/Entity.h>
 
 using namespace std;
 

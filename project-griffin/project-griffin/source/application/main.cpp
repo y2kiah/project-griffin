@@ -7,8 +7,9 @@
 #include "main.h"
 #include "Timer.h"
 #include <SOIL.h>
-#include "component/components.h"
-#include "render/Render.h"
+#include <component/components.h>
+#include <render/Render.h>
+#include <utility/Profile.h>
 
 #define PROGRAM_NAME "Project Griffin"
 
@@ -75,7 +76,9 @@ int main(int argc, char *argv[])
 		test_reflection();
 		initRenderData();
 
-		for (;;) {
+		for (int32_t frame = 0;; ++frame) {
+			PROFILE_BLOCK("main loop", frame)
+
 			SDL_Event event;
 			if (SDL_PollEvent(&event)) {
 				if (event.type == SDL_QUIT) { break; }

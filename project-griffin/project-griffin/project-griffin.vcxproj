@@ -21,9 +21,10 @@
   <ItemGroup>
     <ClCompile Include="source\application\impl\Timer_win32.cpp" />
     <ClCompile Include="source\application\main.cpp" />
-    <ClCompile Include="source\component\Component.cpp" />
-    <ClCompile Include="source\component\Entity.cpp" />
+    <ClCompile Include="source\component\impl\Component.cpp" />
+    <ClCompile Include="source\component\impl\Entity.cpp" />
     <ClCompile Include="source\render\Render.cpp" />
+    <ClCompile Include="source\utility\impl\Profile.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\application\main.h" />
@@ -38,6 +39,7 @@
     <ClInclude Include="source\render\Render.h" />
     <ClInclude Include="source\test\Test.h" />
     <ClInclude Include="source\utility\algorithms.h" />
+    <ClInclude Include="source\utility\AutoLister.h" />
     <ClInclude Include="source\utility\concurrent_queue.h" />
     <ClInclude Include="source\utility\enum.h" />
     <ClInclude Include="source\utility\concurrency.h" />
@@ -67,7 +69,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>CTP_Nov2013</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -80,7 +82,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>CTP_Nov2013</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
