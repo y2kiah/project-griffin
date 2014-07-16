@@ -114,6 +114,9 @@
     <ClInclude Include="source\utility\AutoLister.h">
       <Filter>utility</Filter>
     </ClInclude>
+    <ClInclude Include="source\utility\serial_task_queue.h">
+      <Filter>utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="data\shaders\SimpleVertexShader.glsl">

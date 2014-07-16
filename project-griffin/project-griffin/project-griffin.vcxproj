@@ -47,6 +47,7 @@
     <ClInclude Include="source\utility\prettyprint.h" />
     <ClInclude Include="source\utility\Profile.h" />
     <ClInclude Include="source\utility\reflection.h" />
+    <ClInclude Include="source\utility\serial_task_queue.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="data\shaders\SimpleFragmentShader.glsl" />
