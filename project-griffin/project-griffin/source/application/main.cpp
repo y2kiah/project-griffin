@@ -9,7 +9,7 @@
 #include <SOIL.h>
 #include <component/components.h>
 #include <render/Render.h>
-#include <utility/Profile.h>
+#include <utility/profile/Profile.h>
 
 #define PROGRAM_NAME "Project Griffin"
 
@@ -19,7 +19,7 @@ using std::string;
 
 int main(int argc, char *argv[])
 {
-	Timer::initHighPerfTimer();
+	griffin::Timer::initHighPerfTimer();
 
 	try {
 		SDLApplication app(PROGRAM_NAME);

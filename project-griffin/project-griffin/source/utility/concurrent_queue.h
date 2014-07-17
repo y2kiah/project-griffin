@@ -3,8 +3,8 @@
 * @author	Jeff Kiah
 */
 #pragma once
-#ifndef CONCURRENT_QUEUE_H
-#define CONCURRENT_QUEUE_H
+#ifndef GRIFFIN_CONCURRENT_QUEUE_H
+#define GRIFFIN_CONCURRENT_QUEUE_H
 
 #include <queue>
 #include <mutex>
@@ -18,10 +18,9 @@ namespace griffin {
 
 	/**
 	* @class concurrent_queue
-	*	concurrent_queue provides functionality for thread-safe enqueue and dequeue operations. This
-	*	implementation is purposely similar to the MS PPL class (probably the eventual standard) except
-	*	that the thread safe iterator is not provided, and a wait_pop method is added.
-	*
+	* concurrent_queue provides functionality for thread-safe enqueue and dequeue operations. This
+	* implementation is purposely similar to the MS PPL class (probably the eventual standard) except
+	* that the thread safe iterator is not provided, and a wait_pop method is added.
 	* @tparam T	type of object stored in the queue
 	* @see http://www.justsoftwaresolutions.co.uk/threading/implementing-a-thread-safe-queue-using-condition-variables.html
 	* @see http://stackoverflow.com/questions/15278343/c11-thread-safe-queue
@@ -77,7 +76,7 @@ namespace griffin {
 		bool try_pop(T& outData, const std::chrono::milliseconds& timeout)
 		{
 			std::unique_lock<mutex> lock(m_mutex);
-			if (!m_cond.wait_for(lock, timeout, [this]() { return !m_queue.empty(); })) {
+			if (!m_cond.wait_for(lock, timeout, [this]{ return !m_queue.empty(); })) {
 				return false;
 			}
 

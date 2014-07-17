@@ -7,7 +7,7 @@
 #include <utility/prettyprint.h>
 #include <fstream>
 #include <memory>
-#include <utility/Profile.h>
+#include <utility/profile/Profile.h>
 
 #include <application/Timer.h>
 
@@ -15,7 +15,7 @@ const size_t numTestComponents = 100000;
 auto personStore = ComponentStore<Person>(numTestComponents);
 std::vector<ComponentId> componentIds;
 std::vector<std::unique_ptr<Person>> personHeap;
-Timer timer;
+griffin::Timer timer;
 
 struct Something {
 	int x, y;
@@ -144,7 +144,7 @@ void test_reflection() {
 	SDL_Log("ComponentId is POD = %d\n", std::is_pod<ComponentId>::value);
 
 	Something s = { 1, 2, "hi" };
-	auto s0 = getMemberVal<Something, SomethingPred0>(s, SomethingPred0{});
+	auto s0 = getMemberVal(s, SomethingPred0{});
 	SDL_Log("s val 0 through template = %d\n", s0);
 
 	// output person properties

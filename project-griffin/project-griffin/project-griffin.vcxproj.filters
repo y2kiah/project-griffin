@@ -29,6 +29,12 @@
     <Filter Include="utility\impl">
       <UniqueIdentifier>{ea34148e-c179-4a59-91c1-d1a165498389}</UniqueIdentifier>
     </Filter>
+    <Filter Include="utility\profile">
+      <UniqueIdentifier>{8b44e009-749b-4f36-82a5-3f17d680aa6f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utility\profile\impl">
+      <UniqueIdentifier>{d34f0cff-caf9-4b02-942c-f9bb4e0ea3b4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">
@@ -46,8 +52,8 @@
     <ClCompile Include="source\component\impl\Entity.cpp">
       <Filter>component\impl</Filter>
     </ClCompile>
-    <ClCompile Include="source\utility\impl\Profile.cpp">
-      <Filter>utility\impl</Filter>
+    <ClCompile Include="source\utility\profile\impl\Profile.cpp">
+      <Filter>utility\profile\impl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -105,17 +111,20 @@
     <ClInclude Include="source\component\impl\SlotMap.inl">
       <Filter>component\impl</Filter>
     </ClInclude>
-    <ClInclude Include="source\utility\Profile.h">
-      <Filter>utility</Filter>
-    </ClInclude>
     <ClInclude Include="source\component\impl\ComponentStore.inl">
       <Filter>component\impl</Filter>
     </ClInclude>
-    <ClInclude Include="source\utility\AutoLister.h">
-      <Filter>utility</Filter>
-    </ClInclude>
     <ClInclude Include="source\utility\serial_task_queue.h">
       <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utility\auto_lister.h">
+      <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utility\profile\Profile.h">
+      <Filter>utility\profile</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utility\profile\ProfileAggregate.h">
+      <Filter>utility\profile</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
