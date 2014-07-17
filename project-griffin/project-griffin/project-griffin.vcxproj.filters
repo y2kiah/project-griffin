@@ -35,6 +35,12 @@
     <Filter Include="utility\profile\impl">
       <UniqueIdentifier>{d34f0cff-caf9-4b02-942c-f9bb4e0ea3b4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="resource">
+      <UniqueIdentifier>{a490ab84-d58a-4be4-90f5-74fe53836ba3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utility\container">
+      <UniqueIdentifier>{e9384396-db7f-47b8-8d6b-c91a574b3354}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">
@@ -125,6 +131,9 @@
     </ClInclude>
     <ClInclude Include="source\utility\profile\ProfileAggregate.h">
       <Filter>utility\profile</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utility\container\lru_cache.h">
+      <Filter>utility\container</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

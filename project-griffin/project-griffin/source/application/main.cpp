@@ -11,6 +11,8 @@
 #include <render/Render.h>
 #include <utility/profile/Profile.h>
 
+#include <utility/concurrency.h>
+
 #define PROGRAM_NAME "Project Griffin"
 
 using std::unique_ptr;
@@ -76,12 +78,30 @@ int main(int argc, char *argv[])
 		test_reflection();
 		initRenderData();
 
-		for (int32_t frame = 0;; ++frame) {
-			PROFILE_BLOCK("main loop", frame)
+		bool done = false;
+
+
+		SDL_GL_MakeCurrent(nullptr, NULL); // make no gl context current on the input thread
+
+		auto mainProcess = [&](){
+			SDL_GL_MakeCurrent(app.getPrimaryWindow(), app.getGLContext()); // gl context made current on the main loop thread
+			for (int32_t frame = 0; !done; ++frame) {
+				SDL_GL_SwapWindow(app.getPrimaryWindow());
+				renderFrame();
+			}
+		};
+
+		auto mainThread = std::async(mainProcess, std::launch::async);
+
+		for (;;) {
+			//PROFILE_BLOCK("main loop", frame)
 
 			SDL_Event event;
 			if (SDL_PollEvent(&event)) {
-				if (event.type == SDL_QUIT) { break; }
+				if (event.type == SDL_QUIT) {
+					done = true; // main thread will read this and exit
+					break;
+				}
 				//	TranslateMessage(&msg);
 				//	DispatchMessage(&msg);
 			} else {
@@ -92,8 +112,6 @@ int main(int argc, char *argv[])
 
 				//} else {
 				//	WaitMessage();	// avoid 100% CPU when inactive
-				SDL_GL_SwapWindow(app.getPrimaryWindow());
-				renderFrame();
 			}
 		}
 
