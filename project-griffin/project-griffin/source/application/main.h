@@ -32,6 +32,10 @@ public:
 	{
 		return windowData[0].window;
 	}
+	const SDL_GLContext& getGLContext() const
+	{
+		return windowData[0].glContext;
+	}
 
 	explicit SDLApplication(const char* appName)
 	{
