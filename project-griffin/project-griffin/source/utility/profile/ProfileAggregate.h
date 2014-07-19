@@ -46,16 +46,13 @@ namespace griffin {
 	 */
 	class ProfileAggregate {
 	public:
+		explicit ProfileAggregate();
+		~ProfileAggregate();
+
 		// Functions
 
-		/**
-		 *
-		 */
 		void invoke(int64_t countsPassed, int32_t frame);
 
-		/**
-		 *
-		 */
 		void init(const char* name, const char* parentName, string path);
 
 		// Member Variables
@@ -93,6 +90,21 @@ namespace griffin {
 		// * framesSkippedAvg
 		// * %total frame
 		// * %parent frame
+	};
+
+
+	class ProfileAggregateIterator {
+	public:
+		size_t	nextThread();
+		size_t	prevThread();
+		size_t	firstThread();
+		size_t	lastThread();
+
+	private:
+		size_t	m_threadIdHash;
+
+		
+
 	};
 }
 #endif

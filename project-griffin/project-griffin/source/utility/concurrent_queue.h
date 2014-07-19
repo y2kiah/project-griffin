@@ -110,6 +110,29 @@ namespace griffin {
 			return m_queue.empty();
 		}
 
+		/**
+		* Pops an item from the queue, or returns immediately without waiting if the list is empty
+		* only if the provided predicate function evaluates to true.
+		* @tparam	UnaryPredicate	predicate must return bool and accept a single param of type T
+		* @param	p_			function pointer, lambda or functor of type UnaryPredicate
+		* @param	outData		memory location to move item into, only modified if true is returned
+		* @returns true if pop succeeds, false if queue is empty
+		*/
+		template <class UnaryPredicate>
+		bool try_pop_if(UnaryPredicate p_, T& outData)
+		{
+			std::lock_guard<mutex> lock(m_mutex);
+			if (!m_queue.empty() &&
+				p_(m_queue.front()))
+			{
+				outData = std::move(m_queue.front());
+				m_queue.pop();
+
+				return true;
+			}
+			return false;
+		}
+
 	private:
 		mutable mutex		m_mutex;
 		condition_variable	m_cond;

@@ -18,25 +18,25 @@ namespace griffin {
 
 	// Static Variables
 
-	int64_t Timer::sTimerFreq = 0;
-	double Timer::sSecondsPerCount = 0;
-	double Timer::sMillisecondsPerCount = 0;
-	bool Timer::sInitialized = false;
+	int64_t Timer::s_timerFreq = 0;
+	double Timer::s_secondsPerCount = 0;
+	double Timer::s_millisecondsPerCount = 0;
+	bool Timer::s_initialized = false;
 
 	// Static Functions
 
 	void Timer::assertInitialized() {
-		assert(sInitialized && "Timer_win32 is not initialized");
+		assert(s_initialized && "Timer_win32 is not initialized");
 	}
 
 	int64_t Timer::timerFreq()
 	{
-		return sTimerFreq;
+		return s_timerFreq;
 	}
 
 	double Timer::secondsPerCount()
 	{
-		return sSecondsPerCount;
+		return s_secondsPerCount;
 	}
 
 	int64_t Timer::queryCounts()
@@ -63,30 +63,30 @@ namespace griffin {
 
 		int64_t now = 0;
 		QueryPerformanceCounter((LARGE_INTEGER *)&now);
-		return static_cast<double>(now - startCounts) * sSecondsPerCount;
+		return static_cast<double>(now - startCounts) * s_secondsPerCount;
 	}
 
 	double Timer::secondsBetween(int64_t startCounts, int64_t stopCounts)
 	{
 		assertInitialized();
 
-		return static_cast<double>(stopCounts - startCounts) * sSecondsPerCount;
+		return static_cast<double>(stopCounts - startCounts) * s_secondsPerCount;
 	}
 
 	bool Timer::initHighPerfTimer()
 	{
-		if (!sInitialized) {
+		if (!s_initialized) {
 			SetThreadAffinityMask(GetCurrentThread(), 1);
 
 			// get high performance counter frequency
-			BOOL result = QueryPerformanceFrequency((LARGE_INTEGER *)&sTimerFreq);
-			if (result == 0 || sTimerFreq == 0) {
+			BOOL result = QueryPerformanceFrequency((LARGE_INTEGER *)&s_timerFreq);
+			if (result == 0 || s_timerFreq == 0) {
 				//debugPrintf("Timer::initTimer: QueryPerformanceFrequency failed (error %d)\n", GetLastError());
 				return false;
 			}
 
-			sSecondsPerCount = 1.0 / static_cast<double>(sTimerFreq);
-			sMillisecondsPerCount = sSecondsPerCount * 1000.0;
+			s_secondsPerCount = 1.0 / static_cast<double>(s_timerFreq);
+			s_millisecondsPerCount = s_secondsPerCount * 1000.0;
 
 			// test counter function
 			int64_t dummy = 0;
@@ -96,58 +96,67 @@ namespace griffin {
 				return false;
 			}
 
-			sInitialized = true;
+			s_initialized = true;
 		}
 		return true;
 	}
 
 	// Member Functions
 
-	void Timer::start()
+	int64_t Timer::start()
 	{
 		assertInitialized();
 
-		mCountsPassed = 0;
-		mMillisecondsPassed = 0;
-		mSecondsPassed = 0;
+		m_countsPassed = 0;
+		m_millisecondsPassed = 0;
+		m_secondsPassed = 0;
 
-		QueryPerformanceCounter((LARGE_INTEGER *)&mStartCounts);
+		QueryPerformanceCounter((LARGE_INTEGER *)&m_startCounts);
 
-		mStopCounts = mStartCounts;
+		m_stopCounts = m_startCounts;
+		return m_startCounts;
 	}
 
-	double Timer::stop()
+	int64_t Timer::stop()
 	{
 		assertInitialized();
 
 		// query the current counts from QPC and GetTickCount64
-		QueryPerformanceCounter((LARGE_INTEGER *)&mStopCounts);
+		QueryPerformanceCounter((LARGE_INTEGER *)&m_stopCounts);
 
 		// get time passed since start() according to QPC and GetTickCount64
-		mCountsPassed = mStopCounts - mStartCounts;
+		m_countsPassed = max(m_stopCounts - m_startCounts, 0);
 
-		mSecondsPassed = max(static_cast<double>(mCountsPassed)* sSecondsPerCount, 0.0);
-		mMillisecondsPassed = mSecondsPassed * 1000.0;
+		m_secondsPassed = static_cast<double>(m_countsPassed) * s_secondsPerCount;
+		m_millisecondsPassed = m_secondsPassed * 1000.0;
 
-		return mMillisecondsPassed;
+		return m_countsPassed;
 	}
 
-	int64_t Timer::currentCounts() const
+	int64_t Timer::queryCountsPassed()
+	{
+		int64_t countsPassed = stop();
+		m_startCounts = m_stopCounts;
+
+		return countsPassed;
+	}
+
+	int64_t Timer::queryCurrentCounts() const
 	{
 		assertInitialized();
 
 		int64_t now = 0;
 		QueryPerformanceCounter((LARGE_INTEGER *)&now);
-		return now - mStartCounts;
+		return now - m_startCounts;
 	}
 
-	double Timer::currentSeconds() const
+	double Timer::queryCurrentSeconds() const
 	{
 		assertInitialized();
 
 		int64_t now = 0;
 		QueryPerformanceCounter((LARGE_INTEGER *)&now);
-		return static_cast<double>(now - mStartCounts) * sSecondsPerCount;
+		return static_cast<double>(now - m_startCounts) * s_secondsPerCount;
 	}
 
 }

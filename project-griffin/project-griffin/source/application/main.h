@@ -104,6 +104,4 @@ public:
 	}
 };
 
-extern void showErrorBox(const char *text, const char *caption);
-
 #endif

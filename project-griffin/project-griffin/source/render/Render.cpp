@@ -35,7 +35,7 @@ void initRenderData() {
 	glUseProgram(programID);
 }
 
-void renderFrame() {
+void renderFrame(double interpolation) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// 1st attribute buffer : vertices

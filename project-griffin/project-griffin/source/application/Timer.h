@@ -27,31 +27,32 @@ namespace griffin {
 		static void		assertInitialized(); // asserts when NDEBUG is not defined
 
 		// Functions
-		int64_t			startCounts() const			{ return mStartCounts; }
-		int64_t			stopCounts() const			{ return mStopCounts; }
-		int64_t			countsPassed() const		{ return mCountsPassed; }
-		double			millisecondsPassed() const	{ return mMillisecondsPassed; }
-		double			secondsPassed() const		{ return mSecondsPassed; }
+		int64_t			startCounts() const			{ return m_startCounts; }
+		int64_t			stopCounts() const			{ return m_stopCounts; }
+		int64_t			countsPassed() const		{ return m_countsPassed; }
+		double			millisecondsPassed() const	{ return m_millisecondsPassed; }
+		double			secondsPassed() const		{ return m_secondsPassed; }
 
-		void			start();
-		double			stop();
-		void			reset() { mStartCounts = mStopCounts = mCountsPassed = 0; mMillisecondsPassed = mSecondsPassed = 0.0; }
-		int64_t			currentCounts() const;
-		double			currentSeconds() const;
+		int64_t			start();
+		int64_t			stop();
+		void			reset() { m_startCounts = m_stopCounts = m_countsPassed = 0; m_millisecondsPassed = m_secondsPassed = 0.0; }
+		int64_t			queryCountsPassed();
+		int64_t			queryCurrentCounts() const;
+		double			queryCurrentSeconds() const;
 
 	private:
 		// Static Variables
-		static int64_t	sTimerFreq;
-		static double	sSecondsPerCount;
-		static double	sMillisecondsPerCount;
-		static bool		sInitialized;
+		static int64_t	s_timerFreq;
+		static double	s_secondsPerCount;
+		static double	s_millisecondsPerCount;
+		static bool		s_initialized;
 
 		// Member Variables
-		int64_t			mStartCounts = 0;
-		int64_t			mStopCounts = 0;
-		int64_t			mCountsPassed = 0;	//!< high res timer, set by QPC on windows
-		double			mMillisecondsPassed = 0.0;
-		double			mSecondsPassed = 0.0;
+		int64_t			m_startCounts = 0;
+		int64_t			m_stopCounts = 0;
+		int64_t			m_countsPassed = 0;	//!< high res timer, set by QPC on windows
+		double			m_millisecondsPassed = 0.0;
+		double			m_secondsPassed = 0.0;
 	};
 
 }

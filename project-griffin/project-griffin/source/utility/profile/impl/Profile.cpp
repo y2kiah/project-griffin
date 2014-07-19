@@ -14,6 +14,8 @@ namespace griffin {
 
 	// Variables
 	Timer g_timer;	//!< high speed timer used by all profiling blocks
+	static ThreadAggregateMap g_aggregate;
+	static mutex g_mutex;
 
 	// Free Functions
 
@@ -22,18 +24,27 @@ namespace griffin {
 	 */
 	const ProfileAggregateMap& getThreadAggregates(size_t threadIdHash)
 	{
-		static ThreadAggregateMap s_aggregate;
-		static mutex s_mutex;
+		//static ThreadAggregateMap s_aggregate;
+		//static mutex s_mutex;
 
 		// look into using the DCL (double checked locking) pattern since only writes are once per thread, mostly reads
 		// http://preshing.com/20130930/double-checked-locking-is-fixed-in-cpp11/
 
-		lock_guard<mutex> lock(s_mutex);
-		return s_aggregate[threadIdHash];
+		lock_guard<mutex> lock(g_mutex);
+		return g_aggregate[threadIdHash];
 	}
 
 
 	// Class ProfileAggregate
+	#include <SDL_log.h>
+
+	ProfileAggregate::ProfileAggregate() {
+		SDL_Log("ProfileAggregate created on thread %lu\n", std::this_thread::get_id().hash());
+	}
+
+	ProfileAggregate::~ProfileAggregate() {
+		SDL_Log("ProfileAggregate destroyed on thread %lu\n", std::this_thread::get_id().hash());
+	}
 
 	void ProfileAggregate::invoke(int64_t countsPassed, int32_t frame) {
 		++m_invocations;

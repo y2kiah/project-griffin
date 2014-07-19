@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\application\impl\platform.cpp" />
     <ClCompile Include="source\application\impl\Timer_win32.cpp" />
     <ClCompile Include="source\application\main.cpp" />
     <ClCompile Include="source\component\impl\Component.cpp" />
@@ -27,7 +28,9 @@
     <ClCompile Include="source\utility\profile\impl\Profile.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\application\FixedTimestep.h" />
     <ClInclude Include="source\application\main.h" />
+    <ClInclude Include="source\application\platform.h" />
     <ClInclude Include="source\application\Timer.h" />
     <ClInclude Include="source\component\Component.h" />
     <ClInclude Include="source\component\ComponentFactory.h" />

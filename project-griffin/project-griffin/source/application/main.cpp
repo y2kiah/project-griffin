@@ -10,18 +10,21 @@
 #include <component/components.h>
 #include <render/Render.h>
 #include <utility/profile/Profile.h>
+#include "platform.h"
+#include "FixedTimestep.h"
 
 #include <utility/concurrency.h>
 
 #define PROGRAM_NAME "Project Griffin"
 
+using namespace griffin;
 using std::unique_ptr;
 using std::vector;
 using std::string;
 
 int main(int argc, char *argv[])
 {
-	griffin::Timer::initHighPerfTimer();
+	Timer::initHighPerfTimer();
 
 	try {
 		SDLApplication app(PROGRAM_NAME);
@@ -79,63 +82,85 @@ int main(int argc, char *argv[])
 		initRenderData();
 
 		bool done = false;
+		int32_t frame = 0;
 
+		// move this stuff to an input system
+		struct InputEvent { SDL_Event evt; int64_t timeStampCounts; };
+		concurrent_queue<InputEvent> inputEvents;
 
 		SDL_GL_MakeCurrent(nullptr, NULL); // make no gl context current on the input thread
 
-		auto mainProcess = [&](){
+		auto gameProcess = [&](){
 			SDL_GL_MakeCurrent(app.getPrimaryWindow(), app.getGLContext()); // gl context made current on the main loop thread
-			for (int32_t frame = 0; !done; ++frame) {
+			Timer timer;
+
+			FixedTimestep update(50, Timer::timerFreq() / 1000,
+				[&](const int64_t virtualTime, const int64_t gameTime, const int64_t deltaCounts, const double deltaMs)
+			{
+				SDL_Log("Update virtualTime=%lu: gameTime=%ld: deltaCounts=%ld: countsPerMs=%ld\n",
+						virtualTime, gameTime, deltaCounts, Timer::timerFreq() / 1000);
+
+				auto inputTimeReached = [virtualTime](const InputEvent& i) {
+					return (virtualTime >= i.timeStampCounts);
+				};
+
+				InputEvent e;
+				while (inputEvents.try_pop_if(inputTimeReached, e)) {
+					SDL_Log("  Processed Input type=%d: realTime=%lu\n", e.evt.type, e.timeStampCounts);
+				}
+			});
+
+			int64_t realTime = timer.start();
+
+			for (frame = 0; !done; ++frame) {
+				//PROFILE_BLOCK("main loop", frame);
+
+				int64_t countsPassed = timer.queryCountsPassed();
+				realTime = timer.stopCounts();
+
+				double interpolation = update.tick(realTime, countsPassed, 1.0);
+				
+				//SDL_Delay(1000);
+				SDL_Log("Render realTime=%lu: interpolation=%0.3f: threadIdHash=%lu\n",
+						realTime, interpolation, std::this_thread::get_id().hash());
+
+				renderFrame(interpolation);
+
 				SDL_GL_SwapWindow(app.getPrimaryWindow());
-				renderFrame();
+				platform::yieldThread();
 			}
 		};
+		
+		auto gameTask = std::async(std::launch::async, gameProcess);
 
-		auto mainThread = std::async(mainProcess, std::launch::async);
-
-		for (;;) {
-			//PROFILE_BLOCK("main loop", frame)
+		while (!done) {
+			//PROFILE_BLOCK("input loop", frame)
 
 			SDL_Event event;
-			if (SDL_PollEvent(&event)) {
+			while (SDL_PollEvent(&event)) {
+
 				if (event.type == SDL_QUIT) {
-					done = true; // main thread will read this and exit
-					break;
+					done = true; // all threads read this to exit
+					gameTask.wait(); // waiting on the future forces the game thread to join
 				}
-				//	TranslateMessage(&msg);
-				//	DispatchMessage(&msg);
-			} else {
-				//} else if (win32.isActive()) {
-				//	if (win32.isExiting()) { PostMessage(win32.hWnd, WM_CLOSE, 0, 0); }
 
-				//	app->processFrame();
+				else if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
+					auto timestamp = Timer::queryCounts();
+					SDL_Log("key event=%d: state=%d: key=%d: repeat=%d: realTime=%lu\n",
+							event.type, event.key.state, event.key.keysym.scancode, event.key.repeat, timestamp);
 
-				//} else {
-				//	WaitMessage();	// avoid 100% CPU when inactive
+					if (event.key.repeat == 0) {
+						inputEvents.push({std::move(event), timestamp});
+					}
+				}
 			}
+			
+			platform::yieldThread();
 		}
 
 	} catch (std::exception& e) {
-		showErrorBox(e.what(), "Error");
+		platform::showErrorBox(e.what(), "Error");
 	}
-
+	
 	return 0;
 }
-
-#ifdef _WIN32
-
-#include <Windows.h>
-
-void showErrorBox(const char *text, const char *caption)
-{
-	MessageBoxA(NULL, text, caption, MB_OK | MB_ICONERROR | MB_TOPMOST);
-}
-
-#else
-
-void showErrorBox(const char *text, const char *caption)
-{
-	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, caption, text, nullptr);
-}
-
-#endif
