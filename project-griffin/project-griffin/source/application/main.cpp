@@ -93,27 +93,29 @@ int main(int argc, char *argv[])
 		auto gameProcess = [&](){
 			SDL_GL_MakeCurrent(app.getPrimaryWindow(), app.getGLContext()); // gl context made current on the main loop thread
 			Timer timer;
+			vector<InputEvent> events;
 
 			FixedTimestep update(50, Timer::timerFreq() / 1000,
+				// not a good use of lambda, should make this a function in the Game class
 				[&](const int64_t virtualTime, const int64_t gameTime, const int64_t deltaCounts, const double deltaMs)
 			{
-				SDL_Log("Update virtualTime=%lu: gameTime=%ld: deltaCounts=%ld: countsPerMs=%ld\n",
-						virtualTime, gameTime, deltaCounts, Timer::timerFreq() / 1000);
+				/*SDL_Log("Update virtualTime=%lu: gameTime=%ld: deltaCounts=%ld: countsPerMs=%ld\n",
+						virtualTime, gameTime, deltaCounts, Timer::timerFreq() / 1000);*/
 
-				auto inputTimeReached = [virtualTime](const InputEvent& i) {
+				inputEvents.try_pop_all_if(events, [virtualTime](const InputEvent& i) {
 					return (virtualTime >= i.timeStampCounts);
-				};
+				});
 
-				InputEvent e;
-				while (inputEvents.try_pop_if(inputTimeReached, e)) {
+				for (auto e : events) {
 					SDL_Log("  Processed Input type=%d: realTime=%lu\n", e.evt.type, e.timeStampCounts);
 				}
+				events.clear();
 			});
 
 			int64_t realTime = timer.start();
 
 			for (frame = 0; !done; ++frame) {
-				//PROFILE_BLOCK("main loop", frame);
+				PROFILE_BLOCK("main loop", frame, 2);
 
 				int64_t countsPassed = timer.queryCountsPassed();
 				realTime = timer.stopCounts();
@@ -121,8 +123,8 @@ int main(int argc, char *argv[])
 				double interpolation = update.tick(realTime, countsPassed, 1.0);
 				
 				//SDL_Delay(1000);
-				SDL_Log("Render realTime=%lu: interpolation=%0.3f: threadIdHash=%lu\n",
-						realTime, interpolation, std::this_thread::get_id().hash());
+				/*SDL_Log("Render realTime=%lu: interpolation=%0.3f: threadIdHash=%lu\n",
+						realTime, interpolation, std::this_thread::get_id().hash());*/
 
 				renderFrame(interpolation);
 
@@ -134,24 +136,45 @@ int main(int argc, char *argv[])
 		auto gameTask = std::async(std::launch::async, gameProcess);
 
 		while (!done) {
-			//PROFILE_BLOCK("input loop", frame)
+			PROFILE_BLOCK("input loop", frame, 1);
 
 			SDL_Event event;
 			while (SDL_PollEvent(&event)) {
 
-				if (event.type == SDL_QUIT) {
-					done = true; // all threads read this to exit
-					gameTask.wait(); // waiting on the future forces the game thread to join
-				}
-
-				else if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
-					auto timestamp = Timer::queryCounts();
-					SDL_Log("key event=%d: state=%d: key=%d: repeat=%d: realTime=%lu\n",
-							event.type, event.key.state, event.key.keysym.scancode, event.key.repeat, timestamp);
-
-					if (event.key.repeat == 0) {
-						inputEvents.push({std::move(event), timestamp});
+				switch (event.type) {
+					case SDL_QUIT: {
+						done = true; // all threads read this to exit
+						gameTask.wait(); // waiting on the future forces the game thread to join
+						break;
 					}
+
+					case SDL_WINDOWEVENT:
+					case SDL_SYSWMEVENT:
+						break;
+
+					// send the rest to input system
+					case SDL_KEYDOWN:
+					case SDL_KEYUP: {
+						// move this to input handling system
+						if (event.key.repeat == 0) {
+							auto timestamp = Timer::queryCounts();
+							SDL_Log("key event=%d: state=%d: key=%d: repeat=%d: realTime=%lu\n",
+									event.type, event.key.state, event.key.keysym.scancode, event.key.repeat, timestamp);
+
+							inputEvents.push({std::move(event), timestamp});
+						}
+						break;
+					}
+
+					case SDL_TEXTEDITING:
+					case SDL_TEXTINPUT:
+						break;
+
+					case SDL_MOUSEMOTION:
+						break;
+
+					default:
+						SDL_Log("event type=%d\n", event.type);
 				}
 			}
 			

@@ -5,46 +5,34 @@
 #include "../Profile.h"
 #include "../ProfileAggregate.h"
 #include <application/Timer.h>
-
-#include <mutex>
+#include <utility/concurrency.h>
+#include <boost/container/flat_map.hpp>
 
 using namespace std;
+using boost::container::flat_map;
 
 namespace griffin {
+	// Typedefs
+
+	/** maps address of block's name string (cast to intptr_t), to its ProfileAggregate */
+//	typedef flat_map<intptr_t, ProfileAggregate>	ProfileAggregateMap;
+
+	/** maps thread id hash to the ProfileAggregates for the thread */
+	//typedef flat_map<size_t, ProfileAggregateMap> ThreadAggregateMap;
 
 	// Variables
-	Timer g_timer;	//!< high speed timer used by all profiling blocks
-	static ThreadAggregateMap g_aggregate;
-	static mutex g_mutex;
-
-	// Free Functions
-
-	/**
-	 *
-	 */
-	const ProfileAggregateMap& getThreadAggregates(size_t threadIdHash)
-	{
-		//static ThreadAggregateMap s_aggregate;
-		//static mutex s_mutex;
-
-		// look into using the DCL (double checked locking) pattern since only writes are once per thread, mostly reads
-		// http://preshing.com/20130930/double-checked-locking-is-fixed-in-cpp11/
-
-		lock_guard<mutex> lock(g_mutex);
-		return g_aggregate[threadIdHash];
-	}
-
+	monitor<ProfileAggregateMap> g_aggregates;
 
 	// Class ProfileAggregate
-	#include <SDL_log.h>
+	//#include <SDL_log.h>
 
-	ProfileAggregate::ProfileAggregate() {
+	/*ProfileAggregate::ProfileAggregate() {
 		SDL_Log("ProfileAggregate created on thread %lu\n", std::this_thread::get_id().hash());
 	}
 
 	ProfileAggregate::~ProfileAggregate() {
 		SDL_Log("ProfileAggregate destroyed on thread %lu\n", std::this_thread::get_id().hash());
-	}
+	}*/
 
 	void ProfileAggregate::invoke(int64_t countsPassed, int32_t frame) {
 		++m_invocations;
@@ -84,52 +72,60 @@ namespace griffin {
 
 	// Class Profile
 
-	Profile::Profile(int32_t frame, const char* name, const char* file, int line) :
-		m_frame(frame),
-		m_name(name),
-		m_file(file),
-		m_line(line)
-	{
-		m_startCounts = g_timer.queryCounts();
-	}
-
-	Profile::~Profile() {
-		auto countsPassed = g_timer.countsSince(m_startCounts);
-
-		auto threadIdHash = this_thread::get_id().hash();
-		auto threadAggregates = getThreadAggregates(threadIdHash);
-
-		auto size = threadAggregates.size();
-		auto agg = threadAggregates[reinterpret_cast<intptr_t>(m_name)]; // get or create the block aggregate
-		
-		if (threadAggregates.size() == size + 1) { // if newly created
-			agg.init(m_name, getParentName(), getPath());
-		}
-
-		agg.invoke(countsPassed, m_frame);
-	}
+	//template <int Th>
+	//Profile<Th>::Profile(int32_t frame, const char* name, const char* file, int line) :
+	//	m_frame(frame),
+	//	m_name(name),
+	//	m_file(file),
+	//	m_line(line)
+	//{
+	//	m_startCounts = Timer::queryCounts();
+	//}
 
 
-	const char* Profile::getParentName() const {
-		const char* parentName = nullptr;
+	//template <int Th>
+	//Profile<Th>::~Profile() {
+	//	auto countsPassed = Timer::countsSince(m_startCounts);
 
-		auto s = stack().size();
-		if (s > 1) {
-			auto parent = stack()[s - 2];
-			parentName = parent->m_name;
-		}
+	//	//auto threadIdHash = this_thread::get_id().hash();
+	//	//auto& threadAggregates = getThreadAggregates(threadIdHash);
 
-		return parentName;
-	}
+	//	g_aggregates([=](ProfileAggregateMap& aggMap) {
+	//		// thread safe function
+	//		auto size = aggMap.size();
+	//		auto& agg = aggMap[reinterpret_cast<intptr_t>(m_name)]; // get or create the block aggregate
+
+	//		if (aggMap.size() == size + 1) { // if newly created
+	//			agg.init(m_name, getParentName(), getPath());
+	//		}
+
+	//		agg.invoke(countsPassed, m_frame);
+	//	});
+	//}
 
 
-	string Profile::getPath() const {
-		string path;
-		path.reserve(100);
-		for (auto p : stack()) {
-			path.append(p->m_name);
-			if (p != this) { path.append("/"); }
-		}
-		return std::move(path);
-	}
+	//template <int Th>
+	//const char* Profile<Th>::getParentName() const {
+	//	const char* parentName = nullptr;
+
+	//	auto s = stack().size();
+	//	if (s > 1) {
+	//		auto parent = stack()[s - 2];
+	//		parentName = parent->m_name;
+	//	}
+
+	//	return parentName;
+	//}
+
+
+	//template <int Th>
+	//string Profile<Th>::getPath() const {
+	//	string path;
+	//	path.reserve(100);
+	//	for (auto p : stack()) {
+	//		path.append(p->m_name);
+	//		if (p != this) { path.append("/"); }
+	//	}
+	//	return std::move(path);
+	//}
 }

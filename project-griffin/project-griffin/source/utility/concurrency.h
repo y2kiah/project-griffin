@@ -36,17 +36,11 @@ namespace griffin {
 	template <typename T>
 	class concurrent {
 	public:
-		/**
-		 * Constructor
-		 */
-		concurrent(T t_) :
-			t{ t_ },
+		concurrent(T t_ = T{}) :
+			t(t_),
 			worker{ [=]{ while (!done) q.pop()(); } }
 		{}
 
-		/**
-		 * Destructor
-		 */
 		~concurrent() {
 			q.push([=]{ done = true; });
 			worker.join();
@@ -108,13 +102,16 @@ namespace griffin {
 	public:
 		monitor(T t_ = T{}) : t(t_) {}
 
-		/**
-		 *
-		 */
-		template<typename F>
-		auto operator() (F f) const -> decltype(f(t)) {
+		/*template <typename F>
+		auto operator()(F f) const -> decltype(f(t)) {
 			std::lock_guard<std::mutex> _{ m };
 			return f(t);
+		}*/
+
+		template <typename F>
+		void operator()(F f) const {
+			std::lock_guard<std::mutex> _{ m };
+			f(t);
 		}
 
 	private:

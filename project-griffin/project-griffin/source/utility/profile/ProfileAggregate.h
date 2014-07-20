@@ -12,25 +12,13 @@
 #include <deque>
 #include <limits>
 #include <thread>
-#include <boost/container/flat_map.hpp>
 
 using std::string;
 using std::vector;
 using std::deque;
 using std::numeric_limits;
-using boost::container::flat_map;
 
 namespace griffin {
-	// Typedefs
-
-	class ProfileAggregate;
-
-	/** maps address of block's name string (cast to intptr_t), to its ProfileAggregate */
-	typedef flat_map<intptr_t, ProfileAggregate> ProfileAggregateMap;
-
-	/** maps thread id hash to the ProfileAggregates for the thread */
-	typedef flat_map<size_t, ProfileAggregateMap> ThreadAggregateMap;
-
 	/**
 	 * @class FrameData
 	 */
@@ -46,10 +34,12 @@ namespace griffin {
 	 */
 	class ProfileAggregate {
 	public:
-		explicit ProfileAggregate();
-		~ProfileAggregate();
-
 		// Functions
+		//ProfileAggregate();
+		//ProfileAggregate(const ProfileAggregate&) = default;
+		//ProfileAggregate(ProfileAggregate&&) = default;
+		//~ProfileAggregate();
+		
 
 		void invoke(int64_t countsPassed, int32_t frame);
 
