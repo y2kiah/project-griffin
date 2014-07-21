@@ -101,7 +101,6 @@ namespace griffin {
 
 			return true;
 		}
-		
 
 		/**
 		 * Pops an item from the queue, or returns immediately without waiting if the list is empty

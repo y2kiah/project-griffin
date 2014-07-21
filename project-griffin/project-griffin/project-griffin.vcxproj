@@ -60,6 +60,10 @@
     <ClInclude Include="source\component\impl\ComponentStore.inl">
       <FileType>Document</FileType>
     </ClInclude>
+    <None Include="data\shaders\SkyFromSpace_frag.glsl" />
+    <None Include="data\shaders\SkyFromSpace_vert.glsl">
+      <FileType>Document</FileType>
+    </None>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0699B998-133B-4F7A-8AAF-99D139407963}</ProjectGuid>
