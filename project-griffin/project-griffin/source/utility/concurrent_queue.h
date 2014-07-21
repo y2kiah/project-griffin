@@ -45,6 +45,11 @@ namespace griffin {
 			m_queue.push(std::forward<T>(inData));
 			lock.unlock();
 			m_cond.notify_one();
+
+			// the problem with using queue with deque as the underlying container is that the lock
+			// (above) could apply through a new page allocation as the deque grows. Can't use
+			// reserve() on a deque. Sean Parent recommends a list because all allocations can be
+			// done outside of the lock, and just a constant time splice within the lock.
 		}
 
 		/**

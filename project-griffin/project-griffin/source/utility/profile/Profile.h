@@ -82,10 +82,10 @@ namespace griffin {
 
 	template <int Th>
 	Profile<Th>::Profile(int32_t frame, const char* name, const char* file, int line) :
-		m_frame(frame),
-		m_name(name),
-		m_file(file),
-		m_line(line)
+		m_frame{ frame },
+		m_name{ name },
+		m_file{ file },
+		m_line{ line }
 	{
 		m_startCounts = Timer::queryCounts();
 	}

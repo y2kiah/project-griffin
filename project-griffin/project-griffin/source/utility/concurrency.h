@@ -37,8 +37,8 @@ namespace griffin {
 	class concurrent {
 	public:
 		concurrent(T t_ = T{}) :
-			t(t_),
-			worker{ [=]{ while (!done) q.pop()(); } }
+			t{ t_ },
+			worker{ [=]{ while (!done) q.wait_pop()(); } }
 		{}
 
 		~concurrent() {
@@ -47,7 +47,11 @@ namespace griffin {
 		}
 
 		/**
-		 *
+		 * Executes function pointer, functor or lambda on the worker thread where the task is
+		 * internally serialized by the concurrent queue for thread safety.
+		 * @tparam	F	function pointer, functor or lambda accepting one argument of type T
+		 * @param	f	type F
+		 * @returns std::future of type T
 		 */
 		template <typename F>
 		auto operator()(F f) const -> std::future<decltype(f(t))> {
@@ -66,7 +70,7 @@ namespace griffin {
 		}
 
 		/**
-		 * wrappers for p.set_value() so the function above compiles for both void and non-void
+		 * Wrappers for p.set_value() so the function above compiles for both void and non-void.
 		 */
 		template <typename Fut, typename F, typename T>
 		void set_value(std::promise<Fut>& p, F& f, T& t) {
@@ -102,17 +106,17 @@ namespace griffin {
 	public:
 		monitor(T t_ = T{}) : t(t_) {}
 
-		/*template <typename F>
+		template <typename F>
 		auto operator()(F f) const -> decltype(f(t)) {
 			std::lock_guard<std::mutex> _{ m };
 			return f(t);
-		}*/
-
-		template <typename F>
-		void operator()(F f) const {
-			std::lock_guard<std::mutex> _{ m };
-			f(t);
 		}
+
+		/*template <typename F>
+		auto operator()(F f) const -> typename std::result_of<F(T)>::type {
+			std::lock_guard<std::mutex> _{ m };
+			return f(t);
+		}*/
 
 	private:
 		mutable T t;
@@ -173,5 +177,47 @@ namespace griffin {
 	 *	// f is a string (note that with concurrent<t> this would be a future)
 	 * @endcode
 	 */
+
+/*
+	// The following classes may be built for cross platform compiling based on use of PPL
+
+	class thread_pool {
+	public:
+		explicit thread_pool() {}
+
+	private:
+		vector<std::thread> m_threads;
+	};
+
+
+	template <typename F>
+	class task {
+	public:
+		task(F&& f_) : f{ f_ } {}
+
+	private:
+		F f;
+
+	};
+
+
+	template <typename T>
+	class task_group {
+	public:
+		// chaining methods
+		//  then - maybe this is a free function taking a packaged_task and returning a task_group?
+		//  when_all
+		//  when_any
+		
+		// start/stop methods
+		//  run
+		//  cancel
+		//  get
+		//  wait
+
+	private:
+		vector<packaged_task<T>> m_tasks;
+	};
+*/
 }
 #endif

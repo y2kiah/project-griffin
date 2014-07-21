@@ -8,7 +8,6 @@ namespace griffin {
 
 	template <typename T, int PageSizeB>
 	class lru_cache {
-
 	};
 
 }

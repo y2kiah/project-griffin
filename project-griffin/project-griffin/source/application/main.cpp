@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
 					return (virtualTime >= i.timeStampCounts);
 				});
 
-				for (auto e : events) {
+				for (const auto& e : events) {
 					SDL_Log("  Processed Input type=%d: realTime=%lu\n", e.evt.type, e.timeStampCounts);
 				}
 				events.clear();
