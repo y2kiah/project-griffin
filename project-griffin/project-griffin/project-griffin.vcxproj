@@ -24,6 +24,7 @@
     <ClCompile Include="source\application\main.cpp" />
     <ClCompile Include="source\component\impl\Component.cpp" />
     <ClCompile Include="source\component\impl\Entity.cpp" />
+    <ClCompile Include="source\core\impl\InputSystem.cpp" />
     <ClCompile Include="source\render\Render.cpp" />
     <ClCompile Include="source\utility\profile\impl\Profile.cpp" />
   </ItemGroup>
@@ -39,6 +40,8 @@
     <ClInclude Include="source\component\SlotMap.h" />
     <ClInclude Include="source\component\Entity.h" />
     <ClInclude Include="source\component\impl\SlotMap.inl" />
+    <ClInclude Include="source\core\CoreSystem.h" />
+    <ClInclude Include="source\core\InputSystem.h" />
     <ClInclude Include="source\render\Render.h" />
     <ClInclude Include="source\test\Test.h" />
     <ClInclude Include="source\utility\algorithms.h" />

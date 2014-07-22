@@ -12,7 +12,7 @@
 #include <utility/profile/Profile.h>
 #include "platform.h"
 #include "FixedTimestep.h"
-
+#include <core/InputSystem.h>
 #include <utility/concurrency.h>
 
 #define PROGRAM_NAME "Project Griffin"
@@ -84,32 +84,38 @@ int main(int argc, char *argv[])
 		bool done = false;
 		int32_t frame = 0;
 
-		// move this stuff to an input system
-		struct InputEvent { SDL_Event evt; int64_t timeStampCounts; };
-		concurrent_queue<InputEvent> inputEvents;
+		core::InputSystem inputSystem;
+		vector<core::CoreSystem*> systemUpdates = { &inputSystem }; // order of system execution for update
 
 		SDL_GL_MakeCurrent(nullptr, NULL); // make no gl context current on the input thread
 
+		// move this to Game class instead of having a lambda
 		auto gameProcess = [&](){
 			SDL_GL_MakeCurrent(app.getPrimaryWindow(), app.getGLContext()); // gl context made current on the main loop thread
 			Timer timer;
-			vector<InputEvent> events;
-
-			FixedTimestep update(50, Timer::timerFreq() / 1000,
-				// not a good use of lambda, should make this a function in the Game class
-				[&](const int64_t virtualTime, const int64_t gameTime, const int64_t deltaCounts, const double deltaMs)
+			
+			FixedTimestep update(1000.0 / 30.0, Timer::countsPerMs(),
+				[&](const int64_t virtualTime, const int64_t gameTime, const int64_t deltaCounts,
+					const double deltaMs, const double gameSpeed)
 			{
+				core::CoreSystem::UpdateInfo ui = { virtualTime, gameTime, deltaCounts, deltaMs, gameSpeed, frame };
+
 				/*SDL_Log("Update virtualTime=%lu: gameTime=%ld: deltaCounts=%ld: countsPerMs=%ld\n",
 						virtualTime, gameTime, deltaCounts, Timer::timerFreq() / 1000);*/
 
-				inputEvents.try_pop_all_if(events, [virtualTime](const InputEvent& i) {
-					return (virtualTime >= i.timeStampCounts);
-				});
-
-				for (const auto& e : events) {
-					SDL_Log("  Processed Input type=%d: realTime=%lu\n", e.evt.type, e.timeStampCounts);
+				// call all systems in priority order
+				for (auto& s : systemUpdates) {
+					s->update(ui);
 				}
-				events.clear();
+				// if all systems operate on 1(+) frame-old-data, can all systems be run in parallel?
+				// should this simple vector become a task flow graph?
+				// example systems:
+				//	InputSystem
+				//	AISystem
+				//	ResourcePredictionSystem
+				//	PhysicsSystem
+				//	CollisionSystem
+				//	etc.
 			});
 
 			int64_t realTime = timer.start();
@@ -140,7 +146,6 @@ int main(int argc, char *argv[])
 
 			SDL_Event event;
 			while (SDL_PollEvent(&event)) {
-
 				switch (event.type) {
 					case SDL_QUIT: {
 						done = true; // all threads read this to exit
@@ -152,29 +157,14 @@ int main(int argc, char *argv[])
 					case SDL_SYSWMEVENT:
 						break;
 
-					// send the rest to input system
-					case SDL_KEYDOWN:
-					case SDL_KEYUP: {
-						// move this to input handling system
-						if (event.key.repeat == 0) {
-							auto timestamp = Timer::queryCounts();
-							SDL_Log("key event=%d: state=%d: key=%d: repeat=%d: realTime=%lu\n",
-									event.type, event.key.state, event.key.keysym.scancode, event.key.repeat, timestamp);
-
-							inputEvents.push({std::move(event), timestamp});
+					default: {
+						// send to the input system to handle the event
+						bool handled = inputSystem.handleEvent(event);
+						
+						if (!handled) {
+							SDL_Log("event type=%d\n", event.type);
 						}
-						break;
 					}
-
-					case SDL_TEXTEDITING:
-					case SDL_TEXTINPUT:
-						break;
-
-					case SDL_MOUSEMOTION:
-						break;
-
-					default:
-						SDL_Log("event type=%d\n", event.type);
 				}
 			}
 			

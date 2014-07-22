@@ -41,6 +41,12 @@
     <Filter Include="utility\container">
       <UniqueIdentifier>{e9384396-db7f-47b8-8d6b-c91a574b3354}</UniqueIdentifier>
     </Filter>
+    <Filter Include="core">
+      <UniqueIdentifier>{6756af22-d6a9-4877-80fc-db29fd720c71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\impl">
+      <UniqueIdentifier>{cdd967b2-70c3-4509-98b3-6dc6266d0c25}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">
@@ -63,6 +69,9 @@
     </ClCompile>
     <ClCompile Include="source\application\impl\platform.cpp">
       <Filter>application\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\core\impl\InputSystem.cpp">
+      <Filter>core\impl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -143,6 +152,12 @@
     </ClInclude>
     <ClInclude Include="source\application\FixedTimestep.h">
       <Filter>application</Filter>
+    </ClInclude>
+    <ClInclude Include="source\core\InputSystem.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\core\CoreSystem.h">
+      <Filter>core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

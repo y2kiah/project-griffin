@@ -65,7 +65,7 @@ void addTestComponents() {
 	// store 100,000 components in a ComponentStore
 	componentIds = personStore.createComponents(numTestComponents);
 	timer.stop();
-	SDL_Log("**********\ncreate components in store\ntime = %f ms\ncounts = %lld\n\n", timer.millisecondsPassed(), timer.countsPassed());
+	SDL_Log("**********\ncreate components in store\ntime = %f ms\ncounts = %lld\n\n", timer.millisPassed(), timer.countsPassed());
 
 	timer.start();
 	// store 100,000 components on the heap
@@ -73,7 +73,7 @@ void addTestComponents() {
 		personHeap.push_back(std::unique_ptr<Person>(new Person{0}));
 	}
 	timer.stop();
-	SDL_Log("**********\ncreate components on heap\ntime = %f ms\ncounts = %lld\n\n", timer.millisecondsPassed(), timer.countsPassed());
+	SDL_Log("**********\ncreate components on heap\ntime = %f ms\ncounts = %lld\n\n", timer.millisPassed(), timer.countsPassed());
 }
 
 void profileTestComponents() {
@@ -85,7 +85,7 @@ void profileTestComponents() {
 		age += personStore.getComponent(componentIds[i]).age;
 	}
 	timer.stop();
-	SDL_Log("**********\nloop components with external id\ntime = %f ms\ncounts = %lld\n\n", timer.millisecondsPassed(), timer.countsPassed());
+	SDL_Log("**********\nloop components with external id\ntime = %f ms\ncounts = %lld\n\n", timer.millisPassed(), timer.countsPassed());
 	SDL_Log("age=%d\n", age); // use age so it doesn't compile away in release build test
 
 	auto cmp = personStore.getComponents().getItems();
@@ -94,7 +94,7 @@ void profileTestComponents() {
 		age += cmp[i].age;
 	}
 	timer.stop();
-	SDL_Log("**********\nloop components inner array\ntime = %f ms\ncounts = %lld\n\n", timer.millisecondsPassed(), timer.countsPassed());
+	SDL_Log("**********\nloop components inner array\ntime = %f ms\ncounts = %lld\n\n", timer.millisPassed(), timer.countsPassed());
 	SDL_Log("age=%d\n", age);
 
 	personHeap.back()->age = 5;
@@ -103,7 +103,7 @@ void profileTestComponents() {
 		age += personHeap[i]->age;
 	}
 	timer.stop();
-	SDL_Log("**********\nloop components on heap\ntime = %f ms\ncounts = %lld\n\n", timer.millisecondsPassed(), timer.countsPassed());
+	SDL_Log("**********\nloop components on heap\ntime = %f ms\ncounts = %lld\n\n", timer.millisPassed(), timer.countsPassed());
 
 	SDL_Log("age=%d\n", age);
 }

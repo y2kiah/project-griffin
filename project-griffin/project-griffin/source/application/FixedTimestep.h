@@ -10,12 +10,15 @@ namespace griffin {
 
 	class FixedTimestep {
 	public:
+		using UpdateFuncType = std::function<void(const int64_t, const int64_t, const int64_t,
+												  const double, const double)>;
+
 		explicit FixedTimestep(double deltaMs,
 							   int64_t countsPerMs,
-							   const std::function<void(const int64_t, const int64_t, const int64_t, const double)>& update) :
-			m_deltaMs(deltaMs),
-			m_deltaCounts(static_cast<int64_t>(deltaMs * countsPerMs)),
-			update_(update)
+							   UpdateFuncType&& update_) :
+			m_deltaMs{ deltaMs },
+			m_deltaCounts{ static_cast<int64_t>(deltaMs * countsPerMs) },
+			update{ std::forward<UpdateFuncType>(update_) }
 		{}
 
 		inline double tick(const int64_t realTime, const int64_t countsPassed, double gameSpeed = 1.0)
@@ -23,7 +26,7 @@ namespace griffin {
 			m_accumulator += static_cast<int64_t>(countsPassed * gameSpeed);
 
 			while (m_accumulator >= m_deltaCounts) {
-				update_(m_virtualTime, m_gameTime, m_deltaCounts, m_deltaMs);
+				update(m_virtualTime, m_gameTime, m_deltaCounts, m_deltaMs, gameSpeed);
 
 				m_gameTime += m_deltaCounts;
 				m_virtualTime += m_deltaCounts;
@@ -43,7 +46,7 @@ namespace griffin {
 		int64_t m_deltaCounts;
 		double	m_deltaMs;
 
-		std::function<void(const int64_t, const int64_t, const int64_t, const double)> update_;
+		UpdateFuncType update;
 
 	};
 
