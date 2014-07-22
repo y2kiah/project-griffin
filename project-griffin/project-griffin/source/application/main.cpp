@@ -13,7 +13,7 @@
 #include "platform.h"
 #include "FixedTimestep.h"
 #include <core/InputSystem.h>
-#include <utility/concurrency.h>
+
 
 #define PROGRAM_NAME "Project Griffin"
 
@@ -139,29 +139,29 @@ int main(int argc, char *argv[])
 			}
 		};
 		
-		auto gameTask = std::async(std::launch::async, gameProcess);
+		auto gameThread = std::async(std::launch::async, gameProcess);
 
 		while (!done) {
 			PROFILE_BLOCK("input loop", frame, 1);
 
 			SDL_Event event;
 			while (SDL_PollEvent(&event)) {
-				switch (event.type) {
-					case SDL_QUIT: {
-						done = true; // all threads read this to exit
-						gameTask.wait(); // waiting on the future forces the game thread to join
-						break;
-					}
+				// send to the input system to handle the event
+				bool handled = inputSystem.handleEvent(event);
+				
+				if (!handled) {
+					switch (event.type) {
+						case SDL_QUIT: {
+							done = true; // input/GUI and game threads read this to exit
+							gameThread.wait(); // waiting on the future forces the game thread to join
+							break;
+						}
 
-					case SDL_WINDOWEVENT:
-					case SDL_SYSWMEVENT:
-						break;
+						case SDL_WINDOWEVENT:
+						case SDL_SYSWMEVENT:
+							break;
 
-					default: {
-						// send to the input system to handle the event
-						bool handled = inputSystem.handleEvent(event);
-						
-						if (!handled) {
+						default: {
 							SDL_Log("event type=%d\n", event.type);
 						}
 					}
