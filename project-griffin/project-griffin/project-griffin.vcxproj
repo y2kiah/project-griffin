@@ -46,8 +46,9 @@
     <ClInclude Include="source\test\Test.h" />
     <ClInclude Include="source\utility\algorithms.h" />
     <ClInclude Include="source\utility\auto_lister.h" />
-    <ClInclude Include="source\utility\concurrent_queue.h" />
+    <ClInclude Include="source\utility\container\concurrent_queue.h" />
     <ClInclude Include="source\utility\container\lru_cache.h" />
+    <ClInclude Include="source\utility\container\vector_queue.h" />
     <ClInclude Include="source\utility\enum.h" />
     <ClInclude Include="source\utility\concurrency.h" />
     <ClInclude Include="source\utility\JsonSerializer.h" />
@@ -67,6 +68,8 @@
     <None Include="data\shaders\SkyFromSpace_vert.glsl">
       <FileType>Document</FileType>
     </None>
+    <None Include="source\utility\container\impl\concurrent_queue.inl" />
+    <None Include="source\utility\container\impl\vector_queue.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0699B998-133B-4F7A-8AAF-99D139407963}</ProjectGuid>

@@ -99,10 +99,12 @@ unsigned int loadShaders(std::string vertexFilePath, std::string fragmentFilePat
 	// Check Vertex Shader
 	glGetShaderiv(vertexShaderID, GL_COMPILE_STATUS, &result);
 	glGetShaderiv(vertexShaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
-	std::vector<char> vertexShaderErrorMessage(infoLogLength);
-	glGetShaderInfoLog(vertexShaderID, infoLogLength, NULL, &vertexShaderErrorMessage[0]);
-	SDL_Log("%s\n", &vertexShaderErrorMessage[0]);
-	fprintf(stdout, "%s\n", &vertexShaderErrorMessage[0]);
+	if (infoLogLength > 0) {
+		std::vector<char> vertexShaderErrorMessage(infoLogLength);
+		glGetShaderInfoLog(vertexShaderID, infoLogLength, NULL, &vertexShaderErrorMessage[0]);
+		SDL_Log("%s\n", &vertexShaderErrorMessage[0]);
+		fprintf(stdout, "%s\n", &vertexShaderErrorMessage[0]);
+	}
 
 	// Compile Fragment Shader
 	SDL_Log("Compiling shader : %s\n", fragmentFilePath.c_str());
@@ -114,10 +116,12 @@ unsigned int loadShaders(std::string vertexFilePath, std::string fragmentFilePat
 	// Check Fragment Shader
 	glGetShaderiv(fragmentShaderID, GL_COMPILE_STATUS, &result);
 	glGetShaderiv(fragmentShaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
-	std::vector<char> fragmentShaderErrorMessage(infoLogLength);
-	glGetShaderInfoLog(fragmentShaderID, infoLogLength, NULL, &fragmentShaderErrorMessage[0]);
-	SDL_Log("%s\n", &fragmentShaderErrorMessage[0]);
-	fprintf(stdout, "%s\n", &fragmentShaderErrorMessage[0]);
+	if (infoLogLength > 0) {
+		std::vector<char> fragmentShaderErrorMessage(infoLogLength);
+		glGetShaderInfoLog(fragmentShaderID, infoLogLength, NULL, &fragmentShaderErrorMessage[0]);
+		SDL_Log("%s\n", &fragmentShaderErrorMessage[0]);
+		fprintf(stdout, "%s\n", &fragmentShaderErrorMessage[0]);
+	}
 
 	// Link the program
 	fprintf(stdout, "Linking program\n");

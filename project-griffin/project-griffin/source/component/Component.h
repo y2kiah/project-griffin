@@ -14,10 +14,10 @@
 //	this->BOOST_PP_LIST_AT(elem, 1) = _c.BOOST_PP_LIST_AT(elem, 1);
 
 /**
-* This is the component struct definition. It starts with a static id mapping its type to the
-* ComponentType enum that represents it. Next is the listing of fields themselves. Finally, there
-* is the reflection macro that adds a static Reflection class containing lots of goodies.
-*/
+ * This is the component struct definition. It starts with a static id mapping its type to the
+ * ComponentType enum that represents it. Next is the listing of fields themselves. Finally, there
+ * is the reflection macro that adds a static Reflection class containing lots of goodies.
+ */
 #define COMPONENT(name, ...) \
 	struct name { \
 		static const ComponentType componentType = ComponentType::name##_T; \

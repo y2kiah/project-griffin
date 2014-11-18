@@ -2,7 +2,7 @@
 
 #include <core/CoreSystem.h>
 #include <vector>
-#include <utility/concurrent_queue.h>
+#include <utility/container/concurrent_queue.h>
 #include <SDL_events.h>
 
 using std::vector;

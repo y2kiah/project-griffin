@@ -18,7 +18,7 @@
 #include <thread>
 #include <mutex>
 #include <future>
-#include "concurrent_queue.h"
+#include <utility/container/concurrent_queue.h>
 
 namespace griffin {
 

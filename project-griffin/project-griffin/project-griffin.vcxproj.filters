@@ -47,6 +47,9 @@
     <Filter Include="core\impl">
       <UniqueIdentifier>{cdd967b2-70c3-4509-98b3-6dc6266d0c25}</UniqueIdentifier>
     </Filter>
+    <Filter Include="utility\container\impl">
+      <UniqueIdentifier>{5814475b-c9b8-45d2-a3fd-16076e87b871}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">
@@ -105,9 +108,6 @@
     <ClInclude Include="source\component\ComponentFactory.h">
       <Filter>component</Filter>
     </ClInclude>
-    <ClInclude Include="source\utility\concurrent_queue.h">
-      <Filter>utility</Filter>
-    </ClInclude>
     <ClInclude Include="source\utility\concurrency.h">
       <Filter>utility</Filter>
     </ClInclude>
@@ -159,6 +159,12 @@
     <ClInclude Include="source\core\CoreSystem.h">
       <Filter>core</Filter>
     </ClInclude>
+    <ClInclude Include="source\utility\container\vector_queue.h">
+      <Filter>utility\container</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utility\container\concurrent_queue.h">
+      <Filter>utility\container</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="data\shaders\SimpleVertexShader.glsl">
@@ -172,6 +178,12 @@
     </None>
     <None Include="data\shaders\SkyFromSpace_vert.glsl">
       <Filter>shaders</Filter>
+    </None>
+    <None Include="source\utility\container\impl\vector_queue.inl">
+      <Filter>utility\container\impl</Filter>
+    </None>
+    <None Include="source\utility\container\impl\concurrent_queue.inl">
+      <Filter>utility\container\impl</Filter>
     </None>
   </ItemGroup>
 </Project>
