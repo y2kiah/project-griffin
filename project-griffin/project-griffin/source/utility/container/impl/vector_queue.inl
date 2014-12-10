@@ -144,6 +144,20 @@ namespace griffin {
 
 
 	template <typename T>
+	inline void vector_queue<T>::push_back(const T& val)
+	{
+		m_queue.push_back(val);
+	}
+
+
+	template <typename T>
+	inline void vector_queue<T>::push_back(T&& val)
+	{
+		m_queue.push_back(std::forward<T>(val));
+	}
+
+
+	template <typename T>
 	inline void vector_queue<T>::clear() _NOEXCEPT
 	{
 		m_offset = 0;
@@ -154,7 +168,9 @@ namespace griffin {
 	template <typename T>
 	inline void vector_queue<T>::reserve(typename vector_queue<T>::size_type n)
 	{
-		m_queue.reserve(n);
+		// m_offset added to n because semantics of reserve are that caller wants enough room to
+		// push new items, and this data structure offsets the beginning element
+		m_queue.reserve(n + m_offset);
 	}
 
 

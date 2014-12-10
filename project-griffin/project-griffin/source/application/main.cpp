@@ -14,6 +14,8 @@
 #include "FixedTimestep.h"
 #include <core/InputSystem.h>
 
+// test
+#include <utility/container/bitwise_ntree.h>
 
 #define PROGRAM_NAME "Project Griffin"
 
@@ -28,6 +30,15 @@ int main(int argc, char *argv[])
 
 	try {
 		SDLApplication app(PROGRAM_NAME);
+
+		// test
+		bitwise_bintree8 bintree8;
+		bitwise_quadtree32 quadtree32;
+		uint8_t dummy;
+		uint32_t dummy2;
+		bintree8.traverse(0, 7, &dummy);
+		quadtree32.traverse(0, 31, &dummy2);
+		///
 
 		// Initialize GLEW
 		glewExperimental = true; // Needed in core profile

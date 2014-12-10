@@ -49,6 +49,8 @@
     <ClInclude Include="source\utility\auto_lister.h" />
     <ClInclude Include="source\utility\container\concurrent_queue.h" />
     <ClInclude Include="source\utility\container\lru_cache.h" />
+    <ClInclude Include="source\utility\container\bitwise_ntree.h" />
+    <ClInclude Include="source\utility\container\Quadtree.h" />
     <ClInclude Include="source\utility\container\vector_queue.h" />
     <ClInclude Include="source\utility\enum.h" />
     <ClInclude Include="source\utility\concurrency.h" />
@@ -169,6 +171,7 @@
     <None Include="data\shaders\SkyFromSpace_vert.glsl">
       <FileType>Document</FileType>
     </None>
+    <None Include="source\utility\container\impl\bitwise_ntree.inl" />
     <None Include="source\utility\container\impl\concurrent_queue.inl" />
     <None Include="source\utility\container\impl\vector_queue.inl" />
     <None Include="vendor\glm\glm\gtc\constants.inl" />
@@ -302,8 +305,8 @@
     <LibraryPath>$(ProjectDir)\vendor\SDL2\lib\x64\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir)\source\;$(ProjectDir)\vendor\glew-1.10.0\include\;$(ProjectDir)\vendor\SDL2\include\;$(ProjectDir)\vendor\soil\include\;$(ProjectDir)\vendor\glm\;C:\Users\Jeff\Programming\Libraries\modular-boost;C:\Users\kiahj.ERAU\Programming\Libraries\modular-boost;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)\vendor\SDL2\lib\x64\;$(ProjectDir)\vendor\soil\lib\;$(ProjectDir)\vendor\glew-1.10.0\lib\x64\;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)\source\;$(ProjectDir)\vendor\glew-1.10.0\include\;$(ProjectDir)\vendor\SDL2\include\;$(ProjectDir)\vendor\soil\include\;$(ProjectDir)\vendor\glm\;C:\Users\Jeff\Programming\Libraries\modular-boost;C:\Users\kiahj.ERAU\Programming\Libraries\modular-boost;D:\Programming\Libraries\Cinder\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\vendor\SDL2\lib\x64\;$(ProjectDir)\vendor\soil\lib\;$(ProjectDir)\vendor\glew-1.10.0\lib\x64\;D:\Programming\Libraries\Cinder\lib\msw\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

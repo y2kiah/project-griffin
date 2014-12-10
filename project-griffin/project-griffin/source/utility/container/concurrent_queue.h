@@ -37,12 +37,20 @@ namespace griffin {
 		void push(T&& inData);
 
 		/**
+		 * Copies all items in container inData into the queue.
+		 * @tparam	Cnt		Container of type U, such as vector, list, deque.
+		 * @param	inData	container of items to be moved into queue
+		 */
+		template <template <class T, class = std::allocator<T>> class Cnt>
+		void push_all(const Cnt<T>& inData);
+
+		/**
 		 * Moves all items in container inData into the queue. Clears inData.
 		 * @tparam	Cnt		Container of type U, such as vector, list, deque.
 		 * @param	inData	container of items to be moved into queue
 		 */
 		template <template <class T, class=std::allocator<T>> class Cnt>
-		void push_all(Cnt<T>&& inData);
+		void push_all_move(Cnt<T>&& inData);
 
 		/**
 		 * Pops an item from the queue, or returns immediately without waiting if the list is

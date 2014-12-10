@@ -44,6 +44,8 @@ namespace griffin {
 		const T& operator[](size_type n) const;
 		T& at(size_type n);
 		const T& at(size_type n) const;
+		void push_back(const T& val);
+		void push_back(T&& val);
 		void clear() _NOEXCEPT;
 		void reserve(size_type n);
 		size_type capacity() const _NOEXCEPT;

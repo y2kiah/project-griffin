@@ -12,7 +12,7 @@
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-#include "cinder/Ray.h"
+//#include "cinder/Ray.h"
 
 using glm::vec3;
 using glm::vec2;
@@ -26,31 +26,36 @@ namespace griffin {
 		Camera() : mModelViewCached(false), mProjectionCached(false), mInverseModelViewCached(false), mWorldUp(vec3::yAxis()) {}
 		virtual ~Camera() {}
 
-		vec3		getEyePoint() const { return mEyePoint; }
-		void		setEyePoint(const vec3 &aEyePoint);
+		vec3	getEyePoint() const { return mEyePoint; }
+		void	setEyePoint(const vec3 &aEyePoint);
 
-		float		getCenterOfInterest() const { return mCenterOfInterest; }
-		void		setCenterOfInterest(float aCenterOfInterest) { mCenterOfInterest = aCenterOfInterest; }
+		float	getCenterOfInterest() const { return mCenterOfInterest; }
+		void	setCenterOfInterest(float aCenterOfInterest) { mCenterOfInterest = aCenterOfInterest; }
 
-		vec3		getCenterOfInterestPoint() const { return mEyePoint + mViewDirection * mCenterOfInterest; }
-		void		setCenterOfInterestPoint(const vec3 &centerOfInterestPoint);
+		vec3	getCenterOfInterestPoint() const { return mEyePoint + mViewDirection * mCenterOfInterest; }
+		void	setCenterOfInterestPoint(const vec3 &centerOfInterestPoint);
 
-		vec3		getWorldUp() const { return mWorldUp; }
-		void		setWorldUp(const vec3 &aWorldUp);
+		vec3	getWorldUp() const { return mWorldUp; }
+		void	setWorldUp(const vec3 &aWorldUp);
 
-		void		lookAt(const vec3 &target);
-		void		lookAt(const vec3 &aEyePoint, const vec3 &target);
-		void		lookAt(const vec3 &aEyePoint, const vec3 &target, const vec3 &aUp);
-		vec3		getViewDirection() const { return mViewDirection; }
-		void		setViewDirection(const vec3 &aViewDirection);
+		void	lookAt(const vec3 &target);
+		void	lookAt(const vec3 &aEyePoint, const vec3 &target);
+		void	lookAt(const vec3 &aEyePoint, const vec3 &target, const vec3 &aUp);
+		vec3	getViewDirection() const { return mViewDirection; }
+		void	setViewDirection(const vec3 &aViewDirection);
 
-		quat		getOrientation() const { return mOrientation; }
-		void		setOrientation(const quat &aOrientation);
+		quat	getOrientation() const { return mOrientation; }
+		void	setOrientation(const quat &aOrientation);
 
 		float	getFov() const { return mFov; }
 		void	setFov(float aFov) { mFov = aFov;  mProjectionCached = false; }
-		float	getFovHorizontal() const { return toDegrees(2.0f * math<float>::atan(math<float>::tan(toRadians(mFov) * 0.5f) * mAspectRatio)); }
-		void	setFovHorizontal(float aFov) { mFov = toDegrees(2.0f * math<float>::atan(math<float>::tan(toRadians(aFov) * 0.5f) / mAspectRatio));  mProjectionCached = false; }
+		float	getFovHorizontal() const {
+			return toDegrees(2.0f * math<float>::atan(math<float>::tan(toRadians(mFov) * 0.5f) * mAspectRatio));
+		}
+		void	setFovHorizontal(float aFov) {
+			mFov = toDegrees(2.0f * math<float>::atan(math<float>::tan(toRadians(aFov) * 0.5f) / mAspectRatio));
+			mProjectionCached = false;
+		}
 
 		float	getAspectRatio() const { return mAspectRatio; }
 		void	setAspectRatio(float aAspectRatio) { mAspectRatio = aAspectRatio; mProjectionCached = false; }
@@ -71,18 +76,31 @@ namespace griffin {
 		virtual const mat4x4&	getModelViewMatrix() const { if (!mModelViewCached) calcModelView(); return mModelViewMatrix; }
 		virtual const mat4x4&	getInverseModelViewMatrix() const { if (!mInverseModelViewCached) calcInverseModelView(); return mInverseModelViewMatrix; }
 
-		Ray		generateRay(float u, float v, float imagePlaneAspectRatio) const;
+		//Ray		generateRay(float u, float v, float imagePlaneAspectRatio) const;
 		void	getBillboardVectors(vec3 *right, vec3 *up) const;
 
 		//! Converts a world-space coordinate \a worldCoord to screen coordinates as viewed by the camera, based ona s screen which is \a screenWidth x \a screenHeight pixels.
 		vec3 worldToScreen(const vec3 &worldCoord, float screenWidth, float screenHeight) const;
+		
 		//! Converts a world-space coordinate \a worldCoord to eye-space, also known as camera-space. -Z is along the view direction.
-		vec3 worldToEye(const vec3 &worldCoord) { return getModelViewMatrix().transformPointAffine(worldCoord); }
+		vec3 worldToEye(const vec3 &worldCoord) {
+			return getModelViewMatrix().transformPointAffine(worldCoord);
+		}
+		
 		//! Converts a world-space coordinate \a worldCoord to the z axis of eye-space, also known as camera-space. -Z is along the view direction. Suitable for depth sorting.
-		float worldToEyeDepth(const vec3 &worldCoord) const { return getModelViewMatrix().m[2] * worldCoord.x + getModelViewMatrix().m[6] * worldCoord.y + getModelViewMatrix().m[10] * worldCoord.z + getModelViewMatrix().m[14]; }
+		float worldToEyeDepth(const vec3 &worldCoord) const {
+			auto mvm = getModelViewMatrix();
+			return mvm[0].z * worldCoord.x
+				 + mvm[1].z * worldCoord.y
+				 + mvm[2].z * worldCoord.z
+				 + mvm[3].z;
+		}
+		
 		//! Converts a world-space coordinate \a worldCoord to normalized device coordinates
-		vec3 worldToNdc(const vec3 &worldCoord) { vec3 eye = getModelViewMatrix().transformPointAffine(worldCoord); return getProjectionMatrix().transformPoint(eye); }
-
+		vec3 worldToNdc(const vec3 &worldCoord) {
+			vec3 eye = getModelViewMatrix().transformPointAffine(worldCoord);
+			return getProjectionMatrix().transformPoint(eye);
+		}
 
 		float	getScreenRadius(const class Sphere &sphere, float screenWidth, float screenHeight) const;
 

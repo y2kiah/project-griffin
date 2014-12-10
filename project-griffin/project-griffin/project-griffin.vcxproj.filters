@@ -483,6 +483,12 @@
     <ClInclude Include="vendor\glm\glm\gtx\wrap.hpp">
       <Filter>vendor\glm\gtx</Filter>
     </ClInclude>
+    <ClInclude Include="source\utility\container\bitwise_ntree.h">
+      <Filter>utility\container</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utility\container\Quadtree.h">
+      <Filter>utility\container</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="data\shaders\SimpleVertexShader.glsl">
@@ -712,6 +718,9 @@
     </None>
     <None Include="vendor\glm\glm\gtx\wrap.inl">
       <Filter>vendor\glm\gtx</Filter>
+    </None>
+    <None Include="source\utility\container\impl\bitwise_ntree.inl">
+      <Filter>utility\container\impl</Filter>
     </None>
   </ItemGroup>
 </Project>

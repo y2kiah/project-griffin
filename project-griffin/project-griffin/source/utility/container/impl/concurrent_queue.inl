@@ -30,10 +30,27 @@ namespace griffin {
 
 	template <typename T>
 	template <template <class T, class = std::allocator<T>> class Cnt>
-	void concurrent_queue<T>::push_all(Cnt<T>&& inData)
+	void concurrent_queue<T>::push_all(const Cnt<T>& inData)
 	{
 		std::unique_lock<mutex> lock(m_mutex);
-		std::move(inData.begin(), inData.end(), m_queue.end());
+
+		m_queue.reserve(m_queue.size() + inData.size());
+		std::copy(inData.begin(), inData.end(), std::back_inserter(m_queue));
+
+		lock.unlock();
+		m_cond.notify_one();
+	}
+
+
+	template <typename T>
+	template <template <class T, class = std::allocator<T>> class Cnt>
+	void concurrent_queue<T>::push_all_move(Cnt<T>&& inData)
+	{
+		std::unique_lock<mutex> lock(m_mutex);
+		
+		m_queue.reserve(m_queue.size() + inData.size());
+		std::move(inData.begin(), inData.end(), std::back_inserter(m_queue));
+		
 		lock.unlock();
 		m_cond.notify_one();
 		inData.clear();

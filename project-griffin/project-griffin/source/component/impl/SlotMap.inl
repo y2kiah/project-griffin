@@ -24,13 +24,14 @@ inline bool operator> (Id_T a, Id_T b) { return (a.value >  b.value); }
 template <typename T>
 IdSet_T SlotMap<T>::createItems(int n)
 {
+	IdSet_T outerIds(n);
+
 	m_items.reserve(m_items.size() + n); // pre-reserve the space we need (if not already there)
 	m_meta.reserve(m_meta.size() + n);
 
-	IdSet_T outerIds(n);
 	std::generate_n(outerIds.begin(), n, [this](){ return createItem(); });
 
-	return outerIds; // efficient to return a vector by value due to NVRO or C++11 move semantics
+	return outerIds; // efficient to return vector by value, copy elided with NVRO (or with C++11 move semantics)
 }
 
 /**

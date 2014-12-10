@@ -26,8 +26,8 @@ using std::vector;
 struct Id_T {
 	union {
 		/**
-		 * the order of these sub elements is important for sorting prioritized by free, then
-		 * typeId, then generation, and last by index
+		 * the order of this bitfield is important for sorting prioritized by free, then typeId,
+		 * then generation, then index
 		 */
 		struct {
 			uint32_t index;
