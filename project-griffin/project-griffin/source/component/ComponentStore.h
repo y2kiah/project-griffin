@@ -2,13 +2,13 @@
 #ifndef COMPONENTSTORE_H
 #define COMPONENTSTORE_H
 
-#include "SlotMap.h"
+#include <utility/container/handle_map.h>
 #include <string>
 
 using std::string;
 
-typedef Id_T	ComponentId;
-typedef IdSet_T ComponentIdList;
+typedef griffin::Id_T    ComponentId;
+typedef griffin::IdSet_T ComponentIdList;
 
 inline std::ostream& operator<<(std::ostream& os, ComponentId id);
 
@@ -17,7 +17,7 @@ template <typename T>
 class ComponentStore {
 public:
 	// Typedefs
-	typedef SlotMap<T> ComponentMap;
+	typedef griffin::handle_map<T> ComponentMap;
 
 	// Functions
 

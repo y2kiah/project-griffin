@@ -97,7 +97,7 @@ namespace griffin {
 		 * Waits indefinitely for a condition variable that indicates data is available in the
 		 * queue. Most likely would use this in a worker thread to execute tasks pushed from a
 		 * client thread.
-		 * @param	outData	   memory location to move item into, only modified if true is returned
+		 * @param	outData	   memory location to move item into
 		 */
 		void wait_pop(T& outData);
 

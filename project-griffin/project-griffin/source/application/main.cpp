@@ -15,7 +15,7 @@
 #include <core/InputSystem.h>
 
 // test
-#include <utility/container/bitwise_ntree.h>
+#include <utility/container/bitwise_quadtree.h>
 
 #define PROGRAM_NAME "Project Griffin"
 
@@ -32,12 +32,8 @@ int main(int argc, char *argv[])
 		SDLApplication app(PROGRAM_NAME);
 
 		// test
-		bitwise_bintree8 bintree8;
-		bitwise_quadtree32 quadtree32;
-		uint8_t dummy;
-		uint32_t dummy2;
-		bintree8.traverse(0, 7, &dummy);
-		quadtree32.traverse(0, 31, &dummy2);
+		bitwise_quadtree<int> quadtree;
+		quadtree.depthFirstSearch(0, 31, 0, 0);
 		///
 
 		// Initialize GLEW

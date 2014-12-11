@@ -135,17 +135,8 @@
     <ClInclude Include="source\test\Test.h">
       <Filter>test</Filter>
     </ClInclude>
-    <ClInclude Include="source\component\SlotMap.h">
-      <Filter>component</Filter>
-    </ClInclude>
-    <ClInclude Include="source\component\impl\SlotMap.inl">
-      <Filter>component\impl</Filter>
-    </ClInclude>
     <ClInclude Include="source\component\impl\ComponentStore.inl">
       <Filter>component\impl</Filter>
-    </ClInclude>
-    <ClInclude Include="source\utility\serial_task_queue.h">
-      <Filter>utility</Filter>
     </ClInclude>
     <ClInclude Include="source\utility\auto_lister.h">
       <Filter>utility</Filter>
@@ -483,10 +474,13 @@
     <ClInclude Include="vendor\glm\glm\gtx\wrap.hpp">
       <Filter>vendor\glm\gtx</Filter>
     </ClInclude>
-    <ClInclude Include="source\utility\container\bitwise_ntree.h">
+    <ClInclude Include="source\utility\container\bitwise_quadtree.h">
       <Filter>utility\container</Filter>
     </ClInclude>
-    <ClInclude Include="source\utility\container\Quadtree.h">
+    <ClInclude Include="source\utility\container\serial_task_queue.h">
+      <Filter>utility\container</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utility\container\handle_map.h">
       <Filter>utility\container</Filter>
     </ClInclude>
   </ItemGroup>
@@ -719,7 +713,10 @@
     <None Include="vendor\glm\glm\gtx\wrap.inl">
       <Filter>vendor\glm\gtx</Filter>
     </None>
-    <None Include="source\utility\container\impl\bitwise_ntree.inl">
+    <None Include="source\utility\container\impl\bitwise_quadtree.inl">
+      <Filter>utility\container\impl</Filter>
+    </None>
+    <None Include="source\utility\container\impl\handle_map.inl">
       <Filter>utility\container\impl</Filter>
     </None>
   </ItemGroup>

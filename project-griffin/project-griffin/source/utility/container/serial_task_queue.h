@@ -6,7 +6,7 @@
 #include <memory>
 #include <functional>
 #include <future>
-#include "concurrent_queue.h"
+#include <utility/container/concurrent_queue.h>
 
 namespace griffin {
 
@@ -67,7 +67,7 @@ namespace griffin {
 
 			if (shared_->enqueue([=](){
 					(*p)();
-					queue_type tmp = shared_->dequeue();
+					auto tmp = shared_->dequeue();
 					if (!tmp.empty()) {
 						std::async(std::move(tmp.front()));
 					}
@@ -80,7 +80,7 @@ namespace griffin {
 		}
 
 	private:
-		using shared_type = concurrent_queue<std::function<void()>>;
+		using shared_type = concurrent_list<std::function<void()>>;
 
 		std::shared_ptr<shared_type> shared_ = std::make_shared<shared_type>();
 	};

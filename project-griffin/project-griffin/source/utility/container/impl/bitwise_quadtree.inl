@@ -1,12 +1,12 @@
 /**
-* @file	bitwise_ntree.inl
-* @author	Jeff Kiah
-*/
+ * @file	bitwise_quadtree.inl
+ * @author	Jeff Kiah
+ */
 #pragma once
-#ifndef GRIFFIN_BITWISE_NTREE_INL
-#define GRIFFIN_BITWISE_NTREE_INL
+#ifndef GRIFFIN_BITWISE_QUADTREE_INL
+#define GRIFFIN_BITWISE_QUADTREE_INL
 
-#include <utility/container/bitwise_ntree.h>
+#include <utility/container/bitwise_quadtree.h>
 
 namespace griffin {
 
@@ -86,87 +86,98 @@ namespace griffin {
 	//	by dimension 0, then 1, etc. So a quad-tree branch would traverse to its NW, then NE,
 	//	then SW, then SE children in that order.
 	//----------------------------------------------------------------------------------------
-	template <typename T, int N_dimensions>
-	inline void bitwise_ntree<T, N_dimensions>::depth_first_search(int minLevel, int maxLevel, const T *index)
+	template <typename T>
+	inline void bitwise_quadtree<T>::depthFirstSearch(
+			const int minLevel, const int maxLevel,
+			const uint32_t x, const uint32_t y)
 	{
 		assert(minLevel >= 0);
-		assert(maxLevel < sizeof(T) * 8);
+		assert(maxLevel <= mMaxLevel);
 		assert(maxLevel >= minLevel);
+	}
 
-		const int numLevels = maxLevel - minLevel + 1;
-		int childNodesVisited[sizeof(T) * 8 + 1] = { 0 };		// array for storing # of children visited at each level
-		int currentLevel = minLevel;					// start traversal at the minimum level
 
-		// set up starting node
-		for (int l = 0; l < minLevel; ++l) {
-			BitField<T> lBits(0);
-			for (int d = 0; d < mNumDimensions; ++d) {
-				lBits.setBit(d, BitField<T>(index[d]).getBit(minLevel - 1 - l));
-			}
-			childNodesVisited[l] = lBits.bits();
-		}
+	/**
+	 * Calculates the depth level in the quadtree that an object with a set of tree-space
+	 * coordinates will be placed
+	 */
+	template <class T>
+	inline uint32_t bitwise_quadtree<T>::calcTreeLevel(
+			const uint32_t lowX, const uint32_t highX,
+			const uint32_t lowY, const uint32_t highY)
+	{
+		uint32_t sigBit = sSigBit;
 
-		// traverse the tree
-		for (;;) {
-			// build the indexers
-			for (int d = 0; d < mNumDimensions; ++d) {
-				mCurrentIndex[d].set(0);
-			}
+		// XOR the position values
+		uint32_t xorX = lowX ^ highX;
+		uint32_t xorY = lowY ^ highY;
+		
+		/*uint32_t mask = sSize / 2;
+		uint32_t bitCount = sSigBit;
+		// this loop finds the highest set bit by ANDing with a mask
+		while ((mask & highBitSet) != mask) {
+			mask >>= 1;
+			// negate bitCount and check if it's at deepest level already
+			if (--bitCount == LEVEL_DIFF) return MAX_LEVEL;
+		}*/
+		
+		// find highest set bit in the XOR'd values
+		uint32_t highBitX = 0, highBitY = 0;
+		_BitScanReverse(&highBitX, xorX);
+		_BitScanReverse(&highBitY, xorY);
 
-			for (int l = 1; l <= currentLevel; ++l) {
-				BitField<T> lBits(0);
-				// get the index of the current node being visited
-				lBits.set(childNodesVisited[l - 1]);
+		uint32_t treeLevelX = sigBit - highBitX;
+		uint32_t treeLevelY = sigBit - highBitY;
 
-				// build index bits
-				for (int d = 0; d < mNumDimensions; ++d) {
-					mCurrentIndex[d].setBit(currentLevel - l, lBits.getBit(d));
-				}
-			}
-
-			// only on the first visit to this node check to see if it's a leaf node
-			if (childNodesVisited[currentLevel] == 0) {
-				// If this is a max-depth node it is a leaf, avoid calling onIsLeafNode
-				// otherwise check to see if the node is a leaf
-				bool isLeaf = false;
-				if (currentLevel == maxLevel) isLeaf = true;
-				else if (onIsLeafNode(currentLevel, mCurrentIndex)) isLeaf = true;
-
-				if (!isLeaf) {
-					// if the node is not a leaf, step down one level and start at the first child
-					//onBranchFirstVisit(currentLevel, mCurrentIndex);
-					++currentLevel;
-					childNodesVisited[currentLevel] = 0;
-				} else {
-					// if this is a leaf node go up to the parent level and indicate that
-					// another child was visited at the parent level
-					//onLeafVisit(currentLevel, mCurrentIndex);
-					if (--currentLevel < minLevel) break;
-					else ++childNodesVisited[currentLevel];
-				}
-				// or on any subsequent visit don't recheck if it's a leaf, just visit all child nodes
-			} else {
-				if (childNodesVisited[currentLevel] < mChildNodesPerLevel) {
-					// if all child nodes have not been visited step down one level and start at the first child
-					++currentLevel;
-					childNodesVisited[currentLevel] = 0;
-				} else {
-					// if all child nodes have been visited, step up to parent level and indicate
-					// that another child was visited at the parent level
-					if (--currentLevel < minLevel) break;
-					else ++childNodesVisited[currentLevel];
-				}
-			}
-		}
+		// return the lower of the two tree levels
+		return (treeLevelX < treeLevelY) ? treeLevelX : treeLevelY;
 	}
 
 	//----------------------------------------------------------------------------------------
-	//	The default contructor instantiates a 1D binary tree with empty function pointers
+	//	This function determines the tree location in array space that the object will
+	//	belong to. The depth must be known so the correct index boundaries can be
+	//	determined. For example, the coordinates of level 5 of the tree range from 0 - 31,
+	//	or a total of 2^5 index values. Computes for only 1 axis coordinate at a time.
 	//----------------------------------------------------------------------------------------
-	template <typename T, int N_dimensions>
-	inline bitwise_ntree<T, N_dimensions>::bitwise_ntree() :
-		currentIndex{}
-	{}
+	template <class T>
+	inline uint32_t bitwise_quadtree<T>::calcLocationIndex(const uint32_t pos, const int level)
+	{
+		// this finds the location in the array of the position that is given
+		return pos >> (sNumBits - level);
+	}
+
+	//----------------------------------------------------------------------------------------
+	//	This function determines the index into the array of nodes of the top left node of
+	//	the children of the provided node. This is used to traverse the tree more deeply
+	//	(to find visible nodes or other). The function takes a node index value obtained by
+	//	the function above. It works on only one axis at a time.
+	//----------------------------------------------------------------------------------------
+	template <class T>
+	inline uint32_t bitwise_quadtree<T>::calcChildrenPosIndex(const uint32_t locInd)
+	{
+		return locInd << 1;
+	}
+
+	//----------------------------------------------------------------------------------------
+	//	Same as above but finds the location of the parent node.
+	//----------------------------------------------------------------------------------------
+	template <class T>
+	inline uint32_t bitwise_quadtree<T>::calcParentPosIndex(const uint32_t locInd)
+	{
+		return locInd >> 1;
+	}
+
+	/**
+	* Constructor
+	*/
+	template <typename T>
+	inline bitwise_quadtree<T>::bitwise_quadtree(uint32_t maxLevel) :
+		mMaxLevel{ maxLevel },
+		mLevelDiff{ sSigBit - maxLevel }
+	{
+		assert(maxLevel <= sSigBit);
+	}
+
 }
 
 #endif
