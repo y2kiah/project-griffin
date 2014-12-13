@@ -9,6 +9,10 @@
 #include "Component.h"
 #include "ComponentStore.h"
 
+// disable BOOST_PP_EXPAND_I warning that showed up in 1.57
+// see this thread http://comments.gmane.org/gmane.comp.lib.boost.user/82952
+#pragma warning(disable:4003)
+
 // This can be improved. Instead of defining a list and each component separately, define just the
 // components within a macro, and import this file in multiple locations, each time redefining the
 // surrounding macro, thus interpreting the data in different ways. So I can define one list of
