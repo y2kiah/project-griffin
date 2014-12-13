@@ -6,7 +6,7 @@
 #ifndef GRIFFIN_CONCURRENT_QUEUE_INL
 #define GRIFFIN_CONCURRENT_QUEUE_INL
 
-#include <utility/container/concurrent_queue.h>
+#include "../concurrent_queue.h"
 
 namespace griffin {
 

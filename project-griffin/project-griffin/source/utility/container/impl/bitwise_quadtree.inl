@@ -6,7 +6,7 @@
 #ifndef GRIFFIN_BITWISE_QUADTREE_INL
 #define GRIFFIN_BITWISE_QUADTREE_INL
 
-#include <utility/container/bitwise_quadtree.h>
+#include "../bitwise_quadtree.h"
 
 namespace griffin {
 

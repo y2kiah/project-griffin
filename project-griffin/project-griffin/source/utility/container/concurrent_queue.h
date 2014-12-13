@@ -115,6 +115,6 @@ namespace griffin {
 
 }
 
-#include <utility/container/impl/concurrent_queue.inl>
+#include "impl/concurrent_queue.inl"
 
 #endif

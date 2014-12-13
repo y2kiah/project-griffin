@@ -6,7 +6,7 @@
 #ifndef GRIFFIN_VECTOR_QUEUE_INL
 #define GRIFFIN_VECTOR_QUEUE_INL
 
-#include <utility/container/vector_queue.h>
+#include "../vector_queue.h"
 
 namespace griffin {
 

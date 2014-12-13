@@ -64,6 +64,6 @@ namespace griffin {
 	};
 }
 
-#include <utility/container/impl/vector_queue.inl>
+#include "impl/vector_queue.inl"
 
 #endif

@@ -50,7 +50,7 @@ namespace griffin {
 	 *
 	 * @tparam	T	type of item to be stored
 	 */
-	template <typename T>//, typename ForeignId_T*/> // use SFINAE to make ForeignId_T optional (pass nullptr)
+	template <typename T>
 	class handle_map {
 	public:
 		/**
@@ -58,12 +58,10 @@ namespace griffin {
 		 */
 		struct Meta_T {
 			uint32_t		m_denseToSparse;	//!< index into m_sparseIds array stored in m_meta
-			//ForeignId_T		m_foreignId;
 		};
 
 		typedef std::vector<T>      DenseSet_T;
 		typedef std::vector<Meta_T> MetaSet_T;
-		//typedef boost::flat_map<ForeignId_T, Id_T> ForeignIdMap_T;
 
 		// Functions
 		const DenseSet_T&	getItems() const			{ return m_items; }
@@ -76,8 +74,8 @@ namespace griffin {
 		 * create one item with default initialization
 		 * @returns the id
 		 */
-		inline Id_T createItem(/*ForeignId_T foreignId*/) {
-			return addItem(T{}/*, foreignId*/);
+		inline Id_T createItem() {
+			return addItem(T{});
 		}
 
 		/**
@@ -85,14 +83,14 @@ namespace griffin {
 		 * @param[in]	n	number of items to create
 		 * @returns a collection of ids
 		 */
-		IdSet_T createItems(int n/*, ForeignId_T foreignId*/);
+		IdSet_T createItems(int n);
 
 		/**
 		 * add one item, moving the provided i into the store, return id
 		 * @param[in]	i	rvalue ref of of the object to move into inner storage
 		 * @returns the id
 		 */
-		Id_T addItem(T&& i/*, ForeignId_T foreignId*/);
+		Id_T addItem(T&& i);
 
 		/**
 		 * remove the item identified by the provided outerId
@@ -101,7 +99,6 @@ namespace griffin {
 		void removeItem(Id_T outerId);
 
 		void removeItems(const IdSet_T& outerIds) {}
-		//void removeItems(ForeignId_T foreignId) {}
 
 		/**
 		 * Get a direct reference to a stored item by outerId
