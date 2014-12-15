@@ -138,7 +138,7 @@ namespace griffin {
 		return AxisAlignedBox3f(min, max);
 	}
 
-
+/*
 	void TriMesh::read(DataSourceRef dataSource)
 	{
 		IStreamRef in = dataSource->createStream();
@@ -206,7 +206,7 @@ namespace griffin {
 			out->writeLittle(*it);
 		}
 	}
-
+*/
 	void TriMesh::recalculateNormals()
 	{
 		mNormals.assign(mVertices.size(), vec3::zero());

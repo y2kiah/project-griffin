@@ -25,6 +25,10 @@
 //#include "cinder/Shape2d.h"
 //#include "cinder/DataSource.h"
 #include <ft2build.h>
+#include <cstdint>
+#include <memory>
+
+#include "render/Rect.h"
 
 // Note: generic is a reserved word in winrt c++/cx
 // need to redefine it for freetype.h
@@ -70,7 +74,7 @@ namespace griffin {
 
 		FT_Face					getFace() const { return mObj->mFace; }
 
-		static const std::vector<std::string>&		getNames(bool forceRefresh = false);
+//		static const std::vector<std::string>&		getNames(bool forceRefresh = false);
 		static Font				getDefault();
 
 	private:
@@ -91,7 +95,7 @@ namespace griffin {
 			size_t					mNumGlyphs;
 		};
 
-		std::shared_ptr<Obj>			mObj;
+		std::shared_ptr<Obj>		mObj;
 
 	public:
 		//@{

@@ -92,7 +92,7 @@ namespace griffin {
 		return sInstance;
 	}
 
-	const vector<string>& FontManager::getNames(bool forceRefresh)
+/*	const vector<string>& FontManager::getNames(bool forceRefresh)
 	{
 		if ((!mFontsEnumerated) || forceRefresh) {
 			mFontNames.clear();
@@ -117,7 +117,7 @@ namespace griffin {
 
 		return mFontNames;
 	}
-
+*/
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Font
 	Font::Font(const string &name, float size)
@@ -125,7 +125,7 @@ namespace griffin {
 	{
 	}
 
-	Font::Font(DataSourceRef dataSource, float size)
+/*	Font::Font(DataSourceRef dataSource, float size)
 		: mObj(new Font::Obj(dataSource, size))
 	{
 	}
@@ -134,6 +134,7 @@ namespace griffin {
 	{
 		return FontManager::instance()->getNames(forceRefresh);
 	}
+*/
 
 	Font Font::getDefault()
 	{
@@ -195,8 +196,9 @@ namespace griffin {
 		}
 
 		// this idx is invalid
-		if( ! found )
+		if (!found) {
 			ct = 0;
+		}
 
 		return (Glyph)ct;
 	}
@@ -209,7 +211,7 @@ namespace griffin {
 		return result;
 	}
 
-	static int ftShape2dMoveTo(const FT_Vector *to, void *user)
+/*	static int ftShape2dMoveTo(const FT_Vector *to, void *user)
 	{
 		Shape2d *shape = reinterpret_cast<Shape2d*>(user);
 		shape->moveTo((float)to->x / 4096.f, (float)to->y / 4096.f);
@@ -257,7 +259,7 @@ namespace griffin {
 		resultShape.scale(Vec2f(1, -1));
 		return resultShape;
 	}
-
+*/
 	Rectf Font::getGlyphBoundingBox( Glyph glyphIndex ) const
 	{
 		FT_Load_Glyph(mObj->mFace, glyphIndex, FT_LOAD_DEFAULT);
@@ -352,13 +354,13 @@ namespace griffin {
 		writeFactory->Release();
 	}
 
-	Font::Obj::Obj(DataSourceRef dataSource, float size)
+/*	Font::Obj::Obj(DataSourceRef dataSource, float size)
 		: mSize(size)
 	{
 		FT_New_Memory_Face(FontManager::instance()->mLibrary, (FT_Byte*)dataSource->getBuffer().getData(), dataSource->getBuffer().getDataSize(), 0, &mFace);
 		FT_Set_Pixel_Sizes(mFace, 0, (int)size);
 	}
-
+*/
 	Font::Obj::~Obj()
 	{
 		FT_Done_Face(mFace);

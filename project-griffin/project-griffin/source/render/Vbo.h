@@ -23,7 +23,7 @@
 #pragma once
 
 #include "gl.h"
-#include "cinder/TriMesh.h"
+#include "TriMesh.h"
 
 #include <vector>
 #include <utility>
@@ -198,11 +198,11 @@ namespace griffin {
 			static void		unbindBuffers();
 
 			void						bufferIndices(const std::vector<uint32_t> &indices);
-			void						bufferPositions(const std::vector<Vec3f> &positions);
-			void						bufferPositions(const Vec3f *positions, size_t count);
-			void						bufferNormals(const std::vector<Vec3f> &normals);
-			void						bufferTexCoords2d(size_t unit, const std::vector<Vec2f> &texCoords);
-			void						bufferTexCoords3d(size_t unit, const std::vector<Vec3f> &texCoords);
+			void						bufferPositions(const std::vector<vec3> &positions);
+			void						bufferPositions(const vec3 *positions, size_t count);
+			void						bufferNormals(const std::vector<vec3> &normals);
+			void						bufferTexCoords2d(size_t unit, const std::vector<vec2> &texCoords);
+			void						bufferTexCoords3d(size_t unit, const std::vector<vec3> &texCoords);
 			void						bufferColorsRGB(const std::vector<Color> &colors);
 			void						bufferColorsRGBA(const std::vector<ColorA> &colors);
 			class VertexIter			mapVertexBuffer();
@@ -228,21 +228,21 @@ namespace griffin {
 			public:
 				VertexIter(const VboMesh &mesh);
 
-				void	setPosition(const Vec3f &v) { *(reinterpret_cast<Vec3f*>(&mPtr[mPositionOffset])) = v; }
-				void	setPosition(float x, float y, float z) { *(reinterpret_cast<Vec3f*>(&mPtr[mPositionOffset])) = Vec3f(x, y, z); }
-				void	setNormal(const Vec3f &n) { *(reinterpret_cast<Vec3f*>(&mPtr[mNormalOffset])) = n; }
+				void	setPosition(const vec3 &v) { *(reinterpret_cast<vec3*>(&mPtr[mPositionOffset])) = v; }
+				void	setPosition(float x, float y, float z) { *(reinterpret_cast<vec3*>(&mPtr[mPositionOffset])) = vec3(x, y, z); }
+				void	setNormal(const vec3 &n) { *(reinterpret_cast<vec3*>(&mPtr[mNormalOffset])) = n; }
 				void	setColorRGB(const Color &n) { *(reinterpret_cast<Color*>(&mPtr[mColorRGBOffset])) = n; }
 				void	setColorRGBA(const ColorA &n) { *(reinterpret_cast<ColorA*>(&mPtr[mColorRGBAOffset])) = n; }
-				void	setTexCoord2d0(const Vec2f &t) { *(reinterpret_cast<Vec2f*>(&mPtr[mTexCoordOffset[0]])) = t; }
-				void	setTexCoord3d0(const Vec3f &t) { *(reinterpret_cast<Vec3f*>(&mPtr[mTexCoordOffset[0]])) = t; }
-				void	setTexCoord2d1(const Vec2f &t) { *(reinterpret_cast<Vec2f*>(&mPtr[mTexCoordOffset[1]])) = t; }
-				void	setTexCoord3d1(const Vec3f &t) { *(reinterpret_cast<Vec3f*>(&mPtr[mTexCoordOffset[1]])) = t; }
-				void	setTexCoord2d2(const Vec2f &t) { *(reinterpret_cast<Vec2f*>(&mPtr[mTexCoordOffset[2]])) = t; }
-				void	setTexCoord3d2(const Vec3f &t) { *(reinterpret_cast<Vec3f*>(&mPtr[mTexCoordOffset[2]])) = t; }
+				void	setTexCoord2d0(const vec2 &t) { *(reinterpret_cast<vec2*>(&mPtr[mTexCoordOffset[0]])) = t; }
+				void	setTexCoord3d0(const vec3 &t) { *(reinterpret_cast<vec3*>(&mPtr[mTexCoordOffset[0]])) = t; }
+				void	setTexCoord2d1(const vec2 &t) { *(reinterpret_cast<vec2*>(&mPtr[mTexCoordOffset[1]])) = t; }
+				void	setTexCoord3d1(const vec3 &t) { *(reinterpret_cast<vec3*>(&mPtr[mTexCoordOffset[1]])) = t; }
+				void	setTexCoord2d2(const vec2 &t) { *(reinterpret_cast<vec2*>(&mPtr[mTexCoordOffset[2]])) = t; }
+				void	setTexCoord3d2(const vec3 &t) { *(reinterpret_cast<vec3*>(&mPtr[mTexCoordOffset[2]])) = t; }
 				void	setCustomFloat(size_t index, float v) { *(reinterpret_cast<float*>(&mPtr[mObj->mCustomOffsets[index]])) = v; }
-				void	setCustomVec2f(size_t index, const Vec2f &v) { *(reinterpret_cast<Vec2f*>(&mPtr[mObj->mCustomOffsets[index]])) = v; }
-				void	setCustomVec3f(size_t index, const Vec3f &v) { *(reinterpret_cast<Vec3f*>(&mPtr[mObj->mCustomOffsets[index]])) = v; }
-				void	setCustomVec4f(size_t index, const Vec4f &v) { *(reinterpret_cast<Vec4f*>(&mPtr[mObj->mCustomOffsets[index]])) = v; }
+				void	setCustomvec2f(size_t index, const vec2 &v) { *(reinterpret_cast<vec2*>(&mPtr[mObj->mCustomOffsets[index]])) = v; }
+				void	setCustomvec3f(size_t index, const vec3 &v) { *(reinterpret_cast<vec3*>(&mPtr[mObj->mCustomOffsets[index]])) = v; }
+				void	setCustomVec4f(size_t index, const vec4 &v) { *(reinterpret_cast<vec4*>(&mPtr[mObj->mCustomOffsets[index]])) = v; }
 
 				void operator++() { mPtr += mStride; }
 				bool	isDone() const { return mPtr >= mDataEnd; }
@@ -254,7 +254,7 @@ namespace griffin {
 				//! \return Raw pointer where the iterator is currently writing
 				void*		getPointer() const { return reinterpret_cast<void*>(mPtr); }
 				//! \return pointer where the iterator is currently writing positions
-				Vec3f*		getPositionPointer() const { return reinterpret_cast<Vec3f*>(&mPtr[mPositionOffset]); }
+				vec3*		getPositionPointer() const { return reinterpret_cast<vec3*>(&mPtr[mPositionOffset]); }
 
 				//		VertexIter( const VertexIter &other ) { set( other ); }	
 				//		VertexIter& operator=( const VertexIter &other ) { set( other ); return *this; }

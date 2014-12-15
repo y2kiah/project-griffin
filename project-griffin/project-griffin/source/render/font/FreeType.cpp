@@ -1,3 +1,4 @@
+/*
 #include "FreeType.h"
 
 #include <ft2build.h>
@@ -50,6 +51,7 @@ void initFreeType() {
 	glEnableVertexAttribArray(attribute_coord);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glVertexAttribPointer(attribute_coord, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
 }
 
 void render_text(const char *text, float x, float y, float sx, float sy) {
@@ -108,3 +110,4 @@ void display() {
 
 	glutSwapBuffers();
 }
+*/
