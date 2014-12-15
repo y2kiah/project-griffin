@@ -11,29 +11,31 @@
 #include <glm/vec3.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/quaternion.hpp>
-
-//#include "cinder/Ray.h"
-
-using glm::vec3;
-using glm::vec2;
-using glm::mat4x4;
-using glm::quat;
+#include "Ray.h"
 
 namespace griffin {
+	using glm::vec3;
+	using glm::dvec3;
+	using glm::vec2;
+	using glm::mat4x4;
+	using glm::quat;
 
+	/**
+	 *
+	 */
 	class Camera {
 	public:
 		Camera() : mModelViewCached(false), mProjectionCached(false), mInverseModelViewCached(false), mWorldUp(vec3::yAxis()) {}
 		virtual ~Camera() {}
 
-		vec3	getEyePoint() const { return mEyePoint; }
-		void	setEyePoint(const vec3 &aEyePoint);
+		dvec3	getEyePoint() const { return mEyePoint; }
+		void	setEyePoint(const dvec3 &aEyePoint);
 
 		float	getCenterOfInterest() const { return mCenterOfInterest; }
 		void	setCenterOfInterest(float aCenterOfInterest) { mCenterOfInterest = aCenterOfInterest; }
 
-		vec3	getCenterOfInterestPoint() const { return mEyePoint + mViewDirection * mCenterOfInterest; }
-		void	setCenterOfInterestPoint(const vec3 &centerOfInterestPoint);
+		dvec3	getCenterOfInterestPoint() const { return mEyePoint + dvec3(mViewDirection * mCenterOfInterest); }
+		void	setCenterOfInterestPoint(const dvec3 &centerOfInterestPoint);
 
 		vec3	getWorldUp() const { return mWorldUp; }
 		void	setWorldUp(const vec3 &aWorldUp);
@@ -76,7 +78,7 @@ namespace griffin {
 		virtual const mat4x4&	getModelViewMatrix() const { if (!mModelViewCached) calcModelView(); return mModelViewMatrix; }
 		virtual const mat4x4&	getInverseModelViewMatrix() const { if (!mInverseModelViewCached) calcInverseModelView(); return mInverseModelViewMatrix; }
 
-		//Ray		generateRay(float u, float v, float imagePlaneAspectRatio) const;
+		Ray		generateRay(float u, float v, float imagePlaneAspectRatio) const;
 		void	getBillboardVectors(vec3 *right, vec3 *up) const;
 
 		//! Converts a world-space coordinate \a worldCoord to screen coordinates as viewed by the camera, based ona s screen which is \a screenWidth x \a screenHeight pixels.
@@ -105,7 +107,7 @@ namespace griffin {
 		float	getScreenRadius(const class Sphere &sphere, float screenWidth, float screenHeight) const;
 
 	protected:
-		vec3	mEyePoint;
+		dvec3	mEyePoint;
 		vec3	mViewDirection;
 		quat	mOrientation;
 		float	mCenterOfInterest;
@@ -136,6 +138,10 @@ namespace griffin {
 		virtual void	calcProjection() const = 0;
 	};
 
+
+	/**
+	 *
+	 */
 	class CameraPersp : public Camera {
 	public:
 		CameraPersp();
@@ -181,6 +187,10 @@ namespace griffin {
 		virtual void	calcProjection() const;
 	};
 
+
+	/**
+	 *
+	 */
 	class CameraOrtho : public Camera {
 	public:
 		CameraOrtho();
@@ -194,6 +204,10 @@ namespace griffin {
 		virtual void	calcProjection() const;
 	};
 
+
+	/**
+	 *
+	 */
 	class CameraStereo : public CameraPersp {
 	public:
 		CameraStereo()

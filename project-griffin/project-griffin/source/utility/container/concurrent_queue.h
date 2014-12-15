@@ -107,6 +107,13 @@ namespace griffin {
 		 */
 		bool empty() const;
 
+		/**
+		 * unsafe_size is not concurrency-safe and can produce incorrect results if called
+		 * concurrently with calls to push*, pop*, and empty methods.
+		 * @returns size of the queue
+		 */
+		size_t unsafe_size() const;
+
 	private:
 		mutable mutex		m_mutex;
 		condition_variable	m_cond;

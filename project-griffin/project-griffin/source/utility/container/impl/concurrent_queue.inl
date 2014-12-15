@@ -13,8 +13,10 @@ namespace griffin {
 	template <typename T>
 	inline void concurrent_queue<T>::push(const T& inData)
 	{
-		T d = inData;
-		push(std::move(d));
+		std::unique_lock<mutex> lock(m_mutex);
+		m_queue.push(inData);
+		lock.unlock();
+		m_cond.notify_one();
 	}
 
 
@@ -140,6 +142,13 @@ namespace griffin {
 	{
 		std::lock_guard<mutex> lock(m_mutex);
 		return m_queue.empty();
+	}
+
+
+	template <typename T>
+	inline size_t concurrent_queue<T>::unsafe_size() const
+	{
+		return m_queue.size();
 	}
 }
 

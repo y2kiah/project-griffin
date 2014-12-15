@@ -10,9 +10,12 @@
 #define WIN32_LEAN_AND_MEAN	// defined in project settings
 #endif
 
+#include "Windows.h"
+#undef min
+#undef max
 #include <cmath>
 #include <cassert>
-#include "Windows.h"
+#include <algorithm>
 
 using namespace griffin;
 
@@ -153,7 +156,7 @@ int64_t Timer::stop()
 	QueryPerformanceCounter((LARGE_INTEGER *)&m_stopCounts);
 
 	// get time passed since start() according to QPC and GetTickCount64
-	m_countsPassed = max(m_stopCounts - m_startCounts, 0);
+	m_countsPassed = std::max(m_stopCounts - m_startCounts, 0LL);
 
 	m_secondsPassed = static_cast<double>(m_countsPassed) * s_secondsPerCount;
 	m_millisPassed = m_secondsPassed * 1000.0;

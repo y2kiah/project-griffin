@@ -25,7 +25,25 @@
     <ClCompile Include="source\component\impl\Component.cpp" />
     <ClCompile Include="source\component\impl\Entity.cpp" />
     <ClCompile Include="source\core\impl\InputSystem.cpp" />
+    <ClCompile Include="source\render\Area.cpp" />
+    <ClCompile Include="source\render\AxisAlignedBox.cpp" />
+    <ClCompile Include="source\render\Camera.cpp" />
+    <ClCompile Include="source\render\Color.cpp" />
+    <ClCompile Include="source\render\Fbo.cpp" />
+    <ClCompile Include="source\render\font\Font.cpp" />
+    <ClCompile Include="source\render\font\FreeType.cpp" />
+    <ClCompile Include="source\render\font\Text.cpp" />
+    <ClCompile Include="source\render\Frustum.cpp" />
+    <ClCompile Include="source\render\gl.cpp" />
+    <ClCompile Include="source\render\Plane.cpp" />
+    <ClCompile Include="source\render\Ray.cpp" />
+    <ClCompile Include="source\render\Rect.cpp" />
     <ClCompile Include="source\render\Render.cpp" />
+    <ClCompile Include="source\render\Sphere.cpp" />
+    <ClCompile Include="source\render\texture\impl\nv_dds.cpp" />
+    <ClCompile Include="source\render\texture\impl\Texture.cpp" />
+    <ClCompile Include="source\render\TriMesh.cpp" />
+    <ClCompile Include="source\render\Vbo.cpp" />
     <ClCompile Include="source\utility\profile\impl\Profile.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -40,8 +58,27 @@
     <ClInclude Include="source\component\Entity.h" />
     <ClInclude Include="source\core\CoreSystem.h" />
     <ClInclude Include="source\core\InputSystem.h" />
+    <ClInclude Include="source\render\Area.h" />
+    <ClInclude Include="source\render\AxisAlignedBox.h" />
     <ClInclude Include="source\render\Camera.h" />
+    <ClInclude Include="source\render\Color.h" />
+    <ClInclude Include="source\render\Fbo.h" />
+    <ClInclude Include="source\render\font\Font.h" />
+    <ClInclude Include="source\render\font\FreeType.h" />
+    <ClInclude Include="source\render\font\Text.h" />
+    <ClInclude Include="source\render\Frustum.h" />
+    <ClInclude Include="source\render\gl.h" />
+    <ClInclude Include="source\render\Plane.h" />
+    <ClInclude Include="source\render\Ray.h" />
+    <ClInclude Include="source\render\Rect.h" />
     <ClInclude Include="source\render\Render.h" />
+    <ClInclude Include="source\render\Sphere.h" />
+    <ClInclude Include="source\render\texture\dds.h" />
+    <ClInclude Include="source\render\texture\nv_dds.h" />
+    <ClInclude Include="source\render\texture\Texture.h" />
+    <ClInclude Include="source\render\TriMesh.h" />
+    <ClInclude Include="source\render\Vbo.h" />
+    <ClInclude Include="source\resource\Resource.h" />
     <ClInclude Include="source\test\Test.h" />
     <ClInclude Include="source\utility\algorithms.h" />
     <ClInclude Include="source\utility\auto_lister.h" />
@@ -160,6 +197,8 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="data\shaders\Font_frag.glsl" />
+    <None Include="data\shaders\Font_vert.glsl" />
     <None Include="data\shaders\SimpleFragmentShader.glsl" />
     <None Include="data\shaders\SimpleVertexShader.glsl" />
     <ClInclude Include="source\component\impl\ComponentStore.inl">
@@ -321,9 +360,10 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
+      <Optimization>
+      </Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;WIN32_LEAN_AND_MEAN;GLM_MESSAGES;GLM_FORCE_SSE3;GLM_FORCE_INLINE;GLM_SWIZZLE;GLM_FORCE_SIZE_T_LENGTH;GL_GLEXT_PROTOTYPES;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;GLM_MESSAGES;GLM_FORCE_SSE3;GLM_FORCE_INLINE;GLM_SWIZZLE;GLM_FORCE_SIZE_T_LENGTH;GL_GLEXT_PROTOTYPES;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <PreprocessKeepComments>false</PreprocessKeepComments>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -362,6 +402,8 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <OmitFramePointers>true</OmitFramePointers>
+      <StringPooling>true</StringPooling>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

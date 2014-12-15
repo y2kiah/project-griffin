@@ -7,6 +7,8 @@
 #define GRIFFIN_BITWISE_QUADTREE_INL
 
 #include "../bitwise_quadtree.h"
+#include <cassert>
+#include <intrin.h>
 
 namespace griffin {
 
@@ -101,8 +103,9 @@ namespace griffin {
 	 * Calculates the depth level in the quadtree that an object with a set of tree-space
 	 * coordinates will be placed
 	 */
+#pragma optimize("g", off) // Note: _BitScanReverse appears buggy with /Og, enabled by /O2
 	template <class T>
-	inline uint32_t bitwise_quadtree<T>::calcTreeLevel(
+	inline int bitwise_quadtree<T>::calcTreeLevel(
 			const uint32_t lowX, const uint32_t highX,
 			const uint32_t lowY, const uint32_t highY)
 	{
@@ -112,38 +115,33 @@ namespace griffin {
 		uint32_t xorX = lowX ^ highX;
 		uint32_t xorY = lowY ^ highY;
 		
-		/*uint32_t mask = sSize / 2;
-		uint32_t bitCount = sSigBit;
-		// this loop finds the highest set bit by ANDing with a mask
-		while ((mask & highBitSet) != mask) {
-			mask >>= 1;
-			// negate bitCount and check if it's at deepest level already
-			if (--bitCount == LEVEL_DIFF) return MAX_LEVEL;
-		}*/
-		
 		// find highest set bit in the XOR'd values
-		uint32_t highBitX = 0, highBitY = 0;
+		unsigned long highBitX = 0, highBitY = 0;
 		_BitScanReverse(&highBitX, xorX);
 		_BitScanReverse(&highBitY, xorY);
 
-		uint32_t treeLevelX = sigBit - highBitX;
-		uint32_t treeLevelY = sigBit - highBitY;
+		int treeLevelX = sigBit - highBitX;
+		int treeLevelY = sigBit - highBitY;
 
 		// return the lower of the two tree levels
 		return (treeLevelX < treeLevelY) ? treeLevelX : treeLevelY;
 	}
 
-	//----------------------------------------------------------------------------------------
-	//	This function determines the tree location in array space that the object will
-	//	belong to. The depth must be known so the correct index boundaries can be
-	//	determined. For example, the coordinates of level 5 of the tree range from 0 - 31,
-	//	or a total of 2^5 index values. Computes for only 1 axis coordinate at a time.
-	//----------------------------------------------------------------------------------------
+	/**
+	 * This function determines the position in local tree space, at the specified level, given a
+	 * position in full tree space (0-UINT32_MAX), and a level (0-31).
+	 * Example using 8-bit tree for ease of visualization, full tree space coordinates (65,129)
+	 * at level 1, result = (0,1)
+	 * at level 2, result = (1,2)
+	 * at level 6, result = (22,64)
+	 */
 	template <class T>
-	inline uint32_t bitwise_quadtree<T>::calcLocationIndex(const uint32_t pos, const int level)
+	inline uint32_t bitwise_quadtree<T>::getLocalNodeIndex(const uint32_t pos, const int level)
 	{
+		assert(level >= 0 && level <= mMaxLevel);
+
 		// this finds the location in the array of the position that is given
-		return pos >> (sNumBits - level);
+		return pos >> (sSigBit - level);
 	}
 
 	//----------------------------------------------------------------------------------------
@@ -168,10 +166,10 @@ namespace griffin {
 	}
 
 	/**
-	* Constructor
-	*/
+	 * Constructor
+	 */
 	template <typename T>
-	inline bitwise_quadtree<T>::bitwise_quadtree(uint32_t maxLevel) :
+	inline bitwise_quadtree<T>::bitwise_quadtree(int maxLevel) :
 		mMaxLevel{ maxLevel },
 		mLevelDiff{ sSigBit - maxLevel }
 	{

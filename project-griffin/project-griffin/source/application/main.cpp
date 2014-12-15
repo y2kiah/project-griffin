@@ -14,9 +14,6 @@
 #include "FixedTimestep.h"
 #include <core/InputSystem.h>
 
-// test
-#include <utility/container/bitwise_quadtree.h>
-
 #define PROGRAM_NAME "Project Griffin"
 
 using namespace griffin;
@@ -30,11 +27,6 @@ int main(int argc, char *argv[])
 
 	try {
 		SDLApplication app(PROGRAM_NAME);
-
-		// test
-		bitwise_quadtree<int> quadtree;
-		quadtree.depthFirstSearch(0, 31, 0, 0);
-		///
 
 		// Initialize GLEW
 		glewExperimental = true; // Needed in core profile

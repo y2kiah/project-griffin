@@ -7,6 +7,8 @@
 #endif
 
 #include "Windows.h"
+#undef min
+#undef max
 
 namespace griffin {
 	namespace platform {
