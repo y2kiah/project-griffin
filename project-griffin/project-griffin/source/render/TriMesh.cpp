@@ -20,9 +20,13 @@
  POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <algorithm>
+#include <functional>
 #include "TriMesh.h"
+#include <glm/geometric.hpp>
 
 using std::vector;
+using namespace glm;
 
 namespace griffin {
 
@@ -90,7 +94,7 @@ namespace griffin {
 	AxisAlignedBox3f TriMesh::calcBoundingBox() const
 	{
 		if (mVertices.empty())
-			return AxisAlignedBox3f(vec3::zero(), vec3::zero());
+			return AxisAlignedBox3f(vec3(0), vec3(0));
 
 		vec3 min(mVertices[0]), max(mVertices[0]);
 		for (size_t i = 1; i < mVertices.size(); ++i) {
@@ -111,10 +115,10 @@ namespace griffin {
 		return AxisAlignedBox3f(min, max);
 	}
 
-	AxisAlignedBox3f TriMesh::calcBoundingBox(const Matrix44f &transform) const
+	AxisAlignedBox3f TriMesh::calcBoundingBox(const mat4x4 &transform) const
 	{
 		if (mVertices.empty())
-			return AxisAlignedBox3f(vec3::zero(), vec3::zero());
+			return AxisAlignedBox3f(vec3(0), vec3(0));
 
 		vec3 min(transform.transformPointAffine(mVertices[0]));
 		vec3 max(min);
@@ -209,7 +213,7 @@ namespace griffin {
 */
 	void TriMesh::recalculateNormals()
 	{
-		mNormals.assign(mVertices.size(), vec3::zero());
+		mNormals.assign(mVertices.size(), vec3(0));
 
 		size_t n = getNumTriangles();
 		for (size_t i = 0; i < n; ++i) {
@@ -223,14 +227,14 @@ namespace griffin {
 
 			vec3 e0 = v1 - v0;
 			vec3 e1 = v2 - v0;
-			vec3 normal = e0.cross(e1).normalized();
+			vec3 normal = normalize(cross(e0, e1));
 
 			mNormals[index0] += normal;
 			mNormals[index1] += normal;
 			mNormals[index2] += normal;
 		}
 
-		std::for_each(mNormals.begin(), mNormals.end(), std::mem_fun_ref(&vec3::normalize));
+		std::for_each(mNormals.begin(), mNormals.end(), [](vec3& n){ n = glm::normalize(n); });
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
@@ -279,7 +283,7 @@ namespace griffin {
 	Rectf TriMesh2d::calcBoundingBox() const
 	{
 		if (mVertices.empty())
-			return Rectf(vec2::zero(), vec2::zero());
+			return Rectf(vec2(0), vec2(0));
 
 		vec2 min(mVertices[0]), max(mVertices[0]);
 		for (size_t i = 1; i < mVertices.size(); ++i) {

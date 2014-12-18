@@ -23,8 +23,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../Texture.h"
 #include "../dds.h"
 
-#include "cinder/gl/gl.h"
-#include "cinder/ImageIo.h"
+#include "../../gl.h"
+//#include "cinder/ImageIo.h"
 #include <cstdio>
 
 using namespace std;
@@ -32,14 +32,14 @@ using namespace std;
 namespace griffin {
 	namespace gl {
 
-		class ImageSourceTexture;
-		class ImageTargetTexture;
+//		class ImageSourceTexture;
+//		class ImageTargetTexture;
 
-		TextureDataExc::TextureDataExc(const std::string &log) throw()
+/*		TextureDataExc::TextureDataExc(const std::string &log) throw()
 		{
 			strncpy(mMessage, log.c_str(), 16000);
 		}
-
+*/
 		/////////////////////////////////////////////////////////////////////////////////
 		// ImageTargetGLTexture
 		template<typename T>
@@ -111,7 +111,7 @@ namespace griffin {
 			init(data, 0, dataFormat, GL_UNSIGNED_BYTE, format);
 		}
 
-		Texture::Texture(const Surface8u &surface, Format format)
+/*		Texture::Texture(const Surface8u &surface, Format format)
 			: mObj(shared_ptr<Obj>(new Obj(surface.getWidth(), surface.getHeight())))
 		{
 			if (format.mInternalFormat < 0)
@@ -202,7 +202,7 @@ namespace griffin {
 		{
 			init(imageSource, format);
 		}
-
+*/
 		Texture::Texture(GLenum aTarget, GLuint aTextureID, int aWidth, int aHeight, bool aDoNotDispose)
 			: mObj(shared_ptr<Obj>(new Obj))
 		{
@@ -275,7 +275,7 @@ namespace griffin {
 				glTexImage2D(mObj->mTarget, 0, mObj->mInternalFormat, mObj->mWidth, mObj->mHeight, 0, GL_LUMINANCE, GL_FLOAT, 0);  // init to black...
 		}
 
-		void Texture::init(ImageSourceRef imageSource, const Format &format)
+/*		void Texture::init(ImageSourceRef imageSource, const Format &format)
 		{
 			mObj->mDoNotDispose = false;
 			mObj->mTarget = format.mTarget;
@@ -469,7 +469,7 @@ namespace griffin {
 					break;
 			}
 		}
-
+*/
 		bool Texture::dataFormatHasAlpha(GLint dataFormat)
 		{
 			switch (dataFormat) {
@@ -497,7 +497,7 @@ namespace griffin {
 			return true;
 		}
 
-		Texture Texture::loadDds(IStreamRef ddsStream, Format format)
+/*		Texture Texture::loadDds(IStreamRef ddsStream, Format format)
 		{
 			try {
 				ddSurface ddsd;
@@ -507,7 +507,7 @@ namespace griffin {
 					return Texture();
 				}
 
-				ddsStream->readData(&ddsd, 124/*sizeof(ddsd)*/);
+				ddsStream->readData(&ddsd, 124); // sizeof(ddsd)
 
 				// how big is it going to be including all mipmaps?
 				uint32_t bufSize = (ddsd.dwMipMapCount > 1) ? (ddsd.dwLinearSize * 2) : (ddsd.dwLinearSize);
@@ -578,7 +578,7 @@ namespace griffin {
 				return Texture();
 			}
 		}
-
+*/
 		Texture	Texture::weakClone() const
 		{
 			gl::Texture result = Texture(mObj->mTarget, mObj->mTextureID, mObj->mWidth, mObj->mHeight, true);
@@ -664,7 +664,7 @@ namespace griffin {
 		GLint Texture::getInternalFormat() const
 		{
 			if (mObj->mInternalFormat == -1) {
-				cinder::gl::SaveTextureBindState(mObj->mTarget);
+				SaveTextureBindState(mObj->mTarget);
 				bind();
 				glGetTexLevelParameteriv(mObj->mTarget, 0, GL_TEXTURE_INTERNAL_FORMAT, &mObj->mInternalFormat);
 			}
@@ -675,7 +675,7 @@ namespace griffin {
 		GLint Texture::getWidth() const
 		{
 			if (mObj->mWidth == -1) {
-				cinder::gl::SaveTextureBindState(mObj->mTarget);
+				SaveTextureBindState(mObj->mTarget);
 				bind();
 				glGetTexLevelParameteriv(mObj->mTarget, 0, GL_TEXTURE_WIDTH, &mObj->mWidth);
 				mObj->mCleanWidth = mObj->mWidth;
@@ -687,7 +687,7 @@ namespace griffin {
 		GLint Texture::getHeight() const
 		{
 			if (mObj->mHeight == -1) {
-				cinder::gl::SaveTextureBindState(mObj->mTarget);
+				SaveTextureBindState(mObj->mTarget);
 				bind();
 				glGetTexLevelParameteriv(mObj->mTarget, 0, GL_TEXTURE_HEIGHT, &mObj->mHeight);
 				mObj->mCleanHeight = mObj->mHeight;
@@ -699,7 +699,7 @@ namespace griffin {
 		GLint Texture::getCleanWidth() const
 		{
 			if (mObj->mCleanWidth == -1) {
-				cinder::gl::SaveTextureBindState(mObj->mTarget);
+				SaveTextureBindState(mObj->mTarget);
 				bind();
 				glGetTexLevelParameteriv(mObj->mTarget, 0, GL_TEXTURE_WIDTH, &mObj->mWidth);
 				mObj->mCleanWidth = mObj->mWidth;
@@ -711,7 +711,7 @@ namespace griffin {
 		GLint Texture::getCleanHeight() const
 		{
 			if (mObj->mCleanHeight == -1) {
-				cinder::gl::SaveTextureBindState(mObj->mTarget);
+				SaveTextureBindState(mObj->mTarget);
 				bind();
 				glGetTexLevelParameteriv(mObj->mTarget, 0, GL_TEXTURE_HEIGHT, &mObj->mHeight);
 				mObj->mCleanHeight = mObj->mHeight;
@@ -782,7 +782,7 @@ namespace griffin {
 
 		/////////////////////////////////////////////////////////////////////////////////
 		// TextureCache
-		TextureCache::TextureCache(const Surface8u &prototypeSurface, const Texture::Format &format)
+/*		TextureCache::TextureCache(const Surface8u &prototypeSurface, const Texture::Format &format)
 			: mObj(shared_ptr<Obj>(new Obj(prototypeSurface, format)))
 		{
 
@@ -821,7 +821,7 @@ namespace griffin {
 			: mWidth(prototypeSurface.getWidth()), mHeight(prototypeSurface.getHeight()), mFormat(format), mNextId(0)
 		{
 		}
-
+*/
 		void TextureCache::Obj::markTextureAsFree(int id)
 		{
 			for (vector<pair<int, Texture> >::iterator texIt = mTextures.begin(); texIt != mTextures.end(); ++texIt) {
@@ -878,7 +878,7 @@ namespace griffin {
 
 		/////////////////////////////////////////////////////////////////////////////////
 		// ImageSourceTexture
-		class ImageSourceTexture : public ImageSource {
+/*		class ImageSourceTexture : public ImageSource {
 		public:
 			ImageSourceTexture(const Texture &texture)
 				: ImageSource()
@@ -945,6 +945,6 @@ namespace griffin {
 		{
 			return shared_ptr<ImageSource>(new ImageSourceTexture(*this));
 		}
-
+*/
 	}
 }

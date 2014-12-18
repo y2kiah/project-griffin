@@ -61,6 +61,7 @@
     <ClInclude Include="source\render\Area.h" />
     <ClInclude Include="source\render\AxisAlignedBox.h" />
     <ClInclude Include="source\render\Camera.h" />
+    <ClInclude Include="source\render\ChanTraits.h" />
     <ClInclude Include="source\render\Color.h" />
     <ClInclude Include="source\render\Fbo.h" />
     <ClInclude Include="source\render\font\Font.h" />

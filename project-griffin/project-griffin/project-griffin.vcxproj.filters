@@ -603,6 +603,9 @@
     <ClInclude Include="source\render\Rect.h">
       <Filter>render</Filter>
     </ClInclude>
+    <ClInclude Include="source\render\ChanTraits.h">
+      <Filter>render</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="data\shaders\SimpleVertexShader.glsl">

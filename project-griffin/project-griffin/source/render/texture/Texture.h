@@ -27,17 +27,14 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <GL/glew.h>
 //#include <GL/glcorearb.h>
 
-#include "cinder/Surface.h"
-#include "cinder/Rect.h"
-#include "cinder/Stream.h"
+#include "../Rect.h"
+//#include "cinder/Stream.h"
 
 #include <vector>
 #include <utility>
 
 namespace griffin {
 	namespace gl {
-		using namespace cinder;
-
 		class Texture;
 		typedef std::shared_ptr<Texture>	TextureRef;
 
@@ -53,7 +50,7 @@ namespace griffin {
 			//! Constructs a Texture of size(\a width, \a height). Pixel data is provided by \a data and is expected to be interleaved and in format \a dataFormat, for which \c GL_RGB or \c GL_RGBA would be typical values. **/
 			static TextureRef create(const unsigned char *data, int dataFormat, int width, int height, Format format = Format()) { return std::make_shared<Texture>(data, dataFormat, width, height, format); }
 			//! Constructs a Texture based on the contents of \a surface.
-			static TextureRef create(const Surface8u &surface, Format format = Format()) { return std::make_shared<Texture>(surface, format); }
+/*			static TextureRef create(const Surface8u &surface, Format format = Format()) { return std::make_shared<Texture>(surface, format); }
 			//! Constructs a Texture based on the contents of \a surface
 			static TextureRef create(const Surface32f &surface, Format format = Format()) { return std::make_shared<Texture>(surface, format); }
 			//! Constructs a Texture based on the contents of \a channel.
@@ -62,6 +59,7 @@ namespace griffin {
 			static TextureRef create(const Channel32f &channel, Format format = Format()) { return std::make_shared<Texture>(channel, format); }
 			//! Constructs a texture based on \a imageSource
 			static TextureRef create(ImageSourceRef imageSource, Format format = Format()) { return std::make_shared<Texture>(imageSource, format); }
+*/
 			//! Constructs a Texture based on an externally initialized OpenGL texture. \a doNotDispose specifies whether the Texture destructor is responsible for disposing of the associated OpenGL resource.
 			static TextureRef create(GLenum target, GLuint textureId, int width, int height, bool doNotDispose) { return std::make_shared<Texture>(target, textureId, width, height, doNotDispose); }
 
@@ -73,15 +71,15 @@ namespace griffin {
 			/** \brief Constructs a texture of size(\a aWidth, \a aHeight), storing the data in internal format \a aInternalFormat. Pixel data is provided by \a data and is expected to be interleaved and in format \a dataFormat, for which \c GL_RGB or \c GL_RGBA would be typical values. **/
 			Texture(const unsigned char *data, int dataFormat, int aWidth, int aHeight, Format format = Format());
 			/** \brief Constructs a texture based on the contents of \a surface. A default value of -1 for \a internalFormat chooses an appropriate internal format automatically. **/
-			Texture(const Surface8u &surface, Format format = Format());
+//			Texture(const Surface8u &surface, Format format = Format());
 			/** \brief Constructs a texture based on the contents of \a surface. A default value of -1 for \a internalFormat chooses an appropriate internal format automatically. **/
-			Texture(const Surface32f &surface, Format format = Format());
+//			Texture(const Surface32f &surface, Format format = Format());
 			/** \brief Constructs a texture based on the contents of \a channel. A default value of -1 for \a internalFormat chooses an appropriate internal format automatically. **/
-			Texture(const Channel8u &channel, Format format = Format());
+//			Texture(const Channel8u &channel, Format format = Format());
 			/** \brief Constructs a texture based on the contents of \a channel. A default value of -1 for \a internalFormat chooses an appropriate internal format automatically. **/
-			Texture(const Channel32f &channel, Format format = Format());
+//			Texture(const Channel32f &channel, Format format = Format());
 			/** \brief Constructs a texture based on \a imageSource. A default value of -1 for \a internalFormat chooses an appropriate internal format based on the contents of \a imageSource. **/
-			Texture(ImageSourceRef imageSource, Format format = Format());
+//			Texture(ImageSourceRef imageSource, Format format = Format());
 			//! Constructs a Texture based on an externally initialized OpenGL texture. \a aDoNotDispose specifies whether the Texture is responsible for disposing of the associated OpenGL resource.
 			Texture(GLenum aTarget, GLuint aTextureID, int aWidth, int aHeight, bool aDoNotDispose);
 
@@ -109,16 +107,16 @@ namespace griffin {
 			void			setCleanTexCoords(float maxU, float maxV);
 
 			//! Replaces the pixels of a texture with contents of \a surface. Expects \a surface's size to match the Texture's.
-			void			update(const Surface &surface);
+//			void			update(const Surface &surface);
 			//! Replaces the pixels of a texture with contents of \a surface. Expects \a surface's size to match the Texture's.
-			void			update(const Surface32f &surface);
+//			void			update(const Surface32f &surface);
 			/** \brief Replaces the pixels of a texture with contents of \a surface. Expects \a area's size to match the Texture's.
 			\todo Method for updating a subrectangle with an offset into the source **/
-			void			update(const Surface &surface, const Area &area);
+//			void			update(const Surface &surface, const Area &area);
 			//! Replaces the pixels of a texture with contents of \a channel. Expects \a channel's size to match the Texture's.
-			void			update(const Channel32f &channel);
+//			void			update(const Channel32f &channel);
 			//! Replaces the pixels of a texture with contents of \a channel. Expects \a area's size to match the Texture's.
-			void			update(const Channel8u &channel, const Area &area);
+//			void			update(const Channel8u &channel, const Area &area);
 
 			//! the width of the texture in pixels
 			GLint			getWidth() const;
@@ -129,7 +127,7 @@ namespace griffin {
 			//! the height of the texture in pixels accounting for its "clean" area - \sa getCleanBounds()
 			GLint			getCleanHeight() const;
 			//! the size of the texture in pixels
-			Vec2i			getSize() const { return Vec2i(getWidth(), getHeight()); }
+			ivec2			getSize() const { return ivec2(getWidth(), getHeight()); }
 			//! the aspect ratio of the texture (width / height)
 			float			getAspectRatio() const { return getWidth() / (float)getHeight(); }
 			//! the Area defining the Texture's bounds in pixels: [0,0]-[width,height]
@@ -170,10 +168,10 @@ namespace griffin {
 			void			unbind(GLuint textureUnit = 0) const;
 
 			//!	Creates a new Texture from raw DirectDraw Stream data
-			static Texture	loadDds(IStreamRef ddsStream, Format format);
+//			static Texture	loadDds(IStreamRef ddsStream, Format format);
 
 			//! Converts a SurfaceChannelOrder into an appropriate OpenGL dataFormat and type
-			static void		SurfaceChannelOrderToDataFormatAndType(const SurfaceChannelOrder &sco, GLint *dataFormat, GLenum *type);
+//			static void		SurfaceChannelOrderToDataFormatAndType(const SurfaceChannelOrder &sco, GLint *dataFormat, GLenum *type);
 			//! Returns whether a given OpenGL dataFormat contains an alpha channel
 			static bool		dataFormatHasAlpha(GLint dataFormat);
 			//! Returns whether a give OpenGL dataFormat contains color channels
@@ -183,7 +181,7 @@ namespace griffin {
 			Texture			weakClone() const;
 
 			//! Returns an ImageSource pointing to this Texture
-			operator ImageSourceRef() const;
+//			operator ImageSourceRef() const;
 
 			struct Format {
 				//! Default constructor, sets the target to \c GL_TEXTURE_2D, wrap to \c GL_CLAMP, disables mipmapping, the internal format to "automatic"
@@ -250,7 +248,7 @@ namespace griffin {
 		protected:
 			void	init(const unsigned char *data, int unpackRowLength, GLenum dataFormat, GLenum type, const Format &format);
 			void	init(const float *data, GLint dataFormat, const Format &format);
-			void	init(ImageSourceRef imageSource, const Format &format);
+//			void	init(ImageSourceRef imageSource, const Format &format);
 
 			struct Obj {
 				Obj() : mWidth(-1), mHeight(-1), mCleanWidth(-1), mCleanHeight(-1), mInternalFormat(-1), mTextureID(0), mFlipped(false), mDeallocatorFunc(0) {}
@@ -281,13 +279,13 @@ namespace griffin {
 		class TextureCache {
 		public:
 			TextureCache() {}
-			TextureCache(const Surface8u &prototypeSurface, const Texture::Format &format);
+//			TextureCache(const Surface8u &prototypeSurface, const Texture::Format &format);
 
-			gl::Texture		cache(const Surface8u &data);
+//			gl::Texture		cache(const Surface8u &data);
 
 		protected:
 			struct Obj {
-				Obj(const Surface8u &prototypeSurface, const Texture::Format &format);
+//				Obj(const Surface8u &prototypeSurface, const Texture::Format &format);
 
 				void		markTextureAsFree(int id);
 
@@ -312,7 +310,7 @@ namespace griffin {
 		};
 
 
-		class SurfaceConstraintsGLTexture : public SurfaceConstraints {
+/*		class SurfaceConstraintsGLTexture : public SurfaceConstraints {
 		public:
 			virtual SurfaceChannelOrder getChannelOrder(bool alpha) const { return (alpha) ? SurfaceChannelOrder::BGRA : SurfaceChannelOrder::BGR; }
 			virtual int32_t				getRowBytes(int requestedWidth, const SurfaceChannelOrder &sco, int elementSize) const { return requestedWidth * elementSize * sco.getPixelInc(); }
@@ -330,7 +328,7 @@ namespace griffin {
 			char	mMessage[16001];
 			GLint	mShaderType;
 		};
-
+*/
 
 	}
 }

@@ -25,7 +25,7 @@
 
 #pragma once
 
-//#include "cinder/ChanTraits.h"
+#include "ChanTraits.h"
 //#include "cinder/CinderMath.h"
 
 #include <glm/vec3.hpp>
