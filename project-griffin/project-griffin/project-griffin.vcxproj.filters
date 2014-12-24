@@ -74,6 +74,9 @@
     <Filter Include="render\font">
       <UniqueIdentifier>{af031da3-8eaf-449e-b3d3-2e0079866e2c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="render\impl">
+      <UniqueIdentifier>{f7ea8796-9ecd-42e7-b442-89d192fe733c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">
@@ -97,62 +100,14 @@
     <ClCompile Include="source\core\impl\InputSystem.cpp">
       <Filter>core\impl</Filter>
     </ClCompile>
-    <ClCompile Include="source\render\Render.cpp">
-      <Filter>render</Filter>
-    </ClCompile>
-    <ClCompile Include="source\render\texture\impl\nv_dds.cpp">
-      <Filter>render\texture\impl</Filter>
-    </ClCompile>
-    <ClCompile Include="source\render\texture\impl\Texture.cpp">
-      <Filter>render\texture\impl</Filter>
-    </ClCompile>
-    <ClCompile Include="source\render\gl.cpp">
-      <Filter>render</Filter>
-    </ClCompile>
-    <ClCompile Include="source\render\Camera.cpp">
-      <Filter>render</Filter>
-    </ClCompile>
-    <ClCompile Include="source\render\Fbo.cpp">
-      <Filter>render</Filter>
-    </ClCompile>
-    <ClCompile Include="source\render\Vbo.cpp">
-      <Filter>render</Filter>
-    </ClCompile>
-    <ClCompile Include="source\render\Ray.cpp">
-      <Filter>render</Filter>
-    </ClCompile>
-    <ClCompile Include="source\render\Sphere.cpp">
-      <Filter>render</Filter>
-    </ClCompile>
-    <ClCompile Include="source\render\TriMesh.cpp">
-      <Filter>render</Filter>
-    </ClCompile>
     <ClCompile Include="source\render\font\FreeType.cpp">
       <Filter>render\font</Filter>
     </ClCompile>
-    <ClCompile Include="source\render\font\Font.cpp">
-      <Filter>render\font</Filter>
+    <ClCompile Include="source\render\texture\nv_dds.cpp">
+      <Filter>render\texture\impl</Filter>
     </ClCompile>
-    <ClCompile Include="source\render\font\Text.cpp">
-      <Filter>render\font</Filter>
-    </ClCompile>
-    <ClCompile Include="source\render\Color.cpp">
-      <Filter>render</Filter>
-    </ClCompile>
-    <ClCompile Include="source\render\Frustum.cpp">
-      <Filter>render</Filter>
-    </ClCompile>
-    <ClCompile Include="source\render\Area.cpp">
-      <Filter>render</Filter>
-    </ClCompile>
-    <ClCompile Include="source\render\AxisAlignedBox.cpp">
-      <Filter>render</Filter>
-    </ClCompile>
-    <ClCompile Include="source\render\Plane.cpp">
-      <Filter>render</Filter>
-    </ClCompile>
-    <ClCompile Include="source\render\Rect.cpp">
-      <Filter>render</Filter>
+    <ClCompile Include="source\render\Render.cpp">
+      <Filter>render\impl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -230,12 +185,6 @@
     </ClInclude>
     <ClInclude Include="source\utility\container\concurrent_queue.h">
       <Filter>utility\container</Filter>
-    </ClInclude>
-    <ClInclude Include="source\render\Render.h">
-      <Filter>render</Filter>
-    </ClInclude>
-    <ClInclude Include="source\render\Camera.h">
-      <Filter>render</Filter>
     </ClInclude>
     <ClInclude Include="vendor\glm\glm\common.hpp">
       <Filter>vendor\glm</Filter>
@@ -555,55 +504,10 @@
     <ClInclude Include="source\render\texture\nv_dds.h">
       <Filter>render\texture</Filter>
     </ClInclude>
-    <ClInclude Include="source\render\texture\Texture.h">
-      <Filter>render\texture</Filter>
-    </ClInclude>
-    <ClInclude Include="source\render\gl.h">
-      <Filter>render</Filter>
-    </ClInclude>
-    <ClInclude Include="source\render\Fbo.h">
-      <Filter>render</Filter>
-    </ClInclude>
-    <ClInclude Include="source\render\Vbo.h">
-      <Filter>render</Filter>
-    </ClInclude>
-    <ClInclude Include="source\render\Ray.h">
-      <Filter>render</Filter>
-    </ClInclude>
-    <ClInclude Include="source\render\Sphere.h">
-      <Filter>render</Filter>
-    </ClInclude>
-    <ClInclude Include="source\render\TriMesh.h">
-      <Filter>render</Filter>
-    </ClInclude>
     <ClInclude Include="source\render\font\FreeType.h">
       <Filter>render\font</Filter>
     </ClInclude>
-    <ClInclude Include="source\render\font\Font.h">
-      <Filter>render\font</Filter>
-    </ClInclude>
-    <ClInclude Include="source\render\font\Text.h">
-      <Filter>render\font</Filter>
-    </ClInclude>
-    <ClInclude Include="source\render\Color.h">
-      <Filter>render</Filter>
-    </ClInclude>
-    <ClInclude Include="source\render\Frustum.h">
-      <Filter>render</Filter>
-    </ClInclude>
-    <ClInclude Include="source\render\Area.h">
-      <Filter>render</Filter>
-    </ClInclude>
-    <ClInclude Include="source\render\AxisAlignedBox.h">
-      <Filter>render</Filter>
-    </ClInclude>
-    <ClInclude Include="source\render\Plane.h">
-      <Filter>render</Filter>
-    </ClInclude>
-    <ClInclude Include="source\render\Rect.h">
-      <Filter>render</Filter>
-    </ClInclude>
-    <ClInclude Include="source\render\ChanTraits.h">
+    <ClInclude Include="source\render\Render.h">
       <Filter>render</Filter>
     </ClInclude>
   </ItemGroup>

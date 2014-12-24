@@ -22,32 +22,22 @@
  POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "cinder/Text.h"
+#include "Text.h"
 #include "cinder/ip/Fill.h"
 #include "cinder/ip/Premultiply.h"
 #include "cinder/Utilities.h"
 
-#if defined( CINDER_COCOA )
-	#include "cinder/cocoa/CinderCocoa.h"
-	#if defined( CINDER_MAC )
-		#include <ApplicationServices/ApplicationServices.h>
-	#elif defined( CINDER_COCOA_TOUCH )
-		#include <CoreText/CoreText.h>
-	#endif
-#elif defined( CINDER_MSW )
-	#define max(a, b) (((a) > (b)) ? (a) : (b))
-	#define min(a, b) (((a) < (b)) ? (a) : (b))
-	#include <gdiplus.h>
-	#undef min
-	#undef max
-	#include "cinder/msw/CinderMsw.h"
-	#include "cinder/msw/CinderMswGdiPlus.h"
-	#pragma comment(lib, "gdiplus")
-	#include "cinder/Unicode.h"
+#define max(a, b) (((a) > (b)) ? (a) : (b))
+#define min(a, b) (((a) < (b)) ? (a) : (b))
+#include <gdiplus.h>
+#undef min
+#undef max
+#include "cinder/msw/CinderMsw.h"
+#include "cinder/msw/CinderMswGdiPlus.h"
+#pragma comment(lib, "gdiplus")
+#include "cinder/Unicode.h"
 
 static const float MAX_SIZE = 1000000.0f;
-
-#endif
 
 #include <boost/noncopyable.hpp>
 #include <limits.h>

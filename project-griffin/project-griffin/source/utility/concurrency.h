@@ -69,9 +69,15 @@ namespace griffin {
 			return ret;
 		}
 
+	private:
+		mutable T t;
+		mutable concurrent_queue<std::function<void()>> q;
+		bool done = false;
+		std::thread worker;
+
 		/**
-		 * Wrappers for p.set_value() so the function above compiles for both void and non-void.
-		 */
+		* Helpers for p.set_value() so the function above compiles for both void and non-void.
+		*/
 		template <typename Fut, typename F, typename T>
 		void set_value(std::promise<Fut>& p, F& f, T& t) {
 			p.set_value(f(t));
@@ -82,12 +88,6 @@ namespace griffin {
 			f(t);
 			p.set_value();
 		}
-
-	private:
-		mutable T t;
-		mutable concurrent_queue<std::function<void()>> q;
-		bool done = false;
-		std::thread worker;
 	};
 
 
@@ -127,8 +127,8 @@ namespace griffin {
 	/**
 	 * Example usage of concurrent<T>.
 	 * @code
-	 *	concurrent<string> s;
-	 *	auto f = s([](string& s) {		// C++14 polymorphic lambda becomes s([](s) {
+	 *	concurrent<string> cs;
+	 *	auto f = cs([](string& s) {		// C++14 polymorphic lambda becomes cs([](s) {
 	 *		// thread safe transaction!
 	 *		s += "added thread-safe";	// this is operating on the internal (wrapped) object
 	 *		return string("this was ") + s;

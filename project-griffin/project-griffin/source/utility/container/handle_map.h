@@ -14,7 +14,7 @@ namespace griffin {
 	/**
 	 * @struct Id_T
 	 * @var	free		0 if active, 1 if slot is part of freelist, only applicable to inner ids
-	 * @var	typeId		relates to Tid template parameter of ContiguousSet
+	 * @var	typeId		relates to m_itemTypeId parameter of handle_map
 	 * @var	generation	incrementing generation of data at the index, for tracking accesses to old data
 	 * @var	index		When used as an outer id (given to the client):
 	 *						free==0, index of id in the sparseIds array
@@ -41,7 +41,7 @@ namespace griffin {
 	typedef std::vector<Id_T> IdSet_T;
 
 	/**
-	 * @class SlotMap
+	 * @class handle_map
 	 *	Stores objects using a dense inner array and sparse outer array scheme for good cache coherence
 	 *	of the inner items. The sparse array contains outer ids (handles) used to identify the item,
 	 *	and provides an extra indirection allowing the inner array to move items in memory to keep them
@@ -117,7 +117,7 @@ namespace griffin {
 		{
 			// in the future look into use of SFINAE to allow the class to compile with non default
 			// constructible types as well
-			static_assert(std::is_default_constructible<T>::value, "SlotMap type is not default constructible");
+			static_assert(std::is_default_constructible<T>::value, "handle_map type is not default constructible");
 
 			m_sparseIds.reserve(reserveCount);
 			m_items.reserve(reserveCount);
@@ -139,7 +139,7 @@ namespace griffin {
 		uint32_t	m_freeListFront = 0xFFFFFFFF; //!< start index in the embedded ComponentId freelist
 		uint32_t	m_freeListBack = 0xFFFFFFFF; //!< last index in the freelist
 
-		uint16_t	m_itemTypeId;	//!< the Id_T::typeId to use for ids produced by this SlotMap<T>
+		uint16_t	m_itemTypeId;	//!< the Id_T::typeId to use for ids produced by this handle_map<T>
 
 		IdSet_T		m_sparseIds;	//!< stores a set of Id_T
 		DenseSet_T	m_items;		//!< stores items of type T
