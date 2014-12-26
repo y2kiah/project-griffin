@@ -5,10 +5,18 @@
 #include <memory>
 #include <utility/container/handle_map.h>
 #include <utility/concurrency.h>
+#include <utility/enum.h>
 #include <future>
 
 namespace griffin {
 	namespace resource {
+
+		MakeEnum(ResourceTypes, uint8_t,
+				(Texture)
+				(Mesh)
+				(Shader)
+			, _TypeId);
+
 
 		/**
 		 *
@@ -61,8 +69,8 @@ namespace griffin {
 
 
 		/**
-		*
-		*/
+		 *
+		 */
 		class ResourceCache {
 			//typedef handle_map<ResourcePtr> m_resourceCache;
 		};
@@ -74,7 +82,10 @@ namespace griffin {
 		class ResourceLoader {
 		public:
 			template<typename T>
-			ResourceHandle load(const wstring &name) {
+			ResourceHandle load(
+					const wstring &name,
+					std::function<void(const T&)> callback)
+			{
 				ResourceHandle h;
 				
 				auto f = m_c([=, &name](){

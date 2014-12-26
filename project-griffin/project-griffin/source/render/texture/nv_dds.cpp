@@ -185,7 +185,7 @@ extern "C" void(*glXGetProcAddressARB(const GLubyte *procName))(void);
 #include <cstdio>
 #include <cstring>
 #include <cassert>
-#include "../nv_dds.h"
+#include "nv_dds.h"
 
 using namespace std;
 using namespace nv_dds;
