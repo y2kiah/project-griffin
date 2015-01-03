@@ -21,12 +21,21 @@ using std::unique_ptr;
 using std::vector;
 using std::string;
 
+void test_resource_loader(); // test
+
 int main(int argc, char *argv[])
 {
 	Timer::initHighPerfTimer();
 
 	try {
 		SDLApplication app(PROGRAM_NAME);
+
+		// print working directories
+		auto wd = griffin::platform::getCurrentWorkingDirectory();
+		SDL_Log(string(wd + "\n").c_str());
+
+		wd = griffin::platform::getPreferencesPath();
+		SDL_Log(string(wd + "\n").c_str());
 
 		// Initialize GLEW
 		glewExperimental = true; // Needed in core profile
@@ -77,7 +86,8 @@ int main(int argc, char *argv[])
 			SDL_Log("SOIL loading error: %s\n", SOIL_last_result());
 		}
 		
-		test_reflection();
+//		test_reflection(); // TEMP
+		test_resource_loader(); // TEMP
 		initRenderData();
 
 		bool done = false;
@@ -175,4 +185,43 @@ int main(int argc, char *argv[])
 	}
 	
 	return 0;
+}
+
+#include <resource/ResourceLoader.h>
+
+// temp
+void test_resource_loader()
+{
+	using namespace griffin::resource;
+
+	ResourceCache cache(1, 10);
+	FileSystemSource fsSource;
+	ResourceLoader loader(std::move(cache), (IResourceSource*)&fsSource);
+
+	auto handle = loader.load<int>(L"shaders/SimpleVertexShader.glsl",
+		[](int& i){
+			SDL_Log("callback 1, resource 1 value = %d", i);
+		});
+
+	auto handle2 = loader.load<int>(L"shaders/SimpleFragmentShader.glsl",
+		[](int& i){
+			SDL_Log("callback 2, resource 2 value = %d", i);
+		});
+
+	try {
+		SDL_Log("Id1 = %llu", handle.value());
+		SDL_Log("index1 = %u", handle.resourceId.get().index);
+		SDL_Log("typeid1 = %u", handle.resourceId.get().typeId);
+		SDL_Log("gen1 = %u", handle.resourceId.get().generation);
+		SDL_Log("free1 = %u", handle.resourceId.get().free);
+
+		SDL_Log("Id2 = %llu", handle2.value());
+		SDL_Log("index2 = %u", handle2.resourceId.get().index);
+		SDL_Log("typeid2 = %u", handle2.resourceId.get().typeId);
+		SDL_Log("gen2 = %u", handle2.resourceId.get().generation);
+		SDL_Log("free2 = %u", handle2.resourceId.get().free);
+	}
+	catch (std::runtime_error& ex) {
+		SDL_Log(ex.what());
+	}
 }

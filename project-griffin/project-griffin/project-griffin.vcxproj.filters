@@ -77,6 +77,9 @@
     <Filter Include="render\impl">
       <UniqueIdentifier>{f7ea8796-9ecd-42e7-b442-89d192fe733c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="resource\impl">
+      <UniqueIdentifier>{e4f55fb2-5e6b-4ce2-9587-5a4b73899f14}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">
@@ -108,6 +111,12 @@
     </ClCompile>
     <ClCompile Include="source\render\Render.cpp">
       <Filter>render\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\resource\impl\ResourceSource.cpp">
+      <Filter>resource\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\resource\impl\ResourceLoader.inl">
+      <Filter>resource\impl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -509,6 +518,15 @@
     </ClInclude>
     <ClInclude Include="source\render\Render.h">
       <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="source\resource\ResourceSource.h">
+      <Filter>resource</Filter>
+    </ClInclude>
+    <ClInclude Include="source\resource\ResourceCache.h">
+      <Filter>resource</Filter>
+    </ClInclude>
+    <ClInclude Include="source\resource\ResourceLoader.h">
+      <Filter>resource</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

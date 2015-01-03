@@ -1,4 +1,30 @@
 #include "../platform.h"
+#include <SDL_filesystem.h>
+
+namespace griffin {
+	namespace platform {
+
+		std::string getPreferencesPath()
+		{
+			std::string s;
+			auto c = SDL_GetPrefPath("Griffin", "Project Griffin");
+			s.assign(c);
+			SDL_free(c);
+			return s;
+		}
+
+		std::wstring getPreferencesPathW()
+		{
+			std::wstring ws;
+
+			auto s = getPreferencesPath();
+			ws.assign(s.begin(), s.end());
+
+			return ws;
+		}
+
+	}
+}
 
 #ifdef _WIN32
 
@@ -12,6 +38,25 @@
 
 namespace griffin {
 	namespace platform {
+
+		std::string getCurrentWorkingDirectory()
+		{
+			char currentDir[MAX_PATH];
+			GetCurrentDirectoryA(MAX_PATH, currentDir);
+
+			return currentDir;
+		}
+
+		std::wstring getCurrentWorkingDirectoryW()
+		{
+			std::wstring ws;
+
+			wchar_t currentDir[MAX_PATH];
+			GetCurrentDirectory(MAX_PATH, currentDir);
+			ws = currentDir;
+
+			return ws;
+		}
 
 		void yieldThread()
 		{
@@ -30,6 +75,25 @@ namespace griffin {
 
 namespace griffin {
 	namespace platform {
+
+		std::string getCurrentWorkingDirectory()
+		{
+			std::string s;
+			auto c = SDL_GetBasePath();
+			s.assign(c);
+			SDL_free(c);
+			return s;
+		}
+
+		std::wstring getCurrentWorkingDirectoryW()
+		{
+			std::wstring ws;
+
+			auto s = getCurrentWorkingDirectory();
+			ws.assign(s.begin(), s.end());
+
+			return ws;
+		}
 
 		void yieldThread()
 		{

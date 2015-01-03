@@ -100,6 +100,7 @@ namespace griffin {
 		 * @param	outData	   memory location to move item into
 		 */
 		void wait_pop(T& outData);
+		T wait_pop();
 
 		/**
 		 * Thread-safe check of whether the queue is empty

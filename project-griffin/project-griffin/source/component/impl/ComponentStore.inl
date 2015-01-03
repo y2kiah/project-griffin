@@ -41,7 +41,7 @@ std::string ComponentStore<T>::to_string() const {
 	// print denseToSparse values
 	oss << "],\ndenseToSparse: [ ";
 	for (int c = 0; c < std::min(10, static_cast<int>(meta.size())); ++c) {
-		oss << meta[c].m_denseToSparse << ", ";
+		oss << meta[c].denseToSparse << ", ";
 	}
 	if (cmps.size() > 10) { oss << "... n=" << cmps.size(); }
 	oss << " ],\nfreeListFront: " << components.getFreeListFront() << ",\nfreeListBack: "

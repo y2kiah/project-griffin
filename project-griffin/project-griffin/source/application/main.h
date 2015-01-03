@@ -95,7 +95,7 @@ public:
 
 	~SDLApplication()
 	{
-		for each (auto wd in windowData) {
+		for (auto& wd : windowData) {
 			SDL_GL_DeleteContext(wd.glContext);
 			SDL_DestroyWindow(wd.window);
 		}

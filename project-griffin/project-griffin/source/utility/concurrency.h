@@ -18,6 +18,7 @@
 #include <thread>
 #include <mutex>
 #include <future>
+#include <functional>
 #include <utility/container/concurrent_queue.h>
 
 namespace griffin {
@@ -37,8 +38,8 @@ namespace griffin {
 	class concurrent {
 	public:
 		concurrent(T t_ = T{}) :
-			t{ t_ },
-			worker{ [=]{ while (!done) q.wait_pop()(); } }
+			t(std::move(t_)),
+			worker{ [=]{ while (!done) { q.wait_pop()(); } } }
 		{}
 
 		~concurrent() {
@@ -61,7 +62,8 @@ namespace griffin {
 			q.push([=]{
 				try {
 					set_value(*p, f, t);
-				} catch (...) {
+				}
+				catch (...) {
 					p->set_exception(current_exception());
 				}
 			});
@@ -76,15 +78,15 @@ namespace griffin {
 		std::thread worker;
 
 		/**
-		* Helpers for p.set_value() so the function above compiles for both void and non-void.
-		*/
+		 * Helpers for p.set_value() so the function above compiles for both void and non-void.
+		 */
 		template <typename Fut, typename F, typename T>
-		void set_value(std::promise<Fut>& p, F& f, T& t) {
+		static void set_value(std::promise<Fut>& p, F& f, T& t) {
 			p.set_value(f(t));
 		}
 
 		template <typename F, typename T>
-		void set_value(std::promise<void>& p, F& f, T& t) {
+		static void set_value(std::promise<void>& p, F& f, T& t) {
 			f(t);
 			p.set_value();
 		}

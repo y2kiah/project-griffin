@@ -16,7 +16,7 @@ namespace griffin {
 	 * @var	free		0 if active, 1 if slot is part of freelist, only applicable to inner ids
 	 * @var	typeId		relates to m_itemTypeId parameter of handle_map
 	 * @var	generation	incrementing generation of data at the index, for tracking accesses to old data
-	 * @var	index		When used as an outer id (given to the client):
+	 * @var	index		When used as a handle (outer id, given to the client):
 	 *						free==0, index of id in the sparseIds array
 	 *						free==1, index of next free slot, forming an embedded linked list
 	 *					When used as an inner id (stored in sparseIds array):
@@ -43,7 +43,7 @@ namespace griffin {
 	/**
 	 * @class handle_map
 	 *	Stores objects using a dense inner array and sparse outer array scheme for good cache coherence
-	 *	of the inner items. The sparse array contains outer ids (handles) used to identify the item,
+	 *	of the inner items. The sparse array contains handles (outer ids) used to identify the item,
 	 *	and provides an extra indirection allowing the inner array to move items in memory to keep them
 	 *	tightly packed. The sparse array contains an embedded FIFO freelist, where removed ids push to
 	 *	the back while new ids pop from the front.
@@ -57,55 +57,100 @@ namespace griffin {
 		 * @struct Meta_T
 		 */
 		struct Meta_T {
-			uint32_t		m_denseToSparse;	//!< index into m_sparseIds array stored in m_meta
+			uint32_t	denseToSparse;	//!< index into m_sparseIds array stored in m_meta
 		};
 
 		typedef std::vector<T>      DenseSet_T;
 		typedef std::vector<Meta_T> MetaSet_T;
 
 		// Functions
-		const DenseSet_T&	getItems() const			{ return m_items; }
-		const MetaSet_T&	getMeta() const				{ return m_meta; }
-		const IdSet_T&		getIds() const				{ return m_sparseIds; }
-		uint32_t			getFreeListFront() const	{ return m_freeListFront; }
-		uint32_t			getFreeListBack() const		{ return m_freeListBack; }
+
+		/**
+		 * Get a direct reference to a stored item by handle
+		 * @param[in]	handle		id of the item
+		 * @returns reference to the item
+		 */
+		T&			at(Id_T handle);
+		const T&	at(Id_T handle) const;
+		T&			operator[](Id_T handle)			{ return at(handle); }
+		const T&	operator[](Id_T handle) const	{ return at(handle); }
 
 		/**
 		 * create one item with default initialization
+		 * @tparam		Params	initialization arguments passed to constructor of item
 		 * @returns the id
 		 */
-		inline Id_T createItem() {
-			return addItem(T{});
-		}
+		template <typename... Params>
+		Id_T emplace(Params... args) { return insert(T(args...)); }
 
 		/**
-		 * create n items with default initialization and return a vector of their ids
-		 * @param[in]	n	number of items to create
+		 * template specialization for empty parameter list uses the empty brace initializer so POD
+		 * types and primitives get zero-initialized
+		 */
+		template <>
+		Id_T emplace<>() { return insert(T{}); }
+
+		/**
+		 * create n items with initialization args specified by Params, return vector of ids
+		 * @param[in]	n		number of items to create
+		 * @tparam		Params	initialization arguments passed to constructor of each item created
 		 * @returns a collection of ids
 		 */
-		IdSet_T createItems(int n);
+		template <typename... Params>
+		IdSet_T emplaceItems(int n, Params... args);
 
 		/**
-		 * add one item, moving the provided i into the store, return id
+		 * iterators over the dense set, they are invalidated by inserting and removing
+		 */
+		typename DenseSet_T::iterator		begin()			{ return m_items.begin(); }
+		typename DenseSet_T::const_iterator	cbegin() const	{ return m_items.cbegin(); }
+		typename DenseSet_T::iterator		end()			{ return m_items.end(); }
+		typename DenseSet_T::const_iterator	cend() const	{ return m_items.cend(); }
+
+		/**
+		 * remove the item identified by the provided handle
+		 * @param[in]	handle		id of the item
+		 * @returns count of items removed (0 or 1)
+		 */
+		size_t erase(Id_T handle);
+
+		/**
+		 * remove the items identified in the set of handles
+		 * @param[in]	handles		set of ids
+		 * @returns count of items removed
+		 */
+		size_t eraseItems(const IdSet_T& handles);
+
+		/**
+		 * add one item, forwarding the provided i into the store, return id
 		 * @param[in]	i	rvalue ref of of the object to move into inner storage
 		 * @returns the id
 		 */
-		Id_T addItem(T&& i);
+		Id_T insert(T&& i);
 
 		/**
-		 * remove the item identified by the provided outerId
-		 * @param[in]	outerId		id of the item
+		 * @returns true if handle handle refers to a valid item
 		 */
-		void removeItem(Id_T outerId);
-
-		void removeItems(const IdSet_T& outerIds) {}
+		bool isValid(Id_T handle) const;
 
 		/**
-		 * Get a direct reference to a stored item by outerId
-		 * @param[in]	outerId		id of the item
-		 * @returns reference to the item
+		 * @returns size of the dense items array
 		 */
-		inline T& getItem(Id_T outerId);
+		size_t size() const _NOEXCEPT { return m_items.size(); }
+
+		/**
+		 * these functions provide direct access to inner arrays, don't add or remove items, just
+		 * use them for lookups and iterating over the items
+		 */
+		DenseSet_T&			getItems()					{ return m_items; }
+		const DenseSet_T&	getItems() const			{ return m_items; }
+		MetaSet_T&			getMeta()					{ return m_meta; }
+		const MetaSet_T&	getMeta() const				{ return m_meta; }
+		IdSet_T&			getIds()					{ return m_sparseIds; }
+		const IdSet_T&		getIds() const				{ return m_sparseIds; }
+
+		uint32_t			getFreeListFront() const	{ return m_freeListFront; }
+		uint32_t			getFreeListBack() const		{ return m_freeListBack; }
 
 		/**
 		 * Constructor
@@ -115,10 +160,6 @@ namespace griffin {
 		explicit handle_map(uint16_t itemTypeId, size_t reserveCount)
 			: m_itemTypeId(itemTypeId)
 		{
-			// in the future look into use of SFINAE to allow the class to compile with non default
-			// constructible types as well
-			static_assert(std::is_default_constructible<T>::value, "handle_map type is not default constructible");
-
 			m_sparseIds.reserve(reserveCount);
 			m_items.reserve(reserveCount);
 			m_meta.reserve(reserveCount);
@@ -127,17 +168,15 @@ namespace griffin {
 	private:
 
 		/**
-		* freeList is empty when the front is set to 32 bit max value (the back will match)
-		* @returns true if empty
-		*/
-		inline bool freeListEmpty() const {
-			return (m_freeListFront == 0xFFFFFFFF);
-		}
+		 * freeList is empty when the front is set to 32 bit max value (the back will match)
+		 * @returns true if empty
+		 */
+		bool freeListEmpty() const { return (m_freeListFront == 0xFFFFFFFF); }
 
 		// Variables
 
 		uint32_t	m_freeListFront = 0xFFFFFFFF; //!< start index in the embedded ComponentId freelist
-		uint32_t	m_freeListBack = 0xFFFFFFFF; //!< last index in the freelist
+		uint32_t	m_freeListBack  = 0xFFFFFFFF; //!< last index in the freelist
 
 		uint16_t	m_itemTypeId;	//!< the Id_T::typeId to use for ids produced by this handle_map<T>
 

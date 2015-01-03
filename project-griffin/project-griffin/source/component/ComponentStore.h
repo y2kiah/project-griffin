@@ -32,14 +32,14 @@ public:
 	* create one component with default zero-initialization
 	*/
 	inline ComponentId createComponent() {
-		return components.createItem();
+		return components.emplace();
 	}
 
 	/**
 	* create n components and return a vector of their ComponentIds
 	*/
 	inline ComponentIdList createComponents(int n) {
-		return components.createItems(n);
+		return components.emplaceItems(n);
 	}
 
 	/**
@@ -62,7 +62,7 @@ public:
 	* would also be unsafe to hold a reference to invalid memory, incase the store is deleted.
 	*/
 	inline T& getComponent(ComponentId outerId) {
-		return components.getItem(outerId);
+		return components[outerId];
 	}
 
 	/**

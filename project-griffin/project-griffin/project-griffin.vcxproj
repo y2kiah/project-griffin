@@ -28,6 +28,8 @@
     <ClCompile Include="source\render\font\FreeType.cpp" />
     <ClCompile Include="source\render\Render.cpp" />
     <ClCompile Include="source\render\texture\nv_dds.cpp" />
+    <ClCompile Include="source\resource\impl\ResourceLoader.inl" />
+    <ClCompile Include="source\resource\impl\ResourceSource.cpp" />
     <ClCompile Include="source\utility\profile\impl\Profile.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -47,6 +49,9 @@
     <ClInclude Include="source\render\texture\dds.h" />
     <ClInclude Include="source\render\texture\nv_dds.h" />
     <ClInclude Include="source\resource\Resource.h" />
+    <ClInclude Include="source\resource\ResourceCache.h" />
+    <ClInclude Include="source\resource\ResourceLoader.h" />
+    <ClInclude Include="source\resource\ResourceSource.h" />
     <ClInclude Include="source\test\Test.h" />
     <ClInclude Include="source\utility\algorithms.h" />
     <ClInclude Include="source\utility\auto_lister.h" />

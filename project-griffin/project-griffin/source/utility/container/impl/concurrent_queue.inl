@@ -138,6 +138,19 @@ namespace griffin {
 
 
 	template <typename T>
+	T concurrent_queue<T>::wait_pop()
+	{
+		std::unique_lock<mutex> lock(m_mutex);
+		m_cond.wait(lock, [this]() { return !m_queue.empty(); });
+
+		T outData(std::move(m_queue.front()));
+		m_queue.pop();
+
+		return outData;
+	}
+
+
+	template <typename T>
 	inline bool concurrent_queue<T>::empty() const
 	{
 		std::lock_guard<mutex> lock(m_mutex);
