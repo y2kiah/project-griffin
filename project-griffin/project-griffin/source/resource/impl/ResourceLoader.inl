@@ -35,9 +35,15 @@ namespace griffin {
 					throw std::runtime_error(s + ": no data loaded");
 				}
 
+				// this needs to be looked at, the dataPtr should be moved into the constructor so
+				// no copying of the data takes place, the existing data should be used in place
+				// could call dataPtr.release() if the resource T is placement-new'd, but that is
+				// an intrusive implementation requirement. Really should think about breaking out
+				// this construction responsibility into a lambda that is passed in (like the
+				// callback)
 				auto resourcePtr = std::make_shared<Resource_T>(T(dataPtr.get()), size, impl.m_cache);
 
-				auto id = impl.m_cache.addResource(resourcePtr, name);
+				auto id = impl.m_cache.addResource(resourcePtr);
 
 				// if the resource was obtained, tell the LRU cache to put it to front
 

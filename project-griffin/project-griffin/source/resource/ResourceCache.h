@@ -1,13 +1,12 @@
 #pragma once
+#ifndef GRIFFIN_RESOURCE_CACHE_H
+#define GRIFFIN_RESOURCE_CACHE_H
 
-#include <string>
 #include <memory>
 #include <utility/container/handle_map.h>
 
 namespace griffin {
 	namespace resource {
-
-		using std::wstring;
 
 		class Resource_T;
 
@@ -33,22 +32,23 @@ namespace griffin {
 				return m_resourceCache.isValid(handle);
 			}
 
-			Id_T addResource(ResourcePtr resource, wstring name);
+			template <typename T>
+			T& getResource(Id_T handle);
 
-			void setBytesFreed(size_t sizeBytes) {
-				m_usedSizeBytes -= sizeBytes;
-			}
+			Id_T addResource(ResourcePtr resource);
 
-			void makeRoomForBytes(size_t sizeBytes)
-			{
-				
-			}
+			bool removeResource(Id_T handle, bool force = false);
+
+			void makeRoomForBytes(size_t sizeBytes);
 
 		private:
 			size_t			m_maxSizeBytes;
 			size_t			m_usedSizeBytes;
 
 			ResourceMap		m_resourceCache;
+			//lru_set<Id_T>	m_lru;
 		};
 	}
 }
+
+#endif

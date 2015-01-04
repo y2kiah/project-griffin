@@ -13,8 +13,10 @@ using std::vector;
 namespace griffin {
 	/**
 	 * @class vector_queue
-	 * vector_queue implements a queue on top of std::vector, unlike std::queue which uses deque by
-	 * default, and can optionally use list.
+	 * vector_queue implements a queue on top of std::vector, unlike std::queue which uses deque or
+	 * list. This container continues to grow while items are pushed and the queue is not empty.
+	 * When the queue empties, the offset is set back to zero. This container should be used when
+	 * contiguous memory is important, and when the queue is often filled and emptied in cycles.
 	 * @tparam T	type of object stored in the queue
 	 */
 	template <typename T>
