@@ -15,7 +15,7 @@ namespace griffin {
 
 		using std::wstring;
 
-		typedef std::unique_ptr<uint8_t[]> DataPtr;
+		typedef std::unique_ptr<char[]> DataPtr;
 
 		/**
 		 *

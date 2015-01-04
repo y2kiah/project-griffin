@@ -30,13 +30,6 @@ int main(int argc, char *argv[])
 	try {
 		SDLApplication app(PROGRAM_NAME);
 
-		// print working directories
-		auto wd = griffin::platform::getCurrentWorkingDirectory();
-		SDL_Log(string(wd + "\n").c_str());
-
-		wd = griffin::platform::getPreferencesPath();
-		SDL_Log(string(wd + "\n").c_str());
-
 		// Initialize GLEW
 		glewExperimental = true; // Needed in core profile
 		GLenum err = glewInit();
@@ -198,14 +191,14 @@ void test_resource_loader()
 	FileSystemSource fsSource;
 	ResourceLoader loader(std::move(cache), (IResourceSource*)&fsSource);
 
-	auto handle = loader.load<int>(L"shaders/SimpleVertexShader.glsl",
-		[](int& i){
-			SDL_Log("callback 1, resource 1 value = %d", i);
+	auto handle = loader.load<string>(L"shaders/SimpleVertexShader.glsl",
+		[](string& r){
+			SDL_Log("callback 1, resource 1 value\n%s", r.c_str());
 		});
 
-	auto handle2 = loader.load<int>(L"shaders/SimpleFragmentShader.glsl",
-		[](int& i){
-			SDL_Log("callback 2, resource 2 value = %d", i);
+	auto handle2 = loader.load<string>(L"shaders/SimpleFragmentShader.glsl",
+		[](string& r){
+			SDL_Log("callback 2, resource 2 value\n%s", r.c_str());
 		});
 
 	try {

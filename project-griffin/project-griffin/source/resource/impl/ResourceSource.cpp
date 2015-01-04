@@ -69,11 +69,11 @@ namespace griffin {
 				size = ftell(inFile);
 
 				// create buffer of correct size
-				bPtr = std::make_unique<uint8_t[]>(size);
+				bPtr = std::make_unique<char[]>(size);
 
 				// read data from file
 				rewind(inFile);
-				auto buffer = static_cast<void*>(bPtr.get());
+				auto buffer = reinterpret_cast<void*>(bPtr.get());
 				size_t sizeRead = fread(buffer, 1, size, inFile);
 				
 				fclose(inFile);

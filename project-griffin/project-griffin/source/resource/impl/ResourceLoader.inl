@@ -19,9 +19,11 @@ namespace griffin {
 			// Or do they need to be copied for the lambda to refer to them later?
 			auto f = m_c([=](Impl& impl) {
 				// check cache for resource first
+
 				// else go to source for resource
 				if (!impl.m_source->hasResource(name)) {
-					// if can't get resource throw exception
+					std::string s(name.begin(), name.end());
+					throw std::runtime_error(s + ": resource not found in source");
 				}
 
 				size_t size = 0;

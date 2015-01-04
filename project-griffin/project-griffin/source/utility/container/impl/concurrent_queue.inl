@@ -143,10 +143,10 @@ namespace griffin {
 		std::unique_lock<mutex> lock(m_mutex);
 		m_cond.wait(lock, [this]() { return !m_queue.empty(); });
 
-		T outData(std::move(m_queue.front()));
+		T outData = std::move(m_queue.front());
 		m_queue.pop();
 
-		return outData;
+		return std::move(outData);
 	}
 
 
