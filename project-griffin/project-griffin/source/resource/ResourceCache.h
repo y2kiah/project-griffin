@@ -19,7 +19,9 @@ namespace griffin {
 			typedef std::shared_ptr<Resource_T> ResourcePtr;
 			typedef handle_map<ResourcePtr> ResourceMap;
 
-			explicit ResourceCache(uint16_t itemTypeId, size_t reserveCount) :
+			explicit ResourceCache(uint16_t itemTypeId, size_t reserveCount, size_t maxSizeBytes) :
+				m_maxSizeBytes{ maxSizeBytes },
+				m_usedSizeBytes{ 0 },
 				m_resourceCache(itemTypeId, reserveCount)
 			{}
 
@@ -31,15 +33,20 @@ namespace griffin {
 				return m_resourceCache.isValid(handle);
 			}
 
-			Id_T addResource(ResourcePtr resource, wstring name)
-			{
-				auto id = m_resourceCache.insert(std::move(resource));
-				return id;
+			Id_T addResource(ResourcePtr resource, wstring name);
+
+			void setBytesFreed(size_t sizeBytes) {
+				m_usedSizeBytes -= sizeBytes;
 			}
 
-			void memoryHasBeenFreed(size_t sizeBytes) {}
+			void makeRoomForBytes(size_t sizeBytes)
+			{
+				
+			}
 
 		private:
+			size_t			m_maxSizeBytes;
+			size_t			m_usedSizeBytes;
 
 			ResourceMap		m_resourceCache;
 		};

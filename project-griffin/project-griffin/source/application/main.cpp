@@ -187,7 +187,7 @@ void test_resource_loader()
 {
 	using namespace griffin::resource;
 
-	ResourceCache cache(1, 10);
+	ResourceCache cache(1, 10, 1024*1024 /* 1 MB */);
 	FileSystemSource fsSource;
 	ResourceLoader loader(std::move(cache), (IResourceSource*)&fsSource);
 

@@ -64,7 +64,7 @@ namespace griffin {
 				virtual ~concept_T()
 				{
 					// tell cache that this resource's memory has been freed
-					m_cache.memoryHasBeenFreed(m_sizeBytes);
+					m_cache.setBytesFreed(m_sizeBytes);
 				}
 
 				size_t			m_sizeBytes;

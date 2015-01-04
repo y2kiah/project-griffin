@@ -20,6 +20,7 @@ namespace griffin {
 			auto f = m_c([=](Impl& impl) {
 				// check cache for resource first
 
+
 				// else go to source for resource
 				if (!impl.m_source->hasResource(name)) {
 					std::string s(name.begin(), name.end());

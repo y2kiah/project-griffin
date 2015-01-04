@@ -43,6 +43,7 @@ namespace griffin {
 			struct Impl {
 				ResourceCache		m_cache;
 				IResourceSource	*	m_source;
+				std::vector<std::pair<std::wstring, Id_T>> m_nameToHandle;
 			};
 			concurrent<Impl> m_c;
 		};

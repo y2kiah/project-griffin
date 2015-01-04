@@ -28,6 +28,7 @@
     <ClCompile Include="source\render\font\FreeType.cpp" />
     <ClCompile Include="source\render\Render.cpp" />
     <ClCompile Include="source\render\texture\nv_dds.cpp" />
+    <ClCompile Include="source\resource\impl\ResourceCache.cpp" />
     <ClCompile Include="source\resource\impl\ResourceLoader.inl" />
     <ClCompile Include="source\resource\impl\ResourceSource.cpp" />
     <ClCompile Include="source\utility\profile\impl\Profile.cpp" />

@@ -118,6 +118,9 @@
     <ClCompile Include="source\resource\impl\ResourceLoader.inl">
       <Filter>resource\impl</Filter>
     </ClCompile>
+    <ClCompile Include="source\resource\impl\ResourceCache.cpp">
+      <Filter>resource\impl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\application\main.h">
