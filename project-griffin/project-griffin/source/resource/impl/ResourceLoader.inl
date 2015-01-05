@@ -41,7 +41,7 @@ namespace griffin {
 				// an intrusive implementation requirement. Really should think about breaking out
 				// this construction responsibility into a lambda that is passed in (like the
 				// callback)
-				auto resourcePtr = std::make_shared<Resource_T>(T(dataPtr.get()), size, impl.m_cache);
+				auto resourcePtr = std::make_shared<Resource_T>(T(dataPtr.get()), size/*, impl.m_cache*/);
 
 				auto id = impl.m_cache.addResource(resourcePtr);
 

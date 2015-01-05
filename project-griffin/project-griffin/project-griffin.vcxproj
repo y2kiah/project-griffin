@@ -61,6 +61,7 @@
     <ClInclude Include="source\utility\container\lru_cache.h" />
     <ClInclude Include="source\utility\container\bitwise_quadtree.h" />
     <ClInclude Include="source\utility\container\serial_task_queue.h" />
+    <ClInclude Include="source\utility\container\vector_list.h" />
     <ClInclude Include="source\utility\container\vector_queue.h" />
     <ClInclude Include="source\utility\enum.h" />
     <ClInclude Include="source\utility\concurrency.h" />

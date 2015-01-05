@@ -531,6 +531,9 @@
     <ClInclude Include="source\resource\ResourceLoader.h">
       <Filter>resource</Filter>
     </ClInclude>
+    <ClInclude Include="source\utility\container\vector_list.h">
+      <Filter>utility\container</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="data\shaders\SimpleVertexShader.glsl">

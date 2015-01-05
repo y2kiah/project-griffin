@@ -105,7 +105,7 @@ namespace griffin {
 		}
 
 		// remove the component by swapping with the last element, then pop_back
-		if (items.size() > 1) {
+		if (m_items.size() > 1) {
 			std::swap(m_items.at(innerIndex), m_items.back());
 			std::swap(m_meta.at(innerIndex), m_meta.back());
 

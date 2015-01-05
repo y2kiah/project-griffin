@@ -39,7 +39,7 @@ namespace griffin {
 
 			bool removeResource(Id_T handle, bool force = false);
 
-			void makeRoomForBytes(size_t sizeBytes);
+			void ensureRoomForBytes(size_t sizeBytes);
 
 		private:
 			size_t			m_maxSizeBytes;

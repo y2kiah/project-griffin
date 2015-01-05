@@ -14,10 +14,7 @@ namespace griffin {
 		Id_T ResourceCache::addResource(ResourcePtr resource)
 		{
 			auto sizeBytes = resource->sizeBytes();
-			auto difference = m_usedSizeBytes + sizeBytes - m_maxSizeBytes;
-			if (difference > 0) {
-				makeRoomForBytes(difference);
-			}
+			ensureRoomForBytes(sizeBytes);
 
 			auto id = m_resourceCache.insert(std::move(resource));
 			m_usedSizeBytes += sizeBytes;
@@ -29,26 +26,33 @@ namespace griffin {
 		
 		bool ResourceCache::removeResource(Id_T handle, bool force)
 		{
+			bool removed = false;
 			// Ensure that we only remove resources with a use count of 1 (meaning the cache is the
 			// only holder of the shared_ptr at this point). This will prevent resource memory from
 			// floating off into the nether and losing track of it. The cache will always be the
 			// last holder of resource memory, unless force is true, which will ignore this
 			// restriction and force the removal from cache.
-			if (!m_resourceCache.isValid(handle) ||
-				(m_resourceCache[handle].use_count > 1 && !force))
-			{
-				return false;
+			if (m_resourceCache.isValid(handle)) {
+				const auto& resourcePtr = m_resourceCache[handle];
+				if (resourcePtr.use_count() == 1 || force) {
+					auto size = resourcePtr->sizeBytes();
+					m_usedSizeBytes -= size;
+					m_resourceCache.erase(handle);
+					removed = true;
+				}
+
 			}
-
-			size_t size = m_resourceCache[handle]->sizeBytes();
-			m_resourceCache.erase(handle);
-			m_usedSizeBytes -= size;
-
-			return true;
+			return removed;
 		}
 
-		void ResourceCache::makeRoomForBytes(size_t sizeBytes)
+		void ResourceCache::ensureRoomForBytes(size_t sizeBytes)
 		{
+			assert(sizeBytes <= m_maxSizeBytes);
+
+			while (m_maxSizeBytes - m_usedSizeBytes < sizeBytes) {
+				// get front from LRU
+				//removeResource(handle);
+			}
 		}
 
 	}

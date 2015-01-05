@@ -38,8 +38,8 @@ namespace griffin {
 		class Resource_T {
 		public:
 			template <typename T>
-			Resource_T(T&& x, size_t sizeBytes, ResourceCache& cache) :
-				m_selfPtr(std::make_shared<model<T>>(std::forward<T>(x), sizeBytes, cache))
+			Resource_T(T&& x, size_t sizeBytes/*, ResourceCache& cache*/) :
+				m_selfPtr(std::make_shared<model<T>>(std::forward<T>(x), sizeBytes/*, cache*/))
 			{}
 
 			size_t sizeBytes() const { return m_selfPtr->m_sizeBytes; }
