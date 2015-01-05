@@ -115,10 +115,10 @@
     <ClCompile Include="source\resource\impl\ResourceSource.cpp">
       <Filter>resource\impl</Filter>
     </ClCompile>
-    <ClCompile Include="source\resource\impl\ResourceLoader.inl">
+    <ClCompile Include="source\resource\impl\ResourceCache.cpp">
       <Filter>resource\impl</Filter>
     </ClCompile>
-    <ClCompile Include="source\resource\impl\ResourceCache.cpp">
+    <ClCompile Include="source\resource\impl\ResourceLoader.inl">
       <Filter>resource\impl</Filter>
     </ClCompile>
   </ItemGroup>

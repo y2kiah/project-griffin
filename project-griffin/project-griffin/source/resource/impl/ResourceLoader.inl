@@ -19,7 +19,13 @@ namespace griffin {
 			// Or do they need to be copied for the lambda to refer to them later?
 			auto f = m_c([=](Impl& impl) {
 				// check cache for resource first
-
+				auto indexIterator = impl.m_nameToHandle.find(name);
+				if (indexIterator != impl.m_nameToHandle.end()) {
+					Id_T cacheHandle = indexIterator->second;
+					if (impl.m_cache.hasResource(cacheHandle)) {
+						return cacheHandle;
+					}
+				}
 
 				// else go to source for resource
 				if (!impl.m_source->hasResource(name)) {
@@ -61,6 +67,11 @@ namespace griffin {
 			return h;
 		}
 
+		template <typename T>
+		T& ResourceLoader::getResource(ResourceHandle<T>& inOutHandle)
+		{
+
+		}
 
 	}
 }

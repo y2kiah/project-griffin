@@ -64,7 +64,7 @@ namespace griffin {
 					set_value(*p, f, t);
 				}
 				catch (...) {
-					p->set_exception(current_exception());
+					p->set_exception(std::current_exception());
 				}
 			});
 

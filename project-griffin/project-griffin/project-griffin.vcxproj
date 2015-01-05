@@ -309,7 +309,7 @@
     <LibraryPath>$(ProjectDir)\vendor\SDL2\lib\x64\</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)\source\;$(ProjectDir)\vendor\glew-1.10.0\include\;$(ProjectDir)\vendor\SDL2\include\;$(ProjectDir)\vendor\soil\include\;$(ProjectDir)\vendor\glm\;D:\Programming\Libraries\boost_1_57_0;C:\Users\Jeff\Programming\Libraries\boost_1_57_0;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\source\;$(ProjectDir)\vendor\glew-1.10.0\include\;$(ProjectDir)\vendor\SDL2\include\;$(ProjectDir)\vendor\soil\include\;$(ProjectDir)\vendor\glm\;$(ProjectDir)\vendor\boost_1_57_0\;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)\vendor\SDL2\lib\x64\;$(ProjectDir)\vendor\soil\lib\;$(ProjectDir)\vendor\glew-1.10.0\lib\x64\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -317,7 +317,7 @@
     <LibraryPath>$(ProjectDir)\vendor\SDL2\lib\x64\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir)\source\;$(ProjectDir)\vendor\glew-1.10.0\include\;$(ProjectDir)\vendor\SDL2\include\;$(ProjectDir)\vendor\soil\include\;$(ProjectDir)\vendor\glm\;D:\Programming\Libraries\boost_1_57_0\;C:\Users\Jeff\Programming\Libraries\boost_1_57_0;D:\Programming\Libraries\Cinder\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\source\;$(ProjectDir)\vendor\glew-1.10.0\include\;$(ProjectDir)\vendor\SDL2\include\;$(ProjectDir)\vendor\soil\include\;$(ProjectDir)\vendor\glm\;$(ProjectDir)\vendor\boost_1_57_0\;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)\vendor\SDL2\lib\x64\;$(ProjectDir)\vendor\soil\lib\;$(ProjectDir)\vendor\glew-1.10.0\lib\x64\;D:\Programming\Libraries\Cinder\lib\msw\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

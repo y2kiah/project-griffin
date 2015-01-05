@@ -6,7 +6,7 @@
 #include <memory>
 #include <future>
 #include <functional>
-#include <cvt/wstring>
+#include <boost/container/flat_map.hpp>
 #include <utility/concurrency.h>
 #include "Resource.h"
 #include "ResourceCache.h"
@@ -21,8 +21,10 @@ namespace griffin {
 		class ResourceLoader {
 		public:
 			explicit ResourceLoader(ResourceCache&& cache, IResourceSource* source) :
-				m_c({ std::forward<ResourceCache>(cache), source })
-			{}
+				m_c({ std::forward<ResourceCache>(cache), source, {} })
+			{
+				// we need a way to call "reserve" on the ResourceNameIndex flat_map, maybe in a Impl constructor?
+			}
 
 			/**
 			 *
@@ -34,17 +36,17 @@ namespace griffin {
 			 *
 			 */
 			template <typename T>
-			T& getResource(ResourceHandle<T>& inOutHandle)
-			{
-				//if (m_cache. inOutHandle) {}
-			}
+			T& getResource(ResourceHandle<T>& inOutHandle);
 
 		private:
+			typedef boost::container::flat_map<std::wstring, Id_T> ResourceNameIndex;
 			struct Impl {
 				ResourceCache		m_cache;
 				IResourceSource	*	m_source;
-				std::vector<std::pair<std::wstring, Id_T>> m_nameToHandle;
+				
+				ResourceNameIndex	m_nameToHandle;
 			};
+
 			concurrent<Impl> m_c;
 		};
 
