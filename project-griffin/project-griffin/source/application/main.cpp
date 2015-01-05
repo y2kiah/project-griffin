@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
 			SDL_Log("SOIL loading error: %s\n", SOIL_last_result());
 		}
 		
-//		test_reflection(); // TEMP
+		test_reflection(); // TEMP
 		test_resource_loader(); // TEMP
 		initRenderData();
 

@@ -177,9 +177,6 @@
     <ClInclude Include="source\utility\profile\ProfileAggregate.h">
       <Filter>utility\profile</Filter>
     </ClInclude>
-    <ClInclude Include="source\utility\container\lru_cache.h">
-      <Filter>utility\container</Filter>
-    </ClInclude>
     <ClInclude Include="source\application\platform.h">
       <Filter>application</Filter>
     </ClInclude>

@@ -58,7 +58,6 @@
     <ClInclude Include="source\utility\auto_lister.h" />
     <ClInclude Include="source\utility\container\concurrent_queue.h" />
     <ClInclude Include="source\utility\container\handle_map.h" />
-    <ClInclude Include="source\utility\container\lru_cache.h" />
     <ClInclude Include="source\utility\container\bitwise_quadtree.h" />
     <ClInclude Include="source\utility\container\serial_task_queue.h" />
     <ClInclude Include="source\utility\container\vector_list.h" />

@@ -16,11 +16,19 @@ namespace griffin {
 		class ResourceCache {
 		public:
 			typedef std::shared_ptr<Resource_T> ResourcePtr;
-			typedef handle_map<ResourcePtr> ResourceMap;
+			struct ResourceLRUItem {
+				ResourcePtr		resourcePtr;
+				Id_T			previous;
+				Id_T			next;
+			};
+			typedef handle_map<ResourceLRUItem> ResourceMap;
+
 
 			explicit ResourceCache(uint16_t itemTypeId, size_t reserveCount, size_t maxSizeBytes) :
 				m_maxSizeBytes{ maxSizeBytes },
 				m_usedSizeBytes{ 0 },
+				m_lruBack{},
+				m_lruFront{},
 				m_resourceCache(itemTypeId, reserveCount)
 			{}
 
@@ -41,12 +49,15 @@ namespace griffin {
 
 			void ensureRoomForBytes(size_t sizeBytes);
 
-		private:
-			size_t			m_maxSizeBytes;
-			size_t			m_usedSizeBytes;
+			void setLRUMostRecent(Id_T handle);
 
-			ResourceMap		m_resourceCache;
-			//lru_set<Id_T>	m_lru;
+		private:
+			size_t				m_maxSizeBytes;
+			size_t				m_usedSizeBytes;
+			Id_T				m_lruFront;	// least recent
+			Id_T				m_lruBack;	// most recent
+
+			ResourceMap			m_resourceCache;
 		};
 	}
 }
