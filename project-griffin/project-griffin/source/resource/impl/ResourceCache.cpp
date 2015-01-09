@@ -4,12 +4,12 @@
 namespace griffin {
 	namespace resource {
 		
-		template <typename T>
-		T& ResourceCache::getResource(Id_T handle)
+		inline ResourcePtr& ResourceCache::getResource(Id_T handle)
 		{
 			setLRUMostRecent(handle);
-			return m_resourceCache[handle].resourcePtr->getResource<T>();
+			return m_resourceCache[handle].resourcePtr;
 		}
+
 
 		Id_T ResourceCache::addResource(ResourcePtr resource)
 		{

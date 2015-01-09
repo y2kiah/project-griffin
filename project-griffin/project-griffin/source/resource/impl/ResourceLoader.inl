@@ -23,6 +23,7 @@ namespace griffin {
 				if (indexIterator != impl.m_nameToHandle.end()) {
 					Id_T cacheHandle = indexIterator->second;
 					if (impl.m_cache.hasResource(cacheHandle)) {
+						impl.m_cache.setLRUMostRecent(cacheHandle);
 						return cacheHandle;
 					}
 				}
@@ -49,9 +50,11 @@ namespace griffin {
 				// callback)
 				auto resourcePtr = std::make_shared<Resource_T>(T(dataPtr.get()), size/*, impl.m_cache*/);
 
+				// add to the LRU cache, which also puts it at the front
 				auto id = impl.m_cache.addResource(resourcePtr);
-
-				// if the resource was obtained, tell the LRU cache to put it to front
+				
+				// add handle to index
+				impl.m_nameToHandle[name] = id;
 
 				// don't call this here, it will run the callback on the resource loader thread
 				// instead wrap closure around the callback (binding the resource value) and
@@ -68,9 +71,17 @@ namespace griffin {
 		}
 
 		template <typename T>
-		T& ResourceLoader::getResource(ResourceHandle<T>& inOutHandle)
+		std::future<ResourcePtr> ResourceLoader::getResource(ResourceHandle<T>& inOutHandle)
 		{
+			auto f = m_c([=](Impl& impl) {
+				Id_T handle = inOutHandle.handle();
+				if (!impl.m_cache.hasResource(handle)) {
+					throw std::runtime_error("resource not found by handle");
+				}
+				return impl.m_cache.getResource(handle);
+			});
 
+			return f;
 		}
 
 	}

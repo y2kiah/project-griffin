@@ -9,13 +9,13 @@ namespace griffin {
 	namespace resource {
 
 		class Resource_T;
+		typedef std::shared_ptr<Resource_T> ResourcePtr;
 
 		/**
 		 *
 		 */
 		class ResourceCache {
 		public:
-			typedef std::shared_ptr<Resource_T> ResourcePtr;
 			struct ResourceLRUItem {
 				ResourcePtr		resourcePtr;
 				Id_T			previous;
@@ -40,8 +40,7 @@ namespace griffin {
 				return m_resourceCache.isValid(handle);
 			}
 
-			template <typename T>
-			T& getResource(Id_T handle);
+			ResourcePtr& getResource(Id_T handle);
 
 			Id_T addResource(ResourcePtr resource);
 
@@ -52,12 +51,12 @@ namespace griffin {
 			void setLRUMostRecent(Id_T handle);
 
 		private:
-			size_t				m_maxSizeBytes;
-			size_t				m_usedSizeBytes;
-			Id_T				m_lruFront;	// least recent
-			Id_T				m_lruBack;	// most recent
+			size_t		m_maxSizeBytes;
+			size_t		m_usedSizeBytes;
+			Id_T		m_lruFront;	// least recent
+			Id_T		m_lruBack;	// most recent
 
-			ResourceMap			m_resourceCache;
+			ResourceMap	m_resourceCache;
 		};
 	}
 }

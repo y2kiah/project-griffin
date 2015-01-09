@@ -371,7 +371,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GRIFFIN_PROFILE=1;NDEBUG;WIN32_LEAN_AND_MEAN;GLM_FORCE_SSE3;GLM_FORCE_INLINE;GLM_SWIZZLE;GLM_FORCE_SIZE_T_LENGTH;GL_GLEXT_PROTOTYPES;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GRIFFIN_PROFILE=1;_SECURE_SCL=0;NDEBUG;WIN32_LEAN_AND_MEAN;GLM_FORCE_SSE3;GLM_FORCE_INLINE;GLM_SWIZZLE;GLM_FORCE_SIZE_T_LENGTH;GL_GLEXT_PROTOTYPES;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>

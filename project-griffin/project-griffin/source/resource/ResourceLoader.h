@@ -36,7 +36,7 @@ namespace griffin {
 			 *
 			 */
 			template <typename T>
-			T& getResource(ResourceHandle<T>& inOutHandle);
+			std::future<ResourcePtr> getResource(ResourceHandle<T>& inOutHandle);
 
 		private:
 			typedef boost::container::flat_map<std::wstring, Id_T> ResourceNameIndex;

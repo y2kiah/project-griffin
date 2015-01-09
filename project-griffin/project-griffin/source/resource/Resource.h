@@ -24,6 +24,8 @@ namespace griffin {
 				#endif
 			}
 
+			// both are blocking calls, surround with a check of isAvailable to poll for result
+			Id_T handle() const { return resourceId.get(); }
 			uint64_t value() const { return resourceId.get().value; }
 		};
 
@@ -47,7 +49,9 @@ namespace griffin {
 			template <typename T>
 			T& getResource()
 			{
-				model<T> *mdl = (model<T>*)m_selfPtr.get();
+				assert(&typeid(T) == m_selfPtr->m_typeId); // check type safety in assert-enabled builds
+
+				auto *mdl = (model<T>*)m_selfPtr.get();
 				return mdl->m_data;
 			}
 
@@ -63,7 +67,7 @@ namespace griffin {
 
 				virtual ~concept_T() = default;
 
-				size_t			m_sizeBytes;
+				size_t m_sizeBytes;
 				//ResourceCache&	m_cache;
 			};
 
@@ -74,10 +78,12 @@ namespace griffin {
 			struct model : concept_T {
 				explicit model(T&& x, size_t sizeBytes/*, ResourceCache& cache*/) :
 					m_data(std::forward<T>(x)),
+					m_typeId(&typeid(T)),
 					concept_T(sizeBytes/*, cache*/)
 				{}
 
 				T m_data;
+				const type_info* m_typeId;
 			};
 
 			// pointer to internal model (like PIMPL)
