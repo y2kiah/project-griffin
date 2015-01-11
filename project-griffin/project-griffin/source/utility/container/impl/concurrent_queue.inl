@@ -90,6 +90,26 @@ namespace griffin {
 
 
 	template <typename T>
+	template <template <class T, class = std::allocator<T>> class Cnt>
+	int concurrent_queue<T>::try_pop_all(Cnt<T>& outData, int max)
+	{
+		int numPopped = 0;
+
+		std::lock_guard<mutex> lock(m_mutex);
+
+		while (!m_queue.empty() &&
+			(max <= 0 || numPopped < max))
+		{
+			outData.emplace_back(std::move(m_queue.front()));
+			m_queue.pop();
+
+			++numPopped;
+		}
+		return numPopped;
+	}
+
+
+	template <typename T>
 	template <class UnaryPredicate>
 	bool concurrent_queue<T>::try_pop_if(T& outData, UnaryPredicate p_)
 	{

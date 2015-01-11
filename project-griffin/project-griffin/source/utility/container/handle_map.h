@@ -152,6 +152,8 @@ namespace griffin {
 		uint32_t			getFreeListFront() const	{ return m_freeListFront; }
 		uint32_t			getFreeListBack() const		{ return m_freeListBack; }
 
+		uint16_t			getItemTypeId() const		{ return m_itemTypeId; }
+
 		/**
 		 * Constructor
 		 * @param	itemTypeId		typeId used by the Id_T::typeId variable for this container

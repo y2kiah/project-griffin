@@ -1,19 +1,32 @@
+/**
+* @file		ResourceCache.h
+* @author	Jeff Kiah
+*/
 #pragma once
-#ifndef GRIFFIN_RESOURCE_CACHE_H
-#define GRIFFIN_RESOURCE_CACHE_H
+#ifndef GRIFFIN_RESOURCE_CACHE_
+#define GRIFFIN_RESOURCE_CACHE_
 
 #include <memory>
 #include <utility/container/handle_map.h>
+#include <utility/enum.h>
 
 namespace griffin {
 	namespace resource {
 
+		using std::shared_ptr;
+		using std::unique_ptr;
+
 		class Resource_T;
-		typedef std::shared_ptr<Resource_T> ResourcePtr;
+		typedef shared_ptr<Resource_T> ResourcePtr;
+
+		MakeEnum(CacheType, uint16_t,
+			(Cache_Materials)
+			(Cache_Scripts)
+			, _T);
 
 		/**
-		 *
-		 */
+		*
+		*/
 		class ResourceCache {
 		public:
 			struct ResourceLRUItem {
@@ -33,8 +46,8 @@ namespace griffin {
 			{}
 
 			/**
-			 * @returns true if the cache contains the resource identified by handle
-			 */
+			* @returns true if the cache contains the resource identified by handle
+			*/
 			bool hasResource(Id_T handle) const
 			{
 				return m_resourceCache.isValid(handle);
@@ -50,6 +63,8 @@ namespace griffin {
 
 			void setLRUMostRecent(Id_T handle);
 
+			uint16_t getItemTypeId() const { return m_resourceCache.getItemTypeId(); }
+
 		private:
 			size_t		m_maxSizeBytes;
 			size_t		m_usedSizeBytes;
@@ -58,6 +73,8 @@ namespace griffin {
 
 			ResourceMap	m_resourceCache;
 		};
+
+		typedef shared_ptr<ResourceCache>	ResourceCachePtr;
 	}
 }
 

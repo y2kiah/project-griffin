@@ -1,10 +1,10 @@
 /**
- * @file	ResourceSource.h
- * @author	Jeff Kiah
- */
+* @file	ResourceSource.h
+* @author	Jeff Kiah
+*/
 #pragma once
-#ifndef GRIFFIN_RESOURCE_SOURCE_H
-#define GRIFFIN_RESOURCE_SOURCE_H
+#ifndef GRIFFIN_RESOURCE_SOURCE_
+#define GRIFFIN_RESOURCE_SOURCE_
 
 #include <cstdint>
 #include <memory>
@@ -14,12 +14,14 @@ namespace griffin {
 	namespace resource {
 
 		using std::wstring;
+		using std::unique_ptr;
+		using std::shared_ptr;
 
-		typedef std::unique_ptr<char[]> DataPtr;
+		typedef unique_ptr<unsigned char[]> DataPtr;
 
 		/**
-		 *
-		 */
+		*
+		*/
 		class IResourceSource {
 		public:
 			virtual bool	open() = 0;
@@ -32,8 +34,8 @@ namespace griffin {
 		};
 
 		/**
-		 *
-		 */
+		*
+		*/
 		class FileSystemSource : IResourceSource {
 		public:
 			virtual bool	open() override;
@@ -47,10 +49,12 @@ namespace griffin {
 			{}
 
 		private:
-			static bool directoryExists(const wstring &relativePath);
+			static bool directoryExists(wstring relativePath);
 
 			wstring m_dataPath;
 		};
+
+		typedef shared_ptr<IResourceSource>		IResourceSourcePtr;
 	}
 }
 

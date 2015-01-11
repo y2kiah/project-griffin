@@ -71,11 +71,22 @@ namespace griffin {
 		bool try_pop(T& outData, const std::chrono::milliseconds& timeout);
 
 		/**
+		* Pops several items from the queue, or returns immediately without waiting if the list is
+		* empty. Items are popped only up to a max count passed in.
+		* @tparam	Cnt		Container that implements emplace_back, such as vector, list, deque.
+		* @param	outData	The popped items are emplaced into the provided container.
+		* @param	max		maximum number of items to pop, or 0 (default) for unlimited
+		* @returns number of items popped (and emplaced in outData)
+		*/
+		template <template <class T, class = std::allocator<T>> class Cnt>
+		int try_pop_all(Cnt<T>& outData, int max = 0);
+
+		/**
 		 * Pops an item from the queue, or returns immediately without waiting if the list is empty
 		 * only if the provided predicate function evaluates to true.
 		 * @tparam	UnaryPredicate	predicate must return bool and accept a single param of type T
-		 * @param	p_		   function pointer, lambda or functor of type UnaryPredicate
 		 * @param	outData	   memory location to move item into, only modified if true is returned
+		 * @param	p_		   function pointer, lambda or functor of type UnaryPredicate
 		 * @returns true if pop succeeds, false if queue is empty
 		 */
 		template <class UnaryPredicate>
@@ -86,8 +97,8 @@ namespace griffin {
 		 * empty. Items are popped only while the provided predicate function evaluates to true.
 		 * @tparam	Cnt		Container that implements emplace_back, such as vector, list, deque.
 		 * @tparam	UnaryPredicate	predicate must return bool and accept a single param of type T
-		 * @param	p_		function pointer, lambda or functor of type UnaryPredicate
 		 * @param	outData	The popped items are emplaced into the provided container.
+		 * @param	p_		function pointer, lambda or functor of type UnaryPredicate
 		 * @returns number of items popped (and emplaced in outData)
 		 */
 		template <template <class T, class=std::allocator<T>> class Cnt, class UnaryPredicate>

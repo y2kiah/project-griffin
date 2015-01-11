@@ -9,16 +9,24 @@
 namespace griffin {
 	namespace resource {
 
-		bool FileSystemSource::directoryExists(const wstring &relativePath)
+		bool FileSystemSource::directoryExists(wstring relativePath)
 		{
-			wchar_t fullPath[1024] = L"\0";
-			_wfullpath(fullPath, relativePath.c_str(), 1024);
+			// remove the last character of relativePath if it's a slash
+			if (relativePath.size() > 0 &&
+				relativePath.back() == L'\\' || relativePath.back() == L'/')
+			{
+				relativePath.pop_back();
+			}
 
-			if (_waccess(fullPath, 0) == 0) {
-				struct _stat status;
-				_wstat(fullPath, &status);
+			wchar_t fullPath[_MAX_PATH] = L"\0";
+			_wfullpath(fullPath, relativePath.c_str(), _MAX_PATH);
 
-				return (status.st_mode & S_IFDIR) != 0;
+			if (_waccess_s(fullPath, 0) == 0) {
+				struct _stat64 status;
+				int err = _wstat64(fullPath, &status);
+				if (err == 0) {
+					return (status.st_mode & _S_IFDIR) != 0;
+				}
 			}
 			return false;
 		}
@@ -41,15 +49,13 @@ namespace griffin {
 			size_t size = 0;
 			const wstring resPath(m_dataPath + name);
 
-			FILE *inFile = _wfsopen(resPath.c_str(), L"rb", _SH_DENYWR);
-			if (inFile) {
-				// get size
-				fseek(inFile, 0, SEEK_END);
-				size_t size = ftell(inFile);
-				fclose(inFile);
+			struct _stat64 st;
+			if (_wstat64(resPath.c_str(), &st) == 0) {
+				size = st.st_size;
 			}
 			else {
-				//debugWPrintf(L"FileSystemSource: file %s not found\n", resName.c_str());
+				std::string s(name.begin(), name.end());
+				throw std::runtime_error(std::string("FileSystemSource: file ") + s + " not found");
 			}
 
 			return size;
@@ -65,14 +71,14 @@ namespace griffin {
 			FILE *inFile = _wfsopen(resPath.c_str(), L"rb", _SH_DENYWR);
 			if (inFile) {
 				// get size
-				fseek(inFile, 0, SEEK_END);
-				size = ftell(inFile);
+				struct _stat64 st;
+				_fstat64(_fileno(inFile), &st);
+				size = st.st_size;
 
 				// create buffer of correct size
-				bPtr = std::make_unique<char[]>(size);
+				bPtr = std::make_unique<unsigned char[]>(size);
 
 				// read data from file
-				rewind(inFile);
 				auto buffer = reinterpret_cast<void*>(bPtr.get());
 				size_t sizeRead = fread(buffer, 1, size, inFile);
 				

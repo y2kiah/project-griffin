@@ -118,8 +118,17 @@
     <ClCompile Include="source\resource\impl\ResourceCache.cpp">
       <Filter>resource\impl</Filter>
     </ClCompile>
-    <ClCompile Include="source\resource\impl\ResourceLoader.inl">
+    <ClCompile Include="source\render\texture\impl\Texture2D_GL.cpp">
+      <Filter>render\texture\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\resource\impl\ResourceLoader.cpp">
       <Filter>resource\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\resource\impl\ResourceLoader-inl.h">
+      <Filter>resource\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\application\impl\Application.cpp">
+      <Filter>application\impl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -530,6 +539,12 @@
     </ClInclude>
     <ClInclude Include="source\utility\container\vector_list.h">
       <Filter>utility\container</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\texture\Texture2D_GL.h">
+      <Filter>render\texture</Filter>
+    </ClInclude>
+    <ClInclude Include="source\application\Application.h">
+      <Filter>application</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

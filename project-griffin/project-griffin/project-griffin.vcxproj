@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\application\impl\Application.cpp" />
     <ClCompile Include="source\application\impl\platform.cpp" />
     <ClCompile Include="source\application\impl\Timer_win32.cpp" />
     <ClCompile Include="source\application\main.cpp" />
@@ -27,13 +28,16 @@
     <ClCompile Include="source\core\impl\InputSystem.cpp" />
     <ClCompile Include="source\render\font\FreeType.cpp" />
     <ClCompile Include="source\render\Render.cpp" />
+    <ClCompile Include="source\render\texture\impl\Texture2D_GL.cpp" />
     <ClCompile Include="source\render\texture\nv_dds.cpp" />
     <ClCompile Include="source\resource\impl\ResourceCache.cpp" />
-    <ClCompile Include="source\resource\impl\ResourceLoader.inl" />
+    <ClCompile Include="source\resource\impl\ResourceLoader.cpp" />
+    <ClCompile Include="source\resource\impl\ResourceLoader-inl.h" />
     <ClCompile Include="source\resource\impl\ResourceSource.cpp" />
     <ClCompile Include="source\utility\profile\impl\Profile.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\application\Application.h" />
     <ClInclude Include="source\application\FixedTimestep.h" />
     <ClInclude Include="source\application\main.h" />
     <ClInclude Include="source\application\platform.h" />
@@ -49,6 +53,7 @@
     <ClInclude Include="source\render\Render.h" />
     <ClInclude Include="source\render\texture\dds.h" />
     <ClInclude Include="source\render\texture\nv_dds.h" />
+    <ClInclude Include="source\render\texture\Texture2D_GL.h" />
     <ClInclude Include="source\resource\Resource.h" />
     <ClInclude Include="source\resource\ResourceCache.h" />
     <ClInclude Include="source\resource\ResourceLoader.h" />

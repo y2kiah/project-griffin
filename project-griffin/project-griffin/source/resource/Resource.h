@@ -1,6 +1,10 @@
+/**
+* @file		Resource.h
+* @author	Jeff Kiah
+*/
 #pragma once
-#ifndef GRIFFIN_RESOURCE_H
-#define GRIFFIN_RESOURCE_H
+#ifndef GRIFFIN_RESOURCE_
+#define GRIFFIN_RESOURCE_
 
 #include <memory>
 #include <future>
@@ -10,8 +14,8 @@ namespace griffin {
 	namespace resource {
 
 		/**
-		 *
-		 */
+		*
+		*/
 		template <typename T>
 		struct ResourceHandle {
 			std::shared_future<Id_T> resourceId;
@@ -31,63 +35,74 @@ namespace griffin {
 
 
 		/**
-		 * @class Resource_T
-		 *	For details on the "concept_t" pattern, see Sean Parent's talks "C++ Seasoning" and
-		 *	"Inheritance is the base class of evil"
-		 *	https://www.youtube.com/watch?v=qH6sSOr-yk8
-		 *	https://www.youtube.com/watch?v=bIhUE5uUFOA
-		 */
+		* @class Resource_T
+		*	The "_T" indicates a type erasure class.
+		*	For details on the type erasure pattern, see the following talks and repo:
+		*	https://www.youtube.com/watch?v=qH6sSOr-yk8
+		*	https://www.youtube.com/watch?v=bIhUE5uUFOA
+		*	https://www.youtube.com/watch?v=0I0FD3N5cgM
+		*	https://github.com/tzlaine/type_erasure/
+		*/
 		class Resource_T {
 		public:
 			template <typename T>
-			Resource_T(T&& x, size_t sizeBytes/*, ResourceCache& cache*/) :
+			explicit Resource_T(T&& x, size_t sizeBytes/*, ResourceCache& cache*/) :
 				m_selfPtr(std::make_shared<model<T>>(std::forward<T>(x), sizeBytes/*, cache*/))
 			{}
 
 			size_t sizeBytes() const { return m_selfPtr->m_sizeBytes; }
 
+			/**
+			* getResource is a potentially type-unsafe operation since the user could call this for
+			* a type different than the type used to construct the object. The runtime assert helps
+			* to guard against misuse. In general, this is not a polymorphic use of this type, nor
+			* is it duck typing. This relies on contextual knowledge that a specific type is
+			* contained for safe use.
+			*/
 			template <typename T>
 			T& getResource()
 			{
 				assert(&typeid(T) == m_selfPtr->m_typeId); // check type safety in assert-enabled builds
 
-				auto *mdl = (model<T>*)m_selfPtr.get();
+				auto *mdl = reinterpret_cast<model<T>*>(const_cast<concept*>(m_selfPtr.get()));
 				return mdl->m_data;
 			}
 
 		private:
+			Resource_T(const Resource_T&) = delete;
+
 			/**
-			 * contains functions and variables common to all resources
-			 */
-			struct concept_T {
-				explicit concept_T(size_t sizeBytes/*, ResourceCache &cache*/) :
+			* contains functions and variables common to all resources
+			*/
+			struct concept {
+				explicit concept(size_t sizeBytes/*, ResourceCache &cache*/) :
 					m_sizeBytes{ sizeBytes }/*,
 					m_cache{ cache }*/
 				{}
 
-				virtual ~concept_T() = default;
+				virtual ~concept() = default;
 
 				size_t m_sizeBytes;
 				//ResourceCache&	m_cache;
 			};
 
 			/**
-			 * contains data specific to the resource type T
-			 */
+			* contains data specific to the resource type T
+			*/
 			template <typename T>
-			struct model : concept_T {
+			struct model : concept {
 				explicit model(T&& x, size_t sizeBytes/*, ResourceCache& cache*/) :
 					m_data(std::forward<T>(x)),
 					m_typeId(&typeid(T)),
-					concept_T(sizeBytes/*, cache*/)
+					concept(sizeBytes/*, cache*/)
 				{}
 
 				T m_data;
-				const type_info* m_typeId;
+				const type_info* m_typeId; // continue to use C++ RTTI or roll my own??
 			};
 
 			// pointer to internal model (like PIMPL)
-			std::shared_ptr<const concept_T> m_selfPtr;
+			std::shared_ptr<const concept> m_selfPtr;
 		};
 
 	}

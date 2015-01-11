@@ -2,8 +2,8 @@
 #include <memory>
 #include <string>
 #include <sstream>
-#include <GL/glew.h>
-//#include <GL/glcorearb.h>
+#include <gl/glew.h>
+//#include <gl/glcorearb.h>
 #include "main.h"
 #include "Timer.h"
 #include <SOIL.h>
@@ -13,6 +13,7 @@
 #include "platform.h"
 #include "FixedTimestep.h"
 #include <core/InputSystem.h>
+#include <application/Application.h>
 
 #define PROGRAM_NAME "Project Griffin"
 
@@ -29,6 +30,7 @@ int main(int argc, char *argv[])
 
 	try {
 		SDLApplication app(PROGRAM_NAME);
+		auto application = make_application();
 
 		// Initialize GLEW
 		glewExperimental = true; // Needed in core profile
@@ -65,23 +67,10 @@ int main(int argc, char *argv[])
 		glClearColor(0.0, 0.0, 1.0, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT);
 		SDL_GL_SwapWindow(app.getPrimaryWindow());
-
-		// load an image file directly as a new OpenGL texture
-		GLuint tex_2d = SOIL_load_OGL_texture(
-			"vendor/soil/img_test.png",
-			SOIL_LOAD_AUTO,
-			SOIL_CREATE_NEW_ID,
-			SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_MIPMAPS | SOIL_FLAG_DDS_LOAD_DIRECT | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT);
-
-		SDL_Log("tex: %d\n", tex_2d);
-		// check for an error during the load process
-		if (tex_2d == 0) {
-			SDL_Log("SOIL loading error: %s\n", SOIL_last_result());
-		}
 		
 		test_reflection(); // TEMP
-		test_resource_loader(); // TEMP
-		initRenderData();
+		griffin::test_resource_loader(application); // TEMP
+		render::initRenderData();
 
 		bool done = false;
 		int32_t frame = 0;
@@ -134,7 +123,7 @@ int main(int argc, char *argv[])
 				/*SDL_Log("Render realTime=%lu: interpolation=%0.3f: threadIdHash=%lu\n",
 						realTime, interpolation, std::this_thread::get_id().hash());*/
 
-				renderFrame(interpolation);
+				render::renderFrame(interpolation);
 
 				SDL_GL_SwapWindow(app.getPrimaryWindow());
 				platform::yieldThread();
@@ -178,43 +167,4 @@ int main(int argc, char *argv[])
 	}
 	
 	return 0;
-}
-
-#include <resource/ResourceLoader.h>
-
-// temp
-void test_resource_loader()
-{
-	using namespace griffin::resource;
-
-	ResourceCache cache(1, 10, 1024*1024 /* 1 MB */);
-	FileSystemSource fsSource;
-	ResourceLoader loader(std::move(cache), (IResourceSource*)&fsSource);
-
-	auto handle = loader.load<string>(L"shaders/SimpleVertexShader.glsl",
-		[](string& r){
-			SDL_Log("callback 1, resource 1 value\n%s", r.c_str());
-		});
-
-	auto handle2 = loader.load<string>(L"shaders/SimpleFragmentShader.glsl",
-		[](string& r){
-			SDL_Log("callback 2, resource 2 value\n%s", r.c_str());
-		});
-
-	try {
-		SDL_Log("Id1 = %llu", handle.value());
-		SDL_Log("index1 = %u", handle.resourceId.get().index);
-		SDL_Log("typeid1 = %u", handle.resourceId.get().typeId);
-		SDL_Log("gen1 = %u", handle.resourceId.get().generation);
-		SDL_Log("free1 = %u", handle.resourceId.get().free);
-
-		SDL_Log("Id2 = %llu", handle2.value());
-		SDL_Log("index2 = %u", handle2.resourceId.get().index);
-		SDL_Log("typeid2 = %u", handle2.resourceId.get().typeId);
-		SDL_Log("gen2 = %u", handle2.resourceId.get().generation);
-		SDL_Log("free2 = %u", handle2.resourceId.get().free);
-	}
-	catch (std::runtime_error& ex) {
-		SDL_Log(ex.what());
-	}
 }

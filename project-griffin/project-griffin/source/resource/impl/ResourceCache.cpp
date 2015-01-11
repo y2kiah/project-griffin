@@ -1,3 +1,7 @@
+/**
+* @file		ResourceLoader.cpp
+* @author	Jeff Kiah
+*/
 #include "../ResourceCache.h"
 #include "../Resource.h"
 

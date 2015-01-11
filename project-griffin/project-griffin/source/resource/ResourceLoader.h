@@ -1,12 +1,18 @@
+/**
+* @file		ResourceLoader.h
+* @author	Jeff Kiah
+*/
 #pragma once
-#ifndef GRIFFIN_RESOURCE_LOADER_H
-#define GRIFFIN_RESOURCE_LOADER_H
+#ifndef GRIFFIN_RESOURCE_LOADER_
+#define GRIFFIN_RESOURCE_LOADER_
 
 #include <string>
 #include <memory>
 #include <future>
-#include <functional>
-#include <boost/container/flat_map.hpp>
+//#include <functional>
+//#include <boost/container/flat_map.hpp>
+#include <unordered_map>
+#include <array>
 #include <utility/concurrency.h>
 #include "Resource.h"
 #include "ResourceCache.h"
@@ -15,45 +21,63 @@
 namespace griffin {
 	namespace resource {
 
+		using std::unique_ptr;
+		using std::shared_ptr;
+		using std::wstring;
+
 		/**
-		 *
-		 */
+		*
+		*/
 		class ResourceLoader {
 		public:
-			explicit ResourceLoader(ResourceCache&& cache, IResourceSource* source) :
-				m_c({ std::forward<ResourceCache>(cache), source, {} })
-			{
-				// we need a way to call "reserve" on the ResourceNameIndex flat_map, maybe in a Impl constructor?
-			}
+			typedef std::function<void(const ResourcePtr&, Id_T, size_t)>	Callback;
+
+			explicit ResourceLoader() :
+				m_c{}, m_callbacks{}
+			{}
 
 			/**
-			 *
-			 */
-			template <typename T>
-			ResourceHandle<T> load(const wstring &name, std::function<void(T&)> callback = nullptr);
+			*
+			*/
+			template <typename T, typename BuilderFunc>
+			ResourceHandle<T> load(const wstring &name, BuilderFunc&& builder, Callback callback = nullptr);
 
 			/**
-			 *
-			 */
+			*
+			*/
 			template <typename T>
-			std::future<ResourcePtr> getResource(ResourceHandle<T>& inOutHandle);
+			std::future<ResourcePtr> getResource(const ResourceHandle<T>& h);
+
+			void executeCallbacks();
+
+			void registerCache(const ResourceCachePtr& cachePtr, CacheType cacheTypeId);
+			void registerSource(const IResourceSourcePtr& sourcePtr);
 
 		private:
-			typedef boost::container::flat_map<std::wstring, Id_T> ResourceNameIndex;
+			typedef std::array<ResourceCachePtr, CacheTypeCount>	ResourceCacheSet;
+			typedef std::vector<IResourceSourcePtr>					ResourceSourceSet;
+			//typedef boost::container::flat_map<std::wstring, Id_T>	ResourceNameIndex;
+			typedef std::unordered_map<wstring, Id_T>				ResourceNameIndex;
+			
 			struct Impl {
-				ResourceCache		m_cache;
-				IResourceSource	*	m_source;
-				
+				ResourceCacheSet	m_caches;
+				ResourceSourceSet	m_sources;
 				ResourceNameIndex	m_nameToHandle;
 			};
 
+			// Variables
+
 			concurrent<Impl> m_c;
+			
+			concurrent_queue<std::function<void()>> m_callbacks;
 		};
+
+		typedef shared_ptr<ResourceLoader>	ResourceLoaderPtr;
 
 	}
 }
 
-#include "impl/ResourceLoader.inl"
+#include "impl/ResourceLoader-inl.h"
 
 /*
 Overview:

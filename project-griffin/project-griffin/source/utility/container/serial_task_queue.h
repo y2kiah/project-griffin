@@ -85,4 +85,46 @@ namespace griffin {
 		std::shared_ptr<shared_type> shared_ = std::make_shared<shared_type>();
 	};
 
+
+	/**
+	 */
+	class task {
+	public:
+		void run() {}
+
+	private:
+	};
+
+
+	/**
+	 */
+	class parallel_task_group {
+	public:
+		void run()
+		{
+			int count = 0;
+			for (;;) {
+				int index = m_index++;
+				if (index >= m_tasks.size()) { break; }
+				m_tasks[index].run();
+				++count;
+			}
+			if (count > 0 && (m_index - count) == 0) {
+				// add dependent tasks to run
+			}
+		}
+
+	private:
+		std::vector<task> m_tasks;
+		std::atomic_int   m_index;
+		std::atomic_int   m_remainingCount;
+	};
+
+
+	class task_scheduler {
+	public:
+	private:
+		// has a thread pool
+
+	};
 }
