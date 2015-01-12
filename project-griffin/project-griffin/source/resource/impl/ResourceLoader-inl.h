@@ -20,7 +20,7 @@ namespace griffin {
 			BuilderFunc&& builder,
 			Callback callback)
 		{
-			static_assert(std::is_same<std::result_of<BuilderFunc(DataPtr&&, size_t)>::type, T>::value, "builder must return an object of type T");
+			static_assert(std::is_same<std::result_of<BuilderFunc(DataPtr, size_t)>::type, T>::value, "builder must return an object of type T");
 
 			ResourceHandle<T> h;
 
@@ -58,7 +58,7 @@ namespace griffin {
 				// call the builder functor supplied as a template param to construct and return
 				// an object of type T, put it into a shared_ptr
 				auto resourcePtr = std::make_shared<Resource_T>(
-						builder(std::move(dataPtr), size) /*T(dataPtr.get())*/,
+						builder(std::move(dataPtr), size) /*T((char*)dataPtr.get(), size)*/,
 						size/*, impl.m_cache*/);
 
 // TEMP hack, hard coded to first cache
@@ -88,7 +88,7 @@ namespace griffin {
 			Id_T handle = h.handle();
 
 			auto f = m_c([=](Impl& impl) {
-				auto& cache = impl.m_caches[handle.typeId];
+				auto& cache = *impl.m_caches[handle.typeId].get();
 				if (!cache.hasResource(handle)) {
 					throw std::runtime_error("resource not found by handle");
 				}

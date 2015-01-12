@@ -7,13 +7,6 @@
 
 namespace griffin {
 	namespace resource {
-		
-		inline ResourcePtr& ResourceCache::getResource(Id_T handle)
-		{
-			setLRUMostRecent(handle);
-			return m_resourceCache[handle].resourcePtr;
-		}
-
 
 		Id_T ResourceCache::addResource(ResourcePtr resource)
 		{

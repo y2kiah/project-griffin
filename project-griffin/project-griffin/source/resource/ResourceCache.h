@@ -48,10 +48,7 @@ namespace griffin {
 			/**
 			* @returns true if the cache contains the resource identified by handle
 			*/
-			bool hasResource(Id_T handle) const
-			{
-				return m_resourceCache.isValid(handle);
-			}
+			bool hasResource(Id_T handle) const;
 
 			ResourcePtr& getResource(Id_T handle);
 
@@ -75,6 +72,21 @@ namespace griffin {
 		};
 
 		typedef shared_ptr<ResourceCache>	ResourceCachePtr;
+
+
+		// Inline Functions
+
+		inline bool ResourceCache::hasResource(Id_T handle) const
+		{
+			return m_resourceCache.isValid(handle);
+		}
+
+
+		inline ResourcePtr& ResourceCache::getResource(Id_T handle)
+		{
+			setLRUMostRecent(handle);
+			return m_resourceCache[handle].resourcePtr;
+		}
 	}
 }
 
