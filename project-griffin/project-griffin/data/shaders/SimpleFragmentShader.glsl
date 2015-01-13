@@ -5,8 +5,8 @@ in vec2 uv;
 
 out vec3 outColor;
 
-uniform sampler2D tex;
+uniform sampler2D diffuse;
 
 void main(){
-    outColor = color;//(texture(tex, uv).rgb * color);
+    outColor = (texture(diffuse, uv).rgb * color);
 }

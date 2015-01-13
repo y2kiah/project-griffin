@@ -62,9 +62,10 @@ namespace griffin {
 			template <typename T>
 			T& getResource()
 			{
-				assert(&typeid(T) == m_selfPtr->m_typeId); // check type safety in assert-enabled builds
-
 				auto *mdl = reinterpret_cast<model<T>*>(const_cast<concept*>(m_selfPtr.get()));
+				
+				assert(&typeid(T) == mdl->m_typeId); // check type safety in assert-enabled builds
+
 				return mdl->m_data;
 			}
 

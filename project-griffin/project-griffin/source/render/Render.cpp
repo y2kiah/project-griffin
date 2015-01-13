@@ -13,6 +13,7 @@
 
 GLuint vertexArrayID;
 GLuint vertexbuffer;
+GLuint programID;
 
 struct vertex_pcuv {
 	glm::vec3 position;
@@ -27,10 +28,10 @@ struct vertex_pcuv {
 	0.0f, 1.0f, 0.0f,
 };*/
 static const vertex_pcuv g_vertex_buffer_data[] = {
-	{ { -1.0f, -1.0f, 0.0f }, { 1, 0, 0 }, { 0, 0 } },
-	{ { -1.0f,  1.0f, 0.0f }, { 0, 1, 0 }, { 0, 1 } },
-	{ {  1.0f,  1.0f, 0.0f }, { 0, 0, 1 }, { 1, 1 } },
-	{ {  1.0f, -1.0f, 0.0f }, { 1, 1, 1 }, { 1, 0 } }
+	{ { -1.0f,  1.0f, 0.0f }, { 1, 0, 0 }, { 0, 0 } },
+	{ { -1.0f, -1.0f, 0.0f }, { 0, 1, 0 }, { 0, 1 } },
+	{ {  1.0f,  1.0f, 0.0f }, { 0, 0, 1 }, { 1, 0 } },
+	{ {  1.0f, -1.0f, 0.0f }, { 1, 1, 1 }, { 1, 1 } }
 };
 
 namespace griffin {
@@ -61,8 +62,8 @@ namespace griffin {
 			// Give our vertices to OpenGL.
 			glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
-			GLuint programID = loadShaders("./data/shaders/SimpleVertexShader.glsl",
-										   "./data/shaders/SimpleFragmentShader.glsl");
+			programID = loadShaders("./data/shaders/SimpleVertexShader.glsl",
+									"./data/shaders/SimpleFragmentShader.glsl");
 			glUseProgram(programID);
 
 			loadTexturesTemp();
@@ -72,9 +73,12 @@ namespace griffin {
 		void renderFrame(double interpolation) {
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-			// 1st attribute buffer : vertices
-			glEnableVertexAttribArray(0);
 			glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+
+			glEnableVertexAttribArray(0);
+			glEnableVertexAttribArray(1);
+			glEnableVertexAttribArray(2);
+			
 			glVertexAttribPointer(
 				0,                  // attribute 0. position
 				3,                  // size
@@ -89,7 +93,7 @@ namespace griffin {
 				GL_FLOAT,           // type
 				GL_FALSE,           // normalized?
 				sizeof(vertex_pcuv),// stride
-				(void*)offsetof(vertex_pcuv, color) // array buffer offset
+				(void*)12 // array buffer offset
 				);
 			glVertexAttribPointer(
 				2,                  // attribute 2. uv
@@ -97,27 +101,30 @@ namespace griffin {
 				GL_FLOAT,           // type
 				GL_FALSE,           // normalized?
 				sizeof(vertex_pcuv),// stride
-				(void*)offsetof(vertex_pcuv, uv) // array buffer offset
+				(void*)24 // array buffer offset
 				);
 
 			// bind the texture
 			auto loader = g_loaderPtr.lock();
 			if (!loader) { return; }
-			auto fTex = loader->getResource<Texture2D_GL>(g_textureHandleTemp);
 			try {
+				auto fTex = loader->getResource<Texture2D_GL>(g_textureHandleTemp);
 				fTex.get()->getResource<Texture2D_GL>().bindToSampler(GL_TEXTURE0);
+				
+				GLint diffuse = glGetUniformLocation(programID, "diffuse");
+				glUniform1i(diffuse, 0);
 			}
-			catch (std::exception& ex) {
-				SDL_Log(ex.what());
-			}
+			catch (...) {}
 
 			// Draw the triangle !
-			glDrawArrays(GL_POINTS, 0, 4); // Starting from vertex 0; 4 vertices total -> 2 triangles
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); // Starting from vertex 0; 4 vertices total -> 2 triangles
 			
 			glEnable(GL_PROGRAM_POINT_SIZE);
 			glPointSize(10);
 
 			glDisableVertexAttribArray(0);
+			glDisableVertexAttribArray(1);
+			glDisableVertexAttribArray(2);
 		}
 
 		bool loadTexturesTemp()
@@ -127,19 +134,21 @@ namespace griffin {
 			auto loader = g_loaderPtr.lock();
 
 			if (loader) {
-				auto textureResourceBuilder = [](DataPtr&& data, size_t size) {
+				auto textureResourceBuilder = [](DataPtr data, size_t size) {
 					Texture2D_GL tex(move(data), size);
-					return move(tex);
+					SDL_Log("building texture of size %d", size);
+					return tex;
 				};
 
 				auto textureResourceCallback = [](const ResourcePtr& resourcePtr, Id_T handle, size_t size) {
 					Texture2D_GL& tex = resourcePtr->getResource<Texture2D_GL>();
+					SDL_Log("callback texture of size %d", size);
 					// the unique_ptr of data is stored within the texture, this call deletes the data after
 					// sending texture to OpenGL
 					tex.loadFromInternalMemory();
 				};
 
-/*				g_textureHandleTemp = loader->load<Texture2D_GL>(L"../vendor/soil/img_test.png", textureResourceBuilder, textureResourceCallback);
+				g_textureHandleTemp = loader->load<Texture2D_GL>(L"../vendor/soil/img_test.png", textureResourceBuilder, textureResourceCallback);
 				auto& texHandle = g_textureHandleTemp;
 				try {
 					texHandle.resourceId.wait(); // this blocks until the resource is built
@@ -158,7 +167,6 @@ namespace griffin {
 				loader->executeCallbacks();          // this runs the callback on this thread to send the texture to GL
 
 				return true;
-*/
 			}
 
 			return false;
