@@ -10,7 +10,6 @@ namespace griffin {
 
 	};
 
-	void test_resource_loader(Application& app); // TEMP
 	Application make_application();
 
 }

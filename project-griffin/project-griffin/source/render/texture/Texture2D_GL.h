@@ -16,6 +16,7 @@ namespace griffin {
 				m_tmpSize(size)
 			{}
 			Texture2D_GL(Texture2D_GL&& other);
+			Texture2D_GL(const Texture2D_GL&) = delete;
 			~Texture2D_GL();
 
 			/**
@@ -30,11 +31,9 @@ namespace griffin {
 			*/
 			bool loadFromFile(const std::string &name);
 
-			void bindToSampler(unsigned int texture);
+			void bindToSampler(unsigned int texture); // is "sampler" the right term? should it be slot or something else?
 
 		private:
-			Texture2D_GL(const Texture2D_GL&) = delete;
-
 			unsigned int m_glTexture = 0;
 			
 			std::unique_ptr<unsigned char[]> m_tmpData;

@@ -69,7 +69,6 @@ int main(int argc, char *argv[])
 		SDL_GL_SwapWindow(app.getPrimaryWindow());
 		
 		test_reflection(); // TEMP
-		griffin::test_resource_loader(application); // TEMP
 		render::initRenderData();
 
 		bool done = false;

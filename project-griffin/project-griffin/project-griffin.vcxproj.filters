@@ -80,6 +80,12 @@
     <Filter Include="resource\impl">
       <UniqueIdentifier>{e4f55fb2-5e6b-4ce2-9587-5a4b73899f14}</UniqueIdentifier>
     </Filter>
+    <Filter Include="render\material">
+      <UniqueIdentifier>{ae226d8e-78f3-4442-9fbf-c86a55ac1971}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="render\material\impl">
+      <UniqueIdentifier>{92424fbf-f6e4-4cd9-8dd2-ba5207247758}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">
@@ -129,6 +135,9 @@
     </ClCompile>
     <ClCompile Include="source\application\impl\Application.cpp">
       <Filter>application\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\material\impl\ShaderProgram_GL.cpp">
+      <Filter>render\material\impl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -545,6 +554,9 @@
     </ClInclude>
     <ClInclude Include="source\application\Application.h">
       <Filter>application</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\material\ShaderProgram_GL.h">
+      <Filter>render\material</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -10,48 +10,50 @@
 #include <SDL_log.h>
 #include <resource/ResourceLoader.h>
 #include <render/texture/Texture2D_GL.h>
+#include <render/material/ShaderProgram_GL.h>
 
-GLuint vertexArrayID;
-GLuint vertexbuffer;
-GLuint programID;
-
-struct vertex_pcuv {
-	glm::vec3 position;
-	glm::vec3 color;
-	glm::vec2 uv;
-};
-
-// An array of 3 vectors which represents 3 vertices
-/*static const GLfloat g_vertex_buffer_data[] = {
-	-1.0f, -1.0f, 0.0f,
-	1.0f, -1.0f, 0.0f,
-	0.0f, 1.0f, 0.0f,
-};*/
-static const vertex_pcuv g_vertex_buffer_data[] = {
-	{ { -1.0f,  1.0f, 0.0f }, { 1, 0, 0 }, { 0, 0 } },
-	{ { -1.0f, -1.0f, 0.0f }, { 0, 1, 0 }, { 0, 1 } },
-	{ {  1.0f,  1.0f, 0.0f }, { 0, 0, 1 }, { 1, 0 } },
-	{ {  1.0f, -1.0f, 0.0f }, { 1, 1, 1 }, { 1, 1 } }
-};
 
 namespace griffin {
 	namespace render {
 
+		using std::wstring;
 		using std::vector;
 		using std::move;
 
+		struct vertex_pcuv {
+			glm::vec3 position;
+			glm::vec3 color;
+			glm::vec2 uv;
+		};
+
 		// Forward Declarations
+
 		bool loadTexturesTemp();
+		bool loadShadersTemp(wstring, wstring);
 
 		// Global Variables
+
+		static const vertex_pcuv g_vertex_buffer_data[] = {
+			{ { -1.0f, 1.0f, 0.0f }, { 1, 0, 0 }, { 0, 0 } },
+			{ { -1.0f, -1.0f, 0.0f }, { 0, 1, 0 }, { 0, 1 } },
+			{ { 1.0f, 1.0f, 0.0f }, { 0, 0, 1 }, { 1, 0 } },
+			{ { 1.0f, -1.0f, 0.0f }, { 1, 1, 1 }, { 1, 1 } }
+		};
+		
 		weak_ptr<resource::ResourceLoader> g_loaderPtr;
+
+		// TEMP
 		resource::ResourceHandle<Texture2D_GL> g_textureHandleTemp;
+		std::shared_ptr<ShaderProgram_GL> g_tempShaderProgramPtr;
+		GLuint vertexArrayId = 0;
+		GLuint vertexbuffer = 0;
+		GLuint programId = 0;
 
 		// Functions
 
 		void initRenderData() {
-			glGenVertexArrays(1, &vertexArrayID);
-			glBindVertexArray(vertexArrayID);
+			glGenVertexArrays(1, &vertexArrayId);
+			glBindVertexArray(vertexArrayId);
 
 			// Generate 1 buffer, put the resulting identifier in vertexbuffer
 			glGenBuffers(1, &vertexbuffer);
@@ -62,9 +64,8 @@ namespace griffin {
 			// Give our vertices to OpenGL.
 			glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
-			programID = loadShaders("./data/shaders/SimpleVertexShader.glsl",
-									"./data/shaders/SimpleFragmentShader.glsl");
-			glUseProgram(programID);
+			loadShadersTemp(L"shaders/SimpleVertexShader.glsl",
+							L"shaders/SimpleFragmentShader.glsl");
 
 			loadTexturesTemp();
 		}
@@ -72,6 +73,8 @@ namespace griffin {
 
 		void renderFrame(double interpolation) {
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			g_tempShaderProgramPtr->useProgram();
 
 			glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 
@@ -111,7 +114,7 @@ namespace griffin {
 				auto fTex = loader->getResource<Texture2D_GL>(g_textureHandleTemp);
 				fTex.get()->getResource<Texture2D_GL>().bindToSampler(GL_TEXTURE0);
 				
-				GLint diffuse = glGetUniformLocation(programID, "diffuse");
+				GLint diffuse = glGetUniformLocation(programId, "diffuse"); // <-- uniform locations could be stored in shaderprogram structure
 				glUniform1i(diffuse, 0);
 			}
 			catch (...) {}
@@ -148,117 +151,75 @@ namespace griffin {
 					tex.loadFromInternalMemory();
 				};
 
-				g_textureHandleTemp = loader->load<Texture2D_GL>(L"../vendor/soil/img_test.png", textureResourceBuilder, textureResourceCallback);
+				g_textureHandleTemp = loader->load<Texture2D_GL>(L"../vendor/soil/img_test.png", Cache_Materials_T,
+																 textureResourceBuilder, textureResourceCallback);
 				auto& texHandle = g_textureHandleTemp;
 				try {
 					texHandle.resourceId.wait(); // this blocks until the resource is built
+
+					loader->executeCallbacks();  // this runs the callback on this thread to send the texture to GL
 
 					SDL_Log("Id = %llu", texHandle.value());
 					SDL_Log("index = %u", texHandle.resourceId.get().index);
 					SDL_Log("typeid = %u", texHandle.resourceId.get().typeId);
 					SDL_Log("gen = %u", texHandle.resourceId.get().generation);
 					SDL_Log("free = %u", texHandle.resourceId.get().free);
+
+					return true;
 				}
 				catch (std::runtime_error& ex) {
 					SDL_Log(ex.what());
-					return false;
 				}
-
-				loader->executeCallbacks();          // this runs the callback on this thread to send the texture to GL
-
-				return true;
 			}
 
 			return false;
 		}
 
 
-		unsigned int loadShaders(string vertexFilePath, string fragmentFilePath)
+		bool loadShadersTemp(wstring vertexFilePath, wstring fragmentFilePath)
 		{
-			// Create the shaders
-			GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
-			GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
+			using namespace resource;
 
-			// Read the Vertex Shader code from the file
-			string vertexShaderCode;
-			std::ifstream vertexShaderStream(vertexFilePath, std::ios::in);
-			if (!vertexShaderStream.is_open()) {
-				throw(std::runtime_error("Error opening file " + vertexFilePath));
-			}
-			string line = "";
-			while (getline(vertexShaderStream, line)) {
-				vertexShaderCode += "\n" + line;
-			}
-			vertexShaderStream.close();
+			auto loader = g_loaderPtr.lock();
 
-			// Read the Fragment Shader code from the file
-			string fragmentShaderCode;
-			std::ifstream fragmentShaderStream(fragmentFilePath, std::ios::in);
-			if (!fragmentShaderStream.is_open()) {
-				throw(std::runtime_error("Error opening file " + fragmentFilePath));
-			}
-			line = "";
-			while (getline(fragmentShaderStream, line)) {
-				fragmentShaderCode += "\n" + line;
-			}
-			fragmentShaderStream.close();
+			if (loader) {
+				auto shaderResourceBuilder = [](DataPtr data, size_t size) {
+					string shaderCode(reinterpret_cast<char*>(data.get()), size);
+					return Shader_GL(shaderCode);
+				};
 
-			GLint result = GL_FALSE;
-			int infoLogLength;
+				auto shaderResourceCallback = [](const ResourcePtr& resourcePtr, Id_T handle, size_t size) {
+					Shader_GL& shader = resourcePtr->getResource<Shader_GL>();
+					auto ok = shader.compileShader();
+					if (!ok) {
+						throw std::runtime_error("shader compilation failed");
+					}
+				};
 
-			// Compile Vertex Shader
-			SDL_Log("Compiling shader : %s\n", vertexFilePath.c_str());
-			printf("Compiling shader : %s\n", vertexFilePath.c_str());
-			char const * vertexSourcePointer = vertexShaderCode.c_str();
-			glShaderSource(vertexShaderID, 1, &vertexSourcePointer, NULL);
-			glCompileShader(vertexShaderID);
+				auto vertexHandle = loader->load<Shader_GL>(vertexFilePath, Cache_Materials_T, shaderResourceBuilder, shaderResourceCallback);
+				auto fragmentHandle = loader->load<Shader_GL>(fragmentFilePath, Cache_Materials_T, shaderResourceBuilder, shaderResourceCallback);
+				
+				try {
+					auto vertexResource = loader->getResource(vertexHandle);
+					auto fragResource = loader->getResource(fragmentHandle);
+					loader->executeCallbacks(); // this runs the callback on this thread to compile the shaders
 
-			// Check Vertex Shader
-			glGetShaderiv(vertexShaderID, GL_COMPILE_STATUS, &result);
-			glGetShaderiv(vertexShaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
-			if (infoLogLength > 0) {
-				vector<char> vertexShaderErrorMessage(infoLogLength);
-				glGetShaderInfoLog(vertexShaderID, infoLogLength, NULL, &vertexShaderErrorMessage[0]);
-				SDL_Log("%s\n", &vertexShaderErrorMessage[0]);
-				fprintf(stdout, "%s\n", &vertexShaderErrorMessage[0]);
+					// create the program
+					g_tempShaderProgramPtr = std::make_shared<ShaderProgram_GL>(vertexResource.get()->getResource<Shader_GL>(),
+																			   fragResource.get()->getResource<Shader_GL>());
+					bool ok = g_tempShaderProgramPtr->linkProgram();
+					
+					if (ok) {
+						//auto programHandle = loader->addToCache<ShaderProgram_GL>(shaderProgramPtr, Cache_Materials_T);
+						return true;
+					}
+				}
+				catch (std::runtime_error& ex) {
+					SDL_Log(ex.what());
+				}
 			}
 
-			// Compile Fragment Shader
-			SDL_Log("Compiling shader : %s\n", fragmentFilePath.c_str());
-			fprintf(stdout, "Compiling shader : %s\n", fragmentFilePath.c_str());
-			char const * fragmentSourcePointer = fragmentShaderCode.c_str();
-			glShaderSource(fragmentShaderID, 1, &fragmentSourcePointer, NULL);
-			glCompileShader(fragmentShaderID);
-
-			// Check Fragment Shader
-			glGetShaderiv(fragmentShaderID, GL_COMPILE_STATUS, &result);
-			glGetShaderiv(fragmentShaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
-			if (infoLogLength > 0) {
-				vector<char> fragmentShaderErrorMessage(infoLogLength);
-				glGetShaderInfoLog(fragmentShaderID, infoLogLength, NULL, &fragmentShaderErrorMessage[0]);
-				SDL_Log("%s\n", &fragmentShaderErrorMessage[0]);
-				fprintf(stdout, "%s\n", &fragmentShaderErrorMessage[0]);
-			}
-
-			// Link the program
-			fprintf(stdout, "Linking program\n");
-			GLuint programID = glCreateProgram();
-			glAttachShader(programID, vertexShaderID);
-			glAttachShader(programID, fragmentShaderID);
-			glLinkProgram(programID);
-
-			// Check the program
-			glGetProgramiv(programID, GL_LINK_STATUS, &result);
-			glGetProgramiv(programID, GL_INFO_LOG_LENGTH, &infoLogLength);
-			vector<char> programErrorMessage(std::max(infoLogLength, 1));
-			glGetProgramInfoLog(programID, infoLogLength, NULL, &programErrorMessage[0]);
-			SDL_Log("%s\n", &programErrorMessage[0]);
-			fprintf(stdout, "%s\n", &programErrorMessage[0]);
-
-			glDeleteShader(vertexShaderID);
-			glDeleteShader(fragmentShaderID);
-
-			return programID;
+			return false;
 		}
 
 

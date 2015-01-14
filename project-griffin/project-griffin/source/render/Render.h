@@ -12,7 +12,7 @@ namespace griffin {
 	namespace render {
 
 		using std::weak_ptr;
-		using std::string;
+		using std::wstring;
 
 		// Variables
 		extern weak_ptr<resource::ResourceLoader> g_loaderPtr;
@@ -20,7 +20,6 @@ namespace griffin {
 		// Functions
 		void initRenderData();
 		void renderFrame(double interpolation);
-		unsigned int loadShaders(string vertexFilePath, string fragmentFilePath);
 
 	}
 }

@@ -17,6 +17,7 @@ namespace griffin {
 		template <typename T, typename BuilderFunc>
 		ResourceHandle<T> ResourceLoader::load(
 			const wstring &name,
+			CacheType cache,
 			BuilderFunc&& builder,
 			Callback callback)
 		{
@@ -61,9 +62,8 @@ namespace griffin {
 						builder(std::move(dataPtr), size) /*T((char*)dataPtr.get(), size)*/,
 						size/*, impl.m_cache*/);
 
-// TEMP hack, hard coded to first cache
 				// add to the LRU cache, which also puts it at the front
-				auto id = impl.m_caches[0]->addResource(resourcePtr);
+				auto id = impl.m_caches[cache]->addResource(resourcePtr);
 				
 				// add handle to index
 				impl.m_nameToHandle[name] = id;

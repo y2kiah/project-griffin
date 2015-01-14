@@ -40,7 +40,8 @@ namespace griffin {
 			*
 			*/
 			template <typename T, typename BuilderFunc>
-			ResourceHandle<T> load(const wstring &name, BuilderFunc&& builder, Callback callback = nullptr);
+			ResourceHandle<T> load(const wstring &name, CacheType cache,
+								   BuilderFunc&& builder, Callback callback = nullptr);
 
 			/**
 			*

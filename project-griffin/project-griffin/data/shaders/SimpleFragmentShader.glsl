@@ -7,6 +7,6 @@ out vec3 outColor;
 
 uniform sampler2D diffuse;
 
-void main(){
+void main() {
     outColor = (texture(diffuse, uv).rgb * color);
 }
