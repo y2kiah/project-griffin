@@ -188,16 +188,22 @@ namespace griffin {
 					return Shader_GL(shaderCode);
 				};
 
-				auto shaderResourceCallback = [](const ResourcePtr& resourcePtr, Id_T handle, size_t size) {
-					Shader_GL& shader = resourcePtr->getResource<Shader_GL>();
-					auto ok = shader.compileShader();
-					if (!ok) {
-						throw std::runtime_error("shader compilation failed");
-					}
-				};
-
-				auto vertexHandle = loader->load<Shader_GL>(vertexFilePath, Cache_Materials_T, shaderResourceBuilder, shaderResourceCallback);
-				auto fragmentHandle = loader->load<Shader_GL>(fragmentFilePath, Cache_Materials_T, shaderResourceBuilder, shaderResourceCallback);
+				auto vertexHandle = loader->load<Shader_GL>(vertexFilePath, Cache_Materials_T, shaderResourceBuilder,
+					[](const ResourcePtr& resourcePtr, Id_T handle, size_t size) {
+						Shader_GL& shader = resourcePtr->getResource<Shader_GL>();
+						auto ok = shader.compileShader(GL_VERTEX_SHADER);
+						if (!ok) {
+							throw std::runtime_error("vertex shader compilation failed");
+						}
+					});
+				auto fragmentHandle = loader->load<Shader_GL>(fragmentFilePath, Cache_Materials_T, shaderResourceBuilder,
+					[](const ResourcePtr& resourcePtr, Id_T handle, size_t size) {
+						Shader_GL& shader = resourcePtr->getResource<Shader_GL>();
+						auto ok = shader.compileShader(GL_FRAGMENT_SHADER);
+						if (!ok) {
+							throw std::runtime_error("fragment shader compilation failed");
+						}
+					});
 				
 				try {
 					auto vertexResource = loader->getResource(vertexHandle);
@@ -206,7 +212,7 @@ namespace griffin {
 
 					// create the program
 					g_tempShaderProgramPtr = std::make_shared<ShaderProgram_GL>(vertexResource.get()->getResource<Shader_GL>(),
-																			   fragResource.get()->getResource<Shader_GL>());
+																				fragResource.get()->getResource<Shader_GL>());
 					bool ok = g_tempShaderProgramPtr->linkProgram();
 					
 					if (ok) {

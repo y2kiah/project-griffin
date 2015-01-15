@@ -16,14 +16,14 @@ namespace griffin {
 			glDeleteShader(m_shaderId);
 		}
 
-		bool Shader_GL::compileShader()
+		bool Shader_GL::compileShader(unsigned int shaderType)
 		{
 			GLint result = GL_FALSE;
 			int infoLogLength = 0;
 
 			// Compile Shader
 			SDL_Log("Compiling shader");
-			GLuint shaderId = glCreateShader(GL_VERTEX_SHADER);
+			GLuint shaderId = glCreateShader(shaderType);
 			char const* sourcePointer = m_shaderCode.c_str();
 			glShaderSource(shaderId, 1, &sourcePointer, nullptr);
 			glCompileShader(shaderId);

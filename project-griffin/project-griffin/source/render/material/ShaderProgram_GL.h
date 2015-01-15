@@ -21,7 +21,7 @@ namespace griffin {
 			//Shader_GL(const Shader_GL&) = delete;
 			~Shader_GL();
 
-			bool compileShader();
+			bool compileShader(unsigned int shaderType);
 
 			unsigned int getShaderId() const { return m_shaderId; }
 
