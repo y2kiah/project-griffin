@@ -59,7 +59,7 @@ namespace griffin {
 				// call the builder functor supplied as a template param to construct and return
 				// an object of type T, put it into a shared_ptr
 				auto resourcePtr = std::make_shared<Resource_T>(
-						builder(std::move(dataPtr), size) /*T((char*)dataPtr.get(), size)*/,
+						builder(std::move(dataPtr), size),
 						size/*, impl.m_cache*/);
 
 				// add to the LRU cache, which also puts it at the front

@@ -1,6 +1,5 @@
 #include "../ShaderProgram_GL.h"
 #include <gl/glew.h>
-#include <SDL.h>
 #include <vector>
 
 namespace griffin {
@@ -13,7 +12,11 @@ namespace griffin {
 
 		Shader_GL::~Shader_GL()
 		{
-			glDeleteShader(m_shaderId);
+			SDL_Log("deleting shader with m_shaderId = %d", m_shaderId);
+			if (m_shaderId != 0) {
+				SDL_Log("deleting shader in opengl land");
+				glDeleteShader(m_shaderId);
+			}
 		}
 
 		bool Shader_GL::compileShader(unsigned int shaderType)
@@ -47,7 +50,10 @@ namespace griffin {
 
 		ShaderProgram_GL::~ShaderProgram_GL()
 		{
-			glDeleteProgram(m_programId);
+			SDL_Log("deleting program");
+			if (m_programId != 0) {
+				glDeleteProgram(m_programId);
+			}
 		}
 
 		bool ShaderProgram_GL::linkProgram() {
