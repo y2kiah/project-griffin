@@ -86,6 +86,12 @@
     <Filter Include="render\material\impl">
       <UniqueIdentifier>{92424fbf-f6e4-4cd9-8dd2-ba5207247758}</UniqueIdentifier>
     </Filter>
+    <Filter Include="render\model">
+      <UniqueIdentifier>{66e5010d-df90-4c1b-9cd0-a2dadaf3d582}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="render\model\impl">
+      <UniqueIdentifier>{bdb36f0f-6021-4e36-a941-fbba5022f531}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">
@@ -138,6 +144,9 @@
     </ClCompile>
     <ClCompile Include="source\render\material\impl\ShaderProgram_GL.cpp">
       <Filter>render\material\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\model\impl\ModelImport_Assimp.cpp">
+      <Filter>render\model\impl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -557,6 +566,9 @@
     </ClInclude>
     <ClInclude Include="source\render\material\ShaderProgram_GL.h">
       <Filter>render\material</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\model\ModelImport_Assimp.h">
+      <Filter>render\model</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

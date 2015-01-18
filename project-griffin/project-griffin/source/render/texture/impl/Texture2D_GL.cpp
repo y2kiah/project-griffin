@@ -1,6 +1,6 @@
 #include "../Texture2D_GL.h"
 #include <gl/glew.h>
-#include <SDL.h>
+#include <SDL_log.h>
 #include <SOIL.h>
 
 namespace griffin {
