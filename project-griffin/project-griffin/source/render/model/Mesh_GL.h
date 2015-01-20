@@ -37,7 +37,7 @@ namespace griffin {
 			Vertex_TextureCoords         = 1 << 4
 		};
 
-		enum VertexLayoutAttributeLocation : uint8_t {
+		enum VertexLayoutLocation : uint8_t {
 			VertexLayout_Position      = 0,
 			VertexLayout_Normal        = 1,
 			VertexLayout_Tangent       = 2,
@@ -66,16 +66,18 @@ namespace griffin {
 			unsigned int indexRangeEnd;				// <! range high of indices into the vertex buffer, before vertexBaseOffset is added
 			unsigned int vertexBaseOffset;			// <! base offset into the vertex buffer
 			unsigned int primitiveType;				// <! GL_TRIANGLES is the only mode currently supported
-			uint8_t      numColorChannels;			// <! how many 4-byte colors are there?
-			uint8_t      numTexCoordChannels;		// <! how many U, UV or UVW coordinates are there?
-			uint8_t      numTexCoordComponents[8];	// <! indexed by channel, how many components in the channel?
+			
+			// per-vertex offsets
+			// position is always at offset 0
+			uint8_t      normalOffset;
+			uint8_t      texCoordsOffset;
+			uint8_t      colorsOffset;
+			uint8_t      tangentOffset;
+			uint8_t      bitangentOffset;
 
-			unsigned int positionOffset;
-			unsigned int normalOffset;
-			unsigned int texCoordsOffset;
-			unsigned int colorsOffset;
-			unsigned int tangentOffset;
-			unsigned int bitangentOffset;
+			uint8_t      numColorChannels;			// <! how many 4-byte colors are there? Up to 8 supported.
+			uint8_t      numTexCoordChannels;		// <! how many U, UV or UVW coordinate sets are there? Up to 8 supported.
+			uint8_t      numTexCoordComponents[8];	// <! indexed by channel, how many components in the channel?
 		};
 
 		class Mesh_GL {
