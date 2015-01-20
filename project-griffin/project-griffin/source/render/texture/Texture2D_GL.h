@@ -11,10 +11,7 @@ namespace griffin {
 		class Texture2D_GL {
 		public:
 			explicit Texture2D_GL() = default;
-			explicit Texture2D_GL(std::unique_ptr<unsigned char[]> data, size_t size) :
-				m_tmpData(std::move(data)),
-				m_tmpSize(size)
-			{}
+			explicit Texture2D_GL(std::unique_ptr<unsigned char[]> data, size_t size);
 			Texture2D_GL(Texture2D_GL&& other);
 			Texture2D_GL(const Texture2D_GL&) = delete;
 			~Texture2D_GL();
@@ -24,22 +21,29 @@ namespace griffin {
 			*/
 			bool loadFromMemory(unsigned char* data, size_t size);
 
-			bool loadFromInternalMemory();
+			bool loadFromInternalMemory(bool discard = true);
 
 			/**
 			* load an image file directly as a new OpenGL texture
 			*/
 			bool loadFromFile(const std::string &name);
 
-			void bindToSampler(unsigned int texture); // is "sampler" the right term? should it be slot or something else?
+			void bind(unsigned int texture); // is "sampler" the right term? should it be slot or something else?
 
 		private:
 			unsigned int m_glTexture = 0;
-			
-			std::unique_ptr<unsigned char[]> m_tmpData;
-			size_t m_tmpSize = 0;
+			size_t m_sizeBytes = 0;
+
+			std::unique_ptr<unsigned char[]> m_tmpData = nullptr;
 		};
 
+
+		// Inline Functions
+
+		inline Texture2D_GL::Texture2D_GL(std::unique_ptr<unsigned char[]> data, size_t size) :
+			m_tmpData(std::move(data)),
+			m_sizeBytes{ size }
+		{}
 	}
 }
 

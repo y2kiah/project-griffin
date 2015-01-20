@@ -1,8 +1,16 @@
 #version 440 core
 
-layout(location = 0) in vec3 vertexPosition_modelspace;
-layout(location = 1) in vec3 vertexColor;
-layout(location = 2) in vec2 vertexUV;
+#define VertexLayout_Position      0
+#define VertexLayout_Normal        1
+#define VertexLayout_Tangent       2
+#define VertexLayout_Bitangent     3
+#define VertexLayout_TextureCoords 4   // consumes up to 8 locations
+#define VertexLayout_Colors        12  // consumes up to 8 locations
+
+
+layout(location = VertexLayout_Position) in vec3 vertexPosition_modelspace;
+layout(location = VertexLayout_Colors) in vec3 vertexColor;
+layout(location = VertexLayout_TextureCoords) in vec2 vertexUV;
 
 out vec3 color;
 out vec2 uv;

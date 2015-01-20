@@ -148,6 +148,15 @@
     <ClCompile Include="source\render\model\impl\ModelImport_Assimp.cpp">
       <Filter>render\model\impl</Filter>
     </ClCompile>
+    <ClCompile Include="source\render\impl\VertexBuffer_GL.cpp">
+      <Filter>render\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\impl\IndexBuffer_GL.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\model\impl\Mesh_GL.cpp">
+      <Filter>render\model\impl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\application\main.h">
@@ -568,6 +577,18 @@
       <Filter>render\material</Filter>
     </ClInclude>
     <ClInclude Include="source\render\model\ModelImport_Assimp.h">
+      <Filter>render\model</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\VertexBuffer_GL.h">
+      <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\IndexBuffer_GL.h">
+      <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\model\Mesh_GL.h">
+      <Filter>render\model</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\model\Model_GL.h">
       <Filter>render\model</Filter>
     </ClInclude>
   </ItemGroup>

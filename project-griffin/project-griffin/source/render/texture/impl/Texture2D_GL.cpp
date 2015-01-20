@@ -6,16 +6,14 @@
 namespace griffin {
 	namespace render {
 
-		Texture2D_GL::Texture2D_GL(Texture2D_GL&& other) :
-			m_glTexture{ 0 },
-			m_tmpData{ nullptr },
-			m_tmpSize{ 0 }
+		Texture2D_GL::Texture2D_GL(Texture2D_GL&& other)
 		{
 			m_glTexture = other.m_glTexture;
+			m_sizeBytes = other.m_sizeBytes;
 			m_tmpData = std::move(other.m_tmpData);
-			m_tmpSize = other.m_tmpSize;
+			other.m_sizeBytes = 0;
 			other.m_glTexture = 0;
-			other.m_tmpSize = 0;
+			other.m_tmpData = nullptr;
 		}
 
 		Texture2D_GL::~Texture2D_GL()
@@ -42,14 +40,18 @@ namespace griffin {
 				SDL_Log("SOIL loading error: %s\n", SOIL_last_result());
 			}
 
+			m_sizeBytes = size;
+
 			return (m_glTexture != 0);
 		}
 
-		bool Texture2D_GL::loadFromInternalMemory()
+		bool Texture2D_GL::loadFromInternalMemory(bool discard)
 		{
-			bool result = loadFromMemory(m_tmpData.get(), m_tmpSize);
-			m_tmpData.reset();
-			m_tmpSize = 0;
+			bool result = loadFromMemory(m_tmpData.get(), m_sizeBytes);
+			if (discard) {
+				m_tmpData.reset();
+			}
+
 			return result;
 		}
 
@@ -73,7 +75,7 @@ namespace griffin {
 			return (m_glTexture != 0);
 		}
 
-		void Texture2D_GL::bindToSampler(unsigned int texture = GL_TEXTURE0)
+		void Texture2D_GL::bind(unsigned int texture = GL_TEXTURE0)
 		{
 			glActiveTexture(texture);
 			glBindTexture(GL_TEXTURE_2D, m_glTexture);

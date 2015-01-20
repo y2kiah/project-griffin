@@ -12,6 +12,7 @@
 #include <render/texture/Texture2D_GL.h>
 #include <render/material/ShaderProgram_GL.h>
 
+#include <render/model/Mesh_GL.h>
 
 namespace griffin {
 	namespace render {
@@ -78,12 +79,12 @@ namespace griffin {
 
 			glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 
-			glEnableVertexAttribArray(0);
-			glEnableVertexAttribArray(1);
-			glEnableVertexAttribArray(2);
+			glEnableVertexAttribArray(VertexLayout_Position);
+			glEnableVertexAttribArray(VertexLayout_Colors);
+			glEnableVertexAttribArray(VertexLayout_TextureCoords);
 			
 			glVertexAttribPointer(
-				0,                  // attribute 0. position
+				VertexLayout_Position,
 				3,                  // size
 				GL_FLOAT,           // type
 				GL_FALSE,           // normalized?
@@ -91,7 +92,7 @@ namespace griffin {
 				(void*)0 // array buffer offset
 				);
 			glVertexAttribPointer(
-				1,                  // attribute 1. color
+				VertexLayout_Colors,
 				3,                  // size
 				GL_FLOAT,           // type
 				GL_FALSE,           // normalized?
@@ -99,7 +100,7 @@ namespace griffin {
 				(void*)12 // array buffer offset
 				);
 			glVertexAttribPointer(
-				2,                  // attribute 2. uv
+				VertexLayout_TextureCoords,
 				2,                  // size
 				GL_FLOAT,           // type
 				GL_FALSE,           // normalized?
@@ -112,7 +113,7 @@ namespace griffin {
 			if (!loader) { return; }
 			try {
 				auto fTex = loader->getResource<Texture2D_GL>(g_textureHandleTemp);
-				fTex.get()->getResource<Texture2D_GL>().bindToSampler(GL_TEXTURE0);
+				fTex.get()->getResource<Texture2D_GL>().bind(GL_TEXTURE0);
 				
 				GLint diffuse = glGetUniformLocation(programId, "diffuse"); // <-- uniform locations could be stored in shaderprogram structure
 				glUniform1i(diffuse, 0);
@@ -125,9 +126,9 @@ namespace griffin {
 			glEnable(GL_PROGRAM_POINT_SIZE);
 			glPointSize(10);
 
-			glDisableVertexAttribArray(0);
-			glDisableVertexAttribArray(1);
-			glDisableVertexAttribArray(2);
+			glDisableVertexAttribArray(VertexLayout_Position);
+			glDisableVertexAttribArray(VertexLayout_Colors);
+			glDisableVertexAttribArray(VertexLayout_TextureCoords);
 		}
 
 		bool loadTexturesTemp()

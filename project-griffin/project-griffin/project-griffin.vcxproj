@@ -27,7 +27,10 @@
     <ClCompile Include="source\component\impl\Entity.cpp" />
     <ClCompile Include="source\core\impl\InputSystem.cpp" />
     <ClCompile Include="source\render\font\FreeType.cpp" />
+    <ClCompile Include="source\render\impl\IndexBuffer_GL.cpp" />
+    <ClCompile Include="source\render\impl\VertexBuffer_GL.cpp" />
     <ClCompile Include="source\render\material\impl\ShaderProgram_GL.cpp" />
+    <ClCompile Include="source\render\model\impl\Mesh_GL.cpp" />
     <ClCompile Include="source\render\model\impl\ModelImport_Assimp.cpp" />
     <ClCompile Include="source\render\Render.cpp" />
     <ClCompile Include="source\render\texture\impl\Texture2D_GL.cpp" />
@@ -52,12 +55,16 @@
     <ClInclude Include="source\core\CoreSystem.h" />
     <ClInclude Include="source\core\InputSystem.h" />
     <ClInclude Include="source\render\font\FreeType.h" />
+    <ClInclude Include="source\render\IndexBuffer_GL.h" />
     <ClInclude Include="source\render\material\ShaderProgram_GL.h" />
+    <ClInclude Include="source\render\model\Mesh_GL.h" />
     <ClInclude Include="source\render\model\ModelImport_Assimp.h" />
+    <ClInclude Include="source\render\model\Model_GL.h" />
     <ClInclude Include="source\render\Render.h" />
     <ClInclude Include="source\render\texture\dds.h" />
     <ClInclude Include="source\render\texture\nv_dds.h" />
     <ClInclude Include="source\render\texture\Texture2D_GL.h" />
+    <ClInclude Include="source\render\VertexBuffer_GL.h" />
     <ClInclude Include="source\resource\Resource.h" />
     <ClInclude Include="source\resource\ResourceCache.h" />
     <ClInclude Include="source\resource\ResourceLoader.h" />
