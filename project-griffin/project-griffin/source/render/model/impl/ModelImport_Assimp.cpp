@@ -39,18 +39,15 @@ namespace griffin {
 			Importer importer;
 			importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_POINT | aiPrimitiveType_LINE);
 
-			uint32_t ppFlags = /*aiProcess_ConvertToLeftHanded |*/
-				aiProcess_TransformUVCoords |
-				aiProcessPreset_TargetRealtime_MaxQuality;
+			uint32_t ppFlags = aiProcessPreset_TargetRealtime_MaxQuality |
+				aiProcess_TransformUVCoords;
 
-			const aiScene *scene = importer.ReadFile(filename, ppFlags);
+			const aiScene* scene = importer.ReadFile(filename, ppFlags);
 
 			if (!scene) {
 				//debugPrintf("Mesh::importFromFile: failed: %s\n", importer.GetErrorString());
 				return false;
 			}
-
-			uint32_t totalVertexBufferSize = getTotalVertexBufferSize(*scene);
 
 			// get Materials
 			/*	m_materials.reserve(scene->mNumMaterials);
@@ -83,23 +80,23 @@ namespace griffin {
 				}
 				}
 				*/
-			// get Meshes
-			vector<Mesh_GL> meshes;
+			
+
 			uint32_t numMeshes = scene->mNumMeshes;
-			meshes.reserve(numMeshes);
+			auto drawSets = std::make_unique<DrawSet[]>(numMeshes);
+
+			uint32_t totalVertexBufferSize = getTotalVertexBufferSize(*scene);
+			uint32_t totalIndexBufferSize = getTotalIndexBufferSize(*scene);
+
+			auto vertexBuffer = std::make_unique<unsigned char[]>(totalVertexBufferSize);
 
 			for (uint32_t m = 0; m < numMeshes; ++m) {
-//				meshes.emplace_back();
-//				auto& myMesh = meshes[m];
 				auto& assimpMesh = *scene->mMeshes[m];
 
 				// only looking for triangle meshes
 				if (assimpMesh.mPrimitiveTypes == aiPrimitiveType_TRIANGLE) {
 
-					// allocate vertex buffer
 					uint32_t numVertices = assimpMesh.mNumVertices;
-//					myMesh.numVertices = numVertices;
-					unique_ptr<float[]> verts(new float[numVertices*3]);
 
 					// for each vertex
 					for (uint32_t v = 0; v < numVertices; ++v) {
@@ -212,7 +209,7 @@ namespace griffin {
 		}
 
 		/**
-		*
+		* get the total size of the model's single vertex buffer, including all meshes
 		*/
 		uint32_t getTotalVertexBufferSize(const aiScene& scene) {
 			// get total size of buffers
@@ -247,7 +244,7 @@ namespace griffin {
 		}
 
 		/**
-		*
+		* get the total size of the model's index buffer, including all meshes
 		*/
 		uint32_t getTotalIndexBufferSize(const aiScene& scene) {
 			// get total size of buffers
@@ -260,7 +257,11 @@ namespace griffin {
 				if (assimpMesh.mPrimitiveTypes == aiPrimitiveType_TRIANGLE &&
 					assimpMesh.HasFaces())
 				{
-					if (assimpMesh.mNumFaces < std::numeric_limits<uint16_t>::max()) {
+					if (assimpMesh.mNumFaces < std::numeric_limits<uint8_t>::max()) {
+						// use 8 bit index
+						totalIndexBufferSize += sizeof(uint8_t) * assimpMesh.mNumFaces * 3;
+					}
+					else if (assimpMesh.mNumFaces < std::numeric_limits<uint16_t>::max()) {
 						// use 16 bit index
 						totalIndexBufferSize += sizeof(uint16_t) * assimpMesh.mNumFaces * 3;
 					}

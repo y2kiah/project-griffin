@@ -84,6 +84,7 @@ namespace griffin {
 		public:
 			// Constructors / destructor
 			explicit Mesh_GL() {}
+			explicit Mesh_GL(uint16_t numDrawSets, DrawSet **drawSets, VertexBuffer_GL&& vb, IndexBuffer_GL&& ib);
 			Mesh_GL(Mesh_GL&& other);
 			Mesh_GL(const Mesh_GL&) = delete;
 			~Mesh_GL() {}
