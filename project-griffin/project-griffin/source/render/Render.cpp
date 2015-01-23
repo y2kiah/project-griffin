@@ -230,6 +230,47 @@ namespace griffin {
 		}
 
 
+		bool loadModelsTemp(wstring modelFilePath)
+		{
+			using namespace resource;
 
+			auto loader = g_loaderPtr.lock();
+
+			if (loader) {
+				auto modelResourceBuilder = [](DataPtr data, size_t size) {
+					return Mesh_GL(std::move(data));
+				};
+
+				auto vertexHandle = loader->load<Shader_GL>(vertexFilePath, Cache_Materials_T, shaderResourceBuilder,
+															[](const ResourcePtr& resourcePtr, Id_T handle, size_t size) {
+					Shader_GL& shader = resourcePtr->getResource<Shader_GL>();
+					auto ok = shader.compileShader(GL_VERTEX_SHADER);
+					if (!ok) {
+						throw std::runtime_error("vertex shader compilation failed");
+					}
+				});
+
+				try {
+					auto vertexResource = loader->getResource(vertexHandle);
+					auto fragResource = loader->getResource(fragmentHandle);
+					loader->executeCallbacks(); // this runs the callback on this thread to compile the shaders
+
+					// create the program
+					g_tempShaderProgramPtr = std::make_shared<ShaderProgram_GL>(vertexResource.get()->getResource<Shader_GL>(),
+																				fragResource.get()->getResource<Shader_GL>());
+					bool ok = g_tempShaderProgramPtr->linkProgram();
+
+					if (ok) {
+						//auto programHandle = loader->addToCache<ShaderProgram_GL>(shaderProgramPtr, Cache_Materials_T);
+						return true;
+					}
+				}
+				catch (std::runtime_error& ex) {
+					SDL_Log(ex.what());
+				}
+			}
+
+			return false;
+		}
 	}
 }

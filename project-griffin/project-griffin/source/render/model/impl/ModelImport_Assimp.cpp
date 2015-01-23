@@ -3,6 +3,7 @@
 #pragma comment( lib, "assimp.lib" )
 
 #include "../ModelImport_Assimp.h"
+#include <gl/glew.h>
 
 #include <assimp/Importer.hpp>	// C++ importer interface
 #include <assimp/scene.h>		// Output data structure
@@ -28,13 +29,16 @@ namespace griffin {
 
 		// Forward Declarations
 
-		uint32_t getTotalVertexBufferSize(const aiScene& scene);
-		uint32_t getTotalIndexBufferSize(const aiScene& scene);
+		uint32_t getTotalVertexBufferSize(const aiScene&, DrawSet*);
+		uint32_t fillVertexBuffer(const aiScene&, unsigned char*, size_t);
+		uint32_t getTotalIndexBufferSize(const aiScene&, DrawSet*, size_t);
+		uint32_t fillIndexBuffer(const aiScene&, unsigned char*, size_t, size_t, DrawSet*);
+
 
 		/**
 		* Imports a model using assimp
 		*/
-		bool importModelFile(const string &filename)
+		bool importModelFile(const string &filename, Mesh_GL& loadMesh)
 		{
 			Importer importer;
 			importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_POINT | aiPrimitiveType_LINE);
@@ -85,96 +89,21 @@ namespace griffin {
 			uint32_t numMeshes = scene->mNumMeshes;
 			auto drawSets = std::make_unique<DrawSet[]>(numMeshes);
 
-			uint32_t totalVertexBufferSize = getTotalVertexBufferSize(*scene);
-			uint32_t totalIndexBufferSize = getTotalIndexBufferSize(*scene);
-
+			uint32_t totalVertexBufferSize = getTotalVertexBufferSize(*scene, drawSets.get());
 			auto vertexBuffer = std::make_unique<unsigned char[]>(totalVertexBufferSize);
+			uint32_t numVertices = fillVertexBuffer(*scene, vertexBuffer.get(), totalVertexBufferSize);
+			
+			uint32_t totalIndexBufferSize = getTotalIndexBufferSize(*scene, drawSets.get(), numVertices);
+			auto indexBuffer = std::make_unique<unsigned char[]>(totalIndexBufferSize);
+			uint32_t numElements = fillIndexBuffer(*scene, indexBuffer.get(), totalIndexBufferSize, numVertices, drawSets.get());
 
-			for (uint32_t m = 0; m < numMeshes; ++m) {
-				auto& assimpMesh = *scene->mMeshes[m];
+			VertexBuffer_GL vb;
+			vb.loadFromMemory(vertexBuffer.get(), totalVertexBufferSize);
 
-				// only looking for triangle meshes
-				if (assimpMesh.mPrimitiveTypes == aiPrimitiveType_TRIANGLE) {
+			IndexBuffer_GL ib;
+			ib.loadFromMemory(indexBuffer.get(), totalIndexBufferSize);
 
-					uint32_t numVertices = assimpMesh.mNumVertices;
-
-					// for each vertex
-					for (uint32_t v = 0; v < numVertices; ++v) {
-						// copy the vertex
-						verts[v*3]   = assimpMesh.mVertices[v].x;
-						verts[v*3+1] = assimpMesh.mVertices[v].y;
-						verts[v*3+2] = assimpMesh.mVertices[v].z;
-					}
-
-					// allocate normal buffer
-					unique_ptr<float[]> normals(new float[numVertices*3]);
-					if (assimpMesh.HasNormals()) {
-						for (uint32_t n = 0; n < numVertices; ++n) {
-							normals[n*3]   = assimpMesh.mNormals[n].x;
-							normals[n*3+1] = assimpMesh.mNormals[n].y;
-							normals[n*3+2] = assimpMesh.mNormals[n].z;
-						}
-					}
-					else {
-						// normals not in mesh data, build the normals ourselves here??
-					}
-
-					// allocate index buffer
-					uint32_t numFaces = assimpMesh.mNumFaces;
-					uint32_t numIndices = numFaces * 3;
-					unique_ptr<uint32_t[]> indices(new uint32_t[numIndices]);
-
-					// for each face, copy the face indices
-					for (uint32_t f = 0; f < numFaces; ++f) {
-						assert(assimpMesh.mFaces[f].mNumIndices == 3 && "the face doesn't have 3 indices");
-
-						indices[f * 3] = assimpMesh.mFaces[f].mIndices[0];
-						indices[f * 3 + 1] = assimpMesh.mFaces[f].mIndices[1];
-						indices[f * 3 + 2] = assimpMesh.mFaces[f].mIndices[2];
-					}
-
-					// create the RenderBuffers to be passed to the Mesh
-					/*			RenderBufferUniquePtr vb(new RenderBufferImpl());
-								if (!vb->createFromMemory(RenderBuffer::VertexBuffer,
-								verts.get(),
-								sizeof(verts.get()),
-								sizeof(Vertex_PN), 0))
-								{
-								debugPrintf("Mesh::importFromFile: failed to create vertex buffer: %s\n");
-								return false;
-								}
-
-								RenderBufferUniquePtr ib(new RenderBufferImpl());
-								if (!ib->createFromMemory(RenderBuffer::IndexBuffer,
-								indices.get(),
-								sizeof(indices.get()),
-								sizeof(int), 0, RenderBuffer::UINT32))
-								{
-								debugPrintf("Mesh::importFromFile: failed to create index buffer: %s\n");
-								return false;
-								}
-								*/
-
-					// build the DrawSet for this mesh (only one needed)
-					/*			DrawSet ds;
-								ds.startIndex = 0;
-								ds.stopIndex = numIndices - 1;
-								ds.primitiveCount = scene->mMeshes[m]->mNumFaces;
-								ds.type = TriangleList;
-								ds.materialIndex = scene->mMeshes[m]->mMaterialIndex;
-
-								// build the RenderEntry list and input material data
-								RenderEntry re;
-								re.material = m_materials[ds.materialIndex];
-								re.meshMaterialId = re.material->getMaterialId();
-								re.effectId = re.material->getEffect()->getEffectId();
-								re.translucencyType = 0; // assume opaque for now, eventually get from material or effect
-								*/
-
-					// assemble the Mesh object
-					
-				}
-			}
+			auto meshPtr = std::make_unique<Mesh_GL>(numMeshes, std::move(drawSets), std::move(vb), std::move(ib));
 
 			// get Scene graph
 			/*	std::function<void(aiNode*, MeshNode&)> traverseScene;
@@ -208,71 +137,273 @@ namespace griffin {
 			return true;
 		}
 
+
 		/**
-		* get the total size of the model's single vertex buffer, including all meshes
+		* @drawSets pointer to array of DrawSet, filled with vertex buffer information
+		* @returns total size of the model's single vertex buffer, including all meshes
 		*/
-		uint32_t getTotalVertexBufferSize(const aiScene& scene) {
-			// get total size of buffers
-			uint32_t totalVertexBufferSize = 0;
+		uint32_t getTotalVertexBufferSize(const aiScene& scene, DrawSet* drawSets)
+		{
+			uint32_t accumulatedVertexBufferSize = 0;
 
 			uint32_t numMeshes = scene.mNumMeshes;
 			for (uint32_t m = 0; m < numMeshes; ++m) {
 				auto& assimpMesh = *scene.mMeshes[m];
-				uint32_t numTexCoordChannels = assimpMesh.GetNumUVChannels();
-				uint32_t numColorChannels = assimpMesh.GetNumColorChannels();
+				auto& drawSet = drawSets[m];
+
+				drawSet.vertexBaseOffset = accumulatedVertexBufferSize;
+				drawSet.numTexCoordChannels = assimpMesh.GetNumUVChannels();
+				drawSet.numColorChannels = assimpMesh.GetNumColorChannels();
 
 				if (assimpMesh.mPrimitiveTypes == aiPrimitiveType_TRIANGLE) {
+					drawSet.glPrimitiveType = GL_TRIANGLES;
+
 					uint8_t thisVertexSize = 0;
-					if (assimpMesh.HasPositions()) { thisVertexSize += sizeof(float) * 3; }
-					if (assimpMesh.HasNormals()) { thisVertexSize += sizeof(float) * 3; }
-					if (assimpMesh.HasTangentsAndBitangents()) { thisVertexSize += sizeof(float) * 3 * 2; }
-
-					for (uint32_t c = 0; c < numTexCoordChannels; ++c) {
-						uint8_t numTexCoordComponents = assimpMesh.mNumUVComponents[c];
-						if (assimpMesh.HasTextureCoords(c)) { thisVertexSize += sizeof(float) * numTexCoordComponents; }
+					if (assimpMesh.HasPositions()) {
+						drawSet.vertexFlags |= Vertex_Positions;
+						thisVertexSize += sizeof(float) * 3;
 					}
-					for (uint32_t c = 0; c < numColorChannels; ++c) {
-						if (assimpMesh.HasVertexColors(c)) { thisVertexSize += sizeof(float) * 4; }
+					if (assimpMesh.HasNormals()) {
+						drawSet.vertexFlags |= Vertex_Normals;
+						drawSet.normalOffset = thisVertexSize;
+
+						thisVertexSize += sizeof(float) * 3;
+					}
+					if (assimpMesh.HasTangentsAndBitangents()) {
+						drawSet.vertexFlags |= Vertex_TangentsAndBitangents;
+						drawSet.tangentOffset = thisVertexSize;
+						drawSet.bitangentOffset = thisVertexSize + sizeof(float) * 3;
+
+						thisVertexSize += sizeof(float) * 3 * 2;
 					}
 
-					uint32_t thisVertexBufferSize = assimpMesh.mNumVertices * thisVertexBufferSize;
-					totalVertexBufferSize += thisVertexBufferSize;
+					if (drawSet.numTexCoordChannels > 0) {
+						drawSet.vertexFlags |= Vertex_TextureCoords;
+						drawSet.texCoordsOffset = thisVertexSize;
+
+						for (uint32_t c = 0; c < drawSet.numTexCoordChannels; ++c) {
+							if (assimpMesh.HasTextureCoords(c)) {
+								uint8_t numTexCoordComponents = assimpMesh.mNumUVComponents[c];
+								drawSet.numTexCoordComponents[c] = numTexCoordComponents;
+
+								thisVertexSize += sizeof(float) * numTexCoordComponents;
+							}
+						}
+					
+					}
+					
+					if (drawSet.numColorChannels > 0) {
+						drawSet.vertexFlags |= Vertex_Colors;
+
+						for (uint32_t c = 0; c < drawSet.numColorChannels; ++c) {
+							if (assimpMesh.HasVertexColors(c)) {
+								thisVertexSize += sizeof(float) * 4;
+							}
+						}
+					}
+
+					uint32_t thisVertexBufferSize = assimpMesh.mNumVertices * thisVertexSize;
+					accumulatedVertexBufferSize += thisVertexBufferSize;
 				}
 			}
 
-			return totalVertexBufferSize;
+			return accumulatedVertexBufferSize;
 		}
 
+
 		/**
-		* get the total size of the model's index buffer, including all meshes
+		* fill vertex buffer
+		* @returns the number of vertices stored
 		*/
-		uint32_t getTotalIndexBufferSize(const aiScene& scene) {
+		uint32_t fillVertexBuffer(const aiScene& scene, unsigned char* buffer, size_t bufferSize)
+		{
+			uint32_t totalVertices = 0;
+			uint32_t numMeshes = scene.mNumMeshes;
+			unsigned char* p_vb = buffer;
+			const int sizeofVertex = sizeof(float) * 3;
+
+			for (uint32_t m = 0; m < numMeshes; ++m) {
+				auto& assimpMesh = *scene.mMeshes[m];
+
+				// only looking for triangle meshes
+				if (assimpMesh.mPrimitiveTypes == aiPrimitiveType_TRIANGLE) {
+					uint32_t numVertices = assimpMesh.mNumVertices;
+					totalVertices += numVertices;
+
+					// for each vertex
+					for (uint32_t v = 0; v < numVertices; ++v) {
+						// copy vertex data into the buffer, use a running pointer to keep track
+						// of the write position since these vertices are not always homogenous
+						if (assimpMesh.HasPositions()) {
+							memcpy_s(p_vb, bufferSize - (p_vb - buffer),
+									 &assimpMesh.mVertices[v], sizeofVertex);
+							p_vb += sizeofVertex;
+						}
+						if (assimpMesh.HasNormals()) {
+							memcpy_s(p_vb, bufferSize - (p_vb - buffer),
+									 &assimpMesh.mNormals[v], sizeofVertex);
+							p_vb += sizeofVertex;
+						}
+						if (assimpMesh.HasTangentsAndBitangents()) {
+							memcpy_s(p_vb, bufferSize - (p_vb - buffer),
+									 &assimpMesh.mTangents[v], sizeofVertex);
+							p_vb += sizeofVertex;
+							memcpy_s(p_vb, bufferSize - (p_vb - buffer),
+									 &assimpMesh.mBitangents[v], sizeofVertex);
+							p_vb += sizeofVertex;
+						}
+						for (uint32_t c = 0; c < assimpMesh.GetNumUVChannels(); ++c) {
+							if (assimpMesh.HasTextureCoords(c)) {
+								auto uvSize = sizeof(float) * assimpMesh.mNumUVComponents[c];
+								memcpy_s(p_vb, bufferSize - (p_vb - buffer),
+										 &assimpMesh.mTextureCoords[c], uvSize);
+								p_vb += uvSize;
+							}
+						}
+						for (uint32_t c = 0; c < assimpMesh.GetNumColorChannels(); ++c) {
+							if (assimpMesh.HasVertexColors(c)) {
+								auto colorSize = sizeof(float) * 4;
+								memcpy_s(p_vb, bufferSize - (p_vb - buffer),
+										 &assimpMesh.mColors[c], colorSize);
+								p_vb += colorSize;
+							}
+						}
+					}
+				}
+			}
+
+			return totalVertices;
+		}
+
+
+		/**
+		* @drawSets pointer to array of DrawSet, filled with index buffer information
+		* @returns total size of the model's index buffer, including all meshes
+		*/
+		uint32_t getTotalIndexBufferSize(const aiScene& scene, DrawSet* drawSets, size_t totalNumVertices)
+		{
 			// get total size of buffers
-			uint32_t totalIndexBufferSize = 0;
+			uint32_t accumulatedIndexBufferSize = 0;
+
+			// look at the total number of vertices in the model to find the highest
+			// possible index value, use the smallest element that will fit it
+			uint32_t sizeofElement = sizeof(uint32_t); // use a 32 bit index
+			if (totalNumVertices <= std::numeric_limits<uint8_t>::max()) {
+				sizeofElement = sizeof(uint8_t); // use 8 bit index
+			}
+			else if (totalNumVertices <= std::numeric_limits<uint16_t>::max()) {
+				sizeofElement = sizeof(uint16_t); // use 16 bit index
+			}
 
 			uint32_t numMeshes = scene.mNumMeshes;
 			for (uint32_t m = 0; m < numMeshes; ++m) {
 				auto& assimpMesh = *scene.mMeshes[m];
+				auto& drawSet = drawSets[m];
+
+				drawSet.indexBaseOffset = accumulatedIndexBufferSize;
 
 				if (assimpMesh.mPrimitiveTypes == aiPrimitiveType_TRIANGLE &&
 					assimpMesh.HasFaces())
 				{
-					if (assimpMesh.mNumFaces < std::numeric_limits<uint8_t>::max()) {
-						// use 8 bit index
-						totalIndexBufferSize += sizeof(uint8_t) * assimpMesh.mNumFaces * 3;
-					}
-					else if (assimpMesh.mNumFaces < std::numeric_limits<uint16_t>::max()) {
-						// use 16 bit index
-						totalIndexBufferSize += sizeof(uint16_t) * assimpMesh.mNumFaces * 3;
-					}
-					else {
-						// use 32 bit index
-						totalIndexBufferSize += sizeof(uint32_t) * assimpMesh.mNumFaces * 3;
-					}
+					drawSet.numElements = assimpMesh.mNumFaces * 3;
+					accumulatedIndexBufferSize += sizeofElement * drawSet.numElements;
 				}
 			}
 
-			return totalIndexBufferSize;
+			return accumulatedIndexBufferSize;
+		}
+
+
+		/**
+		* fill index buffer
+		* @returns the number of elements stored
+		*/
+		uint32_t fillIndexBuffer(const aiScene& scene, unsigned char* buffer,
+								 size_t bufferSize, size_t totalNumVertices,
+								 DrawSet* drawSets)
+		{
+			uint32_t totalElements = 0;
+			uint32_t numMeshes = scene.mNumMeshes;
+			unsigned char* p_ib = buffer;
+
+			// look at the total number of vertices in the model to find the highest
+			// possible index value, use the smallest element that will fit it
+			auto sizeofElement = sizeof(uint32_t); // use a 32 bit index
+			if (totalNumVertices <= std::numeric_limits<uint8_t>::max()) {
+				sizeofElement = sizeof(uint8_t); // use 8 bit index
+			}
+			else if (totalNumVertices <= std::numeric_limits<uint16_t>::max()) {
+				sizeofElement = sizeof(uint16_t); // use 16 bit index
+			}
+
+			for (uint32_t m = 0; m < numMeshes; ++m) {
+				auto& assimpMesh = *scene.mMeshes[m];
+				auto& drawSet = drawSets[m];
+
+				// only looking for triangle meshes
+				if (assimpMesh.mPrimitiveTypes == aiPrimitiveType_TRIANGLE &&
+					assimpMesh.HasFaces())
+				{
+					uint32_t numFaces = assimpMesh.mNumFaces;
+					uint32_t numElements = numFaces * 3;
+					totalElements += numElements;
+
+					uint32_t lowest = std::numeric_limits<uint32_t>::max();
+					uint32_t highest = 0;
+
+					// copy elements
+					for (uint32_t f = 0; f < numFaces; ++f) {
+						assert(assimpMesh.mFaces[f].mNumIndices == 3 && "the face doesn't have 3 indices");
+
+						switch (sizeofElement) {
+							case sizeof(uint32_t) : {
+								uint32_t indices[3] = {
+									assimpMesh.mFaces[f].mIndices[0],
+									assimpMesh.mFaces[f].mIndices[1],
+									assimpMesh.mFaces[f].mIndices[2]
+								};
+								memcpy_s(p_ib, bufferSize - (p_ib - buffer),
+										 indices, sizeofElement * 3);
+								break;
+							}
+							case sizeof(uint16_t) : {
+								uint16_t indices[3] = {
+									static_cast<uint16_t>(assimpMesh.mFaces[f].mIndices[0]),
+									static_cast<uint16_t>(assimpMesh.mFaces[f].mIndices[1]),
+									static_cast<uint16_t>(assimpMesh.mFaces[f].mIndices[2])
+								};
+								memcpy_s(p_ib, bufferSize - (p_ib - buffer),
+										 indices, sizeofElement * 3);
+								break;
+							}
+							case sizeof(uint8_t) : {
+								uint8_t indices[3] = {
+									static_cast<uint8_t>(assimpMesh.mFaces[f].mIndices[0]),
+									static_cast<uint8_t>(assimpMesh.mFaces[f].mIndices[1]),
+									static_cast<uint8_t>(assimpMesh.mFaces[f].mIndices[2])
+								};
+								memcpy_s(p_ib, bufferSize - (p_ib - buffer),
+										 indices, sizeofElement * 3);
+								break;
+							}
+						}
+
+						lowest  = std::min(lowest,  assimpMesh.mFaces[f].mIndices[0]);
+						lowest  = std::min(lowest,  assimpMesh.mFaces[f].mIndices[1]);
+						lowest  = std::min(lowest,  assimpMesh.mFaces[f].mIndices[2]);
+						highest = std::max(highest, assimpMesh.mFaces[f].mIndices[0]);
+						highest = std::max(highest, assimpMesh.mFaces[f].mIndices[1]);
+						highest = std::max(highest, assimpMesh.mFaces[f].mIndices[2]);
+
+						p_ib += sizeofElement * 3;
+					}
+
+					drawSet.indexRangeStart = lowest;
+					drawSet.indexRangeEnd = highest;
+				}
+			}
+
+			return totalElements;
 		}
 
 	}

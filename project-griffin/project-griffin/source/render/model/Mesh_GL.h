@@ -3,6 +3,8 @@
 #define GRIFFIN_MESH_GL_
 
 #include <cstdint>
+#include <memory>
+#include <string>
 #include "render/VertexBuffer_GL.h"
 #include "render/IndexBuffer_GL.h"
 
@@ -58,14 +60,14 @@ namespace griffin {
 		* predetermined and are enabled on an as-needed basis.
 		*/
 		struct DrawSet {
-			VertexFlags  vertexFlags;				// <! bits set for each component included, checked against a material's requirements
+			uint8_t		 vertexFlags;				// <! bits set from enum VertexFlags, checked against a material's requirements
 
 			unsigned int numElements;				// <! for GL_TRIANGLES it's number of primitives * 3
 			unsigned int indexBaseOffset;			// <! base offset into the index buffer
 			unsigned int indexRangeStart;			// <! range low of indices into the vertex buffer, before vertexBaseOffset is added
 			unsigned int indexRangeEnd;				// <! range high of indices into the vertex buffer, before vertexBaseOffset is added
 			unsigned int vertexBaseOffset;			// <! base offset into the vertex buffer
-			unsigned int primitiveType;				// <! GL_TRIANGLES is the only mode currently supported
+			unsigned int glPrimitiveType;			// <! GL_TRIANGLES is the only mode currently supported
 			
 			// per-vertex offsets
 			// position is always at offset 0
@@ -84,31 +86,58 @@ namespace griffin {
 		public:
 			// Constructors / destructor
 			explicit Mesh_GL() {}
-			explicit Mesh_GL(uint16_t numDrawSets, DrawSet **drawSets, VertexBuffer_GL&& vb, IndexBuffer_GL&& ib);
+			explicit Mesh_GL(std::unique_ptr<unsigned char[]> data, size_t size);
+			explicit Mesh_GL(uint16_t numDrawSets, std::unique_ptr<DrawSet[]> drawSets,
+							 VertexBuffer_GL&& vb, IndexBuffer_GL&& ib);
 			Mesh_GL(Mesh_GL&& other);
 			Mesh_GL(const Mesh_GL&) = delete;
-			~Mesh_GL() {}
+			~Mesh_GL();
 
 			// Functions
-
-			//void setDrawSet(int drawSetIndex, int numPrimitives, int byteOffset, unsigned int primitiveType);
-
 			void draw(int drawSetIndex) const;
 
-			//void setVertexBuffer(RenderBufferUniquePtr &vb)	{ m_vertexBuffer = std::move(vb); }
-			//void setIndexBuffer(RenderBufferUniquePtr &ib)	{ m_indexBuffer = std::move(ib); }
-			//void addDrawSet(const DrawSet &ds)				{ m_drawSets.push_back(ds); }
-			//void addRenderEntry(const RenderEntry &re)		{ m_renderEntries.push_back(re); }
+			#ifdef GRIFFIN_TOOLS_BUILD
+			bool loadWithAssimp(std::string filename);
+			#endif
 
 		private:
 			// Variables
+			size_t          m_sizeBytes = 0;
 			uint16_t		m_numDrawSets = 0;
 			DrawSet *       m_drawSets = nullptr;
-
 			VertexBuffer_GL m_vertexBuffer;
 			IndexBuffer_GL  m_indexBuffer;
+
+			std::unique_ptr<unsigned char[]> m_modelData = nullptr;
 		};
 
+
+		// Inline Functions
+
+		// these two are probably temporary constructors, I really need a placement-new constructor
+
+		inline Mesh_GL::Mesh_GL(std::unique_ptr<unsigned char[]> data, size_t size) :
+			m_modelData(std::move(data)),
+			m_sizeBytes{ size }
+		{}
+
+		inline Mesh_GL::Mesh_GL(uint16_t numDrawSets, std::unique_ptr<DrawSet[]> drawSets,
+								VertexBuffer_GL&& vb, IndexBuffer_GL&& ib) :
+			m_numDrawSets{ numDrawSets },
+			m_vertexBuffer(std::forward<VertexBuffer_GL>(vb)),
+			m_indexBuffer(std::forward<IndexBuffer_GL>(ib))
+		{
+			// swap the DrawSet data from the incoming unique_ptr into the internal model data
+			m_modelData.reset(reinterpret_cast<unsigned char*>(drawSets.release()));
+
+			// fix up the m_drawSet pointer to point to the stored data location
+			m_drawSets = reinterpret_cast<DrawSet*>(m_modelData.get());
+		}
+
+		inline Mesh_GL::~Mesh_GL()
+		{
+			delete[] m_drawSets;
+		}
 	}
 }
 
