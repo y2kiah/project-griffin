@@ -1,6 +1,7 @@
 #version 440 core
 
-in vec3 color;
+in vec3 normal;
+in vec4 color;
 in vec2 uv;
 
 out vec3 outColor;
@@ -8,5 +9,7 @@ out vec3 outColor;
 uniform sampler2D diffuse;
 
 void main() {
-    outColor = (texture(diffuse, uv).rgb * color);
+    //outColor = (texture(diffuse, uv).rgb * color.rgb);
+	//outColor = color.rgb;
+	outColor = normal;
 }

@@ -36,9 +36,10 @@ namespace griffin {
 
 
 		/**
-		* Imports a model using assimp
+		* Imports a model using assimp. Call this from the OpenGL thread only.
+		* @returns "unique_ptr holding the loaded mesh, or nullptr on error"
 		*/
-		bool importModelFile(const string &filename, Mesh_GL& loadMesh)
+		std::unique_ptr<Mesh_GL> importModelFile(const string &filename)
 		{
 			Importer importer;
 			importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_POINT | aiPrimitiveType_LINE);
@@ -50,7 +51,7 @@ namespace griffin {
 
 			if (!scene) {
 				//debugPrintf("Mesh::importFromFile: failed: %s\n", importer.GetErrorString());
-				return false;
+				return nullptr;
 			}
 
 			// get Materials
@@ -134,7 +135,7 @@ namespace griffin {
 
 			// everything "assimp" is cleaned up by importer destructor
 
-			return true;
+			return meshPtr;
 		}
 
 
@@ -202,6 +203,7 @@ namespace griffin {
 						}
 					}
 
+					drawSet.vertexSize = thisVertexSize;
 					uint32_t thisVertexBufferSize = assimpMesh.mNumVertices * thisVertexSize;
 					accumulatedVertexBufferSize += thisVertexBufferSize;
 				}

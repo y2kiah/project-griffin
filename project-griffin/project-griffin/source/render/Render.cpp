@@ -1,5 +1,3 @@
-//#include <cinder/app/Renderer.h>
-
 #include <vector>
 #include <fstream>
 #include <algorithm>
@@ -13,11 +11,13 @@
 #include <render/material/ShaderProgram_GL.h>
 
 #include <render/model/Mesh_GL.h>
+#include <render/model/ModelImport_Assimp.h>
 
 namespace griffin {
 	namespace render {
 
 		using std::wstring;
+		using std::string;
 		using std::vector;
 		using std::move;
 
@@ -31,6 +31,7 @@ namespace griffin {
 
 		bool loadTexturesTemp();
 		bool loadShadersTemp(wstring, wstring);
+		bool loadModelTemp(string);
 
 		// Global Variables
 
@@ -45,7 +46,8 @@ namespace griffin {
 
 		// TEMP
 		resource::ResourceHandle<Texture2D_GL> g_textureHandleTemp;
-		std::shared_ptr<ShaderProgram_GL> g_tempShaderProgramPtr;
+		std::shared_ptr<ShaderProgram_GL> g_tempShaderProgramPtr = nullptr;
+		std::unique_ptr<Mesh_GL> g_tempMesh = nullptr;
 		GLuint vertexArrayId = 0;
 		GLuint vertexbuffer = 0;
 		GLuint programId = 0;
@@ -69,6 +71,7 @@ namespace griffin {
 							L"shaders/SimpleFragmentShader.glsl");
 
 			loadTexturesTemp();
+			loadModelTemp("data/models/landing platform.dae");
 		}
 
 
@@ -76,37 +79,6 @@ namespace griffin {
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			g_tempShaderProgramPtr->useProgram();
-
-			glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-
-			glEnableVertexAttribArray(VertexLayout_Position);
-			glEnableVertexAttribArray(VertexLayout_Colors);
-			glEnableVertexAttribArray(VertexLayout_TextureCoords);
-			
-			glVertexAttribPointer(
-				VertexLayout_Position,
-				3,                  // size
-				GL_FLOAT,           // type
-				GL_FALSE,           // normalized?
-				sizeof(vertex_pcuv),// stride
-				(void*)0 // array buffer offset
-				);
-			glVertexAttribPointer(
-				VertexLayout_Colors,
-				3,                  // size
-				GL_FLOAT,           // type
-				GL_FALSE,           // normalized?
-				sizeof(vertex_pcuv),// stride
-				(void*)12 // array buffer offset
-				);
-			glVertexAttribPointer(
-				VertexLayout_TextureCoords,
-				2,                  // size
-				GL_FLOAT,           // type
-				GL_FALSE,           // normalized?
-				sizeof(vertex_pcuv),// stride
-				(void*)24 // array buffer offset
-				);
 
 			// bind the texture
 			auto loader = g_loaderPtr.lock();
@@ -120,15 +92,8 @@ namespace griffin {
 			}
 			catch (...) {}
 
-			// Draw the triangle !
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); // Starting from vertex 0; 4 vertices total -> 2 triangles
-			
-			glEnable(GL_PROGRAM_POINT_SIZE);
-			glPointSize(10);
-
-			glDisableVertexAttribArray(VertexLayout_Position);
-			glDisableVertexAttribArray(VertexLayout_Colors);
-			glDisableVertexAttribArray(VertexLayout_TextureCoords);
+			// draw the test mesh
+			g_tempMesh->draw();
 		}
 
 		bool loadTexturesTemp()
@@ -230,15 +195,19 @@ namespace griffin {
 		}
 
 
-		bool loadModelsTemp(wstring modelFilePath)
+		bool loadModelTemp(string modelFilePath)
 		{
-			using namespace resource;
+			g_tempMesh = importModelFile(modelFilePath);
+
+			return (g_tempMesh != false);
+
+			/*using namespace resource;
 
 			auto loader = g_loaderPtr.lock();
 
 			if (loader) {
 				auto modelResourceBuilder = [](DataPtr data, size_t size) {
-					return Mesh_GL(std::move(data));
+					return Mesh_GL(std::move(data), size);
 				};
 
 				auto vertexHandle = loader->load<Shader_GL>(vertexFilePath, Cache_Materials_T, shaderResourceBuilder,
@@ -270,7 +239,7 @@ namespace griffin {
 				}
 			}
 
-			return false;
+			return false;*/
 		}
 	}
 }

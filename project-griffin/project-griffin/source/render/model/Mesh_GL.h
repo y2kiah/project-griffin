@@ -62,13 +62,14 @@ namespace griffin {
 		struct DrawSet {
 			uint8_t		 vertexFlags;				// <! bits set from enum VertexFlags, checked against a material's requirements
 
+			unsigned int vertexSize;				// <! size / stride of the vertex
 			unsigned int numElements;				// <! for GL_TRIANGLES it's number of primitives * 3
 			unsigned int indexBaseOffset;			// <! base offset into the index buffer
 			unsigned int indexRangeStart;			// <! range low of indices into the vertex buffer, before vertexBaseOffset is added
 			unsigned int indexRangeEnd;				// <! range high of indices into the vertex buffer, before vertexBaseOffset is added
 			unsigned int vertexBaseOffset;			// <! base offset into the vertex buffer
 			unsigned int glPrimitiveType;			// <! GL_TRIANGLES is the only mode currently supported
-			
+
 			// per-vertex offsets
 			// position is always at offset 0
 			uint8_t      normalOffset;
@@ -82,6 +83,12 @@ namespace griffin {
 			uint8_t      numTexCoordComponents[8];	// <! indexed by channel, how many components in the channel?
 		};
 
+		// Need to split loaded buffer into the drawset portion and the vb/ib portion so the latter
+		// can be deallocated after it's sent to the GPU. The drawset part will remain with this
+		// object. It won't work to have the resource loader give a single large buffer loaded from
+		// disk. The load routine needs to split the load into two allocations, one for the vb/ib
+		// and one for the drawsets.
+		
 		class Mesh_GL {
 		public:
 			// Constructors / destructor
@@ -94,11 +101,34 @@ namespace griffin {
 			~Mesh_GL();
 
 			// Functions
-			void draw(int drawSetIndex) const;
 
-			#ifdef GRIFFIN_TOOLS_BUILD
-			bool loadWithAssimp(std::string filename);
-			#endif
+			/**
+			* Binds the vertex + index buffers, and enables vertex attrib pointers
+			*/
+			void bind(int drawSetIndex) const;
+
+			/**
+			* Disables vertex attrib pointers, does not unbind the vertex + index buffers since the
+			* next draw call will just bind its own buffers.
+			*/
+			void unbind(int drawSetIndex) const;
+
+			/**
+			* Draws a single DrawSet
+			*/
+			void draw(int drawSetIndex) const;
+			
+			/**
+			* Draws all DrawSets without using render queue sorting, use for debugging only
+			*/
+			void draw() const;
+
+//			#ifdef GRIFFIN_TOOLS_BUILD
+			/**
+			* Import from another file format using assimp, used in TOOLS build only
+			*/
+//			bool loadWithAssimp(std::string filename);
+//			#endif
 
 		private:
 			// Variables
@@ -114,12 +144,11 @@ namespace griffin {
 
 		// Inline Functions
 
-		// these two are probably temporary constructors, I really need a placement-new constructor
-
 		inline Mesh_GL::Mesh_GL(std::unique_ptr<unsigned char[]> data, size_t size) :
 			m_modelData(std::move(data)),
 			m_sizeBytes{ size }
 		{}
+
 
 		inline Mesh_GL::Mesh_GL(uint16_t numDrawSets, std::unique_ptr<DrawSet[]> drawSets,
 								VertexBuffer_GL&& vb, IndexBuffer_GL&& ib) :
@@ -134,9 +163,9 @@ namespace griffin {
 			m_drawSets = reinterpret_cast<DrawSet*>(m_modelData.get());
 		}
 
+
 		inline Mesh_GL::~Mesh_GL()
 		{
-			delete[] m_drawSets;
 		}
 	}
 }

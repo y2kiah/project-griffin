@@ -1,6 +1,0 @@
-Compiling shader : ./data/shaders/SimpleVertexShader.glsl
-
-Compiling shader : ./data/shaders/SimpleFragmentShader.glsl
-
-Linking program
-
