@@ -56,6 +56,7 @@
     <ClInclude Include="source\core\InputSystem.h" />
     <ClInclude Include="source\render\font\FreeType.h" />
     <ClInclude Include="source\render\IndexBuffer_GL.h" />
+    <ClInclude Include="source\render\material\Material.h" />
     <ClInclude Include="source\render\material\ShaderProgram_GL.h" />
     <ClInclude Include="source\render\model\Mesh_GL.h" />
     <ClInclude Include="source\render\model\ModelImport_Assimp.h" />

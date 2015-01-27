@@ -16,7 +16,9 @@
 #include <vector>
 #include <limits>
 
-#include "../Mesh_GL.h"
+#include <render/model/Mesh_GL.h>
+#include <render/material/Material.h>
+#include <glm/vec4.hpp>
 
 using namespace Assimp;
 using std::string;
@@ -33,6 +35,7 @@ namespace griffin {
 		uint32_t fillVertexBuffer(const aiScene&, unsigned char*, size_t);
 		uint32_t getTotalIndexBufferSize(const aiScene&, DrawSet*, size_t);
 		uint32_t fillIndexBuffer(const aiScene&, unsigned char*, size_t, size_t, DrawSet*);
+		void     fillMaterials(const aiScene&, Material*, size_t);
 
 
 		/**
@@ -55,37 +58,9 @@ namespace griffin {
 			}
 
 			// get Materials
-			/*	m_materials.reserve(scene->mNumMaterials);
-				for (uint32_t m = 0; m < scene->mNumMaterials; ++m) {
-				MaterialPtr matPtr(new Material());
-				m_materials.push_back(matPtr);
-
-				// TEMP, just set to default effect. This should be read from one of the material properties if possible
-				matPtr->setEffect(L"data/shaders/Default.ifx", false);
-
-				// for each texture type
-				uint32_t samplerIndex = 0;
-				for (uint32_t tt = 0; tt < AI_TEXTURE_TYPE_MAX; ++tt) {
-				// for each texture of a type
-				for (uint32_t i = 0; i < scene->mMaterials[m]->GetTextureCount((aiTextureType)tt); ++i) {
-				aiString path;
-				scene->mMaterials[m]->GetTexture((aiTextureType)tt, i, &path); // get the name, ignore other attributes for now
-
-				// convert from ascii to wide character set, may need to also add a prefix for resource location
-				string aPath(path.data);
-				wstring wPath;
-				wPath.assign(aPath.begin(), aPath.end());
-
-				// do synchronous loading since this is a utility function
-				// if needed could also build the texture here and inject into cache, then pass assumeCached=true
-				matPtr->addTexture(wPath, samplerIndex, false);
-
-				++samplerIndex;
-				}
-				}
-				}
-				*/
-			
+			uint32_t numMaterials = scene->mNumMaterials;
+			auto materials = std::make_unique<Material[]>(numMaterials);
+			fillMaterials(*scene, materials.get(), numMaterials);
 
 			uint32_t numMeshes = scene->mNumMeshes;
 			auto drawSets = std::make_unique<DrawSet[]>(numMeshes);
@@ -406,6 +381,63 @@ namespace griffin {
 			}
 
 			return totalElements;
+		}
+
+
+		/**
+		* fill materials buffer
+		*/
+		void fillMaterials(const aiScene& scene, Material* materials,
+						   size_t numMaterials)
+		{
+			for (uint32_t m = 0; m < numMaterials; ++m) {
+				auto assimpMat = scene.mMaterials[m];
+				auto& mat = materials[m];
+
+				aiColor4D color;
+				aiGetMaterialColor(assimpMat, AI_MATKEY_COLOR_DIFFUSE, &color);
+				mat.diffuseColor = { color.r, color.g, color.b };
+
+				aiGetMaterialColor(assimpMat, AI_MATKEY_COLOR_AMBIENT, &color);
+				mat.ambientColor = { color.r, color.g, color.b };
+
+				aiGetMaterialColor(assimpMat, AI_MATKEY_COLOR_SPECULAR, &color);
+				mat.specularColor = { color.r, color.g, color.b };
+
+				aiGetMaterialColor(assimpMat, AI_MATKEY_COLOR_EMISSIVE, &color);
+				mat.emissiveColor = { color.r, color.g, color.b };
+
+				aiGetMaterialColor(assimpMat, AI_MATKEY_COLOR_REFLECTIVE, &color);
+				mat.reflectiveColor = { color.r, color.g, color.b };
+
+				aiGetMaterialColor(assimpMat, AI_MATKEY_COLOR_TRANSPARENT, &color);
+				mat.transparentColor = { color.r, color.g, color.b };
+
+
+				// TEMP, just set to default effect. This should be read from one of the material properties if possible
+				//mat.setEffect(L"data/shaders/Default.ifx", false);
+
+				// for each texture type
+				uint32_t samplerIndex = 0;
+				for (uint32_t tt = 0; tt < AI_TEXTURE_TYPE_MAX; ++tt) {
+					// for each texture of a type
+					for (uint32_t i = 0; i < assimpMat->GetTextureCount((aiTextureType)tt); ++i) {
+						aiString path;
+						assimpMat->GetTexture((aiTextureType)tt, i, &path); // get the name, ignore other attributes for now
+
+						// convert from ascii to wide character set, may need to also add a prefix for resource location
+						string aPath(path.data);
+						wstring wPath;
+						wPath.assign(aPath.begin(), aPath.end());
+
+						// do synchronous loading since this is a utility function
+						// if needed could also build the texture here and inject into cache, then pass assumeCached=true
+						//mat.addTexture(wPath, samplerIndex, false);
+
+						++samplerIndex;
+					}
+				}
+			}
 		}
 
 	}

@@ -591,6 +591,9 @@
     <ClInclude Include="source\render\model\Model_GL.h">
       <Filter>render\model</Filter>
     </ClInclude>
+    <ClInclude Include="source\render\material\Material.h">
+      <Filter>render\material</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="data\shaders\SimpleVertexShader.glsl">
