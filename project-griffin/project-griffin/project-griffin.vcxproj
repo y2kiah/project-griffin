@@ -356,7 +356,7 @@
       <Optimization>
       </Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;GLM_MESSAGES;GLM_FORCE_SSE3;GLM_FORCE_INLINE;GLM_SWIZZLE;GLM_FORCE_SIZE_T_LENGTH;GL_GLEXT_PROTOTYPES;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GRIFFIN_TOOLS_BUILD=1;WIN32_LEAN_AND_MEAN;GLM_MESSAGES;GLM_FORCE_SSE3;GLM_FORCE_INLINE;GLM_SWIZZLE;GLM_FORCE_SIZE_T_LENGTH;GL_GLEXT_PROTOTYPES;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <PreprocessKeepComments>false</PreprocessKeepComments>
       <IntrinsicFunctions>true</IntrinsicFunctions>

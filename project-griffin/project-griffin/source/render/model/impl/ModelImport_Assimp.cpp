@@ -14,6 +14,7 @@
 #include <memory>
 #include <functional>
 #include <vector>
+#include <queue>
 #include <limits>
 
 #include <render/model/Mesh_GL.h>
@@ -36,6 +37,10 @@ namespace griffin {
 		uint32_t getTotalIndexBufferSize(const aiScene&, DrawSet*, size_t);
 		uint32_t fillIndexBuffer(const aiScene&, unsigned char*, size_t, size_t, DrawSet*);
 		void     fillMaterials(const aiScene&, Material*, size_t);
+		uint32_t getMeshSceneNodeArraySize(const aiScene&);
+		uint32_t getChildIndicesArraySize(const aiScene&);
+		uint32_t getMeshIndicesArraySize(const aiScene&);
+		void     fillSceneGraph(const aiScene&, MeshSceneGraph&);
 
 
 		/**
@@ -50,28 +55,30 @@ namespace griffin {
 			uint32_t ppFlags = aiProcessPreset_TargetRealtime_MaxQuality |
 				aiProcess_TransformUVCoords;
 
-			const aiScene* scene = importer.ReadFile(filename, ppFlags);
+			const aiScene* p_scene = importer.ReadFile(filename, ppFlags);
 
-			if (!scene) {
+			if (!p_scene) {
 				//debugPrintf("Mesh::importFromFile: failed: %s\n", importer.GetErrorString());
 				return nullptr;
 			}
+			auto& scene = *p_scene;
 
-			// get Materials
-			uint32_t numMaterials = scene->mNumMaterials;
+			// get materials
+			uint32_t numMaterials = scene.mNumMaterials;
 			auto materials = std::make_unique<Material[]>(numMaterials);
-			fillMaterials(*scene, materials.get(), numMaterials);
+			fillMaterials(scene, materials.get(), numMaterials);
 
-			uint32_t numMeshes = scene->mNumMeshes;
+			// get meshes, vertex and index buffers
+			uint32_t numMeshes = scene.mNumMeshes;
 			auto drawSets = std::make_unique<DrawSet[]>(numMeshes);
 
-			uint32_t totalVertexBufferSize = getTotalVertexBufferSize(*scene, drawSets.get());
+			uint32_t totalVertexBufferSize = getTotalVertexBufferSize(scene, drawSets.get());
 			auto vertexBuffer = std::make_unique<unsigned char[]>(totalVertexBufferSize);
-			uint32_t numVertices = fillVertexBuffer(*scene, vertexBuffer.get(), totalVertexBufferSize);
+			uint32_t numVertices = fillVertexBuffer(scene, vertexBuffer.get(), totalVertexBufferSize);
 			
-			uint32_t totalIndexBufferSize = getTotalIndexBufferSize(*scene, drawSets.get(), numVertices);
+			uint32_t totalIndexBufferSize = getTotalIndexBufferSize(scene, drawSets.get(), numVertices);
 			auto indexBuffer = std::make_unique<unsigned char[]>(totalIndexBufferSize);
-			uint32_t numElements = fillIndexBuffer(*scene, indexBuffer.get(), totalIndexBufferSize, numVertices, drawSets.get());
+			uint32_t numElements = fillIndexBuffer(scene, indexBuffer.get(), totalIndexBufferSize, numVertices, drawSets.get());
 
 			VertexBuffer_GL vb;
 			vb.loadFromMemory(vertexBuffer.get(), totalVertexBufferSize);
@@ -79,37 +86,18 @@ namespace griffin {
 			IndexBuffer_GL ib;
 			ib.loadFromMemory(indexBuffer.get(), totalIndexBufferSize);
 
+			// get mesh scene graph
+			uint32_t numMeshSceneNodes = getMeshSceneNodeArraySize(scene);
+			uint32_t numChildIndices = getChildIndicesArraySize(scene);
+			uint32_t numMeshIndices = getMeshIndicesArraySize(scene);
+			size_t totalSceneGraphSize = (numMeshSceneNodes * sizeof(MeshSceneNode)) + 
+										 ((numChildIndices + numMeshIndices) * sizeof(uint32_t));
+			auto sceneGraphData = std::make_unique<unsigned char[]>(totalSceneGraphSize);
+
+			// build the mesh object
 			auto meshPtr = std::make_unique<Mesh_GL>(numMeshes, std::move(drawSets), std::move(vb), std::move(ib));
-
-			// get Scene graph
-			/*	std::function<void(aiNode*, MeshNode&)> traverseScene;
-				traverseScene = [&traverseScene](aiNode *node, MeshNode &thisNode) {
-				// set mesh indices
-				for (uint32_t m = 0; m < node->mNumMeshes; ++m) {
-				thisNode.m_meshIndex.push_back(node->mMeshes[m]);
-				}
-				// set child nodes
-				for (uint32_t c = 0; c < node->mNumChildren; ++c) {
-				// convert the transform matrix from aiMatrix4x4 to Matrix4x4f
-				aiMatrix4x4 &t = node->mChildren[c]->mTransformation;
-				const float pTransform[16] = { t.a1, t.a2, t.a3, t.a4, t.b1, t.b2, t.b3, t.b4, t.c1, t.c2, t.c3, t.c4, t.d1, t.d2, t.d3, t.d4 };
-				Matrix4x4f transform(pTransform);
-				// create and add the new node
-				SceneNodePtr newNode(new MeshNode(transform, node->mChildren[c]->mName.data));
-				thisNode.addChild(newNode);
-				// recursive call into child node
-				traverseScene(node->mChildren[c], *(static_cast<MeshNode*>(newNode.get())));
-				}
-				};
-				// start building scene at root
-				traverseScene(scene->mRootNode, *(static_cast<MeshNode*>(m_root.get())));
-
-				// set the model name
-				mName.assign(filename.begin(), filename.end());
-				*/
-
+			
 			// everything "assimp" is cleaned up by importer destructor
-
 			return meshPtr;
 		}
 
@@ -440,6 +428,91 @@ namespace griffin {
 			}
 		}
 
+
+		template <typename F>
+		void traverseSceneGraph(const aiScene& scene, F func)
+		{
+			struct BFSQueueItem {
+				aiNode * node;
+				uint32_t parentIndex;
+			};
+
+			std::queue<BFSQueueItem> bfsQueue; // queue used for breadth-first traversal
+
+			uint32_t index = 0;
+
+			bfsQueue.push({ scene.mRootNode, 0 });
+
+			while (!bfsQueue.empty()) {
+				auto& item = bfsQueue.front();
+				bfsQueue.pop();
+				// pass the node, the breadth-first index, and the parent index to the lambda
+				func(*item.node, index, item.parentIndex);
+
+				for (uint32_t c = 0; c < item.node->mNumChildren; ++c) {
+					bfsQueue.push({ item.node->mChildren[c], index });
+				}
+
+				++index;
+			}
+		}
+
+
+		uint32_t getMeshSceneNodeArraySize(const aiScene& scene)
+		{
+			uint32_t count = 0;
+			traverseSceneGraph(scene, [&](aiNode& assimpNode, uint32_t index, uint32_t parentIndex) {
+				++count;
+			});
+			return count;
+		}
+
+
+		uint32_t getChildIndicesArraySize(const aiScene& scene)
+		{
+			uint32_t totalChildren = 0;
+			traverseSceneGraph(scene, [&totalChildren](aiNode& assimpNode, uint32_t index, uint32_t parentIndex) {
+				totalChildren += assimpNode.mNumChildren;
+			});
+			return totalChildren;
+		}
+
+
+		uint32_t getMeshIndicesArraySize(const aiScene& scene)
+		{
+			uint32_t totalMeshes = 0;
+			traverseSceneGraph(scene, [&totalMeshes](aiNode& assimpNode, uint32_t index, uint32_t parentIndex) {
+				totalMeshes += assimpNode.mNumMeshes;
+			});
+			return totalMeshes;
+		}
+
+
+		void fillSceneGraph(const aiScene& scene, MeshSceneGraph& sceneGraph)
+		{
+			uint32_t childIndexOffset = 0;
+			uint32_t meshIndexOffset = 0;
+
+			traverseSceneGraph(scene, [&](aiNode& assimpNode, uint32_t index, uint32_t parentIndex) {
+				auto& thisNode = sceneGraph.sceneNodes[index];
+
+				// copy node data
+				auto& t = assimpNode.mTransformation;
+				thisNode.transform = { t.a1, t.a2, t.a3, t.a4, t.b1, t.b2, t.b3, t.b4, t.c1, t.c2, t.c3, t.c4, t.d1, t.d2, t.d3, t.d4 };
+				thisNode.numChildren = assimpNode.mNumChildren;
+				thisNode.numMeshes = assimpNode.mNumMeshes;
+				thisNode.childIndexOffset = childIndexOffset;
+				thisNode.meshIndexOffset = meshIndexOffset;
+				thisNode.parentIndex = parentIndex;
+
+				// still need to populate child and mesh index arrays
+
+				// advance the counters for the next node
+				childIndexOffset += assimpNode.mNumChildren;
+				meshIndexOffset += assimpNode.mNumMeshes;
+			});
+			
+		}
 	}
 }
 

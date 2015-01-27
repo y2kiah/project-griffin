@@ -1,4 +1,4 @@
-#include "../Camera.h"
+/*#include "../Camera.h"
 
 namespace griffin {
 	namespace render {
@@ -100,15 +100,15 @@ namespace griffin {
 			*far = mFarClip;
 		}
 
-		/*Ray Camera::generateRay(float uPos, float vPos, float imagePlaneApectRatio) const
-		{
-			calcMatrices();
+		//Ray Camera::generateRay(float uPos, float vPos, float imagePlaneApectRatio) const
+		//{
+		//	calcMatrices();
 
-			float s = (uPos - 0.5f) * imagePlaneApectRatio;
-			float t = (vPos - 0.5f);
-			float viewDistance = imagePlaneApectRatio / math<float>::abs(mFrustumRight - mFrustumLeft) * mNearClip;
-			return Ray(mEyePoint, (mU * s + mV * t - (mW * viewDistance)).normalized());
-		}*/
+		//	float s = (uPos - 0.5f) * imagePlaneApectRatio;
+		//	float t = (vPos - 0.5f);
+		//	float viewDistance = imagePlaneApectRatio / math<float>::abs(mFrustumRight - mFrustumLeft) * mNearClip;
+		//	return Ray(mEyePoint, (mU * s + mV * t - (mW * viewDistance)).normalized());
+		//}
 
 		void Camera::getBillboardVectors(vec3 *right, vec3 *up) const
 		{
@@ -565,3 +565,4 @@ namespace griffin {
 
 	}
 }
+*/

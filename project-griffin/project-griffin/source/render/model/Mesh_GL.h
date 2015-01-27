@@ -7,6 +7,7 @@
 #include <string>
 #include "render/VertexBuffer_GL.h"
 #include "render/IndexBuffer_GL.h"
+#include <glm/mat4x4.hpp>
 
 
 namespace griffin {
@@ -83,6 +84,27 @@ namespace griffin {
 			uint8_t      numTexCoordComponents[8];	// <! indexed by channel, how many components in the channel?
 		};
 
+
+		struct MeshSceneNode {
+			glm::mat4 transform;
+			uint32_t  parentIndex = 0;      //<! index into array of nodes
+			uint32_t  numChildren = 0;
+			uint32_t  childIndexOffset = 0; //<! offset into array of child node indexes, numChildren elements belong to this node
+			uint32_t  numMeshes = 0;
+			uint32_t  meshIndexOffset = 0;  //<! offset into array of mesh instances, numMeshes elements belong to this node
+		};
+
+
+		struct MeshSceneGraph {
+			uint32_t        numNodes = 0;
+			uint32_t        numChildIndices = 0;
+			uint32_t        numMeshIndices = 0;
+			MeshSceneNode * sceneNodes;   //<! array of nodes starting with root, in breadth-first order
+			uint32_t *      childIndices; //<! combined array of child indices for scene nodes, each an index into sceneNodes array
+			uint32_t *      meshIndices;  //<! combined array of mesh indices for scene nodes, each an index into m_drawSets array
+		};
+
+
 		// Need to split loaded buffer into the drawset portion and the vb/ib portion so the latter
 		// can be deallocated after it's sent to the GPU. The drawset part will remain with this
 		// object. It won't work to have the resource loader give a single large buffer loaded from
@@ -135,6 +157,7 @@ namespace griffin {
 			size_t          m_sizeBytes = 0;
 			uint16_t		m_numDrawSets = 0;
 			DrawSet *       m_drawSets = nullptr;
+			MeshSceneGraph  m_meshScene;
 			VertexBuffer_GL m_vertexBuffer;
 			IndexBuffer_GL  m_indexBuffer;
 
@@ -164,9 +187,7 @@ namespace griffin {
 		}
 
 
-		inline Mesh_GL::~Mesh_GL()
-		{
-		}
+		inline Mesh_GL::~Mesh_GL() {}
 	}
 }
 
