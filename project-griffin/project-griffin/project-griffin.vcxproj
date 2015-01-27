@@ -27,6 +27,7 @@
     <ClCompile Include="source\component\impl\Entity.cpp" />
     <ClCompile Include="source\core\impl\InputSystem.cpp" />
     <ClCompile Include="source\render\font\FreeType.cpp" />
+    <ClCompile Include="source\render\impl\Camera.cpp" />
     <ClCompile Include="source\render\impl\IndexBuffer_GL.cpp" />
     <ClCompile Include="source\render\impl\VertexBuffer_GL.cpp" />
     <ClCompile Include="source\render\material\impl\ShaderProgram_GL.cpp" />
@@ -54,6 +55,7 @@
     <ClInclude Include="source\component\Entity.h" />
     <ClInclude Include="source\core\CoreSystem.h" />
     <ClInclude Include="source\core\InputSystem.h" />
+    <ClInclude Include="source\render\Camera.h" />
     <ClInclude Include="source\render\font\FreeType.h" />
     <ClInclude Include="source\render\IndexBuffer_GL.h" />
     <ClInclude Include="source\render\material\Material.h" />

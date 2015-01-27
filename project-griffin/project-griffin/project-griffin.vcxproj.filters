@@ -157,6 +157,9 @@
     <ClCompile Include="source\render\model\impl\Mesh_GL.cpp">
       <Filter>render\model\impl</Filter>
     </ClCompile>
+    <ClCompile Include="source\render\impl\Camera.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\application\main.h">
@@ -593,6 +596,9 @@
     </ClInclude>
     <ClInclude Include="source\render\material\Material.h">
       <Filter>render\material</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\Camera.h">
+      <Filter>render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
