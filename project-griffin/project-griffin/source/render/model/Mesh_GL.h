@@ -30,7 +30,6 @@ namespace griffin {
 		};
 		*/
 
-
 		enum VertexFlags : uint8_t {
 			Vertex_None                  = 0,
 			Vertex_Positions             = 1,
@@ -38,15 +37,6 @@ namespace griffin {
 			Vertex_TangentsAndBitangents = 1 << 2,
 			Vertex_Colors                = 1 << 3,
 			Vertex_TextureCoords         = 1 << 4
-		};
-
-		enum VertexLayoutLocation : uint8_t {
-			VertexLayout_Position      = 0,
-			VertexLayout_Normal        = 1,
-			VertexLayout_Tangent       = 2,
-			VertexLayout_Bitangent     = 3,
-			VertexLayout_TextureCoords = 4,  // consumes up to 8 locations
-			VertexLayout_Colors        = 12  // consumes up to 8 locations
 		};
 
 		/**

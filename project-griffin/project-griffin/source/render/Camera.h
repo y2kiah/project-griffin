@@ -17,7 +17,7 @@ namespace griffin {
 
 		class Camera {
 		public:
-			Camera() : mModelViewCached(false), mProjectionCached(false), mInverseModelViewCached(false), mWorldUp(vec3::yAxis()) {}
+			Camera() : mModelViewCached(false), mProjectionCached(false), mInverseModelViewCached(false), mWorldUp(0.0f, 1.0f, 0.0f) {}
 			virtual ~Camera() {}
 
 			vec3	getEyePoint() const { return mEyePoint; }
@@ -43,8 +43,8 @@ namespace griffin {
 
 			float	getFov() const { return mFov; }
 			void	setFov(float aFov) { mFov = aFov;  mProjectionCached = false; }
-			float	getFovHorizontal() const { return toDegrees(2.0f * math<float>::atan(math<float>::tan(toRadians(mFov) * 0.5f) * mAspectRatio)); }
-			void	setFovHorizontal(float aFov) { mFov = toDegrees(2.0f * math<float>::atan(math<float>::tan(toRadians(aFov) * 0.5f) / mAspectRatio));  mProjectionCached = false; }
+			float	getFovHorizontal() const { return glm::degrees(2.0f * glm::atan(glm::tan(glm::radians(mFov) * 0.5f) * mAspectRatio)); }
+			void	setFovHorizontal(float aFov) { mFov = glm::degrees(2.0f * glm::atan(glm::tan(glm::radians(aFov) * 0.5f) / mAspectRatio));  mProjectionCached = false; }
 
 			float	getAspectRatio() const { return mAspectRatio; }
 			void	setAspectRatio(float aAspectRatio) { mAspectRatio = aAspectRatio; mProjectionCached = false; }
@@ -71,14 +71,13 @@ namespace griffin {
 			//! Converts a world-space coordinate \a worldCoord to screen coordinates as viewed by the camera, based ona s screen which is \a screenWidth x \a screenHeight pixels.
 			vec2	worldToScreen(const vec3 &worldCoord, float screenWidth, float screenHeight) const;
 			//! Converts a world-space coordinate \a worldCoord to eye-space, also known as camera-space. -Z is along the view direction.
-			vec3	worldToEye(const vec3 &worldCoord) { return getModelViewMatrix().transformPointAffine(worldCoord); }
+			vec3	worldToEye(const vec3 &worldCoord);
 			//! Converts a world-space coordinate \a worldCoord to the z axis of eye-space, also known as camera-space. -Z is along the view direction. Suitable for depth sorting.
-			float	worldToEyeDepth(const vec3 &worldCoord) const { return getModelViewMatrix().m[2] * worldCoord.x + getModelViewMatrix().m[6] * worldCoord.y + getModelViewMatrix().m[10] * worldCoord.z + getModelViewMatrix().m[14]; }
+			float	worldToEyeDepth(const vec3 &worldCoord) const;
 			//! Converts a world-space coordinate \a worldCoord to normalized device coordinates
-			vec3	worldToNdc(const vec3 &worldCoord) { vec3 eye = getModelViewMatrix().transformPointAffine(worldCoord); return getProjectionMatrix().transformPoint(eye); }
+			vec3	worldToNdc(const vec3 &worldCoord);
 
-
-			float	getScreenRadius(const class Sphere &sphere, float screenWidth, float screenHeight) const;
+			//float	getScreenRadius(const class Sphere &sphere, float screenWidth, float screenHeight) const;
 
 		protected:
 			vec3	mEyePoint;
@@ -150,7 +149,7 @@ namespace griffin {
 
 			virtual bool	isPersp() const { return true; }
 
-			CameraPersp	getFrameSphere(const class Sphere &worldSpaceSphere, int maxIterations = 20) const;
+			//CameraPersp	getFrameSphere(const class Sphere &worldSpaceSphere, int maxIterations = 20) const;
 
 		protected:
 			vec2	mLensShift;
@@ -190,11 +189,9 @@ namespace griffin {
 			float			getConvergence() const { return mConvergence; }
 			//! Sets the convergence of the camera, which is the distance at which there is no parallax.
 			void			setConvergence(float distance, bool adjustEyeSeparation = false) {
-				mConvergence = distance; mProjectionCached = false;
-
-				if (adjustEyeSeparation)
-					mEyeSeparation = mConvergence / 30.0f;
-			}
+								mConvergence = distance; mProjectionCached = false;
+								if (adjustEyeSeparation) { mEyeSeparation = mConvergence / 30.0f; }
+							}
 			//! Returns the distance between the camera's for the left and right eyes.
 			float			getEyeSeparation() const { return mEyeSeparation; }
 			//! Sets the distance between the camera's for the left and right eyes. This affects the parallax effect. 

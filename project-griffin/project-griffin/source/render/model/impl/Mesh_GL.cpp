@@ -3,6 +3,7 @@
 
 #include <utility>
 #include <cassert>
+#include <render/ShaderProgramLayouts_GL.h>
 
 
 namespace griffin {

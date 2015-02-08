@@ -92,6 +92,12 @@
     <Filter Include="render\model\impl">
       <UniqueIdentifier>{bdb36f0f-6021-4e36-a941-fbba5022f531}</UniqueIdentifier>
     </Filter>
+    <Filter Include="render\geometry">
+      <UniqueIdentifier>{1871098a-1b4f-44bf-9cc7-81608af959f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="render\geometry\impl">
+      <UniqueIdentifier>{7db1d90b-8922-4d36-910b-efcdfdfa9384}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">
@@ -121,9 +127,6 @@
     <ClCompile Include="source\render\texture\nv_dds.cpp">
       <Filter>render\texture\impl</Filter>
     </ClCompile>
-    <ClCompile Include="source\render\Render.cpp">
-      <Filter>render\impl</Filter>
-    </ClCompile>
     <ClCompile Include="source\resource\impl\ResourceSource.cpp">
       <Filter>resource\impl</Filter>
     </ClCompile>
@@ -142,23 +145,29 @@
     <ClCompile Include="source\application\impl\Application.cpp">
       <Filter>application\impl</Filter>
     </ClCompile>
-    <ClCompile Include="source\render\material\impl\ShaderProgram_GL.cpp">
-      <Filter>render\material\impl</Filter>
-    </ClCompile>
     <ClCompile Include="source\render\model\impl\ModelImport_Assimp.cpp">
       <Filter>render\model\impl</Filter>
     </ClCompile>
     <ClCompile Include="source\render\impl\VertexBuffer_GL.cpp">
       <Filter>render\impl</Filter>
     </ClCompile>
-    <ClCompile Include="source\render\impl\IndexBuffer_GL.cpp">
-      <Filter>render</Filter>
-    </ClCompile>
     <ClCompile Include="source\render\model\impl\Mesh_GL.cpp">
       <Filter>render\model\impl</Filter>
     </ClCompile>
+    <ClCompile Include="source\render\impl\IndexBuffer_GL.cpp">
+      <Filter>render\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\impl\Render.cpp">
+      <Filter>render\impl</Filter>
+    </ClCompile>
     <ClCompile Include="source\render\impl\Camera.cpp">
-      <Filter>render</Filter>
+      <Filter>render\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\impl\ShaderProgram_GL.cpp">
+      <Filter>render\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\geometry\impl\Cube.cpp">
+      <Filter>render\geometry\impl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -576,9 +585,6 @@
     <ClInclude Include="source\application\Application.h">
       <Filter>application</Filter>
     </ClInclude>
-    <ClInclude Include="source\render\material\ShaderProgram_GL.h">
-      <Filter>render\material</Filter>
-    </ClInclude>
     <ClInclude Include="source\render\model\ModelImport_Assimp.h">
       <Filter>render\model</Filter>
     </ClInclude>
@@ -599,6 +605,15 @@
     </ClInclude>
     <ClInclude Include="source\render\Camera.h">
       <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\ShaderProgramLayouts_GL.h">
+      <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\ShaderProgram_GL.h">
+      <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\geometry\Cube.h">
+      <Filter>render\geometry</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

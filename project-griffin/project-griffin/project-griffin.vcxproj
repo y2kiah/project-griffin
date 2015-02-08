@@ -27,13 +27,14 @@
     <ClCompile Include="source\component\impl\Entity.cpp" />
     <ClCompile Include="source\core\impl\InputSystem.cpp" />
     <ClCompile Include="source\render\font\FreeType.cpp" />
+    <ClCompile Include="source\render\geometry\impl\Cube.cpp" />
     <ClCompile Include="source\render\impl\Camera.cpp" />
     <ClCompile Include="source\render\impl\IndexBuffer_GL.cpp" />
+    <ClCompile Include="source\render\impl\Render.cpp" />
+    <ClCompile Include="source\render\impl\ShaderProgram_GL.cpp" />
     <ClCompile Include="source\render\impl\VertexBuffer_GL.cpp" />
-    <ClCompile Include="source\render\material\impl\ShaderProgram_GL.cpp" />
     <ClCompile Include="source\render\model\impl\Mesh_GL.cpp" />
     <ClCompile Include="source\render\model\impl\ModelImport_Assimp.cpp" />
-    <ClCompile Include="source\render\Render.cpp" />
     <ClCompile Include="source\render\texture\impl\Texture2D_GL.cpp" />
     <ClCompile Include="source\render\texture\nv_dds.cpp" />
     <ClCompile Include="source\resource\impl\ResourceCache.cpp" />
@@ -57,13 +58,15 @@
     <ClInclude Include="source\core\InputSystem.h" />
     <ClInclude Include="source\render\Camera.h" />
     <ClInclude Include="source\render\font\FreeType.h" />
+    <ClInclude Include="source\render\geometry\Cube.h" />
     <ClInclude Include="source\render\IndexBuffer_GL.h" />
     <ClInclude Include="source\render\material\Material.h" />
-    <ClInclude Include="source\render\material\ShaderProgram_GL.h" />
     <ClInclude Include="source\render\model\Mesh_GL.h" />
     <ClInclude Include="source\render\model\ModelImport_Assimp.h" />
     <ClInclude Include="source\render\model\Model_GL.h" />
     <ClInclude Include="source\render\Render.h" />
+    <ClInclude Include="source\render\ShaderProgramLayouts_GL.h" />
+    <ClInclude Include="source\render\ShaderProgram_GL.h" />
     <ClInclude Include="source\render\texture\dds.h" />
     <ClInclude Include="source\render\texture\nv_dds.h" />
     <ClInclude Include="source\render\texture\Texture2D_GL.h" />
@@ -356,7 +359,7 @@
       <Optimization>
       </Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GRIFFIN_TOOLS_BUILD=1;WIN32_LEAN_AND_MEAN;GLM_MESSAGES;GLM_FORCE_SSE3;GLM_FORCE_INLINE;GLM_SWIZZLE;GLM_FORCE_SIZE_T_LENGTH;GL_GLEXT_PROTOTYPES;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GRIFFIN_TOOLS_BUILD=1;WIN32_LEAN_AND_MEAN;GLM_FORCE_RADIANS;GLM_MESSAGES;GLM_FORCE_SSE3;GLM_FORCE_INLINE;GLM_SWIZZLE;GL_GLEXT_PROTOTYPES;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <PreprocessKeepComments>false</PreprocessKeepComments>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -390,7 +393,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GRIFFIN_PROFILE=1;GRIFFIN_TOOLS_BUILD=1;_ITERATOR_DEBUG_LEVEL=0;NDEBUG;WIN32_LEAN_AND_MEAN;GLM_FORCE_SSE3;GLM_FORCE_INLINE;GLM_SWIZZLE;GLM_FORCE_SIZE_T_LENGTH;GL_GLEXT_PROTOTYPES;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GRIFFIN_PROFILE=1;GRIFFIN_TOOLS_BUILD=1;_ITERATOR_DEBUG_LEVEL=0;NDEBUG;WIN32_LEAN_AND_MEAN;GLM_FORCE_RADIANS;GLM_FORCE_SSE3;GLM_FORCE_INLINE;GLM_SWIZZLE;GL_GLEXT_PROTOTYPES;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>

@@ -4,14 +4,16 @@
 #include <GL/glew.h>
 //#include <gl/glcorearb.h>
 #include <glm/glm.hpp>
-#include "Render.h"
+#include "../Render.h"
 #include <SDL_log.h>
 #include <resource/ResourceLoader.h>
 #include <render/texture/Texture2D_GL.h>
-#include <render/material/ShaderProgram_GL.h>
+#include "../ShaderProgram_GL.h"
+#include "../ShaderProgramLayouts_GL.h"
 
 #include <render/model/Mesh_GL.h>
 #include <render/model/ModelImport_Assimp.h>
+#include <render/Camera.h>
 
 namespace griffin {
 	namespace render {
@@ -21,12 +23,6 @@ namespace griffin {
 		using std::vector;
 		using std::move;
 
-		struct vertex_pcuv {
-			glm::vec3 position;
-			glm::vec3 color;
-			glm::vec2 uv;
-		};
-
 		// Forward Declarations
 
 		bool loadTexturesTemp();
@@ -35,43 +31,25 @@ namespace griffin {
 
 		// Global Variables
 
-		static const vertex_pcuv g_vertex_buffer_data[] = {
-			{ { -1.0f, 1.0f, 0.0f }, { 1, 0, 0 }, { 0, 0 } },
-			{ { -1.0f, -1.0f, 0.0f }, { 0, 1, 0 }, { 0, 1 } },
-			{ { 1.0f, 1.0f, 0.0f }, { 0, 0, 1 }, { 1, 0 } },
-			{ { 1.0f, -1.0f, 0.0f }, { 1, 1, 1 }, { 1, 1 } }
-		};
-		
 		weak_ptr<resource::ResourceLoader> g_loaderPtr;
 
 		// TEMP
 		resource::ResourceHandle<Texture2D_GL> g_textureHandleTemp;
 		std::shared_ptr<ShaderProgram_GL> g_tempShaderProgramPtr = nullptr;
 		std::unique_ptr<Mesh_GL> g_tempMesh = nullptr;
-		GLuint vertexArrayId = 0;
-		GLuint vertexbuffer = 0;
 		GLuint programId = 0;
+		std::unique_ptr<CameraPersp> camera;
 
 		// Functions
 
-		void initRenderData() {
-			glGenVertexArrays(1, &vertexArrayId);
-			glBindVertexArray(vertexArrayId);
-
-			// Generate 1 buffer, put the resulting identifier in vertexbuffer
-			glGenBuffers(1, &vertexbuffer);
-
-			// The following commands will talk about our 'vertexbuffer' buffer
-			glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-
-			// Give our vertices to OpenGL.
-			glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-
+		void initRenderData(int viewportWidth, int viewportHeight) {
 			loadShadersTemp(L"shaders/SimpleVertexShader.glsl",
 							L"shaders/SimpleFragmentShader.glsl");
 
 			loadTexturesTemp();
 			loadModelTemp("data/models/landing platform.dae");
+
+			camera = std::make_unique<CameraPersp>(viewportWidth, viewportHeight, 60.0f, 0.1f, 10000.0f);
 		}
 
 
@@ -79,6 +57,14 @@ namespace griffin {
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			g_tempShaderProgramPtr->useProgram();
+
+			// bind uniforms
+			camera->setEyePoint(vec3(0.0f, 0.0f, -100.0f));
+			camera->lookAt(vec3(0.0f, 0.0f, 0.0f));
+			mat4 mvp(camera->getProjectionMatrix() * camera->getModelViewMatrix());
+			glUniformMatrix4fv(UniformLayout_ModelView, 1, GL_FALSE, &camera->getModelViewMatrix()[0][0]);
+			glUniformMatrix4fv(UniformLayout_Projection, 1, GL_FALSE, &camera->getProjectionMatrix()[0][0]);
+			glUniformMatrix4fv(UniformLayout_ModelViewProjection, 1, GL_FALSE, &mvp[0][0]);
 
 			// bind the texture
 			auto loader = g_loaderPtr.lock();

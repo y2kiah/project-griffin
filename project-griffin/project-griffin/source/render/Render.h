@@ -18,7 +18,7 @@ namespace griffin {
 		extern weak_ptr<resource::ResourceLoader> g_loaderPtr;
 
 		// Functions
-		void initRenderData();
+		void initRenderData(int viewportWidth, int viewportHeight);
 		void renderFrame(double interpolation);
 
 	}
