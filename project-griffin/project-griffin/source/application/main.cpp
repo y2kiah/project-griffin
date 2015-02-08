@@ -26,8 +26,6 @@ void test_resource_loader(); // test
 
 int main(int argc, char *argv[])
 {
-	test_reflection(); // TEMP
-
 	Timer::initHighPerfTimer();
 
 	try {
@@ -37,6 +35,8 @@ int main(int argc, char *argv[])
 		auto application = make_application();
 		
 		render::initRenderData(app.getPrimaryWindow().width, app.getPrimaryWindow().height);
+
+		//test_reflection(); // TEMP
 
 		bool done = false;
 		int32_t frame = 0;

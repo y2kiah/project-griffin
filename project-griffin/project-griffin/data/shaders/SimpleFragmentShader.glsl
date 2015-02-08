@@ -12,4 +12,5 @@ void main() {
     //outColor = (texture(diffuse, uv).rgb * color.rgb);
 	//outColor = color.rgb;
 	outColor = normal;
+	//outColor = vec3(1.0, 0, 0);
 }

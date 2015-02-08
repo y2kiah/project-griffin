@@ -70,7 +70,7 @@ const uint8_t g_cubeIndexBufferData[] = {
 	16, 17, 18, 18, 17, 19,
 	// bottom face
 	20, 21, 22, 22, 21, 23
-}
+};
 
 Cube::Cube() {
 	
