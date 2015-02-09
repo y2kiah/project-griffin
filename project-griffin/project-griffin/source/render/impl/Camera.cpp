@@ -4,6 +4,7 @@
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtx/norm.hpp>
 
+#include <glm/gtx/euler_angles.hpp> // TEMP
 
 namespace griffin {
 	namespace render {
@@ -15,6 +16,45 @@ namespace griffin {
 		const vec3 c_yAxis(0.0f, 1.0f, 0.0f);
 		const vec3 c_zAxis(0.0f, 0.0f, 1.0f);
 
+
+		///////////////////////////////////////////////////////////////////////////////////////////
+		// CameraPersp2
+
+		const mat4& CameraPersp2::getViewProjection() const
+		{
+			return mViewProjectionMatrix;
+		}
+
+		vec3 CameraPersp2::getEulerAngles() const
+		{
+			return eulerAngles(mViewRotationQuat);
+		}
+
+		void CameraPersp2::setTranslationYawPitchRoll(const vec3& position, float yaw, float pitch, float roll)
+		{
+			setEyePoint(position);
+			mat4 rotation = eulerAngleZ(roll);
+			rotation *= eulerAngleXY(pitch, yaw);
+			mViewRotationQuat = quat_cast(rotation);
+			
+			// could be delayed?
+			mViewMatrix = translate(rotation, -mEyePoint);
+			mViewProjectionMatrix = mProjectionMatrix * mViewMatrix;
+		}
+
+		void CameraPersp2::lookAt(const vec3 &position, const vec3 &target, const vec3 &worldUp)
+		{
+			setEyePoint(position);
+			mViewMatrix = glm::lookAt(mEyePoint, target, worldUp);
+			mViewRotationQuat = quat_cast(mViewMatrix);
+			
+			// could be delayed?
+			mViewProjectionMatrix = mProjectionMatrix * mViewMatrix;
+		}
+
+
+		///////////////////////////////////////////////////////////////////////////////////////////
+		// Camera
 
 		void Camera::setEyePoint(const vec3 &aEyePoint)
 		{
@@ -73,7 +113,7 @@ namespace griffin {
 			mModelViewCached = false;
 		}
 
-		void Camera::getNearClipCoordinates(vec3 *topLeft, vec3 *topRight, vec3 *bottomLeft, vec3 *bottomRight) const
+		void Camera::getNearClipCoordinates(vec3 *topLeft, vec3 *topRight, vec3 *bottomLeft, vec3 *bottomRight)
 		{
 			calcMatrices();
 
@@ -85,7 +125,7 @@ namespace griffin {
 			*bottomRight = mEyePoint + (mNearClip * viewDirection) + (mFrustumBottom * mV) + (mFrustumRight * mU);
 		}
 
-		void Camera::getFarClipCoordinates(vec3 *topLeft, vec3 *topRight, vec3 *bottomLeft, vec3 *bottomRight) const
+		void Camera::getFarClipCoordinates(vec3 *topLeft, vec3 *topRight, vec3 *bottomLeft, vec3 *bottomRight)
 		{
 			calcMatrices();
 
@@ -99,7 +139,7 @@ namespace griffin {
 			*bottomRight = mEyePoint + (mFarClip * viewDirection) + (ratio * mFrustumBottom * mV) + (ratio * mFrustumRight * mU);
 		}
 
-		void Camera::getFrustum(float *left, float *top, float *right, float *bottom, float *near, float *far) const
+		void Camera::getFrustum(float *left, float *top, float *right, float *bottom, float *near, float *far)
 		{
 			calcMatrices();
 
@@ -167,7 +207,7 @@ namespace griffin {
 			return distance(screenPerimeter, screenCenter);
 		}*/
 
-		void Camera::calcMatrices() const
+		void Camera::calcMatrices()
 		{
 			if (!mModelViewCached) calcModelView();
 			if (!mProjectionCached) calcProjection();
@@ -176,7 +216,7 @@ namespace griffin {
 			//if( ! mInverseModelViewCached ) calcInverseModelView();
 		}
 
-		void Camera::calcModelView() const
+		void Camera::calcModelView()
 		{
 			mW = normalize(-mViewDirection);
 			mU = mOrientation * c_xAxis;
@@ -184,16 +224,16 @@ namespace griffin {
 
 			vec3 d(dot(-mEyePoint, mU), dot(-mEyePoint, mV), dot(-mEyePoint, mW));
 			auto& m = mModelViewMatrix;
-			m[0][0] = mU.x; m[0][1] = mU.y; m[0][2] = mU.z; m[0][3] = d.x;
-			m[1][0] = mV.x; m[1][1] = mV.y; m[1][2] = mV.z; m[1][3] = d.y;
-			m[2][0] = mW.x; m[2][1] = mW.y; m[2][2] = mW.z; m[2][3] = d.z;
-			m[3][0] = 0.0f; m[3][1] = 0.0f; m[3][2] = 0.0f; m[3][3] = 1.0f;
+			m[0][0] = mU.x; m[1][0] = mU.y; m[2][0] = mU.z; m[3][0] = d.x;
+			m[0][1] = mV.x; m[1][1] = mV.y; m[2][1] = mV.z; m[3][1] = d.y;
+			m[0][2] = mW.x; m[1][2] = mW.y; m[2][2] = mW.z; m[3][2] = d.z;
+			m[0][3] = 0.0f; m[1][3] = 0.0f; m[2][3] = 0.0f; m[3][3] = 1.0f;
 
 			mModelViewCached = true;
 			mInverseModelViewCached = false;
 		}
 
-		void Camera::calcInverseModelView() const
+		void Camera::calcInverseModelView()
 		{
 			if (!mModelViewCached) calcModelView();
 
@@ -255,7 +295,7 @@ namespace griffin {
 			mProjectionCached = false;
 		}
 
-		void CameraPersp::calcProjection() const
+		void CameraPersp::calcProjection()
 		{
 			mFrustumTop = mNearClip * tanf(pi<float>() / 180.0f * mFov * 0.5f);
 			mFrustumBottom = -mFrustumTop;
@@ -346,7 +386,7 @@ namespace griffin {
 			mProjectionCached = false;
 		}
 
-		void CameraOrtho::calcProjection() const
+		void CameraOrtho::calcProjection()
 		{
 			mProjectionMatrix = glm::ortho(mFrustumLeft, mFrustumRight, mFrustumBottom, mFrustumTop, mNearClip, mFarClip);
 			mProjectionCached = true;
@@ -366,7 +406,7 @@ namespace griffin {
 				return mEyePoint + mOrientation * c_xAxis * (0.5f * mEyeSeparation);
 		}
 
-		void CameraStereo::getNearClipCoordinates(vec3 *topLeft, vec3 *topRight, vec3 *bottomLeft, vec3 *bottomRight) const
+		void CameraStereo::getNearClipCoordinates(vec3 *topLeft, vec3 *topRight, vec3 *bottomLeft, vec3 *bottomRight)
 		{
 			calcMatrices();
 
@@ -386,7 +426,7 @@ namespace griffin {
 			*bottomRight = eye + (mNearClip * viewDirection) + (mFrustumBottom * mV) + (right * mU);
 		}
 
-		void CameraStereo::getFarClipCoordinates(vec3 *topLeft, vec3 *topRight, vec3 *bottomLeft, vec3 *bottomRight) const
+		void CameraStereo::getFarClipCoordinates(vec3 *topLeft, vec3 *topRight, vec3 *bottomLeft, vec3 *bottomRight)
 		{
 			calcMatrices();
 
@@ -410,8 +450,7 @@ namespace griffin {
 
 		const mat4& CameraStereo::getProjectionMatrix() const
 		{
-			if (!mProjectionCached)
-				calcProjection();
+			assert(mProjectionCached);
 
 			if (!mIsStereo)
 				return mProjectionMatrix;
@@ -423,8 +462,7 @@ namespace griffin {
 
 		const mat4& CameraStereo::getModelViewMatrix() const
 		{
-			if (!mModelViewCached)
-				calcModelView();
+			assert(mModelViewCached);
 
 			if (!mIsStereo)
 				return mModelViewMatrix;
@@ -436,8 +474,7 @@ namespace griffin {
 
 		const mat4& CameraStereo::getInverseModelViewMatrix() const
 		{
-			if (!mInverseModelViewCached)
-				calcInverseModelView();
+			assert(mInverseModelViewCached);
 
 			if (!mIsStereo)
 				return mInverseModelViewMatrix;
@@ -447,7 +484,7 @@ namespace griffin {
 				return mInverseModelViewMatrixRight;
 		}
 
-		void CameraStereo::calcModelView() const
+		void CameraStereo::calcModelView()
 		{
 			// calculate default matrix first
 			CameraPersp::calcModelView();
@@ -473,7 +510,7 @@ namespace griffin {
 			mInverseModelViewCached = false;
 		}
 
-		void CameraStereo::calcInverseModelView() const
+		void CameraStereo::calcInverseModelView()
 		{
 			if (!mModelViewCached) calcModelView();
 
@@ -483,7 +520,7 @@ namespace griffin {
 			mInverseModelViewCached = true;
 		}
 
-		void CameraStereo::calcProjection() const
+		void CameraStereo::calcProjection()
 		{
 			// calculate default matrices first
 			CameraPersp::calcProjection();

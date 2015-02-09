@@ -7,6 +7,7 @@
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+
 using glm::vec2;
 using glm::vec3;
 using glm::mat4;
@@ -53,17 +54,17 @@ namespace griffin {
 			float	getFarClip() const { return mFarClip; }
 			void	setFarClip(float aFarClip) { mFarClip = aFarClip; mProjectionCached = false; }
 
-			virtual void	getNearClipCoordinates(vec3 *topLeft, vec3 *topRight, vec3 *bottomLeft, vec3 *bottomRight) const;
-			virtual void	getFarClipCoordinates(vec3 *topLeft, vec3 *topRight, vec3 *bottomLeft, vec3 *bottomRight) const;
+			virtual void	getNearClipCoordinates(vec3 *topLeft, vec3 *topRight, vec3 *bottomLeft, vec3 *bottomRight);
+			virtual void	getFarClipCoordinates(vec3 *topLeft, vec3 *topRight, vec3 *bottomLeft, vec3 *bottomRight);
 
 			//! Returns the coordinates of the camera's frustum, suitable for passing to \c glFrustum
-			void	getFrustum(float *left, float *top, float *right, float *bottom, float *near, float *far) const;
+			void	getFrustum(float *left, float *top, float *right, float *bottom, float *near, float *far);
 			//! Returns whether the camera represents a perspective projection instead of an orthographic
 			virtual bool isPersp() const = 0;
 
-			virtual const mat4&	getProjectionMatrix() const { if (!mProjectionCached) calcProjection(); return mProjectionMatrix; }
-			virtual const mat4&	getModelViewMatrix() const { if (!mModelViewCached) calcModelView(); return mModelViewMatrix; }
-			virtual const mat4&	getInverseModelViewMatrix() const { if (!mInverseModelViewCached) calcInverseModelView(); return mInverseModelViewMatrix; }
+			virtual const mat4&	getProjectionMatrix() const { assert(mProjectionCached); return mProjectionMatrix; }
+			virtual const mat4&	getModelViewMatrix() const { assert(mModelViewCached); return mModelViewMatrix; }
+			virtual const mat4&	getInverseModelViewMatrix() const { assert(mInverseModelViewCached); return mInverseModelViewMatrix; }
 
 			//Ray		generateRay(float u, float v, float imagePlaneAspectRatio) const;
 			void	getBillboardVectors(vec3 *right, vec3 *up) const;
@@ -79,6 +80,12 @@ namespace griffin {
 
 			//float	getScreenRadius(const class Sphere &sphere, float screenWidth, float screenHeight) const;
 
+			inline void		calcMatrices();
+
+			virtual void	calcModelView();
+			virtual void	calcInverseModelView();
+			virtual void	calcProjection() = 0;
+
 		protected:
 			vec3	mEyePoint;
 			vec3	mViewDirection;
@@ -91,24 +98,18 @@ namespace griffin {
 			float	mNearClip;
 			float	mFarClip;
 
-			mutable vec3	mU;	// Right vector
-			mutable vec3	mV;	// Readjust up-vector
-			mutable vec3	mW;	// Negative view direction
+			vec3	mU;	// Right vector
+			vec3	mV;	// Readjust up-vector
+			vec3	mW;	// Negative view direction
 
-			mutable mat4	mProjectionMatrix, mInverseProjectionMatrix;
-			mutable bool	mProjectionCached;
-			mutable mat4	mModelViewMatrix;
-			mutable bool	mModelViewCached;
-			mutable mat4	mInverseModelViewMatrix;
-			mutable bool	mInverseModelViewCached;
+			mat4	mProjectionMatrix, mInverseProjectionMatrix;
+			bool	mProjectionCached;
+			mat4	mModelViewMatrix;
+			bool	mModelViewCached;
+			mat4	mInverseModelViewMatrix;
+			bool	mInverseModelViewCached;
 
-			mutable float	mFrustumLeft, mFrustumRight, mFrustumTop, mFrustumBottom;
-
-			inline void		calcMatrices() const;
-
-			virtual void	calcModelView() const;
-			virtual void	calcInverseModelView() const;
-			virtual void	calcProjection() const = 0;
+			float	mFrustumLeft, mFrustumRight, mFrustumTop, mFrustumBottom;
 		};
 
 
@@ -151,11 +152,31 @@ namespace griffin {
 
 			//CameraPersp	getFrameSphere(const class Sphere &worldSpaceSphere, int maxIterations = 20) const;
 
+			virtual void	calcProjection();
+
 		protected:
 			vec2	mLensShift;
-
-			virtual void	calcProjection() const;
 		};
+
+
+		class CameraPersp2 : public CameraPersp {
+		public:
+			CameraPersp2(int pixelWidth, int pixelHeight, float fov, float nearPlane, float farPlane) :
+				CameraPersp(pixelWidth, pixelHeight, fov, nearPlane, farPlane)
+			{}
+
+			const mat4&	getViewProjection() const;
+			vec3		getEulerAngles() const;
+
+			void	setTranslationYawPitchRoll(const vec3& position, float yaw, float pitch, float roll);
+			void	lookAt(const vec3 &position, const vec3 &target, const vec3 &worldUp);
+
+		protected:
+			quat	mViewRotationQuat;
+			mat4	mViewMatrix;
+			mat4	mViewProjectionMatrix;
+		};
+
 
 		class CameraOrtho : public Camera {
 		public:
@@ -167,7 +188,7 @@ namespace griffin {
 			virtual bool	isPersp() const { return false; }
 
 		protected:
-			virtual void	calcProjection() const;
+			virtual void	calcProjection();
 		};
 
 
@@ -209,22 +230,23 @@ namespace griffin {
 			void			disableStereo() { mIsStereo = false; }
 			bool			isStereoEnabled() const { return mIsStereo; }
 
-			virtual void	getNearClipCoordinates(vec3 *topLeft, vec3 *topRight, vec3 *bottomLeft, vec3 *bottomRight) const;
-			virtual void	getFarClipCoordinates(vec3 *topLeft, vec3 *topRight, vec3 *bottomLeft, vec3 *bottomRight) const;
+			virtual void	getNearClipCoordinates(vec3 *topLeft, vec3 *topRight, vec3 *bottomLeft, vec3 *bottomRight);
+			virtual void	getFarClipCoordinates(vec3 *topLeft, vec3 *topRight, vec3 *bottomLeft, vec3 *bottomRight);
 
 			virtual const mat4&	getProjectionMatrix() const;
 			virtual const mat4&	getModelViewMatrix() const;
 			virtual const mat4&	getInverseModelViewMatrix() const;
 
-		protected:
-			mutable mat4	mProjectionMatrixLeft, mInverseProjectionMatrixLeft;
-			mutable mat4	mProjectionMatrixRight, mInverseProjectionMatrixRight;
-			mutable mat4	mModelViewMatrixLeft, mInverseModelViewMatrixLeft;
-			mutable mat4	mModelViewMatrixRight, mInverseModelViewMatrixRight;
+			virtual void	calcModelView();
+			virtual void	calcInverseModelView();
+			virtual void	calcProjection();
 
-			virtual void	calcModelView() const;
-			virtual void	calcInverseModelView() const;
-			virtual void	calcProjection() const;
+		protected:
+			mat4			mProjectionMatrixLeft, mInverseProjectionMatrixLeft;
+			mat4			mProjectionMatrixRight, mInverseProjectionMatrixRight;
+			mat4			mModelViewMatrixLeft, mInverseModelViewMatrixLeft;
+			mat4			mModelViewMatrixRight, mInverseModelViewMatrixRight;
+
 		private:
 			bool			mIsStereo;
 			bool			mIsLeft;

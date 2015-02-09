@@ -74,8 +74,8 @@ namespace griffin {
 							L"shaders/SimpleFragmentShader.glsl");
 
 			loadTexturesTemp();
-			loadModelTemp("data/models/landing platform.dae");
-			//loadModelTemp("data/models/cube.dae");
+			//loadModelTemp("data/models/landing platform.dae");
+			loadModelTemp("data/models/cube.dae");
 
 			camera = std::make_unique<CameraPersp>(viewportWidth, viewportHeight, 60.0f, 0.1f, 10000.0f);
 		}
@@ -87,14 +87,19 @@ namespace griffin {
 			g_tempShaderProgramPtr->useProgram();
 			auto programId = g_tempShaderProgramPtr->getProgramId();
 
-			//camera->setEyePoint(vec3(10.0f, 10.0f, 10.0f));
-			//camera->lookAt(vec3(0.0f, 0.0f, 0.0f));
-			// Camera matrix
-			glm::mat4 view = glm::lookAt(
-				glm::vec3(100, 100, 100),
-				glm::vec3(0, 0, 0),
-				glm::vec3(0, 1, 0));
-			mat4 mvp(camera->getProjectionMatrix() * view/*camera->getModelViewMatrix()*/);
+			camera->setEyePoint({ 10.0f, 10.0f, 10.0f });
+			camera->lookAt({ 0.0f, 0.0f, 0.0f });
+			camera->setWorldUp({ 0.0f, 1.0f, 0.0f });
+			camera->calcMatrices();
+			mat4 mvp(camera->getProjectionMatrix() * camera->getModelViewMatrix());
+
+			/*camera->setTranslationYawPitchRoll({ 10.0f, 10.0f, 10.0f }, glm::radians(315.0f), glm::radians(45.0f), 0);
+			//camera->lookAt({ 10.0f, 10.0f, 10.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f });
+			camera->calcMatrices();
+			mat4 model(1.0f);
+			mat4 mvp(camera->getViewProjection() * model);
+			*/
+
 			//glUniformMatrix4fv(UniformLayout_ModelView, 1, GL_FALSE, &camera->getModelViewMatrix()[0][0]);
 			//glUniformMatrix4fv(UniformLayout_Projection, 1, GL_FALSE, &camera->getProjectionMatrix()[0][0]);
 			//glUniformMatrix4fv(UniformLayout_ModelViewProjection, 1, GL_FALSE, &mvp[0][0]);
@@ -116,7 +121,7 @@ namespace griffin {
 			// draw the test mesh
 			g_tempMesh->draw();
 
-			glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+			/*glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 			
 			glEnableVertexAttribArray(VertexLayout_Position);
 			glEnableVertexAttribArray(VertexLayout_Colors);
@@ -154,7 +159,7 @@ namespace griffin {
 			glDisableVertexAttribArray(VertexLayout_Colors);
 			glDisableVertexAttribArray(VertexLayout_TextureCoords);
 			
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, 24);
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 24);*/
 		}
 
 		bool loadTexturesTemp()

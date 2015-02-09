@@ -27,6 +27,8 @@ namespace griffin {
 			IndexBufferFlags getFlags() const { return m_flags; }
 			unsigned int getIndexType() const;
 
+			void setFlags(IndexBufferFlags flags) { m_flags = flags; }
+
 			bool loadFromMemory(unsigned char* data, size_t size);
 
 			bool loadFromInternalMemory(bool discard = true);
