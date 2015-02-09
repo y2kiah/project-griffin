@@ -237,7 +237,9 @@ void SDLApplication::initOpenGL()
 	// This makes our buffer swap syncronized with the monitor's vertical refresh
 	SDL_GL_SetSwapInterval(1);
 
-	glClearColor(0.0, 0.0, 1.0, 1.0);
+	glEnable(GL_CULL_FACE);
+
+	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	SDL_GL_SwapWindow(getPrimaryWindow().window);
 }

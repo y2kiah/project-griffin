@@ -18,11 +18,81 @@ namespace griffin {
 			other.m_numDrawSets = 0;
 		}
 
+		Mesh_GL::~Mesh_GL() {
+			// delete the VAO objects
+			for (auto ds = 0; ds < m_numDrawSets; ++ds) {
+				glDeleteVertexArrays(1, &m_drawSets[ds].glVAO);
+			}
+		}
+
 		void Mesh_GL::bind(int drawSetIndex) const
+		{
+			glBindVertexArray(m_drawSets[drawSetIndex].glVAO);
+		}
+		
+		void Mesh_GL::unbind(int drawSetIndex) const
 		{
 			assert(drawSetIndex >= 0 && drawSetIndex < m_numDrawSets && "drawSetIndex out of range");
 
 			auto& drawSet = m_drawSets[drawSetIndex];
+
+			if (drawSet.vertexFlags & Vertex_Positions) {
+				glDisableVertexAttribArray(VertexLayout_Position);
+			}
+			
+			if (drawSet.vertexFlags & Vertex_Normals) {
+				glDisableVertexAttribArray(VertexLayout_Normal);
+			}
+			
+			if (drawSet.vertexFlags & Vertex_TangentsAndBitangents) {
+				glDisableVertexAttribArray(VertexLayout_Tangent);
+				glDisableVertexAttribArray(VertexLayout_Bitangent);
+			}
+
+			if (drawSet.vertexFlags & Vertex_TextureCoords) {
+				for (int c = 0; c < drawSet.numTexCoordChannels; ++c) {
+					glDisableVertexAttribArray(VertexLayout_TextureCoords + c);
+				}
+			}
+
+			if (drawSet.vertexFlags & Vertex_Colors) {
+				for (int c = 0; c < drawSet.numColorChannels; ++c) {
+					glDisableVertexAttribArray(VertexLayout_Colors + c);
+				}
+			}
+		}
+
+
+		void Mesh_GL::draw(int drawSetIndex) const
+		{
+			assert(drawSetIndex >= 0 && drawSetIndex < m_numDrawSets && "drawSetIndex out of range");
+			bind(drawSetIndex);
+
+			GLenum indexType = m_indexBuffer.getIndexType();
+			DrawSet& drawSet = m_drawSets[drawSetIndex];
+			
+			glDrawRangeElementsBaseVertex(drawSet.glPrimitiveType, drawSet.indexRangeStart, drawSet.indexRangeEnd,
+										  drawSet.numElements, indexType,
+										  reinterpret_cast<const GLvoid*>(drawSet.indexBaseOffset), drawSet.vertexBaseOffset);
+		}
+
+
+		void Mesh_GL::draw() const
+		{
+			for (auto ds = 0; ds < m_numDrawSets; ++ds) {
+				draw(ds);
+			}
+		}
+
+
+		void Mesh_GL::initializeVAO(int drawSetIndex) const
+		{
+			assert(drawSetIndex >= 0 && drawSetIndex < m_numDrawSets && "drawSetIndex out of range");
+
+			auto& drawSet = m_drawSets[drawSetIndex];
+
+			glGenVertexArrays(1, &drawSet.glVAO);
+			glBindVertexArray(m_drawSets[drawSetIndex].glVAO);
 
 			m_vertexBuffer.bind();
 			m_indexBuffer.bind();
@@ -100,64 +170,5 @@ namespace griffin {
 			}
 		}
 		
-		
-		void Mesh_GL::unbind(int drawSetIndex) const
-		{
-			assert(drawSetIndex >= 0 && drawSetIndex < m_numDrawSets && "drawSetIndex out of range");
-
-			auto& drawSet = m_drawSets[drawSetIndex];
-
-			if (drawSet.vertexFlags & Vertex_Positions) {
-				glDisableVertexAttribArray(VertexLayout_Position);
-			}
-			
-			if (drawSet.vertexFlags & Vertex_Normals) {
-				glDisableVertexAttribArray(VertexLayout_Normal);
-			}
-			
-			if (drawSet.vertexFlags & Vertex_TangentsAndBitangents) {
-				glDisableVertexAttribArray(VertexLayout_Tangent);
-				glDisableVertexAttribArray(VertexLayout_Bitangent);
-			}
-
-			if (drawSet.vertexFlags & Vertex_TextureCoords) {
-				for (int c = 0; c < drawSet.numTexCoordChannels; ++c) {
-					glDisableVertexAttribArray(VertexLayout_TextureCoords + c);
-				}
-			}
-
-			if (drawSet.vertexFlags & Vertex_Colors) {
-				for (int c = 0; c < drawSet.numColorChannels; ++c) {
-					glDisableVertexAttribArray(VertexLayout_Colors + c);
-				}
-			}
-		}
-
-
-		void Mesh_GL::draw(int drawSetIndex) const
-		{
-			assert(drawSetIndex >= 0 && drawSetIndex < m_numDrawSets && "drawSetIndex out of range");
-
-			GLenum indexType = m_indexBuffer.getIndexType();
-			DrawSet& drawSet = m_drawSets[drawSetIndex];
-			
-			glEnable(GL_PROGRAM_POINT_SIZE);
-			glDrawElements(GL_POINTS, drawSet.numElements, GL_UNSIGNED_BYTE, (void*)drawSet.indexBaseOffset);
-
-			/*glDrawRangeElementsBaseVertex(drawSet.glPrimitiveType, drawSet.indexRangeStart, drawSet.indexRangeEnd,
-										  drawSet.numElements, indexType,
-										  reinterpret_cast<const GLvoid*>(drawSet.indexBaseOffset), drawSet.vertexBaseOffset);
-			*/
-		}
-
-
-		void Mesh_GL::draw() const
-		{
-			for (auto ds = 0; ds < m_numDrawSets; ++ds) {
-				bind(ds);
-				draw(ds);
-				unbind(ds);
-			}
-		}
 	}
 }

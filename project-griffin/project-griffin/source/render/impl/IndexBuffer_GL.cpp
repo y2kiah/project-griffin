@@ -39,7 +39,7 @@ namespace griffin {
 		}
 
 
-		bool IndexBuffer_GL::loadFromMemory(unsigned char* data, size_t size)
+		bool IndexBuffer_GL::loadFromMemory(unsigned char* data, size_t size, int sizeOfElement)
 		{
 			// generate the buffer
 			glGenBuffers(1, &m_glIndexBuffer);
@@ -48,6 +48,19 @@ namespace griffin {
 
 			// send data to OpenGL
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+
+			m_sizeBytes = size;
+
+			switch (sizeOfElement) {
+				case sizeof(uint8_t) :
+					m_flags = IndexBuffer_8bit;
+					break;
+				case sizeof(uint16_t) :
+					m_flags = IndexBuffer_16bit;
+					break;
+				default:
+					m_flags = IndexBuffer_32bit;
+			}
 
 			return (m_glIndexBuffer != 0);
 		}

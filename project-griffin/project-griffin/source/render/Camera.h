@@ -80,7 +80,12 @@ namespace griffin {
 
 			//float	getScreenRadius(const class Sphere &sphere, float screenWidth, float screenHeight) const;
 
-			inline void		calcMatrices();
+			inline void		calcMatrices() {
+				if (!mModelViewCached) { calcModelView(); }
+				if (!mProjectionCached) { calcProjection(); }
+				// note: calculation of the inverse modelview matrices is postponed until actually requested
+				//if (!mInverseModelViewCached) { calcInverseModelView(); }
+			}
 
 			virtual void	calcModelView();
 			virtual void	calcInverseModelView();

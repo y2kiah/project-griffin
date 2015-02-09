@@ -53,7 +53,7 @@ namespace griffin {
 			importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_POINT | aiPrimitiveType_LINE);
 
 			uint32_t ppFlags = aiProcessPreset_TargetRealtime_MaxQuality |
-				aiProcess_TransformUVCoords;
+				aiProcess_TransformUVCoords | aiProcess_GenNormals;
 
 			const aiScene* p_scene = importer.ReadFile(filename, ppFlags);
 
@@ -79,12 +79,13 @@ namespace griffin {
 			uint32_t totalIndexBufferSize = getTotalIndexBufferSize(scene, drawSets.get(), numVertices);
 			auto indexBuffer = std::make_unique<unsigned char[]>(totalIndexBufferSize);
 			uint32_t numElements = fillIndexBuffer(scene, indexBuffer.get(), totalIndexBufferSize, numVertices, drawSets.get());
+			int sizeOfElement = totalIndexBufferSize / numElements;
 
 			VertexBuffer_GL vb;
 			vb.loadFromMemory(vertexBuffer.get(), totalVertexBufferSize);
 
 			IndexBuffer_GL ib;
-			ib.loadFromMemory(indexBuffer.get(), totalIndexBufferSize);
+			ib.loadFromMemory(indexBuffer.get(), totalIndexBufferSize, sizeOfElement);
 
 			// get mesh scene graph
 			uint32_t numMeshSceneNodes = getMeshSceneNodeArraySize(scene);

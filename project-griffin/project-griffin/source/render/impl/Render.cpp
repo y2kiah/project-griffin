@@ -15,7 +15,6 @@
 #include <render/model/ModelImport_Assimp.h>
 #include <render/Camera.h>
 
-#include <glm/gtc/matrix_transform.hpp> // TEMP
 
 namespace griffin {
 	namespace render {
@@ -40,42 +39,16 @@ namespace griffin {
 		std::shared_ptr<ShaderProgram_GL> g_tempShaderProgramPtr = nullptr;
 		std::unique_ptr<Mesh_GL> g_tempMesh = nullptr;
 		std::unique_ptr<CameraPersp> camera;
-
-		struct vertex_pcuv {
-			glm::vec3 position;
-			glm::vec3 color;
-			glm::vec2 uv;
-		};
-		static const vertex_pcuv g_vertex_buffer_data[] = {
-			{ { -1.0f, 1.0f, 0.0f }, { 1, 0, 0 }, { 0, 0 } },
-			{ { -1.0f, -1.0f, 0.0f }, { 0, 1, 0 }, { 0, 1 } },
-			{ { 1.0f, 1.0f, 0.0f }, { 0, 0, 1 }, { 1, 0 } },
-			{ { 1.0f, -1.0f, 0.0f }, { 1, 1, 1 }, { 1, 1 } }
-		};
-		GLuint vertexArrayId = 0;
-		GLuint vertexbuffer = 0;
-
+		
 		// Functions
 
 		void initRenderData(int viewportWidth, int viewportHeight) {
-			glGenVertexArrays(1, &vertexArrayId);
-			glBindVertexArray(vertexArrayId);
-			
-			// Generate 1 buffer, put the resulting identifier in vertexbuffer
-			glGenBuffers(1, &vertexbuffer);
-			
-			// The following commands will talk about our 'vertexbuffer' buffer
-			glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-			
-			// Give our vertices to OpenGL.
-			glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-
 			loadShadersTemp(L"shaders/SimpleVertexShader.glsl",
 							L"shaders/SimpleFragmentShader.glsl");
 
 			loadTexturesTemp();
-			//loadModelTemp("data/models/landing platform.dae");
-			loadModelTemp("data/models/cube.dae");
+			loadModelTemp("data/models/landing platform.dae");
+			//loadModelTemp("data/models/cube.dae");
 
 			camera = std::make_unique<CameraPersp>(viewportWidth, viewportHeight, 60.0f, 0.1f, 10000.0f);
 		}
@@ -119,47 +92,10 @@ namespace griffin {
 			catch (...) {}
 
 			// draw the test mesh
-			g_tempMesh->draw();
-
-			/*glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-			
-			glEnableVertexAttribArray(VertexLayout_Position);
-			glEnableVertexAttribArray(VertexLayout_Colors);
-			glEnableVertexAttribArray(VertexLayout_TextureCoords);
-			
-			glVertexAttribPointer(
-				VertexLayout_Position,
-				3,                  // size
-				GL_FLOAT,           // type
-				GL_FALSE,           // normalized?
-				sizeof(vertex_pcuv),// stride
-				(void*)0 // array buffer offset
-				);
-			glVertexAttribPointer(
-				VertexLayout_Colors,
-				3,                  // size
-				GL_FLOAT,           // type
-				GL_FALSE,           // normalized?
-				sizeof(vertex_pcuv),// stride
-				(void*)12 // array buffer offset
-				);
-			glVertexAttribPointer(
-				VertexLayout_TextureCoords,
-				2,                  // size
-				GL_FLOAT,           // type
-				GL_FALSE,           // normalized?
-				sizeof(vertex_pcuv),// stride
-				(void*)24 // array buffer offset
-				);
-			// Draw the triangle !
-			
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); // Starting from vertex 0; 4 vertices total -> 2 triangles
-			
-			glDisableVertexAttribArray(VertexLayout_Position);
-			glDisableVertexAttribArray(VertexLayout_Colors);
-			glDisableVertexAttribArray(VertexLayout_TextureCoords);
-			
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, 24);*/
+			//g_tempMesh->draw();
+			for (int ds = 0; ds < 10; ++ds) {
+				g_tempMesh->draw(ds);
+			}
 		}
 
 		bool loadTexturesTemp()

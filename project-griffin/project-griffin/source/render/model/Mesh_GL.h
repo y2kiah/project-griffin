@@ -44,10 +44,9 @@ namespace griffin {
 		* within the greater mesh. It includes the information necessary to interpret the vertex
 		* data within the specified range (indexed into the Mesh_GL's vertex buffer), and the set
 		* of faces indexed into the Mesh_GL's index buffer. This object describes the vertex data
-		* available, but says nothing about the material's requirements for binding this data to
-		* a VAO for rendering. DrawSet bit flags are checked against Material_GL bit flag
-		* requirements to ensure the mesh has the required components to be rendered. The material
-		* and DrawSet combine to build the VAO for rendering, where layout attribute locations are
+		* available. DrawSet bit flags are checked against Material_GL bit flag requirements to
+		* ensure the mesh has the required components to be rendered. The material and DrawSet
+		* combine to build the VAO for rendering, where layout attribute locations are
 		* predetermined and are enabled on an as-needed basis.
 		*/
 		struct DrawSet {
@@ -60,6 +59,7 @@ namespace griffin {
 			unsigned int indexRangeEnd;				// <! range high of indices into the vertex buffer, before vertexBaseOffset is added
 			unsigned int vertexBaseOffset;			// <! base offset into the vertex buffer
 			unsigned int glPrimitiveType;			// <! GL_TRIANGLES is the only mode currently supported
+			unsigned int glVAO;						// <! Vertex Array Object, created during Mesh_GL initialization
 
 			// per-vertex offsets
 			// position is always at offset 0
@@ -135,6 +135,12 @@ namespace griffin {
 			*/
 			void draw() const;
 
+			/**
+			* Creates the Vertex Buffer Object with OpenGL for each draw set
+			*/
+			void initializeVAO(int drawSetIndex) const;
+			void initializeVAOs() const;
+
 //			#ifdef GRIFFIN_TOOLS_BUILD
 			/**
 			* Import from another file format using assimp, used in TOOLS build only
@@ -174,10 +180,17 @@ namespace griffin {
 
 			// fix up the m_drawSet pointer to point to the stored data location
 			m_drawSets = reinterpret_cast<DrawSet*>(m_modelData.get());
+
+			initializeVAOs();
 		}
 
 
-		inline Mesh_GL::~Mesh_GL() {}
+		inline void Mesh_GL::initializeVAOs() const
+		{
+			for (auto ds = 0; ds < m_numDrawSets; ++ds) {
+				initializeVAO(ds);
+			}
+		}
 	}
 }
 

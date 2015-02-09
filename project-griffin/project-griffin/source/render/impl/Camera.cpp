@@ -207,15 +207,6 @@ namespace griffin {
 			return distance(screenPerimeter, screenCenter);
 		}*/
 
-		void Camera::calcMatrices()
-		{
-			if (!mModelViewCached) calcModelView();
-			if (!mProjectionCached) calcProjection();
-
-			// note: calculation of the inverse modelview matrices is postponed until actually requested
-			//if( ! mInverseModelViewCached ) calcInverseModelView();
-		}
-
 		void Camera::calcModelView()
 		{
 			mW = normalize(-mViewDirection);
