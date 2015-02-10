@@ -71,7 +71,7 @@ namespace griffin {
 			GLenum indexType = m_indexBuffer.getIndexType();
 			DrawSet& drawSet = m_drawSets[drawSetIndex];
 			
-			glDrawRangeElementsBaseVertex(drawSet.glPrimitiveType, drawSet.indexRangeStart, drawSet.indexRangeEnd,
+			glDrawRangeElementsBaseVertex(GL_POINTS/*drawSet.glPrimitiveType*/, drawSet.indexRangeStart, drawSet.indexRangeEnd,
 										  drawSet.numElements, indexType,
 										  reinterpret_cast<const GLvoid*>(drawSet.indexBaseOffset), drawSet.vertexBaseOffset);
 		}

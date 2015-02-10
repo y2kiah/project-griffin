@@ -81,6 +81,14 @@ namespace griffin {
 			uint32_t numElements = fillIndexBuffer(scene, indexBuffer.get(), totalIndexBufferSize, numVertices, drawSets.get());
 			int sizeOfElement = totalIndexBufferSize / numElements;
 
+			// TEMP
+			int maxIndex = 0;
+			auto ui_ib = (unsigned int*)indexBuffer.get();
+			for (int i = 0; i < numElements; ++i) {
+				maxIndex = (ui_ib[i] > maxIndex ? ui_ib[i] : maxIndex);
+			}
+			//
+
 			VertexBuffer_GL vb;
 			vb.loadFromMemory(vertexBuffer.get(), totalVertexBufferSize);
 

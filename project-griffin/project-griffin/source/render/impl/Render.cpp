@@ -60,7 +60,7 @@ namespace griffin {
 			g_tempShaderProgramPtr->useProgram();
 			auto programId = g_tempShaderProgramPtr->getProgramId();
 
-			camera->setEyePoint({ 10.0f, 10.0f, 10.0f });
+			camera->setEyePoint({ 200.0f, 200.0f, 200.0f });
 			camera->lookAt({ 0.0f, 0.0f, 0.0f });
 			camera->setWorldUp({ 0.0f, 1.0f, 0.0f });
 			camera->calcMatrices();
@@ -92,10 +92,7 @@ namespace griffin {
 			catch (...) {}
 
 			// draw the test mesh
-			//g_tempMesh->draw();
-			for (int ds = 0; ds < 10; ++ds) {
-				g_tempMesh->draw(ds);
-			}
+			g_tempMesh->draw();
 		}
 
 		bool loadTexturesTemp()
