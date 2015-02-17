@@ -60,11 +60,12 @@ namespace griffin {
 			g_tempShaderProgramPtr->useProgram();
 			auto programId = g_tempShaderProgramPtr->getProgramId();
 
-			camera->setEyePoint({ 200.0f, 200.0f, 200.0f });
+			camera->setEyePoint({ 40.0f, 15.0f, 0.0f });
 			camera->lookAt({ 0.0f, 0.0f, 0.0f });
 			camera->setWorldUp({ 0.0f, 1.0f, 0.0f });
 			camera->calcMatrices();
-			mat4 mvp(camera->getProjectionMatrix() * camera->getModelViewMatrix());
+			mat4 viewProjMat(camera->getProjectionMatrix() * camera->getModelViewMatrix());
+			mat4 modelMat(1.0f);
 
 			/*camera->setTranslationYawPitchRoll({ 10.0f, 10.0f, 10.0f }, glm::radians(315.0f), glm::radians(45.0f), 0);
 			//camera->lookAt({ 10.0f, 10.0f, 10.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f });
@@ -76,8 +77,10 @@ namespace griffin {
 			//glUniformMatrix4fv(UniformLayout_ModelView, 1, GL_FALSE, &camera->getModelViewMatrix()[0][0]);
 			//glUniformMatrix4fv(UniformLayout_Projection, 1, GL_FALSE, &camera->getProjectionMatrix()[0][0]);
 			//glUniformMatrix4fv(UniformLayout_ModelViewProjection, 1, GL_FALSE, &mvp[0][0]);
-			GLint mvpLocation = glGetUniformLocation(programId, "modelViewProjection");
-			glUniformMatrix4fv(mvpLocation, 1, GL_FALSE, &mvp[0][0]);
+			GLint modelMatLoc    = glGetUniformLocation(programId, "modelToWorld");
+			GLint viewProjMatLoc = glGetUniformLocation(programId, "viewProjection");
+			glUniformMatrix4fv(modelMatLoc, 1, GL_FALSE, &modelMat[0][0]);
+			glUniformMatrix4fv(viewProjMatLoc, 1, GL_FALSE, &viewProjMat[0][0]);
 
 			// bind the texture
 			auto loader = g_loaderPtr.lock();
@@ -92,7 +95,7 @@ namespace griffin {
 			catch (...) {}
 
 			// draw the test mesh
-			g_tempMesh->draw();
+			g_tempMesh->draw(modelMatLoc); // temporarily passing in the modelMatLoc
 		}
 
 		bool loadTexturesTemp()

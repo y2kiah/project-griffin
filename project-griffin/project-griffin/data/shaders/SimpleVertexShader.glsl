@@ -1,7 +1,7 @@
 #version 440 core
 
-//#define UniformLayout_ModelView           0
-//#define UniformLayout_Projection          1
+//#define UniformLayout_ModelToWorld        0
+//#define UniformLayout_ViewProjection      1
 //#define UniformLayout_ModelViewProjection 2
 
 #define VertexLayout_Position      0
@@ -11,7 +11,8 @@
 #define VertexLayout_TextureCoords 4   // consumes up to 8 locations
 #define VertexLayout_Colors        12  // consumes up to 8 locations
 
-uniform mat4 modelViewProjection;
+uniform mat4 modelToWorld;
+uniform mat4 viewProjection;
 //layout(location = UniformLayout_ModelView) uniform mat4 modelView;
 //layout(location = UniformLayout_Projection) uniform mat4 projection;
 //layout(location = UniformLayout_ModelViewProjection) uniform mat4 modelViewProjection;
@@ -26,9 +27,9 @@ out vec4 color;
 out vec2 uv;
 
 void main() {
-	gl_Position = modelViewProjection * vec4(vertexPosition_modelspace, 1.0);
+	gl_Position = viewProjection * modelToWorld * vec4(vertexPosition_modelspace, 1.0);
 
-	normal = vertexNormal;
+	normal = normalize(modelToWorld * vec4(vertexNormal, 0.0)).xyz;
 	color = vertexColor;
 	uv = vertexUV;
 }

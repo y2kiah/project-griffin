@@ -174,8 +174,12 @@ void SDLApplication::initWindow(const char* appName)
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
-	int width = 640;
-	int height = 480;
+	// Turn on antialiasing
+	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
+
+	int width = 1280;
+	int height = 720;
 
 	auto window = SDL_CreateWindow(
 		appName,
@@ -237,8 +241,17 @@ void SDLApplication::initOpenGL()
 	// This makes our buffer swap syncronized with the monitor's vertical refresh
 	SDL_GL_SetSwapInterval(1);
 
-	glEnable(GL_CULL_FACE);
+	// Enable multisampling
+	glEnable(GL_MULTISAMPLE);
 
+	// Enable back face culling
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	
+	// Enable depth testing
+	glEnable(GL_DEPTH_TEST);
+
+	// Set the clear color to black and clear the screen
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	SDL_GL_SwapWindow(getPrimaryWindow().window);

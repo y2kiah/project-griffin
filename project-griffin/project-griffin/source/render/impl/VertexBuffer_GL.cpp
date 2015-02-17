@@ -33,6 +33,8 @@ namespace griffin {
 			// send data to OpenGL
 			glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
 
+			m_sizeBytes = size;
+
 			return (m_glVertexBuffer != 0);
 		}
 
