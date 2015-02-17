@@ -479,14 +479,16 @@ namespace griffin {
 
 			while (!bfsQueue.empty()) {
 				auto& item = bfsQueue.front();
-				bfsQueue.pop();
+				
 				// pass the node, the breadth-first index, and the parent index to the lambda
 				func(*item.node, index, item.parentIndex, item.childIndexOfParent);
 
 				for (uint32_t c = 0; c < item.node->mNumChildren; ++c) {
-					bfsQueue.push({ item.node->mChildren[c], index, c });
+					aiNode* childNode = item.node->mChildren[c];
+					bfsQueue.push({ childNode, index, c });
 				}
 
+				bfsQueue.pop();
 				++index;
 			}
 		}
@@ -541,6 +543,7 @@ namespace griffin {
 				thisNode.childIndexOffset = childIndexOffset;
 				thisNode.meshIndexOffset = meshIndexOffset;
 				thisNode.parentIndex = parentIndex;
+				thisNode.name = assimpNode.mName.C_Str();
 
 				// populate mesh index array
 				for (unsigned int m = 0; m < thisNode.numMeshes; ++m) {
@@ -551,8 +554,8 @@ namespace griffin {
 				childIndexOffset += assimpNode.mNumChildren;
 				meshIndexOffset += assimpNode.mNumMeshes;
 			});
-			
 		}
+
 	}
 }
 

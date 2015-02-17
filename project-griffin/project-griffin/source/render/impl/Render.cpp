@@ -60,7 +60,7 @@ namespace griffin {
 			g_tempShaderProgramPtr->useProgram();
 			auto programId = g_tempShaderProgramPtr->getProgramId();
 
-			camera->setEyePoint({ 40.0f, 15.0f, 0.0f });
+			camera->setEyePoint({ 120.0f, 40.0f, 0.0f });
 			camera->lookAt({ 0.0f, 0.0f, 0.0f });
 			camera->setWorldUp({ 0.0f, 1.0f, 0.0f });
 			camera->calcMatrices();

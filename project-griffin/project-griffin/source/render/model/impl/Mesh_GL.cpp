@@ -10,6 +10,7 @@
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#define Meters_to_Feet 3.2808398950131233595800524934383f
 
 namespace griffin {
 	namespace render {
@@ -58,7 +59,8 @@ namespace griffin {
 			glm::mat4 modelToWorld;
 			// temp
 			modelToWorld = glm::rotate(modelToWorld, glm::radians(0.0f), glm::vec3(0, 1.0f, 0));
-			modelToWorld = glm::translate(modelToWorld, glm::vec3(0.0f, 0.0f, 30.48f));
+			modelToWorld = glm::translate(modelToWorld, glm::vec3(0.0f, 0.0f, 50.0f));
+			modelToWorld = glm::scale(modelToWorld, glm::vec3(Meters_to_Feet));
 			glUniformMatrix4fv(modelMatLoc, 1, GL_FALSE, &modelToWorld[0][0]);
 
 			struct BFSQueueItem {
@@ -70,14 +72,12 @@ namespace griffin {
 
 			bfsQueue.push({ 0, modelToWorld }); // push root node to start traversal
 
-			int count = 0;
-			/*while (!bfsQueue.empty()) {
+			while (!bfsQueue.empty()) {
 				uint32_t nodeIndex = bfsQueue.front().nodeIndex;
 				assert(nodeIndex >= 0 && nodeIndex < m_meshScene.numNodes && "node index out of range");
 
 				const auto& node = m_meshScene.sceneNodes[bfsQueue.front().nodeIndex];
 				glm::mat4 transform = bfsQueue.front().toWorld * node.transform;
-				bfsQueue.pop();
 
 				glUniformMatrix4fv(modelMatLoc, 1, GL_FALSE, &transform[0][0]);
 
@@ -91,18 +91,18 @@ namespace griffin {
 				for (uint32_t c = 0; c < node.numChildren; ++c) {
 					uint32_t childNodeIndex = m_meshScene.childIndices[node.childIndexOffset + c];
 					
-					assert(childNodeIndex >= 0 && childNodeIndex < m_meshScene.numChildIndices && "child node index out of range");
+					assert(childNodeIndex >= 0 && childNodeIndex < m_meshScene.numNodes && "child node index out of range");
 					assert(childNodeIndex > nodeIndex && "child node is not lower in the tree");
 					
 					bfsQueue.push({ childNodeIndex, transform });
 				}
 
-				++count;
-			}*/
-			
-			for (auto ds = 0; ds < m_numDrawSets; ++ds) {
-				drawMesh(ds);
+				bfsQueue.pop();
 			}
+			
+			/*for (auto ds = 0; ds < m_numDrawSets; ++ds) {
+				drawMesh(ds);
+			}*/
 		}
 
 

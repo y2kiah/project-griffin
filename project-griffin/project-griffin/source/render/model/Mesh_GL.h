@@ -68,6 +68,7 @@ namespace griffin {
 			uint32_t	childIndexOffset = 0;		//<! offset into array of child node indexes, numChildren elements belong to this node
 			uint32_t	numMeshes = 0;
 			uint32_t	meshIndexOffset = 0;		//<! offset into array of mesh instances, numMeshes elements belong to this node
+			std::string name;
 		};
 
 
