@@ -36,6 +36,22 @@ namespace griffin {
 			app.resourceLoader = loaderPtr;
 		}
 		
+		/**
+		* Build the Lua Scripting System
+		*/
+		{
+			using namespace script;
+
+			auto scriptPtr = make_shared<ScriptManager>();
+
+			// init.lua configures the startup settings
+			if (!scriptPtr->init("data/scripts/init.lua")) {
+				SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "data/scripts/init.lua not found");
+			}
+
+			app.scriptManager = scriptPtr;
+		}
+
 		return move(app);
 	}
 

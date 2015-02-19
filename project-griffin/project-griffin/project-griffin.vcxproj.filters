@@ -98,6 +98,12 @@
     <Filter Include="render\geometry\impl">
       <UniqueIdentifier>{7db1d90b-8922-4d36-910b-efcdfdfa9384}</UniqueIdentifier>
     </Filter>
+    <Filter Include="script">
+      <UniqueIdentifier>{14f9fdcd-491c-4798-a451-019f36aa19ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="script\impl">
+      <UniqueIdentifier>{69c89ac6-e19c-4c9e-a503-bb49942e1068}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">
@@ -168,6 +174,9 @@
     </ClCompile>
     <ClCompile Include="source\render\geometry\impl\Cube.cpp">
       <Filter>render\geometry\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\script\impl\ScriptManager_LuaJIT.cpp">
+      <Filter>script\impl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -614,6 +623,9 @@
     </ClInclude>
     <ClInclude Include="source\render\geometry\Cube.h">
       <Filter>render\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="source\script\ScriptManager_LuaJIT.h">
+      <Filter>script</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

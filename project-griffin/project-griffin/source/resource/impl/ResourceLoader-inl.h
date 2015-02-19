@@ -3,8 +3,8 @@
 * @author	Jeff Kiah
 */
 #pragma once
-#ifndef GRIFFIN_RESOURCE_LOADER_INL_
-#define GRIFFIN_RESOURCE_LOADER_INL_
+#ifndef GRIFFIN_RESOURCE_LOADER_INL_H_
+#define GRIFFIN_RESOURCE_LOADER_INL_H_
 
 #include <utility/container/handle_map.h>
 #include "../ResourceLoader.h"

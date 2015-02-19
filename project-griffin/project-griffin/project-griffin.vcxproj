@@ -41,6 +41,7 @@
     <ClCompile Include="source\resource\impl\ResourceLoader.cpp" />
     <ClCompile Include="source\resource\impl\ResourceLoader-inl.h" />
     <ClCompile Include="source\resource\impl\ResourceSource.cpp" />
+    <ClCompile Include="source\script\impl\ScriptManager_LuaJIT.cpp" />
     <ClCompile Include="source\utility\profile\impl\Profile.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -75,6 +76,7 @@
     <ClInclude Include="source\resource\ResourceCache.h" />
     <ClInclude Include="source\resource\ResourceLoader.h" />
     <ClInclude Include="source\resource\ResourceSource.h" />
+    <ClInclude Include="source\script\ScriptManager_LuaJIT.h" />
     <ClInclude Include="source\test\Test.h" />
     <ClInclude Include="source\utility\algorithms.h" />
     <ClInclude Include="source\utility\auto_lister.h" />
@@ -331,16 +333,16 @@
     <LibraryPath>$(ProjectDir)\vendor\SDL2\lib\x64\</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)\source\;$(ProjectDir)\vendor\glew-1.10.0\include\;$(ProjectDir)\vendor\SDL2\include\;$(ProjectDir)\vendor\soil\include\;$(ProjectDir)\vendor\glm\;$(ProjectDir)\vendor\boost_1_57_0\;$(ProjectDir)\vendor\assimp\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)\vendor\SDL2\lib\x64\;$(ProjectDir)\vendor\soil\lib\;$(ProjectDir)\vendor\glew-1.10.0\lib\x64\;$(ProjectDir)\vendor\assimp\lib64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)\source\;$(ProjectDir)\vendor\glew-1.10.0\include\;$(ProjectDir)\vendor\SDL2\include\;$(ProjectDir)\vendor\soil\include\;$(ProjectDir)\vendor\glm\;$(ProjectDir)\vendor\boost_1_57_0\;$(ProjectDir)\vendor\assimp\include\;$(ProjectDir)\vendor\luajit-2.0\src\;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\vendor\SDL2\lib\x64\;$(ProjectDir)\vendor\soil\lib\;$(ProjectDir)\vendor\glew-1.10.0\lib\x64\;$(ProjectDir)\vendor\assimp\lib64\;$(ProjectDir)\vendor\luajit-2.0\src\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(ProjectDir)\vendor\SDL2\include\;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)\vendor\SDL2\lib\x64\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir)\source\;$(ProjectDir)\vendor\glew-1.10.0\include\;$(ProjectDir)\vendor\SDL2\include\;$(ProjectDir)\vendor\soil\include\;$(ProjectDir)\vendor\glm\;$(ProjectDir)\vendor\boost_1_57_0\;$(ProjectDir)\vendor\assimp\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)\vendor\SDL2\lib\x64\;$(ProjectDir)\vendor\soil\lib\;$(ProjectDir)\vendor\glew-1.10.0\lib\x64\;$(ProjectDir)\vendor\assimp\lib64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)\source\;$(ProjectDir)\vendor\glew-1.10.0\include\;$(ProjectDir)\vendor\SDL2\include\;$(ProjectDir)\vendor\soil\include\;$(ProjectDir)\vendor\glm\;$(ProjectDir)\vendor\boost_1_57_0\;$(ProjectDir)\vendor\assimp\include\;$(ProjectDir)\vendor\luajit-2.0\src\;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\vendor\SDL2\lib\x64\;$(ProjectDir)\vendor\soil\lib\;$(ProjectDir)\vendor\glew-1.10.0\lib\x64\;$(ProjectDir)\vendor\assimp\lib64\;$(ProjectDir)\vendor\luajit-2.0\src\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
