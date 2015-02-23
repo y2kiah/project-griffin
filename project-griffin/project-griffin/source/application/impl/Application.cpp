@@ -49,6 +49,9 @@ namespace griffin {
 				SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "data/scripts/init.lua not found");
 			}
 
+			// add system API functions to Lua
+
+
 			app.scriptManager = scriptPtr;
 		}
 
