@@ -197,8 +197,7 @@
   <ItemGroup>
     <None Include="data\shaders\Font_frag.glsl" />
     <None Include="data\shaders\Font_vert.glsl" />
-    <None Include="data\shaders\SimpleFragmentShader.glsl" />
-    <None Include="data\shaders\SimpleVertexShader.glsl" />
+    <None Include="data\shaders\SimpleShader.glsl" />
     <ClInclude Include="source\component\impl\ComponentStore.inl">
       <FileType>Document</FileType>
     </ClInclude>

@@ -4,6 +4,7 @@
 
 #include <string>
 #include <memory>
+#include <vector>
 // TEMP
 #include <SDL_log.h>
 
@@ -11,37 +12,33 @@ namespace griffin {
 	namespace render {
 		
 		using std::string;
+		using std::vector;
 
 
 		class Shader_GL {
 		public:
 			explicit Shader_GL() = default;
-			
-			explicit Shader_GL(string shaderCode) :
-				m_shaderCode(std::move(shaderCode))
-			{
-				SDL_Log("creating shader by string");
-			}
 
-			Shader_GL(Shader_GL&& other)
+			Shader_GL(Shader_GL&& other) :
+				m_shaderId{ other.m_shaderId },
+				m_shaderType{ other.m_shaderType }
 			{
 				SDL_Log("moving shader with m_shaderId = %d", m_shaderId);
-				m_shaderId = other.m_shaderId;
 				other.m_shaderId = 0;
-				m_shaderCode = std::move(other.m_shaderCode);
+				other.m_shaderType = 0;
 			}
 
 			Shader_GL(const Shader_GL& other) = delete;
 
 			~Shader_GL();
 
-			bool			compileShader(unsigned int shaderType);
+			bool			compileShader(const string& shaderCode, unsigned int shaderType);
 
 			unsigned int	getShaderId() const { return m_shaderId; }
 
 		private:
 			unsigned int	m_shaderId = 0;
-			string			m_shaderCode;
+			unsigned int	m_shaderType = 0;
 		};
 		
 
@@ -49,29 +46,34 @@ namespace griffin {
 		public:
 			explicit ShaderProgram_GL() = default;
 
-			explicit ShaderProgram_GL(const Shader_GL& vertexShader, const Shader_GL& fragmentShader) :
-				m_vertexShaderId(vertexShader.getShaderId()),
-				m_fragmentShaderId(fragmentShader.getShaderId())
+			explicit ShaderProgram_GL(string shaderCode) :
+				m_shaderCode(std::move(shaderCode))
+			{}
+
+			ShaderProgram_GL(ShaderProgram_GL&& other) :
+				m_programId{ other.m_programId },
+				m_shaderCode(std::move(other.m_shaderCode)),
+				m_shaders(std::move(other.m_shaders))
 			{
-				SDL_Log("creating program");
+				SDL_Log("moving shader program with m_programId = %d", m_programId);
+				other.m_programId = 0;
+				other.m_shaders.clear();
 			}
-			
-			//ShaderProgram_GL(ShaderProgram_GL&& other);
-			
+
 			ShaderProgram_GL(const Shader_GL&) = delete;
 			
 			~ShaderProgram_GL();
 
-			bool			linkProgram();
+			bool				compileAndLinkProgram();
 
-			unsigned int	getProgramId() const { return m_programId; }
+			unsigned int		getProgramId() const { return m_programId; }
 
-			void			useProgram() const;
+			void				useProgram() const;
 
 		private:
-			unsigned int	m_programId = 0;
-			unsigned int	m_vertexShaderId = 0;
-			unsigned int	m_fragmentShaderId = 0;
+			unsigned int		m_programId = 0;
+			vector<Shader_GL>	m_shaders;
+			string				m_shaderCode;
 		};
 
 	}

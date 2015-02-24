@@ -19,7 +19,7 @@ namespace griffin {
 			}
 		}
 
-		bool Shader_GL::compileShader(unsigned int shaderType)
+		bool Shader_GL::compileShader(const string& shaderCode, unsigned int shaderType)
 		{
 			GLint result = GL_FALSE;
 			int infoLogLength = 0;
@@ -27,8 +27,22 @@ namespace griffin {
 			// Compile Shader
 			SDL_Log("Compiling shader");
 			GLuint shaderId = glCreateShader(shaderType);
-			char const* sourcePointer = m_shaderCode.c_str();
-			glShaderSource(shaderId, 1, &sourcePointer, nullptr);
+			
+			const char *shaderDefine = "#version 440 core\n#define _VERTEX_\n";
+			switch (shaderType) {
+				case GL_FRAGMENT_SHADER:
+					shaderDefine = "#version 440 core\n#define _FRAGMENT_\n";
+					break;
+				case GL_GEOMETRY_SHADER:
+					shaderDefine = "#version 440 core\n#define _GEOMETRY_\n";
+					break;
+			}
+
+			const char* source[2] = {
+				shaderDefine,
+				shaderCode.c_str()
+			};
+			glShaderSource(shaderId, 2, source, nullptr);
 			glCompileShader(shaderId);
 
 			// Check Shader
@@ -40,9 +54,13 @@ namespace griffin {
 				SDL_Log(&shaderErrorMessage[0]);
 			}
 
-			m_shaderId = shaderId;
+			if (result == GL_TRUE) {
+				m_shaderId = shaderId;
+				m_shaderType = shaderType;
+				return true;
+			}
 			
-			return (result == GL_TRUE);
+			return false;
 		}
 
 
@@ -50,35 +68,54 @@ namespace griffin {
 
 		ShaderProgram_GL::~ShaderProgram_GL()
 		{
-			SDL_Log("deleting program");
 			if (m_programId != 0) {
+				SDL_Log("deleting program");
 				glDeleteProgram(m_programId);
 			}
 		}
 
-		bool ShaderProgram_GL::linkProgram() {
-			GLint result = GL_FALSE;
-			int infoLogLength = 0;
+		bool ShaderProgram_GL::compileAndLinkProgram() {
+			// Compile code as vertex shader (defines _VERTEX_)
+			m_shaders.emplace_back();
+			bool ok = m_shaders.back().compileShader(m_shaderCode, GL_VERTEX_SHADER);
+			
+			// Compile code as fragment shader (defines _FRAGMENT_)
+			m_shaders.emplace_back();
+			ok = ok && m_shaders.back().compileShader(m_shaderCode, GL_FRAGMENT_SHADER);
 
 			// Link the program
-			SDL_Log("Linking program");
-			GLuint programId = glCreateProgram();
-			glAttachShader(programId, m_vertexShaderId);
-			glAttachShader(programId, m_fragmentShaderId);
-			glLinkProgram(programId);
+			if (ok) {
+				SDL_Log("Linking program");
+				GLuint programId = glCreateProgram();
+				for (const auto& s : m_shaders) {
+					glAttachShader(programId, s.getShaderId());
+				}
+				glLinkProgram(programId);
 
-			// Check the program
-			glGetProgramiv(programId, GL_LINK_STATUS, &result);
-			glGetProgramiv(programId, GL_INFO_LOG_LENGTH, &infoLogLength);
-			if (infoLogLength > 0) {
-				vector<char> programErrorMessage(infoLogLength);
-				glGetProgramInfoLog(programId, infoLogLength, nullptr, &programErrorMessage[0]);
-				SDL_Log(&programErrorMessage[0]);
+				// Check the program
+				GLint result = GL_FALSE;
+				int infoLogLength = 0;
+
+				glGetProgramiv(programId, GL_LINK_STATUS, &result);
+				glGetProgramiv(programId, GL_INFO_LOG_LENGTH, &infoLogLength);
+				if (infoLogLength > 0) {
+					vector<char> programErrorMessage(infoLogLength);
+					glGetProgramInfoLog(programId, infoLogLength, nullptr, &programErrorMessage[0]);
+					SDL_Log(&programErrorMessage[0]);
+				}
+
+				/*if (hasGeometryStage) {
+					glProgramParameteriEXT(programId, GL_GEOMETRY_INPUT_TYPE_EXT, GL_TRIANGLES);
+					glProgramParameteriEXT(programId, GL_GEOMETRY_OUTPUT_TYPE_EXT, GL_TRIANGLE_STRIP);
+					glProgramParameteriEXT(programId, GL_GEOMETRY_VERTICES_OUT_EXT, 3);
+				}*/
+
+				if (result == GL_TRUE) {
+					m_programId = programId;
+					return true;
+				}
 			}
-
-			m_programId = programId;
-
-			return (result == GL_TRUE);
+			return false;
 		}
 
 		void ShaderProgram_GL::useProgram() const

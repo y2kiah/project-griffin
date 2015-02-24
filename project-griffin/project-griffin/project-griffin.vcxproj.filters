@@ -629,12 +629,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="data\shaders\SimpleVertexShader.glsl">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="data\shaders\SimpleFragmentShader.glsl">
-      <Filter>shaders</Filter>
-    </None>
     <None Include="data\shaders\SkyFromSpace_frag.glsl">
       <Filter>shaders</Filter>
     </None>
@@ -867,6 +861,9 @@
       <Filter>shaders</Filter>
     </None>
     <None Include="data\shaders\Font_frag.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="data\shaders\SimpleShader.glsl">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

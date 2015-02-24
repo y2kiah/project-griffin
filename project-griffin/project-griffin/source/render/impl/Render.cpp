@@ -27,7 +27,7 @@ namespace griffin {
 		// Forward Declarations
 
 		bool loadTexturesTemp();
-		bool loadShadersTemp(wstring, wstring);
+		bool loadShadersTemp(wstring);
 		bool loadModelTemp(string);
 
 		// Global Variables
@@ -36,15 +36,14 @@ namespace griffin {
 
 		// TEMP
 		resource::ResourceHandle<Texture2D_GL> g_textureHandleTemp;
-		std::shared_ptr<ShaderProgram_GL> g_tempShaderProgramPtr = nullptr;
+		resource::ResourceHandle<ShaderProgram_GL> g_programHandleTemp;
 		std::unique_ptr<Mesh_GL> g_tempMesh = nullptr;
 		std::unique_ptr<CameraPersp> camera;
 		
 		// Functions
 
 		void initRenderData(int viewportWidth, int viewportHeight) {
-			loadShadersTemp(L"shaders/SimpleVertexShader.glsl",
-							L"shaders/SimpleFragmentShader.glsl");
+			loadShadersTemp(L"shaders/SimpleShader.glsl");
 
 			loadTexturesTemp();
 			loadModelTemp("data/models/landing platform.dae");
@@ -57,8 +56,11 @@ namespace griffin {
 		void renderFrame(double interpolation) {
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-			g_tempShaderProgramPtr->useProgram();
-			auto programId = g_tempShaderProgramPtr->getProgramId();
+			auto loader = g_loaderPtr.lock();
+			auto programRes = loader->getResource<ShaderProgram_GL>(g_programHandleTemp);
+			auto& program = programRes.get()->getResource<ShaderProgram_GL>();
+			program.useProgram();
+			auto programId = program.getProgramId();
 
 			camera->setEyePoint({ 120.0f, 40.0f, 0.0f });
 			camera->lookAt({ 0.0f, 0.0f, 0.0f });
@@ -83,7 +85,6 @@ namespace griffin {
 			glUniformMatrix4fv(viewProjMatLoc, 1, GL_FALSE, &viewProjMat[0][0]);
 
 			// bind the texture
-			auto loader = g_loaderPtr.lock();
 			if (!loader) { return; }
 			try {
 				auto fTex = loader->getResource<Texture2D_GL>(g_textureHandleTemp);
@@ -144,7 +145,7 @@ namespace griffin {
 		}
 
 
-		bool loadShadersTemp(wstring vertexFilePath, wstring fragmentFilePath)
+		bool loadShadersTemp(wstring programPath)
 		{
 			using namespace resource;
 
@@ -153,40 +154,25 @@ namespace griffin {
 			if (loader) {
 				auto shaderResourceBuilder = [](DataPtr data, size_t size) {
 					string shaderCode(reinterpret_cast<char*>(data.get()), size);
-					return Shader_GL(shaderCode);
+					return ShaderProgram_GL(shaderCode);
 				};
 
-				auto vertexHandle = loader->load<Shader_GL>(vertexFilePath, Cache_Materials_T, shaderResourceBuilder,
+				g_programHandleTemp = loader->load<ShaderProgram_GL>(programPath, Cache_Materials_T, shaderResourceBuilder,
 					[](const ResourcePtr& resourcePtr, Id_T handle, size_t size) {
-						Shader_GL& shader = resourcePtr->getResource<Shader_GL>();
-						auto ok = shader.compileShader(GL_VERTEX_SHADER);
+						ShaderProgram_GL& program = resourcePtr->getResource<ShaderProgram_GL>();
+						auto ok = program.compileAndLinkProgram();
 						if (!ok) {
-							throw std::runtime_error("vertex shader compilation failed");
+							throw std::runtime_error("program compilation/linking failed");
 						}
 					});
-				auto fragmentHandle = loader->load<Shader_GL>(fragmentFilePath, Cache_Materials_T, shaderResourceBuilder,
-					[](const ResourcePtr& resourcePtr, Id_T handle, size_t size) {
-						Shader_GL& shader = resourcePtr->getResource<Shader_GL>();
-						auto ok = shader.compileShader(GL_FRAGMENT_SHADER);
-						if (!ok) {
-							throw std::runtime_error("fragment shader compilation failed");
-						}
-					});
-				
+
 				try {
-					auto vertexResource = loader->getResource(vertexHandle);
-					auto fragResource = loader->getResource(fragmentHandle);
+					g_programHandleTemp.resourceId.wait();
+
 					loader->executeCallbacks(); // this runs the callback on this thread to compile the shaders
 
-					// create the program
-					g_tempShaderProgramPtr = std::make_shared<ShaderProgram_GL>(vertexResource.get()->getResource<Shader_GL>(),
-																				fragResource.get()->getResource<Shader_GL>());
-					bool ok = g_tempShaderProgramPtr->linkProgram();
-					
-					if (ok) {
-						//auto programHandle = loader->addToCache<ShaderProgram_GL>(shaderProgramPtr, Cache_Materials_T);
-						return true;
-					}
+					//auto programHandle = loader->addToCache<ShaderProgram_GL>(shaderProgramPtr, Cache_Materials_T);
+					return true;
 				}
 				catch (std::runtime_error& ex) {
 					SDL_Log(ex.what());
