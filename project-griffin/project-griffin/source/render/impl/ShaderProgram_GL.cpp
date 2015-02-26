@@ -28,8 +28,11 @@ namespace griffin {
 			SDL_Log("Compiling shader");
 			GLuint shaderId = glCreateShader(shaderType);
 			
-			const char *shaderDefine = "#version 440 core\n#define _VERTEX_\n";
+			const char *shaderDefine = nullptr;
 			switch (shaderType) {
+				case GL_VERTEX_SHADER:
+					shaderDefine = "#version 440 core\n#define _VERTEX_\n";
+					break;
 				case GL_FRAGMENT_SHADER:
 					shaderDefine = "#version 440 core\n#define _FRAGMENT_\n";
 					break;
@@ -75,10 +78,20 @@ namespace griffin {
 		}
 
 		bool ShaderProgram_GL::compileAndLinkProgram() {
+			bool hasGeometryStage = (m_shaderCode.find("_GEOMETRY_", 0, 10) != string::npos);
+			
+			m_shaders.reserve(hasGeometryStage ? 3 : 2);
+			
 			// Compile code as vertex shader (defines _VERTEX_)
 			m_shaders.emplace_back();
 			bool ok = m_shaders.back().compileShader(m_shaderCode, GL_VERTEX_SHADER);
 			
+			if (hasGeometryStage) {
+				// Compile code as geometry shader (defines _GEOMETRY_)
+				m_shaders.emplace_back();
+				ok = ok && m_shaders.back().compileShader(m_shaderCode, GL_GEOMETRY_SHADER);
+			}
+
 			// Compile code as fragment shader (defines _FRAGMENT_)
 			m_shaders.emplace_back();
 			ok = ok && m_shaders.back().compileShader(m_shaderCode, GL_FRAGMENT_SHADER);

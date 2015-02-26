@@ -195,14 +195,23 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="data\shaders\Font_frag.glsl" />
-    <None Include="data\shaders\Font_vert.glsl" />
+    <None Include="data\shaders\atmosphere\common.glsl" />
+    <None Include="data\shaders\atmosphere\copyInscatter1.glsl" />
+    <None Include="data\shaders\atmosphere\copyInscatterN.glsl" />
+    <None Include="data\shaders\atmosphere\copyIrradiance.glsl" />
+    <None Include="data\shaders\atmosphere\earth.glsl" />
+    <None Include="data\shaders\atmosphere\inscatter1.glsl" />
+    <None Include="data\shaders\atmosphere\inscatterN.glsl" />
+    <None Include="data\shaders\atmosphere\inscatterS.glsl" />
+    <None Include="data\shaders\atmosphere\irradiance1.glsl" />
+    <None Include="data\shaders\atmosphere\irradianceN.glsl" />
+    <None Include="data\shaders\atmosphere\transmittance.glsl" />
+    <None Include="data\shaders\Font.glsl" />
     <None Include="data\shaders\SimpleShader.glsl" />
     <ClInclude Include="source\component\impl\ComponentStore.inl">
       <FileType>Document</FileType>
     </ClInclude>
-    <None Include="data\shaders\SkyFromSpace_frag.glsl" />
-    <None Include="data\shaders\SkyFromSpace_vert.glsl">
+    <None Include="data\shaders\SkyFromSpace.glsl">
       <FileType>Document</FileType>
     </None>
     <None Include="source\utility\container\impl\bitwise_quadtree.inl" />
