@@ -195,6 +195,7 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="data\shaders\atmosphere\atmosphere.glsl" />
     <None Include="data\shaders\atmosphere\common.glsl" />
     <None Include="data\shaders\atmosphere\copyInscatter1.glsl" />
     <None Include="data\shaders\atmosphere\copyInscatterN.glsl" />
