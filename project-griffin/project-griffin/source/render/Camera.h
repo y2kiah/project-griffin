@@ -175,6 +175,7 @@ namespace griffin {
 
 			void	setTranslationYawPitchRoll(const vec3& position, float yaw, float pitch, float roll);
 			void	lookAt(const vec3 &position, const vec3 &target, const vec3 &worldUp);
+			void	extractFrustumPlanes();
 
 		protected:
 			quat	mViewRotationQuat;

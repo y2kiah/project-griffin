@@ -181,6 +181,9 @@
     <ClCompile Include="source\script\impl\ScriptManager_LuaJIT.cpp">
       <Filter>script\impl</Filter>
     </ClCompile>
+    <ClCompile Include="source\render\geometry\impl\Geometry.cpp">
+      <Filter>render\geometry\impl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\application\main.h">
@@ -630,6 +633,9 @@
     <ClInclude Include="source\script\ScriptManager_LuaJIT.h">
       <Filter>script</Filter>
     </ClInclude>
+    <ClInclude Include="source\render\geometry\Geometry.h">
+      <Filter>render\geometry</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="source\utility\container\impl\vector_queue.inl">
@@ -895,6 +901,12 @@
     </None>
     <None Include="data\shaders\atmosphere\transmittance.glsl">
       <Filter>shaders\atmosphere</Filter>
+    </None>
+    <None Include="data\shaders\ssao.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="data\shaders\linearDepth.glsl">
+      <Filter>shaders</Filter>
     </None>
   </ItemGroup>
 </Project>
