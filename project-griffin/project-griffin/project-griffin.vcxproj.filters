@@ -908,5 +908,8 @@
     <None Include="data\shaders\linearDepth.glsl">
       <Filter>shaders</Filter>
     </None>
+    <None Include="data\shaders\atmosphere\atmosphere.glsl">
+      <Filter>shaders\atmosphere</Filter>
+    </None>
   </ItemGroup>
 </Project>
