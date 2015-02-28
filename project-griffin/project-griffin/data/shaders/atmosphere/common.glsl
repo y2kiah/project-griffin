@@ -68,7 +68,7 @@ const int INSCATTER_INTEGRAL_SAMPLES = 100;//50;
 const int IRRADIANCE_INTEGRAL_SAMPLES = 64;//32;
 const int INSCATTER_SPHERICAL_INTEGRAL_SAMPLES = 32;//16;
 
-const float M_PI = 3.141592657;
+const float M_PI = 3.1415926535897932384626433832795;
 
 // ----------------------------------------------------------------------------
 // PARAMETERIZATION OPTIONS
