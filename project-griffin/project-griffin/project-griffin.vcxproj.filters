@@ -17,9 +17,6 @@
     <Filter Include="component">
       <UniqueIdentifier>{6d7e4970-d31b-403f-a97d-850df55be125}</UniqueIdentifier>
     </Filter>
-    <Filter Include="shaders">
-      <UniqueIdentifier>{d3dd9c5f-5897-4f68-834b-224e6befb166}</UniqueIdentifier>
-    </Filter>
     <Filter Include="component\impl">
       <UniqueIdentifier>{4eadde8f-4ea1-457a-8706-7d3e88e0a766}</UniqueIdentifier>
     </Filter>
@@ -104,8 +101,20 @@
     <Filter Include="script\impl">
       <UniqueIdentifier>{69c89ac6-e19c-4c9e-a503-bb49942e1068}</UniqueIdentifier>
     </Filter>
-    <Filter Include="shaders\atmosphere">
+    <Filter Include="data">
+      <UniqueIdentifier>{6a97ee42-30e5-4896-b9c9-687245058f2a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="data\shaders">
+      <UniqueIdentifier>{d3dd9c5f-5897-4f68-834b-224e6befb166}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="data\shaders\atmosphere">
       <UniqueIdentifier>{272e9475-31da-418f-a34b-69a36af00dd0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="data\shaders\bin">
+      <UniqueIdentifier>{d0b8e1a4-a716-4a56-81e0-bb667455fb1a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="data\scripts">
+      <UniqueIdentifier>{77c1d0d0-6b80-45ec-aebe-a28ea2b67af9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -861,55 +870,61 @@
       <Filter>utility\container\impl</Filter>
     </None>
     <None Include="data\shaders\SimpleShader.glsl">
-      <Filter>shaders</Filter>
+      <Filter>data\shaders</Filter>
     </None>
     <None Include="data\shaders\Font.glsl">
-      <Filter>shaders</Filter>
+      <Filter>data\shaders</Filter>
     </None>
     <None Include="data\shaders\SkyFromSpace.glsl">
-      <Filter>shaders</Filter>
+      <Filter>data\shaders</Filter>
     </None>
     <None Include="data\shaders\atmosphere\common.glsl">
-      <Filter>shaders\atmosphere</Filter>
+      <Filter>data\shaders\atmosphere</Filter>
     </None>
     <None Include="data\shaders\atmosphere\copyInscatter1.glsl">
-      <Filter>shaders\atmosphere</Filter>
+      <Filter>data\shaders\atmosphere</Filter>
     </None>
     <None Include="data\shaders\atmosphere\copyInscatterN.glsl">
-      <Filter>shaders\atmosphere</Filter>
+      <Filter>data\shaders\atmosphere</Filter>
     </None>
     <None Include="data\shaders\atmosphere\copyIrradiance.glsl">
-      <Filter>shaders\atmosphere</Filter>
+      <Filter>data\shaders\atmosphere</Filter>
     </None>
     <None Include="data\shaders\atmosphere\earth.glsl">
-      <Filter>shaders\atmosphere</Filter>
+      <Filter>data\shaders\atmosphere</Filter>
     </None>
     <None Include="data\shaders\atmosphere\inscatter1.glsl">
-      <Filter>shaders\atmosphere</Filter>
+      <Filter>data\shaders\atmosphere</Filter>
     </None>
     <None Include="data\shaders\atmosphere\inscatterN.glsl">
-      <Filter>shaders\atmosphere</Filter>
+      <Filter>data\shaders\atmosphere</Filter>
     </None>
     <None Include="data\shaders\atmosphere\inscatterS.glsl">
-      <Filter>shaders\atmosphere</Filter>
+      <Filter>data\shaders\atmosphere</Filter>
     </None>
     <None Include="data\shaders\atmosphere\irradiance1.glsl">
-      <Filter>shaders\atmosphere</Filter>
+      <Filter>data\shaders\atmosphere</Filter>
     </None>
     <None Include="data\shaders\atmosphere\irradianceN.glsl">
-      <Filter>shaders\atmosphere</Filter>
+      <Filter>data\shaders\atmosphere</Filter>
     </None>
     <None Include="data\shaders\atmosphere\transmittance.glsl">
-      <Filter>shaders\atmosphere</Filter>
+      <Filter>data\shaders\atmosphere</Filter>
     </None>
     <None Include="data\shaders\ssao.glsl">
-      <Filter>shaders</Filter>
+      <Filter>data\shaders</Filter>
     </None>
     <None Include="data\shaders\linearDepth.glsl">
-      <Filter>shaders</Filter>
+      <Filter>data\shaders</Filter>
     </None>
     <None Include="data\shaders\atmosphere\atmosphere.glsl">
-      <Filter>shaders\atmosphere</Filter>
+      <Filter>data\shaders\atmosphere</Filter>
+    </None>
+    <None Include="data\scripts\init.lua">
+      <Filter>data\scripts</Filter>
+    </None>
+    <None Include="luaBuild.lua">
+      <Filter>data\scripts</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -197,6 +197,7 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="data\scripts\init.lua" />
     <None Include="data\shaders\atmosphere\atmosphere.glsl" />
     <None Include="data\shaders\atmosphere\common.glsl" />
     <None Include="data\shaders\atmosphere\copyInscatter1.glsl" />
@@ -219,6 +220,7 @@
       <FileType>Document</FileType>
     </None>
     <None Include="data\shaders\ssao.glsl" />
+    <None Include="luaBuild.lua" />
     <None Include="source\utility\container\impl\bitwise_quadtree.inl" />
     <None Include="source\utility\container\impl\concurrent_queue.inl" />
     <None Include="source\utility\container\impl\handle_map.inl" />

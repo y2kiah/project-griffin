@@ -43,6 +43,9 @@ namespace griffin {
 		// Functions
 
 		void initRenderData(int viewportWidth, int viewportHeight) {
+			loadShadersTemp(L"shaders/ssao.glsl");
+			loadShadersTemp(L"shaders/linearDepth.glsl");
+			//loadShadersTemp(L"shaders/atmosphere/earth.glsl");
 			loadShadersTemp(L"shaders/atmosphere/atmosphere.glsl");
 			loadShadersTemp(L"shaders/SimpleShader.glsl");
 

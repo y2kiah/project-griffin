@@ -1,13 +1,22 @@
 #ifdef _VERTEX_
 	
+	#define VertexLayout_Position      0
+	#define VertexLayout_Normal        1
+	#define VertexLayout_Tangent       2
+	#define VertexLayout_Bitangent     3
+	#define VertexLayout_TextureCoords 4   // consumes up to 8 locations
+	#define VertexLayout_Colors        12  // consumes up to 8 locations
+
+	layout(location = VertexLayout_Position) in vec3 vertexPosition;
+
 	const vec2 madd = vec2(0.5, 0.5);
 
-	varying vec2 uv;
+	out vec2 uv;
 
 	void main()
 	{
-		gl_Position = vec4(in_Position, -1.0, 1.0);
-		uv = in_Position.xy * madd + madd;
+		gl_Position = vec4(vertexPosition, 1.0);
+		uv = vertexPosition.xy * madd + madd;
 	}
 
 #endif
@@ -27,7 +36,7 @@
 
 	const float invSamples = 1.0 / 16.0;
 
-	varying vec2 uv;
+	in vec2 uv;
 
 	void main()
 	{

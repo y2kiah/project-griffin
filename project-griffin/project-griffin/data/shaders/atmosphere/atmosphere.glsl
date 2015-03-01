@@ -24,9 +24,17 @@ uniform vec4 g_frustumFar[4];
 uniform vec4 g_frustumNear[4];
 
 #ifdef _VERTEX_
+	
+	#define VertexLayout_Position      0
+	#define VertexLayout_Normal        1
+	#define VertexLayout_Tangent       2
+	#define VertexLayout_Bitangent     3
+	#define VertexLayout_TextureCoords 4   // consumes up to 8 locations
+	#define VertexLayout_Colors        12  // consumes up to 8 locations
 
-	in vec3 posL;
-	in vec2 uv;
+	layout(location = VertexLayout_Position) in vec3 vertexPosition;
+	layout(location = VertexLayout_TextureCoords) in vec2 vertexUV;
+
 	in uint index;
 
 	out vec2 texC;
@@ -36,8 +44,8 @@ uniform vec4 g_frustumNear[4];
 	// vertex shader
 	void main()
 	{
-		gl_Position = vec4(posL,1.0);
-		texC = uv;
+		gl_Position = vec4(vertexPosition, 1.0);
+		texC = vertexUV;
 		
 		vec3 frustumFarWorld = mul(vec4(g_frustumFar[index].xyz, 1.0), g_cameraWorld).xyz;
 		vec3 frustumNearWorld = mul(vec4(g_frustumNear[index].xyz, 1.0), g_cameraWorld).xyz;
