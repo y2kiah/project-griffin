@@ -104,17 +104,14 @@
     <Filter Include="data">
       <UniqueIdentifier>{6a97ee42-30e5-4896-b9c9-687245058f2a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="data\shaders">
-      <UniqueIdentifier>{d3dd9c5f-5897-4f68-834b-224e6befb166}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="data\shaders\atmosphere">
-      <UniqueIdentifier>{272e9475-31da-418f-a34b-69a36af00dd0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="data\shaders\bin">
-      <UniqueIdentifier>{d0b8e1a4-a716-4a56-81e0-bb667455fb1a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="data\scripts">
       <UniqueIdentifier>{77c1d0d0-6b80-45ec-aebe-a28ea2b67af9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders">
+      <UniqueIdentifier>{cd659f42-7515-4d1c-b4bc-f095cdb68b19}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders\atmosphere">
+      <UniqueIdentifier>{6b272853-e9a9-4011-bfce-f7b6942997d8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -869,62 +866,65 @@
     <None Include="source\utility\container\impl\handle_map.inl">
       <Filter>utility\container\impl</Filter>
     </None>
-    <None Include="data\shaders\SimpleShader.glsl">
-      <Filter>data\shaders</Filter>
-    </None>
-    <None Include="data\shaders\Font.glsl">
-      <Filter>data\shaders</Filter>
-    </None>
-    <None Include="data\shaders\SkyFromSpace.glsl">
-      <Filter>data\shaders</Filter>
-    </None>
-    <None Include="data\shaders\atmosphere\common.glsl">
-      <Filter>data\shaders\atmosphere</Filter>
-    </None>
-    <None Include="data\shaders\atmosphere\copyInscatter1.glsl">
-      <Filter>data\shaders\atmosphere</Filter>
-    </None>
-    <None Include="data\shaders\atmosphere\copyInscatterN.glsl">
-      <Filter>data\shaders\atmosphere</Filter>
-    </None>
-    <None Include="data\shaders\atmosphere\copyIrradiance.glsl">
-      <Filter>data\shaders\atmosphere</Filter>
-    </None>
-    <None Include="data\shaders\atmosphere\earth.glsl">
-      <Filter>data\shaders\atmosphere</Filter>
-    </None>
-    <None Include="data\shaders\atmosphere\inscatter1.glsl">
-      <Filter>data\shaders\atmosphere</Filter>
-    </None>
-    <None Include="data\shaders\atmosphere\inscatterN.glsl">
-      <Filter>data\shaders\atmosphere</Filter>
-    </None>
-    <None Include="data\shaders\atmosphere\inscatterS.glsl">
-      <Filter>data\shaders\atmosphere</Filter>
-    </None>
-    <None Include="data\shaders\atmosphere\irradiance1.glsl">
-      <Filter>data\shaders\atmosphere</Filter>
-    </None>
-    <None Include="data\shaders\atmosphere\irradianceN.glsl">
-      <Filter>data\shaders\atmosphere</Filter>
-    </None>
-    <None Include="data\shaders\atmosphere\transmittance.glsl">
-      <Filter>data\shaders\atmosphere</Filter>
-    </None>
-    <None Include="data\shaders\ssao.glsl">
-      <Filter>data\shaders</Filter>
-    </None>
-    <None Include="data\shaders\linearDepth.glsl">
-      <Filter>data\shaders</Filter>
-    </None>
-    <None Include="data\shaders\atmosphere\atmosphere.glsl">
-      <Filter>data\shaders\atmosphere</Filter>
-    </None>
     <None Include="data\scripts\init.lua">
       <Filter>data\scripts</Filter>
     </None>
     <None Include="luaBuild.lua">
       <Filter>data\scripts</Filter>
+    </None>
+    <None Include="source\shaders\Font.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="source\shaders\linearDepth.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="source\shaders\SimpleShader.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="source\shaders\SkyFromSpace.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="source\shaders\ssao.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="source\shaders\terrain.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="source\shaders\atmosphere\atmosphere.glsl">
+      <Filter>shaders\atmosphere</Filter>
+    </None>
+    <None Include="source\shaders\atmosphere\common.glsl">
+      <Filter>shaders\atmosphere</Filter>
+    </None>
+    <None Include="source\shaders\atmosphere\copyInscatter1.glsl">
+      <Filter>shaders\atmosphere</Filter>
+    </None>
+    <None Include="source\shaders\atmosphere\copyInscatterN.glsl">
+      <Filter>shaders\atmosphere</Filter>
+    </None>
+    <None Include="source\shaders\atmosphere\copyIrradiance.glsl">
+      <Filter>shaders\atmosphere</Filter>
+    </None>
+    <None Include="source\shaders\atmosphere\earth.glsl">
+      <Filter>shaders\atmosphere</Filter>
+    </None>
+    <None Include="source\shaders\atmosphere\inscatter1.glsl">
+      <Filter>shaders\atmosphere</Filter>
+    </None>
+    <None Include="source\shaders\atmosphere\inscatterN.glsl">
+      <Filter>shaders\atmosphere</Filter>
+    </None>
+    <None Include="source\shaders\atmosphere\inscatterS.glsl">
+      <Filter>shaders\atmosphere</Filter>
+    </None>
+    <None Include="source\shaders\atmosphere\irradiance1.glsl">
+      <Filter>shaders\atmosphere</Filter>
+    </None>
+    <None Include="source\shaders\atmosphere\irradianceN.glsl">
+      <Filter>shaders\atmosphere</Filter>
+    </None>
+    <None Include="source\shaders\atmosphere\transmittance.glsl">
+      <Filter>shaders\atmosphere</Filter>
     </None>
   </ItemGroup>
 </Project>

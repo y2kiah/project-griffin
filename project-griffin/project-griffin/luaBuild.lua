@@ -32,38 +32,61 @@ local WIN32_FIND_DATAA = ffi.typeof("struct WIN32_FIND_DATAA")
 local INVALID_HANDLE = ffi.cast("void*", -1)
 local FILE_ATTRIBUTE_DIRECTORY = 16
 
-getDirectoryFiles = function(path, pattern, recursive)
-	if not path:sub(-1):find("[\\/]") then
-		path = path .. "/"
+getDirectoryFiles = function(initialPath, pattern, recursive)
+	if (not initialPath:sub(-1):find("[\\/]")) then
+		initialPath = initialPath .. "/"
 	end
 	
-	local paths = { path .. pattern }
+	local paths = { initialPath }
 	local tFiles = {}
 
-	-- for each in paths, recursive directories are pushed
-	local fd = ffi.new(WIN32_FIND_DATAA)
-	local hFile = ffi.C.FindFirstFileA(path .. pattern, fd)
+	repeat
+		local path = table.remove(paths)
+
+		local fd = ffi.new(WIN32_FIND_DATAA)
+		local hFile = ffi.C.FindFirstFileA(path..pattern, fd)
 	
-	if hFile ~= INVALID_HANDLE then
-		ffi.gc(hFile, ffi.C.FindClose)
+		if (hFile ~= INVALID_HANDLE) then
+			ffi.gc(hFile, ffi.C.FindClose)
 		
-		repeat
-			fd.nFileSize.low, fd.nFileSize.high = fd.nFileSize.high, fd.nFileSize.low
+			repeat
+				fd.nFileSize.low, fd.nFileSize.high = fd.nFileSize.high, fd.nFileSize.low
 
-			tFiles[ffi.string(fd.cFileName)] = {
-				attrib = fd.dwFileAttributes,
-				creationTime = fd.ftCreationTime,
-				lastAccessTime = fd.ftLastAccessTime,
-				lastWriteTime = fd.ftLastWriteTime,
-				size = fd.nFileSize.packed,
-				directory = (bit.band(fd.dwFileAttributes, FILE_ATTRIBUTE_DIRECTORY) ~= 0)
-			}
-		until not ffi.C.FindNextFileA(hFile, fd)
+				local filename = ffi.string(fd.cFileName)
+				local directory = (bit.band(fd.dwFileAttributes, FILE_ATTRIBUTE_DIRECTORY) ~= 0)
 
-		ffi.C.FindClose(ffi.gc(hFile, nil))
-	end
+				tFiles[path..filename] = {
+					filename = filename,
+					path = path,
+					attrib = fd.dwFileAttributes,
+					creationTime = fd.ftCreationTime,
+					lastAccessTime = fd.ftLastAccessTime,
+					lastWriteTime = fd.ftLastWriteTime,
+					size = fd.nFileSize.packed,
+					directory = directory
+				}
+				if (recursive and directory and
+					filename ~= "." and filename ~= "..")
+				then
+					table.insert(paths, path..filename.."/")
+				end
+			until not ffi.C.FindNextFileA(hFile, fd)
+
+			ffi.C.FindClose(ffi.gc(hFile, nil))
+		end
+	until table.getn(paths) == 0
+
 	return tFiles
 end
 
-local files = getDirectoryFiles("data/shaders/", "*")
+local files = getDirectoryFiles("source/shaders/", "*", true)
 print(files)
+
+for k, v in pairs(files) do
+	if (string.find(k, ".glsl")) then
+		local f = assert(io.open(k, "r"))
+		local t = f:read("*all")
+		--print(t)
+		f:close()
+	end
+end
