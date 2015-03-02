@@ -30,13 +30,18 @@ bool  FindClose(void* ff);
 
 local WIN32_FIND_DATAA = ffi.typeof("struct WIN32_FIND_DATAA")
 local INVALID_HANDLE = ffi.cast("void*", -1)
-local getDirectoryFiles = function(path, pattern)
+local FILE_ATTRIBUTE_DIRECTORY = 16
+
+getDirectoryFiles = function(path, pattern, recursive)
 	if not path:sub(-1):find("[\\/]") then
 		path = path .. "/"
 	end
 	
-	local fd = ffi.new(WIN32_FIND_DATAA)
+	local paths = { path .. pattern }
 	local tFiles = {}
+
+	-- for each in paths, recursive directories are pushed
+	local fd = ffi.new(WIN32_FIND_DATAA)
 	local hFile = ffi.C.FindFirstFileA(path .. pattern, fd)
 	
 	if hFile ~= INVALID_HANDLE then
@@ -50,7 +55,8 @@ local getDirectoryFiles = function(path, pattern)
 				creationTime = fd.ftCreationTime,
 				lastAccessTime = fd.ftLastAccessTime,
 				lastWriteTime = fd.ftLastWriteTime,
-				size = fd.nFileSize.packed
+				size = fd.nFileSize.packed,
+				directory = (bit.band(fd.dwFileAttributes, FILE_ATTRIBUTE_DIRECTORY) ~= 0)
 			}
 		until not ffi.C.FindNextFileA(hFile, fd)
 
@@ -58,3 +64,6 @@ local getDirectoryFiles = function(path, pattern)
 	end
 	return tFiles
 end
+
+local files = getDirectoryFiles("data/shaders/", "*")
+print(files)

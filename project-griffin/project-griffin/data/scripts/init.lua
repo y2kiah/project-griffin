@@ -51,11 +51,15 @@ function print(printObj)
 			debugPrint(tostring(printObj))
 		end
 	end
-	recurse(printObj, 1)
+	if printObj ~= nil then
+		recurse(printObj, 1)
+		debugPrint("\n")
+	else
+		debugPrint("nil\n")
+	end
 end
 
 ffi.C.debug_printf("Hello World from Lua" .. "JIT" .. " script!")
+--print(_G)
 
---dofile("luaBuild.lua")
---print(getDirectoryFiles("/scripts/", "*.lua"))
-print(_G)
+dofile("luaBuild.lua")
