@@ -203,7 +203,7 @@
     </ClInclude>
     <None Include="luaBuild.lua" />
     <None Include="source\shaders\atmosphere\atmosphere.glsl" />
-    <None Include="source\shaders\atmosphere\common.glsl" />
+    <None Include="source\shaders\atmosphere\common.glsli" />
     <None Include="source\shaders\atmosphere\copyInscatter1.glsl" />
     <None Include="source\shaders\atmosphere\copyInscatterN.glsl" />
     <None Include="source\shaders\atmosphere\copyIrradiance.glsl" />

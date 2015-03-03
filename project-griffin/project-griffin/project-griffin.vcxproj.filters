@@ -893,9 +893,6 @@
     <None Include="source\shaders\atmosphere\atmosphere.glsl">
       <Filter>shaders\atmosphere</Filter>
     </None>
-    <None Include="source\shaders\atmosphere\common.glsl">
-      <Filter>shaders\atmosphere</Filter>
-    </None>
     <None Include="source\shaders\atmosphere\copyInscatter1.glsl">
       <Filter>shaders\atmosphere</Filter>
     </None>
@@ -924,6 +921,9 @@
       <Filter>shaders\atmosphere</Filter>
     </None>
     <None Include="source\shaders\atmosphere\transmittance.glsl">
+      <Filter>shaders\atmosphere</Filter>
+    </None>
+    <None Include="source\shaders\atmosphere\common.glsli">
       <Filter>shaders\atmosphere</Filter>
     </None>
   </ItemGroup>

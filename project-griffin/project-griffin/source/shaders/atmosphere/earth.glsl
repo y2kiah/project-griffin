@@ -32,6 +32,9 @@
  * Author: Eric Bruneton
  */
 
+#include "source/render/atmosphere/Main.h"
+#include "source/shaders/atmosphere/common.glsli"
+
 #define FIX
 
 const float ISun = 100.0;

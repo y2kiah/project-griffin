@@ -32,6 +32,10 @@ local WIN32_FIND_DATAA = ffi.typeof("struct WIN32_FIND_DATAA")
 local INVALID_HANDLE = ffi.cast("void*", -1)
 local FILE_ATTRIBUTE_DIRECTORY = 16
 
+--[[
+Get all files in a directory that match the provided pattern, pass wildcard "*" to match all files
+and directories under the path.
+]]
 getDirectoryFiles = function(initialPath, pattern, recursive)
 	if (not initialPath:sub(-1):find("[\\/]")) then
 		initialPath = initialPath .. "/"
@@ -79,14 +83,48 @@ getDirectoryFiles = function(initialPath, pattern, recursive)
 	return tFiles
 end
 
-local files = getDirectoryFiles("source/shaders/", "*", true)
-print(files)
+--[[
+string recipes http://lua-users.org/wiki/StringRecipes
+move these into another file
+]]
+function string.startsWith(str, startsWith)
+	return (string.sub(str, 1, string.len(startsWith)) == startsWith)
+end
 
-for k, v in pairs(files) do
-	if (string.find(k, ".glsl")) then
-		local f = assert(io.open(k, "r"))
-		local t = f:read("*all")
-		--print(t)
-		f:close()
+function string.endsWith(str, endsWith)
+	return (endsWith == "" or string.sub(str, -string.len(endsWith)) == endsWith)
+end
+----------
+
+local shaderSourcePath = "source/shaders/"
+local shaderBuildPath  = "data/shaders/"
+
+local files = getDirectoryFiles(shaderSourcePath, "*", true)
+
+-- loop over all shaders with .glsl extension, do not copy .glsli files
+for file, attribs in pairs(files) do
+	if (string.endsWith(file, ".glsl")) then
+		print("building shader: "..file)
+
+		-- read original shader source
+		local fr = assert(io.open(file, "r"))
+		local content = fr:read("*all")
+		fr:close()
+
+		-- look for occurrences of #include lines and replace with included file
+		local newContent = string.gsub(content, "#include \"(%C+)\"",
+			function(includeFile)
+				local fInc = assert(io.open(includeFile, "r"))
+				local includeContent = fInc:read("*all")
+				fInc:close()
+
+				return includeContent
+			end)
+
+		-- create shader in build path with new content
+		local newPath = string.gsub(file, shaderSourcePath, shaderBuildPath, 1)
+		local fw = assert(io.open(newPath, "w+"))
+		fw:write(newContent)
+		fw:close()
 	end
 end
