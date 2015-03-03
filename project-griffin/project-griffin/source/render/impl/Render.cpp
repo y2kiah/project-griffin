@@ -15,7 +15,6 @@
 #include <render/model/ModelImport_Assimp.h>
 #include <render/Camera.h>
 
-
 namespace griffin {
 	namespace render {
 
@@ -45,8 +44,8 @@ namespace griffin {
 		void initRenderData(int viewportWidth, int viewportHeight) {
 			//loadShadersTemp(L"shaders/ssao.glsl");
 			//loadShadersTemp(L"shaders/linearDepth.glsl");
-			loadShadersTemp(L"shaders/atmosphere/earth.glsl");
-			//loadShadersTemp(L"shaders/atmosphere/atmosphere.glsl");
+			//loadShadersTemp(L"shaders/atmosphere/earth.glsl");
+			loadShadersTemp(L"shaders/atmosphere/atmosphere.glsl");
 			loadShadersTemp(L"shaders/SimpleShader.glsl");
 
 			loadTexturesTemp();
@@ -71,8 +70,8 @@ namespace griffin {
 			camera->lookAt({ 0.0f, 0.0f, 0.0f });
 			camera->setWorldUp({ 0.0f, 1.0f, 0.0f });
 			camera->calcMatrices();
-			mat4 viewProjMat(camera->getProjectionMatrix() * camera->getModelViewMatrix());
-			mat4 modelMat(1.0f);
+			mat4 viewMat(camera->getModelViewMatrix());
+			mat4 viewProjMat(camera->getProjectionMatrix() * viewMat);
 
 			/*camera->setTranslationYawPitchRoll({ 10.0f, 10.0f, 10.0f }, glm::radians(315.0f), glm::radians(45.0f), 0);
 			//camera->lookAt({ 10.0f, 10.0f, 10.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f });
@@ -86,7 +85,7 @@ namespace griffin {
 			//glUniformMatrix4fv(UniformLayout_ModelViewProjection, 1, GL_FALSE, &mvp[0][0]);
 			GLint modelMatLoc    = glGetUniformLocation(programId, "modelToWorld");
 			GLint viewProjMatLoc = glGetUniformLocation(programId, "viewProjection");
-			glUniformMatrix4fv(modelMatLoc, 1, GL_FALSE, &modelMat[0][0]);
+			GLint normalMatLoc   = glGetUniformLocation(programId, "normalMatrix");
 			glUniformMatrix4fv(viewProjMatLoc, 1, GL_FALSE, &viewProjMat[0][0]);
 
 			// bind the texture
@@ -101,7 +100,7 @@ namespace griffin {
 			catch (...) {}
 
 			// draw the test mesh
-			g_tempMesh->draw(modelMatLoc); // temporarily passing in the modelMatLoc
+			g_tempMesh->draw(modelMatLoc, normalMatLoc, viewMat); // temporarily passing in the modelMatLoc
 		}
 
 		bool loadTexturesTemp()

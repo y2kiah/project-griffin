@@ -125,7 +125,7 @@ namespace griffin {
 			/**
 			* Draws all DrawSets without using render queue sorting, use for debugging only
 			*/
-			void draw(int modelMatLoc/*TEMP*/) const;
+			void draw(int modelMatLoc, int normalMatLoc, const glm::mat4& viewMat/*All TEMP*/) const;
 
 			/**
 			* Creates the Vertex Buffer Object with OpenGL for each draw set

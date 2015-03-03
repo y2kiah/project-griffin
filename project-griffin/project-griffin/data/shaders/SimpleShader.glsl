@@ -14,6 +14,7 @@
 	uniform mat4 modelToWorld;
 	uniform mat4 viewProjection;
 	uniform mat4 modelViewProjection;
+	uniform mat4 normalMatrix;
 	//layout(location = UniformLayout_ModelView) uniform mat4 modelView;
 	//layout(location = UniformLayout_Projection) uniform mat4 projection;
 	//layout(location = UniformLayout_ModelViewProjection) uniform mat4 modelViewProjection;

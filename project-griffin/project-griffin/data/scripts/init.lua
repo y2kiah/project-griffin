@@ -62,4 +62,4 @@ end
 ffi.C.debug_printf("Hello World from Lua" .. "JIT" .. " script!")
 --print(_G)
 
-dofile("luaBuild.lua")
+dofile("data/scripts/luaBuild.lua")

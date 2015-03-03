@@ -96,7 +96,7 @@ function string.endsWith(str, endsWith)
 end
 ----------
 
-local shaderSourcePath = "source/shaders/"
+local shaderSourcePath = "source/render/shaders/"
 local shaderBuildPath  = "data/shaders/"
 
 local files = getDirectoryFiles(shaderSourcePath, "*", true)

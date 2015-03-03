@@ -54,7 +54,7 @@ namespace griffin {
 		}
 
 
-		void Mesh_GL::draw(int modelMatLoc/*TEMP*/) const
+		void Mesh_GL::draw(int modelMatLoc, int normalMatLoc, const glm::mat4& viewMat/*All TEMP*/) const
 		{
 			glm::mat4 modelToWorld;
 			// temp
@@ -62,6 +62,8 @@ namespace griffin {
 			modelToWorld = glm::translate(modelToWorld, glm::vec3(0.0f, 0.0f, 50.0f));
 			modelToWorld = glm::scale(modelToWorld, glm::vec3(Meters_to_Feet));
 			glUniformMatrix4fv(modelMatLoc, 1, GL_FALSE, &modelToWorld[0][0]);
+			glm::mat4 normalMat(glm::transpose(glm::inverse(modelToWorld)));
+			glUniformMatrix4fv(normalMatLoc, 1, GL_FALSE, &normalMat[0][0]);
 
 			struct BFSQueueItem {
 				uint32_t  nodeIndex;

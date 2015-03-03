@@ -130,8 +130,8 @@ vec4 texture4D(sampler3D table, float r, float mu, float muS, float nu)
     float lerp = (nu + 1.0) / 2.0 * (float(RES_NU) - 1.0);
     float uNu = floor(lerp);
     lerp = lerp - uNu;
-    return texture3D(table, vec3((uNu + uMuS) / float(RES_NU), uMu, uR)) * (1.0 - lerp) +
-           texture3D(table, vec3((uNu + uMuS + 1.0) / float(RES_NU), uMu, uR)) * lerp;
+    return texture(table, vec3((uNu + uMuS) / float(RES_NU), uMu, uR)) * (1.0 - lerp) +
+           texture(table, vec3((uNu + uMuS + 1.0) / float(RES_NU), uMu, uR)) * lerp;
 }
 
 #ifdef _FRAGMENT_

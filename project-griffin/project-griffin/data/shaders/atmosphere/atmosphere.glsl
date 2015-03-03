@@ -47,8 +47,8 @@ uniform vec4 g_frustumNear[4];
 		gl_Position = vec4(vertexPosition, 1.0);
 		texC = vertexUV;
 		
-		vec3 frustumFarWorld = mul(vec4(g_frustumFar[index].xyz, 1.0), g_cameraWorld).xyz;
-		vec3 frustumNearWorld = mul(vec4(g_frustumNear[index].xyz, 1.0), g_cameraWorld).xyz;
+		vec3 frustumFarWorld = (g_cameraWorld * vec4(g_frustumFar[index].xyz, 1.0)).xyz;
+		vec3 frustumNearWorld = (g_cameraWorld * vec4(g_frustumNear[index].xyz, 1.0)).xyz;
 		
 		cameraToNear = frustumNearWorld - g_cameraPos;
 		nearToFar = frustumFarWorld - frustumNearWorld;
@@ -140,8 +140,8 @@ uniform vec4 g_frustumNear[4];
 		float lerp = (nu + 1.0) / 2.0 * (float(RES_NU) - 1.0);
 		float uNu = floor(lerp);
 		lerp = lerp - uNu;
-		return texture3D(table, vec3((uNu + uMuS) / float(RES_NU), uMu, uR)) * (1.0 - lerp) +
-			   texture3D(table, vec3((uNu + uMuS + 1.0) / float(RES_NU), uMu, uR)) * lerp;
+		return texture(table, vec3((uNu + uMuS) / float(RES_NU), uMu, uR)) * (1.0 - lerp) +
+			   texture(table, vec3((uNu + uMuS + 1.0) / float(RES_NU), uMu, uR)) * lerp;
 	}
 
 	// ----------------------------------------------------------------------------
