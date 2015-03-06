@@ -926,5 +926,11 @@
     <None Include="source\render\shaders\atmosphere\transmittance.glsl">
       <Filter>render\shaders\atmosphere</Filter>
     </None>
+    <None Include="source\render\shaders\ads.glsl">
+      <Filter>render\shaders</Filter>
+    </None>
+    <None Include="source\render\shaders\layout.glsli">
+      <Filter>render\shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

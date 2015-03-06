@@ -1,12 +1,7 @@
+#include "source/render/shaders/layout.glsli"
+
 #ifdef _VERTEX_
 	
-	#define VertexLayout_Position      0
-	#define VertexLayout_Normal        1
-	#define VertexLayout_Tangent       2
-	#define VertexLayout_Bitangent     3
-	#define VertexLayout_TextureCoords 4   // consumes up to 8 locations
-	#define VertexLayout_Colors        12  // consumes up to 8 locations
-
 	uniform mat4 modelView;
 	uniform mat4 projection;
 	

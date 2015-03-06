@@ -32,6 +32,7 @@
  * Author: Eric Bruneton
  */
 
+#include "source/render/shaders/layout.glsli"
 #include "source/render/atmosphere/Main.h"
 #include "source/render/shaders/atmosphere/common.glsli"
 
@@ -47,13 +48,15 @@ uniform float exposure;
 
 #ifdef _VERTEX_
 	
+	layout(location = VertexLayout_Position) in vec3 vertexPosition;
+
 	out vec2 coords;
 	out vec3 ray;
 
 	void main() {
-		coords = gl_Vertex.xy * 0.5 + 0.5;
-		ray = (viewInverse * vec4((projInverse * gl_Vertex).xyz, 0.0)).xyz;
-		gl_Position = gl_Vertex;
+		gl_Position = vec4(vertexPosition, 1.0);
+		coords = vertexPosition.xy * 0.5 + 0.5;
+		ray = (viewInverse * vec4((projInverse * gl_Position).xyz, 0.0)).xyz;
 	}
 
 #endif
@@ -66,6 +69,8 @@ uniform float exposure;
 
 	in vec2 coords;
 	in vec3 ray;
+
+	out vec3 outColor;
 
 	//inscattered light along ray x+tv, when sun in direction s (=S[L]-T(x,x0)S[L]|x0)
 	vec3 inscatter(inout vec3 x, inout float t, vec3 v, vec3 s, out float r, out float mu, out vec3 attenuation) {
@@ -225,7 +230,7 @@ uniform float exposure;
 		vec3 inscatterColor = inscatter(x, t, v, s, r, mu, attenuation); //S[L]-T(x,xs)S[l]|xs
 		vec3 groundColor = groundColor(x, t, v, s, r, mu, attenuation); //R[L0]+R[L*]
 		vec3 sunColor = sunColor(x, t, v, s, r, mu); //L0
-		gl_FragColor = vec4(HDR(sunColor + groundColor + inscatterColor), 1.0); // Eq (16)
+		outColor = HDR(sunColor + groundColor + inscatterColor);
 
 
 		//gl_FragColor = texture3D(inscatterSampler,vec3(coords,(s.x+1.0)/2.0));

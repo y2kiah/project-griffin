@@ -1,11 +1,6 @@
+#include "source/render/shaders/layout.glsli"
+
 #ifdef _VERTEX_
-	
-	#define VertexLayout_Position      0
-	#define VertexLayout_Normal        1
-	#define VertexLayout_Tangent       2
-	#define VertexLayout_Bitangent     3
-	#define VertexLayout_TextureCoords 4   // consumes up to 8 locations
-	#define VertexLayout_Colors        12  // consumes up to 8 locations
 
 	layout(location = VertexLayout_Position) in vec3 vertexPosition;
 
@@ -37,6 +32,7 @@
 	const float invSamples = 1.0 / 16.0;
 
 	in vec2 uv;
+	out vec3 outColor;
 
 	void main()
 	{
@@ -90,7 +86,7 @@
 
 		// output the result
 		float ao = 1.0-totStrength*bl*invSamples;
-		gl_FragColor.r = ao;
+		outColor = vec3(ao, 0, 0);
 	}
 
 /*
@@ -108,8 +104,9 @@
 	const float rad = 0.006;
 	const float invSamples = -1.38 / 10.0;
 	
-	varying vec2 uv;
-	
+	in vec2 uv;
+	out vec3 outColor;
+
 	void main()
 	{
 		// these are the random vectors inside a unit sphere
@@ -151,7 +148,7 @@
 		}
 
 		// output the result
-		gl_FragColor.r = 1.0+bl*invSamples;
+		outColor = vec3(1.0+bl*invSamples, 0, 0);
 	}
 */
 #endif

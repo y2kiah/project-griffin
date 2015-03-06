@@ -1,17 +1,6 @@
-// ================================================================================================
-// from Main.h
-// ================================================================================================
-
-const float g_Rg = 6360.0; // radius at ground
-const float g_Rt = 6420.0; // radius at top of atmosphere
-const float g_RL = 6421.0;
-
-const int RES_R = 32;
-const int RES_MU = 128;
-const int RES_MU_S = 32;
-const int RES_NU = 8;
-
-// ================================================================================================
+#include "source/render/shaders/layout.glsli"
+#include "source/render/atmosphere/Main.h"
+#include "source/render/shaders/atmosphere/common.glsli"
 
 const float EPSILON_ATMOSPHERE = 0.002;
 const float EPSILON_INSCATTER = 0.004;
@@ -24,13 +13,6 @@ uniform vec4 g_frustumFar[4];
 uniform vec4 g_frustumNear[4];
 
 #ifdef _VERTEX_
-	
-	#define VertexLayout_Position      0
-	#define VertexLayout_Normal        1
-	#define VertexLayout_Tangent       2
-	#define VertexLayout_Bitangent     3
-	#define VertexLayout_TextureCoords 4   // consumes up to 8 locations
-	#define VertexLayout_Colors        12  // consumes up to 8 locations
 
 	layout(location = VertexLayout_Position) in vec3 vertexPosition;
 	layout(location = VertexLayout_TextureCoords) in vec2 vertexUV;
@@ -70,149 +52,6 @@ uniform vec4 g_frustumNear[4];
 
 	out vec4 outColor;
 
-	// ============================================================================================
-	// from common.glsl
-	// ============================================================================================
-
-	// --------------------------------------------------------------------------------------------
-	// PHYSICAL MODEL PARAMETERS
-	// --------------------------------------------------------------------------------------------
-
-	const float AVERAGE_GROUND_REFLECTANCE = 0.1;
-
-	// Rayleigh
-	const float H_rayleigh = 8.0;
-	const vec3 beta_rayleigh = vec3(5.8e-3, 1.35e-2, 3.31e-2);
-
-	// Mie
-	// DEFAULT
-	const float H_mie = 1.2;
-	const vec3 beta_mieSca = vec3(4e-3);
-	const vec3 beta_mieEx = beta_mieSca / 0.9;
-	const float mieG = 0.8;
-
-	// ----------------------------------------------------------------------------
-	// NUMERICAL INTEGRATION PARAMETERS
-	// ----------------------------------------------------------------------------
-
-	const int TRANSMITTANCE_INTEGRAL_SAMPLES = 500;
-	const int INSCATTER_INTEGRAL_SAMPLES = 50;
-	const int IRRADIANCE_INTEGRAL_SAMPLES = 32;
-	const int INSCATTER_SPHERICAL_INTEGRAL_SAMPLES = 16;
-	
-	const float M_PI = 3.1415926535897932384626433832795;
-
-
-	// ----------------------------------------------------------------------------
-	// PARAMETERIZATION FUNCTIONS
-	// ----------------------------------------------------------------------------
-
-	uniform sampler2D transmittanceSampler;
-
-	vec2 getTransmittanceUV(float r, float mu) {
-		float uR, uMu;
-		uR = sqrt((r - g_Rg) / (g_Rt - g_Rg));
-		uMu = atan((mu + 0.15) / (1.0 + 0.15) * tan(1.5)) / 1.5;
-		return vec2(uMu, uR);
-	}
-
-	vec2 getIrradianceUV(float r, float muS) {
-		float uR = (r - g_Rg) / (g_Rt - g_Rg);
-		float uMuS = (muS + 0.2) / (1.0 + 0.2);
-		return vec2(uMuS, uR);
-	}
-
-	vec4 texture4D(sampler3D table, float r, float mu, float muS, float nu)
-	{
-		float H = sqrt(g_Rt * g_Rt - g_Rg * g_Rg);
-		float rho = sqrt(r * r - g_Rg * g_Rg);
-
-		float rmu = r * mu;
-		float delta = rmu * rmu - r * r + g_Rg * g_Rg;
-		vec4 cst = rmu < 0.0 && delta > 0.0 ? vec4(1.0, 0.0, 0.0, 0.5 - 0.5 / float(RES_MU)) : vec4(-1.0, H * H, H, 0.5 + 0.5 / float(RES_MU));
-		float uR = 0.5 / float(RES_R) + rho / H * (1.0 - 1.0 / float(RES_R));
-		float uMu = cst.w + (rmu * cst.x + sqrt(delta + cst.y)) / (rho + cst.z) * (0.5 - 1.0 / float(RES_MU));
-		// paper formula
-		//float uMuS = 0.5 / float(RES_MU_S) + max((1.0 - exp(-3.0 * muS - 0.6)) / (1.0 - exp(-3.6)), 0.0) * (1.0 - 1.0 / float(RES_MU_S));
-		// better formula
-		float uMuS = 0.5 / float(RES_MU_S) + (atan(max(muS, -0.1975) * tan(1.26 * 1.1)) / 1.1 + (1.0 - 0.26)) * 0.5 * (1.0 - 1.0 / float(RES_MU_S));
-		
-		float lerp = (nu + 1.0) / 2.0 * (float(RES_NU) - 1.0);
-		float uNu = floor(lerp);
-		lerp = lerp - uNu;
-		return texture(table, vec3((uNu + uMuS) / float(RES_NU), uMu, uR)) * (1.0 - lerp) +
-			   texture(table, vec3((uNu + uMuS + 1.0) / float(RES_NU), uMu, uR)) * lerp;
-	}
-
-	// ----------------------------------------------------------------------------
-	// UTILITY FUNCTIONS
-	// ----------------------------------------------------------------------------
-
-	// intersect atmosphere
-	// nearest intersection of ray r,mu with ground or top atmosphere boundary
-	// mu=cos(ray zenith angle at ray origin)
-	float intersectAtmosphere(float r, float mu) {
-		float dout = -r * mu + sqrt(r * r * (mu * mu - 1.0) + g_RL * g_RL);
-		float delta2 = r * r * (mu * mu - 1.0) + g_Rg * g_Rg;
-		if (delta2 >= 0.0) {
-			float din = -r * mu - sqrt(delta2);
-			if (din >= 0.0) {
-				dout = min(dout, din);
-			}
-		}
-		return dout;
-	}
-
-	// transmittance(=transparency) of atmosphere for infinite ray (r,mu)
-	// (mu=cos(view zenith angle)), intersections with ground ignored
-	vec3 transmittance(float r, float mu) {
-		vec2 uv = getTransmittanceUV(r, mu);
-		return texture2D(transmittanceSampler, uv).rgb;
-	}
-
-	// optical depth for ray (r,mu) of length d, using analytic formula
-	// (mu=cos(view zenith angle)), intersections with ground ignored
-	// H=height scale of exponential density function
-	float opticalDepth(float H, float r, float mu, float d) {
-		float a = sqrt((0.5/H)*r);
-		vec2 a01 = a*vec2(mu, mu + d / r);
-		vec2 a01s = sign(a01);
-		vec2 a01sq = a01*a01;
-		float x = a01s.y > a01s.x ? exp(a01sq.x) : 0.0;
-		vec2 y = a01s / (2.3193*abs(a01) + sqrt(1.52*a01sq + 4.0)) * vec2(1.0, exp(-d/H*(d/(2.0*r)+mu)));
-		return sqrt((6.2831*H)*r) * exp((g_Rg-r)/H) * (x + dot(y, vec2(1.0, -1.0)));
-	}
-
-	// transmittance(=transparency) of atmosphere for ray (r,mu) of length d
-	// (mu=cos(view zenith angle)), intersections with ground ignored
-	// uses analytic formula instead of transmittance texture
-	vec3 analyticTransmittance(float r, float mu, float d) {
-		return exp(-beta_rayleigh * opticalDepth(H_rayleigh, r, mu, d) - beta_mieEx * opticalDepth(H_mie, r, mu, d));
-	}
-
-	vec3 irradiance(sampler2D sampler, float r, float muS) {
-		vec2 uv = getIrradianceUV(r, muS);
-		return texture2D(sampler, uv).rgb;
-	}
-
-	// Rayleigh phase function
-	float phaseFunctionR(float mu) {
-		return (3.0 / (16.0 * M_PI)) * (1.0 + mu * mu);
-	}
-
-	// Mie phase function
-	float phaseFunctionM(float mu) {
-		return 1.5 * 1.0 / (4.0 * M_PI) * (1.0 - mieG*mieG) * pow(1.0 + (mieG*mieG) - 2.0*mieG*mu, -3.0/2.0) * (1.0 + mu * mu) / (2.0 + mieG*mieG);
-	}
-
-	// approximated single Mie scattering (cf. approximate Cm in paragraph "Angular precision")
-	vec3 getMie(vec4 rayMie) { // rayMie.rgb=C*, rayMie.w=Cm,r
-		return rayMie.rgb * rayMie.w / max(rayMie.r, 1e-4) * (beta_rayleigh.r / beta_rayleigh);
-	}
-
-
-	//=============================================================================================
-
 	// input - d: view ray in world space
 	// output - offset: distance to atmosphere or 0 if within atmosphere
 	// output - maxPathLength: distance traversed within atmosphere
@@ -226,7 +65,7 @@ uniform vec4 g_frustumNear[4];
 		float l2 = dot(l,l);
 		float s = dot(l,d);
 		// adjust top atmosphere boundary by small epsilon to prevent artifacts
-		float r = g_Rt - EPSILON_ATMOSPHERE;
+		float r = Rt - EPSILON_ATMOSPHERE;
 		float r2 = r*r;
 	
 		if (l2 <= r2) {
@@ -302,7 +141,7 @@ uniform vec4 g_frustumNear[4];
 		
 				// avoids imprecision problems near horizon by interpolating between two points above and below horizon
 				// fíx described in chapter 5.1.2
-				float muHorizon = -sqrt(1.0 - (g_Rg / startPosHeight) * (g_Rg / startPosHeight));
+				float muHorizon = -sqrt(1.0 - (Rg / startPosHeight) * (Rg / startPosHeight));
 				if (abs(muStartPos - muHorizon) < EPSILON_INSCATTER) {
 					float mu = muHorizon - EPSILON_INSCATTER;
 					float samplePosHeight = sqrt(startPosHeight*startPosHeight + pathLength*pathLength+2.0*startPosHeight* pathLength*mu);

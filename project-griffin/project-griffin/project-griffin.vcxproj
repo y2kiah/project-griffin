@@ -202,6 +202,7 @@
       <FileType>Document</FileType>
     </ClInclude>
     <None Include="data\scripts\luaBuild.lua" />
+    <None Include="source\render\shaders\ads.glsl" />
     <None Include="source\render\shaders\atmosphere\atmosphere.glsl" />
     <None Include="source\render\shaders\atmosphere\common.glsli" />
     <None Include="source\render\shaders\atmosphere\copyInscatter1.glsl" />
@@ -215,6 +216,7 @@
     <None Include="source\render\shaders\atmosphere\irradianceN.glsl" />
     <None Include="source\render\shaders\atmosphere\transmittance.glsl" />
     <None Include="source\render\shaders\Font.glsl" />
+    <None Include="source\render\shaders\layout.glsli" />
     <None Include="source\render\shaders\linearDepth.glsl" />
     <None Include="source\render\shaders\SimpleShader.glsl" />
     <None Include="source\render\shaders\SkyFromSpace.glsl" />
