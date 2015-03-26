@@ -1,5 +1,16 @@
 #include "source/render/shaders/layout.glsli"
 
+#define SAMPLES 16 // 10 is good
+
+uniform sampler2D rnm;
+uniform sampler2D normalMap;
+	
+uniform float totStrength = 1.38;
+uniform float strength = 0.07;
+uniform float offset = 18.0;
+uniform float falloff = 0.000002;
+uniform float rad = 0.006;
+
 #ifdef _VERTEX_
 
 	layout(location = VertexLayout_Position) in vec3 vertexPosition;
@@ -17,17 +28,6 @@
 #endif
 
 #ifdef _FRAGMENT_
-	
-	#define SAMPLES 16 // 10 is good
-
-	uniform sampler2D rnm;
-	uniform sampler2D normalMap;
-	
-	uniform float totStrength = 1.38;
-	uniform float strength = 0.07;
-	uniform float offset = 18.0;
-	uniform float falloff = 0.000002;
-	uniform float rad = 0.006;
 
 	const float invSamples = 1.0 / 16.0;
 

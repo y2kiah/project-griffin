@@ -190,6 +190,9 @@
     <ClCompile Include="source\render\geometry\impl\Geometry.cpp">
       <Filter>render\geometry\impl</Filter>
     </ClCompile>
+    <ClCompile Include="source\render\impl\RenderTarget_GL.cpp">
+      <Filter>render\impl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\application\main.h">
@@ -641,6 +644,9 @@
     </ClInclude>
     <ClInclude Include="source\render\geometry\Geometry.h">
       <Filter>render\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\RenderTarget_GL.h">
+      <Filter>render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

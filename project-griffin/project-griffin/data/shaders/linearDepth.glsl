@@ -10,13 +10,13 @@
 #define VertexLayout_Colors        12  // consumes up to 8 locations
 #define VertexLayout_CustomStart   20  // use for first custom binding location and increment
 
+uniform mat4 modelView;
+uniform mat4 projection;
+	
+uniform float frustumNear;
+uniform float frustumFar;
+
 #ifdef _VERTEX_
-	
-	uniform mat4 modelView;
-	uniform mat4 projection;
-	
-	uniform float frustumNear;
-	uniform float frustumFar;
 
 	layout(location = VertexLayout_Position) in vec3 vertexPosition_modelspace;
 	layout(location = VertexLayout_Normal) in vec3 vertexNormal;

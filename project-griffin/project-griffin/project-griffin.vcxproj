@@ -32,6 +32,7 @@
     <ClCompile Include="source\render\impl\Camera.cpp" />
     <ClCompile Include="source\render\impl\IndexBuffer_GL.cpp" />
     <ClCompile Include="source\render\impl\Render.cpp" />
+    <ClCompile Include="source\render\impl\RenderTarget_GL.cpp" />
     <ClCompile Include="source\render\impl\ShaderProgram_GL.cpp" />
     <ClCompile Include="source\render\impl\VertexBuffer_GL.cpp" />
     <ClCompile Include="source\render\model\impl\Mesh_GL.cpp" />
@@ -68,6 +69,7 @@
     <ClInclude Include="source\render\model\ModelImport_Assimp.h" />
     <ClInclude Include="source\render\model\Model_GL.h" />
     <ClInclude Include="source\render\Render.h" />
+    <ClInclude Include="source\render\RenderTarget_GL.h" />
     <ClInclude Include="source\render\ShaderProgramLayouts_GL.h" />
     <ClInclude Include="source\render\ShaderProgram_GL.h" />
     <ClInclude Include="source\render\texture\dds.h" />
