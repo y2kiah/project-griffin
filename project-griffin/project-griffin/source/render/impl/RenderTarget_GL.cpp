@@ -7,7 +7,7 @@ namespace griffin {
 		RenderTarget_GL::RenderTarget_GL()
 		{
 			// Save extensions
-			m_width = _dWidth;
+			/*m_width = _dWidth;
 			m_height = _dHeight;
 
 			// Generate the OGL resources for what we need
@@ -76,9 +76,9 @@ namespace griffin {
 			// Check if all worked fine and unbind the FBO
 			GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
 			if (status != GL_FRAMEBUFFER_COMPLETE_EXT)
-				throw new std::exception("Can't initialize an FBO render texture. FBO initialization failed.");
+				throw std::runtime_error("Can't initialize an FBO render texture. FBO initialization failed.");
 
-			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);*/
 		}
 
 		/**
@@ -88,7 +88,7 @@ namespace griffin {
 		void RenderTarget_GL::start()
 		{
 			// Bind our FBO and set the viewport to the proper size
-			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fbo);
+			/*glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fbo);
 			glPushAttrib(GL_VIEWPORT_BIT);
 			glViewport(0, 0, 1.0f, 1.0f);
 
@@ -102,7 +102,7 @@ namespace griffin {
 			// Specify what to render an start acquiring
 			GLenum buffers[] = { GL_COLOR_ATTACHMENT0_EXT, GL_COLOR_ATTACHMENT1_EXT,
 				GL_COLOR_ATTACHMENT2_EXT };
-			glDrawBuffers(3, buffers);
+			glDrawBuffers(3, buffers);*/
 		}
 
 		/**

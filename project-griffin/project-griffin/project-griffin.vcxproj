@@ -23,9 +23,9 @@
     <ClCompile Include="source\application\impl\platform.cpp" />
     <ClCompile Include="source\application\impl\Timer_win32.cpp" />
     <ClCompile Include="source\application\main.cpp" />
-    <ClCompile Include="source\component\impl\Component.cpp" />
-    <ClCompile Include="source\component\impl\Entity.cpp" />
     <ClCompile Include="source\core\impl\InputSystem.cpp" />
+    <ClCompile Include="source\entity\impl\Component.cpp" />
+    <ClCompile Include="source\entity\impl\Entity.cpp" />
     <ClCompile Include="source\render\font\FreeType.cpp" />
     <ClCompile Include="source\render\geometry\impl\Cube.cpp" />
     <ClCompile Include="source\render\geometry\impl\Geometry.cpp" />
@@ -52,13 +52,14 @@
     <ClInclude Include="source\application\main.h" />
     <ClInclude Include="source\application\platform.h" />
     <ClInclude Include="source\application\Timer.h" />
-    <ClInclude Include="source\component\Component.h" />
-    <ClInclude Include="source\component\ComponentFactory.h" />
-    <ClInclude Include="source\component\components.h" />
-    <ClInclude Include="source\component\ComponentStore.h" />
-    <ClInclude Include="source\component\Entity.h" />
     <ClInclude Include="source\core\CoreSystem.h" />
     <ClInclude Include="source\core\InputSystem.h" />
+    <ClInclude Include="source\entity\Component.h" />
+    <ClInclude Include="source\entity\ComponentFactory.h" />
+    <ClInclude Include="source\entity\components.h" />
+    <ClInclude Include="source\entity\ComponentStore.h" />
+    <ClInclude Include="source\entity\Entity.h" />
+    <ClInclude Include="source\entity\impl\ComponentStore-inl.h" />
     <ClInclude Include="source\render\Camera.h" />
     <ClInclude Include="source\render\font\FreeType.h" />
     <ClInclude Include="source\render\geometry\Cube.h" />
@@ -200,9 +201,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="data\scripts\init.lua" />
-    <ClInclude Include="source\component\impl\ComponentStore.inl">
-      <FileType>Document</FileType>
-    </ClInclude>
     <None Include="data\scripts\luaBuild.lua" />
     <None Include="source\render\shaders\ads.glsl" />
     <None Include="source\render\shaders\atmosphere\atmosphere.glsl" />

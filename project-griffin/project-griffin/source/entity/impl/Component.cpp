@@ -1,4 +1,4 @@
-#include <component/components.h>
+#include <entity/components.h>
 #include <vector>
 #include <tuple>
 #include <SDL_log.h>
@@ -6,10 +6,13 @@
 #include <boost/fusion/algorithm/iteration/for_each.hpp>
 #include <utility/prettyprint.h>
 #include <fstream>
+#include <sstream>
 #include <memory>
 #include <utility/profile/Profile.h>
 
 #include <application/Timer.h>
+
+using namespace griffin::entity;
 
 const size_t numTestComponents = 100000;
 auto personStore = ComponentStore<Person>(numTestComponents);
@@ -63,7 +66,7 @@ void addTestComponents() {
 	
 	timer.start();
 	// store 100,000 components in a ComponentStore
-	componentIds = personStore.createComponents(numTestComponents);
+	componentIds = personStore.createComponents(numTestComponents, {{{0,0,0,0}}});
 	timer.stop();
 	SDL_Log("**********\ncreate components in store\ntime = %f ms\ncounts = %lld\n\n", timer.millisPassed(), timer.countsPassed());
 
@@ -91,7 +94,7 @@ void profileTestComponents() {
 	auto cmp = personStore.getComponents().getItems();
 	timer.start();
 	for (int i = 0; i < numTestComponents; ++i) {
-		age += cmp[i].age;
+		age += cmp[i].component.age;
 	}
 	timer.stop();
 	SDL_Log("**********\nloop components inner array\ntime = %f ms\ncounts = %lld\n\n", timer.millisPassed(), timer.countsPassed());

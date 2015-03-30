@@ -81,7 +81,7 @@ namespace griffin {
 		 * @returns the id
 		 */
 		template <typename... Params>
-		Id_T emplace(Params... args) { return insert(T(args...)); }
+		Id_T emplace(Params... args) { return insert(T{ args... }); }
 
 		/**
 		 * template specialization for empty parameter list uses the empty brace initializer so POD

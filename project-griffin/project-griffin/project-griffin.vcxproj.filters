@@ -14,12 +14,6 @@
     <Filter Include="utility">
       <UniqueIdentifier>{811970e0-03dd-4faf-9b2d-d9421328c38d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="component">
-      <UniqueIdentifier>{6d7e4970-d31b-403f-a97d-850df55be125}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="component\impl">
-      <UniqueIdentifier>{4eadde8f-4ea1-457a-8706-7d3e88e0a766}</UniqueIdentifier>
-    </Filter>
     <Filter Include="test">
       <UniqueIdentifier>{4606fcbf-46e5-4ddc-ac84-2cc2652f67ef}</UniqueIdentifier>
     </Filter>
@@ -113,6 +107,12 @@
     <Filter Include="render\shaders\atmosphere">
       <UniqueIdentifier>{2f839030-72cc-4146-9eb1-cdb583b8f2dc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="entity">
+      <UniqueIdentifier>{6d7e4970-d31b-403f-a97d-850df55be125}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="entity\impl">
+      <UniqueIdentifier>{4eadde8f-4ea1-457a-8706-7d3e88e0a766}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">
@@ -120,12 +120,6 @@
     </ClCompile>
     <ClCompile Include="source\application\impl\Timer_win32.cpp">
       <Filter>application\impl</Filter>
-    </ClCompile>
-    <ClCompile Include="source\component\impl\Component.cpp">
-      <Filter>component\impl</Filter>
-    </ClCompile>
-    <ClCompile Include="source\component\impl\Entity.cpp">
-      <Filter>component\impl</Filter>
     </ClCompile>
     <ClCompile Include="source\utility\profile\impl\Profile.cpp">
       <Filter>utility\profile\impl</Filter>
@@ -193,6 +187,12 @@
     <ClCompile Include="source\render\impl\RenderTarget_GL.cpp">
       <Filter>render\impl</Filter>
     </ClCompile>
+    <ClCompile Include="source\entity\impl\Component.cpp">
+      <Filter>entity\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\entity\impl\Entity.cpp">
+      <Filter>entity\impl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\application\main.h">
@@ -201,26 +201,11 @@
     <ClInclude Include="source\utility\enum.h">
       <Filter>utility</Filter>
     </ClInclude>
-    <ClInclude Include="source\component\Entity.h">
-      <Filter>component</Filter>
-    </ClInclude>
-    <ClInclude Include="source\component\components.h">
-      <Filter>component</Filter>
-    </ClInclude>
     <ClInclude Include="source\utility\reflection.h">
       <Filter>utility</Filter>
     </ClInclude>
-    <ClInclude Include="source\component\Component.h">
-      <Filter>component</Filter>
-    </ClInclude>
-    <ClInclude Include="source\component\ComponentStore.h">
-      <Filter>component</Filter>
-    </ClInclude>
     <ClInclude Include="source\utility\algorithms.h">
       <Filter>utility</Filter>
-    </ClInclude>
-    <ClInclude Include="source\component\ComponentFactory.h">
-      <Filter>component</Filter>
     </ClInclude>
     <ClInclude Include="source\utility\concurrency.h">
       <Filter>utility</Filter>
@@ -236,9 +221,6 @@
     </ClInclude>
     <ClInclude Include="source\test\Test.h">
       <Filter>test</Filter>
-    </ClInclude>
-    <ClInclude Include="source\component\impl\ComponentStore.inl">
-      <Filter>component\impl</Filter>
     </ClInclude>
     <ClInclude Include="source\utility\auto_lister.h">
       <Filter>utility</Filter>
@@ -647,6 +629,24 @@
     </ClInclude>
     <ClInclude Include="source\render\RenderTarget_GL.h">
       <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="source\entity\Component.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\entity\ComponentFactory.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\entity\components.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\entity\ComponentStore.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\entity\Entity.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\entity\impl\ComponentStore-inl.h">
+      <Filter>entity\impl</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

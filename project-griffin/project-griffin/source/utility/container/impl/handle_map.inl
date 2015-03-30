@@ -72,7 +72,7 @@ namespace griffin {
 		m_items.reserve(m_items.size() + n); // pre-reserve the space we need (if not already there)
 		m_meta.reserve(m_meta.size() + n);
 
-		std::generate_n(handles.begin(), n, [this](){ return emplace(args...); });
+		std::generate_n(handles.begin(), n, [&, this](){ return emplace(args...); });
 
 		return handles; // efficient to return vector by value, copy elided with NVRO (or with C++11 move semantics)
 	}

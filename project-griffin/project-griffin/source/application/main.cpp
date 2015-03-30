@@ -7,7 +7,7 @@
 #include "main.h"
 #include "Timer.h"
 #include <SOIL.h>
-#include <component/components.h>
+#include <entity/components.h>
 #include <render/Render.h>
 #include <utility/profile/Profile.h>
 #include "platform.h"
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 		
 		render::initRenderData(app.getPrimaryWindow().width, app.getPrimaryWindow().height);
 
-		//test_reflection(); // TEMP
+		test_reflection(); // TEMP
 
 		bool done = false;
 		int32_t frame = 0;
@@ -140,7 +140,7 @@ int main(int argc, char *argv[])
 void SDLApplication::initWindow(const char* appName)
 {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
-		throw(std::runtime_error(SDL_GetError()));
+		throw std::runtime_error(SDL_GetError());
 	}
 
 	// enable logging
@@ -190,13 +190,13 @@ void SDLApplication::initWindow(const char* appName)
 	//SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP);
 
 	if (window == nullptr) {
-		throw(std::runtime_error(SDL_GetError()));
+		throw std::runtime_error(SDL_GetError());
 	}
 
 	auto glContext = SDL_GL_CreateContext(window);
 
 	if (glContext == nullptr) {
-		throw(std::runtime_error(SDL_GetError()));
+		throw std::runtime_error(SDL_GetError());
 	}
 
 	windowData.resize(1);
@@ -214,7 +214,7 @@ void SDLApplication::initOpenGL()
 	GLenum err = glewInit();
 	if (err != GLEW_OK) {
 		SDL_Log("Failed to initialize GLEW\n");
-		throw(std::runtime_error((const char *)glewGetErrorString(err)));
+		throw std::runtime_error((const char *)glewGetErrorString(err));
 	}
 
 	SDL_Log("OpenGL Information:\n  Vendor: %s\n  Renderer: %s\n  Version: %s\n  Shading Language Version: %s\n",

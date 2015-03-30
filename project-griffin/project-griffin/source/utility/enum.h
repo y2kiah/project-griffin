@@ -26,12 +26,12 @@
 	static const char* name##ToString(const enum name eel) { \
 		switch (eel) { \
 			BOOST_PP_SEQ_FOR_EACH(ENUM_TO_STRING, postfix, SEQ) \
-			default: { throw(std::runtime_error(#name##" enum value not found")); } \
+			default: { throw std::runtime_error(#name##" enum value not found"); } \
 		} \
 	} \
 	static enum name name##ToEnum(const std::string &eel) { \
 		BOOST_PP_SEQ_FOR_EACH(STRING_TO_ENUM, postfix, SEQ) \
-		throw(std::runtime_error(#name##" enum value not found: " + eel)); \
+		throw std::runtime_error(#name##" enum value not found: " + eel); \
 	}
 
 #endif //_ENUM_H

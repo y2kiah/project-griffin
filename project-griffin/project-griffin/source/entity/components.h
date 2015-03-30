@@ -1,6 +1,6 @@
 #pragma once
-#ifndef COMPONENTS_H
-#define COMPONENTS_H
+#ifndef GRIFFIN_COMPONENTS_H_
+#define GRIFFIN_COMPONENTS_H_
 
 #include <vector>
 #include <bitset>
@@ -35,9 +35,9 @@ COMPONENT(Orientation,
 )
 
 COMPONENT(Person,
-	(int, (age, (FieldType::int_T, ("Person's age in years", NIL)))),
-	(float, (speed, (FieldType::float_T, ("How fast person walks in ft/s", NIL)))),
-	(std::string, (name, (FieldType::string_T, ("Person's name", NIL)))),
+	(int,              (age,   (FieldType::int_T,       ("Person's age in years", NIL)))),
+	(float,            (speed, (FieldType::float_T,     ("How fast person walks in ft/s", NIL)))),
+	(std::string,      (name,  (FieldType::string_T,    ("Person's name", NIL)))),
 	(std::vector<int>, (stuff, (FieldType::vectorInt_T, ("Person's integer stuff", NIL))))
 )
 

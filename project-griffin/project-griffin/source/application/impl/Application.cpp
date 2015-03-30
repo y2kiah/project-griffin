@@ -15,7 +15,7 @@ namespace griffin {
 		Application app;
 
 		/**
-		* Build the Resource System
+		* Build the resource system
 		*/
 		{
 			using namespace resource;
@@ -37,7 +37,7 @@ namespace griffin {
 		}
 		
 		/**
-		* Build the Lua Scripting System
+		* Build the Lua scripting system
 		*/
 		{
 			using namespace script;
@@ -53,6 +53,16 @@ namespace griffin {
 
 
 			app.scriptManager = scriptPtr;
+		}
+
+		/**
+		* Build the entity-component system
+		*/
+		{
+			using namespace entity;
+
+			auto entityPtr = make_shared<EntityManager>();
+			app.entityManager = entityPtr;
 		}
 
 		return move(app);
