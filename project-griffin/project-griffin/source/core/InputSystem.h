@@ -4,6 +4,7 @@
 #include <vector>
 #include <utility/container/concurrent_queue.h>
 #include <SDL_events.h>
+#include <memory>
 
 using std::vector;
 
@@ -16,6 +17,9 @@ namespace griffin {
 		};
 
 
+		/**
+		*
+		*/
 		class InputSystem : public CoreSystem {
 		public:
 			~InputSystem() {}
@@ -35,7 +39,12 @@ namespace griffin {
 			vector<InputEvent>				m_popEvents;	//<! pop events from the queue into this buffer
 		};
 
+		typedef std::shared_ptr<InputSystem> InputSystemPtr;
 
+
+		/**
+		*
+		*/
 		class InputDispatcher {
 		public:
 
@@ -43,5 +52,6 @@ namespace griffin {
 
 		};
 
+		
 	}
 }

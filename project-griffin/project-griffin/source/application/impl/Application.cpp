@@ -15,28 +15,6 @@ namespace griffin {
 		Application app;
 
 		/**
-		* Build the resource system
-		*/
-		{
-			using namespace resource;
-
-			auto loaderPtr = make_shared<ResourceLoader>();
-
-			// Build resource caches
-			auto materialsCachePtr = make_shared<ResourceCache>(Cache_Materials_T, 10, 1024 * 1024 /* 1 MB */);
-			loaderPtr->registerCache(materialsCachePtr, (CacheType)materialsCachePtr->getItemTypeId());
-
-			// Build resource sources
-			auto fileSystemSourcePtr = IResourceSourcePtr((IResourceSource*)(new FileSystemSource()));
-			loaderPtr->registerSource(fileSystemSourcePtr);
-
-			// inject dependencies to the loader
-			render::g_loaderPtr = loaderPtr;
-
-			app.resourceLoader = loaderPtr;
-		}
-		
-		/**
 		* Build the Lua scripting system
 		*/
 		{
@@ -56,13 +34,63 @@ namespace griffin {
 		}
 
 		/**
+		* Build the input system
+		*/
+		{
+			using namespace core;
+
+			// move input system into application
+			auto inputPtr = make_shared<InputSystem>();
+
+			app.inputSystem = inputPtr;
+		}
+
+		/**
+		* Build the resource system
+		*/
+		{
+			using namespace resource;
+
+			auto loaderPtr = make_shared<ResourceLoader>();
+
+			// Build resource caches
+			auto materialsCachePtr = make_shared<ResourceCache>(Cache_Materials_T, 10, 1024 * 1024 /* 1 MB */);
+			loaderPtr->registerCache(materialsCachePtr, (CacheType)materialsCachePtr->getItemTypeId());
+
+			// Build resource sources
+			auto fileSystemSourcePtr = IResourceSourcePtr((IResourceSource*)(new FileSystemSource()));
+			loaderPtr->registerSource(fileSystemSourcePtr);
+
+			// inject dependencies to the loader
+			render::g_loaderPtr = loaderPtr;
+
+			// add Lua APIs
+
+
+			app.resourceLoader = loaderPtr;
+		}
+
+		/**
 		* Build the entity-component system
 		*/
 		{
 			using namespace entity;
 
 			auto entityPtr = make_shared<EntityManager>();
+
+			// add Lua APIs
+
+
 			app.entityManager = entityPtr;
+		}
+
+		/**
+		* Build the systems list for ordered updates
+		*/
+		{
+			// create vector in order of system update execution
+			app.systems.push_back(app.inputSystem.get());
+
 		}
 
 		return move(app);

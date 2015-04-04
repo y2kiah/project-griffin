@@ -12,7 +12,6 @@
 #include <utility/profile/Profile.h>
 #include "platform.h"
 #include "FixedTimestep.h"
-#include <core/InputSystem.h>
 #include <application/Application.h>
 
 #define PROGRAM_NAME "Project Griffin"
@@ -41,10 +40,6 @@ int main(int argc, char *argv[])
 		bool done = false;
 		int32_t frame = 0;
 
-		// move input system into application
-		core::InputSystem inputSystem;
-		vector<core::CoreSystem*> systemUpdates = { &inputSystem }; // order of system execution for update
-
 		SDL_GL_MakeCurrent(nullptr, NULL); // make no gl context current on the input thread
 
 		// move this to Game class instead of having a lambda
@@ -62,7 +57,7 @@ int main(int argc, char *argv[])
 						virtualTime, gameTime, deltaCounts, Timer::timerFreq() / 1000);*/
 
 				// call all systems in priority order
-				for (auto& s : systemUpdates) {
+				for (auto& s : application.systems) {
 					s->update(ui);
 				}
 				// if all systems operate on 1(+) frame-old-data, can all systems be run in parallel?
@@ -105,7 +100,7 @@ int main(int argc, char *argv[])
 			SDL_Event event;
 			while (SDL_PollEvent(&event)) {
 				// send to the input system to handle the event
-				bool handled = inputSystem.handleEvent(event);
+				bool handled = application.inputSystem->handleEvent(event);
 				
 				if (!handled) {
 					switch (event.type) {
