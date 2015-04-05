@@ -108,17 +108,17 @@ namespace griffin {
 	public:
 		monitor(T t_ = T{}) : t(t_) {}
 
-		template <typename F>
+		/*template <typename F>
 		auto operator()(F f) const -> decltype(f(t)) {
 			std::lock_guard<std::mutex> _{ m };
 			return f(t);
-		}
+		}*/
 
-		/*template <typename F>
+		template <typename F>
 		auto operator()(F f) const -> typename std::result_of<F(T)>::type {
 			std::lock_guard<std::mutex> _{ m };
 			return f(t);
-		}*/
+		}
 
 	private:
 		mutable T t;

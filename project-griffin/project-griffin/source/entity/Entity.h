@@ -11,10 +11,8 @@
 //#include <boost/container/flat_map.hpp>
 #include <memory>
 #include "components.h"
+#include <utility/memory_reserve.h>
 
-#define RESERVE_ENTITY_COMPONENTS				20
-#define RESERVE_ENTITYMANAGER_ENTITIES			1000
-#define RESERVE_ENTITYMANAGER_COMPONENTSTORES	100
 
 namespace griffin {
 	namespace entity {

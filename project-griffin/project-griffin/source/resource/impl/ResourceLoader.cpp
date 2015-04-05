@@ -1,4 +1,5 @@
 #include "../ResourceLoader.h"
+#include <utility/memory_reserve.h>
 
 namespace griffin {
 	namespace resource {
@@ -6,7 +7,7 @@ namespace griffin {
 		void ResourceLoader::executeCallbacks()
 		{
 			std::vector<std::function<void()>> callbacks;
-			callbacks.reserve(10);
+			callbacks.reserve(RESERVE_RESOURCELOADER_CALLBACKS);
 			m_callbacks.try_pop_all(callbacks);
 
 			for (auto& cb : callbacks) {

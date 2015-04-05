@@ -648,6 +648,9 @@
     <ClInclude Include="source\entity\impl\ComponentStore-inl.h">
       <Filter>entity\impl</Filter>
     </ClInclude>
+    <ClInclude Include="source\utility\memory_reserve.h">
+      <Filter>utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="source\utility\container\impl\vector_queue.inl">

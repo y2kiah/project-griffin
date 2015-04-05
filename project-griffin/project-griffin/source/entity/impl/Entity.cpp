@@ -6,25 +6,20 @@
 #include <memory>
 #include <entity/Entity.h>
 
-namespace griffin {
-	namespace entity {
-		
-		std::shared_ptr<Entity> EntityManager::createEntity(ComponentMask componentMask)
-		{
-			//	static mutex mut;
-			//	lock_guard<mutex> hold(mut);
+using namespace griffin::entity;
 
-			auto esp = std::make_shared<Entity>();
-			/*for (uint8_t ct = 0; ct < componentMask.size(); ++ct) {
-				if (componentMask[ct]) {
-				esp->addComponent((ComponentType)ct);
-				}
-				}*/
 
-			return esp;
+std::shared_ptr<Entity> EntityManager::createEntity(ComponentMask componentMask)
+{
+	//	static mutex mut;
+	//	lock_guard<mutex> hold(mut);
+
+	auto esp = std::make_shared<Entity>();
+	/*for (uint8_t ct = 0; ct < componentMask.size(); ++ct) {
+		if (componentMask[ct]) {
+		esp->addComponent((ComponentType)ct);
 		}
+		}*/
 
-
-		
-	}
+	return esp;
 }

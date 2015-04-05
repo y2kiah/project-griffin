@@ -21,6 +21,7 @@
 COMPONENT_LIST(
 	(Position)
 	(Orientation)
+	(Transform)
 	(Person)
 )
 
@@ -31,6 +32,11 @@ COMPONENT(Position,
 )
 
 COMPONENT(Orientation,
+	(glm::quat, (orientation, (FieldType::quat_T, ("Orientation quaternion", NIL))))
+)
+
+COMPONENT(Transform,
+	(glm::vec3, (position,    (FieldType::vec3_T, ("3D position coordinate", NIL)))),
 	(glm::quat, (orientation, (FieldType::quat_T, ("Orientation quaternion", NIL))))
 )
 

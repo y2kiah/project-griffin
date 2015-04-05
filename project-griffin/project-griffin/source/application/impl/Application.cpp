@@ -4,11 +4,13 @@
 // TEMP
 #include <render/Render.h>
 
-namespace griffin {
+using namespace griffin;
 
-	using std::make_unique;
-	using std::make_shared;
-	using std::move;
+using std::make_unique;
+using std::make_shared;
+using std::move;
+
+namespace griffin {
 
 	Application make_application()
 	{
@@ -41,6 +43,8 @@ namespace griffin {
 
 			// move input system into application
 			auto inputPtr = make_shared<InputSystem>();
+
+			inputPtr->initialize();
 
 			app.inputSystem = inputPtr;
 		}
