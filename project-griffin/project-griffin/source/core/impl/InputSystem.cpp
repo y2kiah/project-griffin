@@ -28,7 +28,7 @@ bool InputSystem::handleEvent(const SDL_Event& event) {
 				SDL_Log("key event=%d: state=%d: key=%d: repeat=%d: realTime=%lu\n",
 						event.type, event.key.state, event.key.keysym.scancode, event.key.repeat, timestamp);
 
-				m_eventsQueue.push({ timestamp, std::move(event) });
+				m_eventsQueue.push({ InputEventType::Keyboard_T, timestamp, std::move(event) });
 			}
 			handled = true;
 			break;
@@ -37,8 +37,21 @@ bool InputSystem::handleEvent(const SDL_Event& event) {
 		case SDL_TEXTEDITING:
 		case SDL_TEXTINPUT:
 
-		case SDL_MOUSEMOTION:
+		case SDL_MOUSEMOTION: {
+			/*SDL_Log("mouse motion event=%d: which=%d: state=%d: window=%d: x,y=%d,%d: xrel,yrel=%d,%d: realTime=%lu\n",
+					event.type, event.motion.which, event.motion.state, event.motion.windowID,
+					event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel, timestamp);
+					*/
+			m_eventsQueue.push({ InputEventType::Mouse_T, timestamp, std::move(event) });
+			handled = true;
+			break;
+		}
 		case SDL_MOUSEWHEEL: {
+			SDL_Log("mouse wheel event=%d: which=%d: window=%d: x,y=%d,%d: realTime=%lu\n",
+					event.type, event.wheel.which, event.wheel.windowID,
+					event.wheel.x, event.wheel.y, timestamp);
+
+			m_eventsQueue.push({ InputEventType::Mouse_T, timestamp, std::move(event) });
 			handled = true;
 			break;
 		}
@@ -48,12 +61,13 @@ bool InputSystem::handleEvent(const SDL_Event& event) {
 					event.type, event.button.which, event.button.button, event.button.state,
 					event.button.clicks, event.button.windowID, event.button.x, event.button.y, timestamp);
 
-			m_eventsQueue.push({ timestamp, std::move(event) });
-
+			m_eventsQueue.push({ InputEventType::Mouse_T, timestamp, std::move(event) });
 			handled = true;
 			break;
 		}
-
+		
+		case SDL_JOYDEVICEADDED:
+		case SDL_JOYDEVICEREMOVED:
 		case SDL_JOYAXISMOTION:
 		case SDL_JOYBALLMOTION:
 		case SDL_JOYHATMOTION: {
@@ -66,18 +80,14 @@ bool InputSystem::handleEvent(const SDL_Event& event) {
 			SDL_Log("joystick button event=%d: which=%d: button=%d: state=%d: realTime=%lu\n",
 					event.type, event.jbutton.which, event.jbutton.button, event.jbutton.state, timestamp);
 
-			m_eventsQueue.push({ timestamp, std::move(event) });
-
+			m_eventsQueue.push({ InputEventType::Joystick_T, timestamp, std::move(event) });
 			handled = true;
 			break;
 		}
 
 		case SDL_FINGERMOTION:
 		case SDL_FINGERDOWN:
-		case SDL_FINGERUP:
-
-		case SDL_JOYDEVICEADDED:
-		case SDL_JOYDEVICEREMOVED: {
+		case SDL_FINGERUP: {
 			handled = true;
 			break;
 		}
@@ -122,10 +132,10 @@ void InputSystem::initialize() // should this be the constructor?
 	// It is NOT the same as the instance ID used to identify the joystick in future events.
 	// See SDL_JoystickInstanceID() for more details about instance IDs.
 
-
 	// Create the "global" input context, which eats all input, shows mouse cursor
+	// replace this with loading of contexts from Lua
 	{
-		//createContext(InputContext::OptionsMask::AllOff_Mask);
+		createContext(0);
 	}
 }
 
@@ -141,5 +151,13 @@ InputSystem::~InputSystem()
 	// free all cursors
 	for (auto c : m_cursors) {
 		SDL_FreeCursor(c);
+	}
+
+	// check memory reserves
+	if (m_eventsQueue.unsafe_capacity() > RESERVE_INPUTSYSTEM_EVENTQUEUE) {
+		SDL_Log("check RESERVE_INPUTSYSTEM_EVENTQUEUE: original=%d, highest=%d", RESERVE_INPUTSYSTEM_EVENTQUEUE, m_eventsQueue.unsafe_capacity());
+	}
+	if (m_popEvents.capacity() > RESERVE_INPUTSYSTEM_POPQUEUE) {
+		SDL_Log("check RESERVE_INPUTSYSTEM_POPQUEUE: original=%d, highest=%d", RESERVE_INPUTSYSTEM_POPQUEUE, m_popEvents.capacity());
 	}
 }

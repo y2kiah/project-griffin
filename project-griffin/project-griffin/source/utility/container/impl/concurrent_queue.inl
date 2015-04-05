@@ -183,6 +183,13 @@ namespace griffin {
 	{
 		return m_queue.size();
 	}
+
+
+	template <typename T>
+	inline size_t concurrent_queue<T>::unsafe_capacity() const
+	{
+		return m_queue.capacity();
+	}
 }
 
 #endif

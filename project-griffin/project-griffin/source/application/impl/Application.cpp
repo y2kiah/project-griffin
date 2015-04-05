@@ -4,7 +4,6 @@
 // TEMP
 #include <render/Render.h>
 
-using namespace griffin;
 
 using std::make_unique;
 using std::make_shared;
@@ -25,8 +24,8 @@ namespace griffin {
 			auto scriptPtr = make_shared<ScriptManager>();
 
 			// init.lua configures the startup settings
-			if (!scriptPtr->init("data/scripts/init.lua")) {
-				SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "data/scripts/init.lua not found");
+			if (!scriptPtr->init("scripts/init.lua")) {
+				SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "scripts/init.lua not found");
 			}
 
 			// add system API functions to Lua

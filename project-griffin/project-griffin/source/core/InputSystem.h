@@ -44,11 +44,36 @@ namespace griffin {
 				 , _T);
 
 		/**
+		* Input Event types
+		*/
+		MakeEnum(InputEventType, uint8_t,
+				 (Keyboard)
+				 (Mouse)
+				 (Joystick)
+				 (GameController)
+				 (Touch)
+				 (Text)
+				 , _T);
+
+		/**
+		* Input Context Options
+		*/
+		MakeEnum(InputContextOptions, uint8_t,
+				 (CaptureTextInput)		//<! true if text input events should be captured by this context
+				 (RelativeMouseMode)	//<! true for relative mouse mode vs. regular "GUI" mode
+				 (ShowMouseCursor)		//<! true to show cursor specified by m_cursorIndex
+				 (EatKeyboardEvents)	//<! true to eat all keyboard events, preventing pass-down to lower contexts
+				 (EatMouseEvents)		//<! prevent mouse events from passing down
+				 (EatJoystickEvents)	//<! prevent joystick events from passing down
+				 , NIL);
+
+		/**
 		* Input Event
 		*/
 		struct InputEvent {
-			int64_t		timeStampCounts;
-			SDL_Event	evt;
+			InputEventType	type;
+			int64_t			timeStampCounts;
+			SDL_Event		evt;
 		};
 
 
@@ -57,7 +82,11 @@ namespace griffin {
 		*/
 		class InputSystem : public CoreSystem {
 		public:
-			explicit InputSystem() {}
+			explicit InputSystem() :
+				m_eventsQueue(RESERVE_INPUTSYSTEM_EVENTQUEUE)
+			{
+				m_popEvents.reserve(RESERVE_INPUTSYSTEM_POPQUEUE);
+			}
 			
 			/**
 			* Destructor frees cursors and other resources
@@ -80,24 +109,25 @@ namespace griffin {
 			bool handleEvent(const SDL_Event& event);
 
 			/**
-			* Thread-safe API to create a context and get back its handle
+			* Thread-safe blocking API to create a context and get back its handle
 			*/
-			/*Id_T createContext(uint16_t optionsMask) {
+			Id_T createContext(uint16_t optionsMask) {
 				auto f = tss_([optionsMask](ThreadSafeState& tss_) {
 					return tss_.m_inputContexts.emplace(optionsMask);
 				});
-			}*/
+				return f;
+			}
 
 		private:
 			concurrent_queue<InputEvent>	m_eventsQueue;		//<! push on input thread, pop on update thread
 			vector<InputEvent>				m_popEvents;		//<! pop events from the queue into this buffer
 
-			/*struct ThreadSafeState {
+			struct ThreadSafeState {
 				handle_map<InputContext>	m_inputContexts;	//<! collection of input contexts
 				
 				ThreadSafeState() : m_inputContexts(0, RESERVE_INPUT_CONTEXTS) {}
 			};
-			monitor<ThreadSafeState>		tss_;*/
+			monitor<ThreadSafeState>		tss_;
 
 			SDL_Cursor *					m_cursors[InputMouseCursorsCount]; //<! table of mouse cursors
 			vector<SDL_Joystick*>			m_joysticks;		//<! list of opened joysticks
@@ -126,33 +156,9 @@ namespace griffin {
 		class InputContext {
 		public:
 			/**
-			* OptionsMask allows easy building of C-style options value to pass into m_options
-			* Options stores the bit index for use with the m_options bitset directly
-			*/
-			enum OptionsMask : uint16_t {
-				AllOff_Mask				= 0,
-				CaptureTextInput_Mask	= 1,
-				RelativeMouseMode_Mask	= 1 << 1,
-				ShowMouseCursor_Mask	= 1 << 2,
-				EatKeyboardEvents_Mask	= 1 << 3,
-				EatMouseEvents_Mask		= 1 << 4,
-				EatJoystickEvents_Mask	= 1 << 5
-			};
-			MakeEnum(Options, uint8_t,
-					 (CaptureTextInput)		//<! true if text input events should be captured by this context
-					 (RelativeMouseMode)	//<! true for relative mouse mode vs. regular "GUI" mode
-					 (ShowMouseCursor)		//<! true to show cursor specified by m_cursorIndex
-					 (EatKeyboardEvents)	//<! true to eat all keyboard events, preventing pass-down to lower contexts
-					 (EatMouseEvents)		//<! prevent mouse events from passing down
-					 (EatJoystickEvents)	//<! prevent joystick events from passing down
-					 , NIL);
-
-			/**
 			* Constructors
 			*/
-			explicit InputContext() :
-				m_options{}
-			{}
+			explicit InputContext() {}
 
 			explicit InputContext(uint16_t optionsMask) :
 				m_options{ optionsMask }
@@ -164,9 +170,9 @@ namespace griffin {
 			//InputContext(const InputContext&) = delete; // I want to delete this and force move semantics only
 
 		private:
-			bitset<OptionsCount>	m_options = {};			//<! all input context options
+			bitset<InputContextOptionsCount> m_options = {};	//<! all input context options
 			//uint8_t					m_cursorIndex;			//<! lookup into input system's cursor table
-			vector<InputMapping>	m_inputMappings = {};	//<! stores input mapping to actions, states, axes
+			vector<InputMapping>	m_inputMappings = {};		//<! stores input mapping to actions, states, axes
 
 		};
 

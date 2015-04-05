@@ -5,6 +5,8 @@
 // Input System
 #define RESERVE_INPUT_CONTEXTS					32
 #define RESERVE_INPUTCONTEXT_MAPPINGS			64
+#define RESERVE_INPUTSYSTEM_EVENTQUEUE			1500 // checked
+#define RESERVE_INPUTSYSTEM_POPQUEUE			100  // checked
 
 // Entity System
 #define RESERVE_ENTITY_COMPONENTS				20

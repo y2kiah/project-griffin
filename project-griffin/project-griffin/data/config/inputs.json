@@ -1,10 +1,47 @@
 {
-	"Gameplay":{
-		actions:[
-			{mod:0,scan:},
-		]
+	"devcam": {
+		"mappings": {
+			"actions": [],
+			"states": [
+				{ "name": "Move Forward",	"device": "0",	"keyscan": 26,		"keymod": 0 },
+				{ "name": "Move Back",		"device": "0",	"keyscan": 22 },
+				{ "name": "Move Left",		"device": "0",	"keyscan": 4 },
+				{ "name": "Move Right",		"device": "0",	"keyscan": 7 }
+			],
+			"axes": []
+		}
 	},
-	"MainMenu":{
-		
+	"playerfps": {
+		"mappings": {
+			"actions": [
+				{ "name": "Jump",			"device": "0",	"keyscan": 44 },
+				{ "name": "Use",			"device": "0",	"keyscan": 8 },
+				{ "name": "Reload",			"device": "0",	"keyscan": 21 }
+			],
+			"states": [
+				{ "name": "Move Forward",	"device": "0",	"keyscan": 26,		"keymod": 0 },
+				{ "name": "Move Back",		"device": "0",	"keyscan": 22 },
+				{ "name": "Move Left",		"device": "0",	"keyscan": 4 },
+				{ "name": "Move Right",		"device": "0",	"keyscan": 7 },
+				{ "name": "Run/Walk",		"device": "0",	"keyscan": 225 },
+				{ "name": "Run/Walk (Hold)","device": "0",	"keyscan": 225,		"keymod": 0 },
+				{ "name": "Crouch",			"device": "0",	"keyscan": 224 },
+				{ "name": "Crouch (Hold)",	"device": "0",	"keyscan": 224,		"keymod": 0 },
+				{ "name": "Prone",			"device": "0",	"keyscan": 29 },
+				{ "name": "Prone (Hold)",	"device": "0",	"keyscan": 29,		"keymod": 0 }
+			],
+			"axes": []
+		}
+	},
+	"ingame": {
+		"mappings": {
+			"actions": [
+				{ "name": "Exit",			"device": "0",	"keyscan": 41 }
+			],
+			"states": [
+				{ "name": "Pause",			"device": "0",	"keyscan": 19 }
+			],
+			"axes": []
+		}
 	}
 }

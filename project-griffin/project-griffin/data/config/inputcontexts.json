@@ -1,0 +1,51 @@
+{
+	"devcamera": {
+		"name": "Dev Camera Controls",
+		"priority": 1,
+		"visible": false,
+		"actions": [],
+		"states": [
+			{ "name": "Move forward",	"bind": "down" },
+			{ "name": "Move backward",	"bind": "down" },
+			{ "name": "Move left",		"bind": "down" },
+			{ "name": "Move right",		"bind": "down" },
+			{ "name": "High speed",		"bind": "toggle" }
+		],
+		"axes": []
+	},
+	"playerfps": {
+		"name": "First Person Controls",
+		"priority": 1,
+		"visible": true,
+		"actions": [
+			{ "name": "Jump",			"bind": "down" },
+			{ "name": "Use",			"bind": "down" },
+			{ "name": "Reload",			"bind": "down" }
+		],
+		"states": [
+			{ "name": "Move Forward",	"bind": "down" },
+			{ "name": "Move Back",		"bind": "down" },
+			{ "name": "Move Left",		"bind": "down" },
+			{ "name": "Move Right",		"bind": "down" },
+			{ "name": "Run/Walk",		"bind": "down" },
+			{ "name": "Run/Walk (Hold)","bind": "toggle" },
+			{ "name": "Crouch",			"bind": "down" },
+			{ "name": "Crouch (Hold)",	"bind": "toggle" },
+			{ "name": "Prone",			"bind": "down" },
+			{ "name": "Prone (Hold)",	"bind": "toggle" }
+		],
+		"axes": []
+	},
+	"ingame": {
+		"name": "System Controls",
+		"priority": 0,
+		"visibility": true,
+		"actions": [
+			{ "name": "Exit",			"bind": "down" }
+		],
+		"states": [
+			{ "name": "Pause",			"bind": "down" }
+		],
+		"axes": []
+	}
+}
