@@ -36,6 +36,14 @@ namespace griffin {
 			*/
 			bool doFile(const string &initScriptfilename);
 
+			/*template <typename Ret, typename ... Params>
+			Ret callLuaGlobalFunction(const char* func, Params...) {
+				lua_getglobal(m_state, func);
+
+				return 
+			}*/
+			void callLuaGlobalFunction(const char* func); // TEMP
+
 			void runUpdateScripts() const;
 			void runFrameScripts() const;
 

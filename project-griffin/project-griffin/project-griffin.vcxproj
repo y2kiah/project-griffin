@@ -201,8 +201,12 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="data\scripts\init.lua" />
-    <None Include="data\scripts\luaBuild.lua" />
+    <None Include="data\config\inputcontexts.json" />
+    <None Include="data\config\inputs.json" />
+    <None Include="scripts\config.lua" />
+    <None Include="scripts\init.lua" />
+    <None Include="scripts\JSON.lua" />
+    <None Include="scripts\luaBuild.lua" />
     <None Include="source\render\shaders\ads.glsl" />
     <None Include="source\render\shaders\atmosphere\atmosphere.glsl" />
     <None Include="source\render\shaders\atmosphere\common.glsli" />

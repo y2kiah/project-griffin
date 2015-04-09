@@ -25,11 +25,17 @@ namespace griffin {
 
 			// init.lua configures the startup settings
 			if (!scriptPtr->init("scripts/init.lua")) {
-				SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "scripts/init.lua not found");
+				throw std::runtime_error("scripts/init.lua not found");
+			}
+			// config.lua loads configuration files
+			if (!scriptPtr->doFile("scripts/config.lua")) {
+				throw std::runtime_error("scripts/config.lua not found");
 			}
 
 			// add system API functions to Lua
-
+			
+			// call Lua function to load config
+			scriptPtr->callLuaGlobalFunction("loadInputSystemConfig"); // TEMP
 
 			app.scriptManager = scriptPtr;
 		}
@@ -40,11 +46,15 @@ namespace griffin {
 		{
 			using namespace core;
 
-			// move input system into application
 			auto inputPtr = make_shared<InputSystem>();
-
 			inputPtr->initialize();
 
+			// add Lua APIs
+
+			// invoke Lua function to load input config
+
+
+			// move input system into application
 			app.inputSystem = inputPtr;
 		}
 

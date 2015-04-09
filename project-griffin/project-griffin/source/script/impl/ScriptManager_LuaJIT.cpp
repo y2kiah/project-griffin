@@ -54,6 +54,14 @@ namespace griffin {
 		}
 
 
+		void ScriptManager::callLuaGlobalFunction(const char* func)
+		{
+			lua_getglobal(m_state, func);
+			if (lua_pcall(m_state, 0, 0, 0) != 0) {
+			}
+		}
+
+
 		void ScriptManager::runUpdateScripts() const
 		{
 		}

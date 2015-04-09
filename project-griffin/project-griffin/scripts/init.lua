@@ -64,6 +64,4 @@ ffi.C.debug_printf("Hello World from Lua" .. "JIT" .. " script!")
 
 dofile("scripts/luaBuild.lua")
 JSON = dofile("scripts/JSON.lua")
-
-local lua_value = JSON:decode('[{"value":"1","text":"one"}]');
-print(lua_value);
+JSON.strictTypes = true

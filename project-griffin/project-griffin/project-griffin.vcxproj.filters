@@ -95,12 +95,6 @@
     <Filter Include="script\impl">
       <UniqueIdentifier>{69c89ac6-e19c-4c9e-a503-bb49942e1068}</UniqueIdentifier>
     </Filter>
-    <Filter Include="data">
-      <UniqueIdentifier>{6a97ee42-30e5-4896-b9c9-687245058f2a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="data\scripts">
-      <UniqueIdentifier>{77c1d0d0-6b80-45ec-aebe-a28ea2b67af9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="render\shaders">
       <UniqueIdentifier>{cd659f42-7515-4d1c-b4bc-f095cdb68b19}</UniqueIdentifier>
     </Filter>
@@ -112,6 +106,12 @@
     </Filter>
     <Filter Include="entity\impl">
       <UniqueIdentifier>{4eadde8f-4ea1-457a-8706-7d3e88e0a766}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lua">
+      <UniqueIdentifier>{6a97ee42-30e5-4896-b9c9-687245058f2a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="config">
+      <UniqueIdentifier>{ea140d19-72ac-425a-9aff-44daed025a5a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -875,9 +875,6 @@
     <None Include="source\utility\container\impl\handle_map.inl">
       <Filter>utility\container\impl</Filter>
     </None>
-    <None Include="data\scripts\init.lua">
-      <Filter>data\scripts</Filter>
-    </None>
     <None Include="source\render\shaders\Font.glsl">
       <Filter>render\shaders</Filter>
     </None>
@@ -895,9 +892,6 @@
     </None>
     <None Include="source\render\shaders\terrain.glsl">
       <Filter>render\shaders</Filter>
-    </None>
-    <None Include="data\scripts\luaBuild.lua">
-      <Filter>data\scripts</Filter>
     </None>
     <None Include="source\render\shaders\atmosphere\atmosphere.glsl">
       <Filter>render\shaders\atmosphere</Filter>
@@ -940,6 +934,24 @@
     </None>
     <None Include="source\render\shaders\layout.glsli">
       <Filter>render\shaders</Filter>
+    </None>
+    <None Include="scripts\init.lua">
+      <Filter>lua</Filter>
+    </None>
+    <None Include="scripts\JSON.lua">
+      <Filter>lua</Filter>
+    </None>
+    <None Include="scripts\luaBuild.lua">
+      <Filter>lua</Filter>
+    </None>
+    <None Include="scripts\config.lua">
+      <Filter>lua</Filter>
+    </None>
+    <None Include="data\config\inputcontexts.json">
+      <Filter>config</Filter>
+    </None>
+    <None Include="data\config\inputs.json">
+      <Filter>config</Filter>
     </None>
   </ItemGroup>
 </Project>
