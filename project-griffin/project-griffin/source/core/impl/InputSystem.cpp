@@ -6,13 +6,29 @@ using namespace griffin::core;
 
 
 void InputSystem::update(const UpdateInfo& ui) {
+	// pop all events up to the game's virtual time
 	m_eventsQueue.try_pop_all_if(m_popEvents, [&](const InputEvent& i) {
 		return (ui.virtualTime >= i.timeStampCounts);
 	});
 
+	// accumulate relative mouse movement for this frame
+	int mouse_xrel = 0;
+	int mouse_yrel = 0;
+
+	// process all events
 	for (const auto& e : m_popEvents) {
-		SDL_Log("  Processed Input type=%d: realTime=%lu\n", e.evt.type, e.timeStampCounts);
+		if (e.evt.type == SDL_MOUSEMOTION) {
+			mouse_xrel += e.evt.motion.xrel;
+			mouse_yrel += e.evt.motion.yrel;
+		}
+		else {
+			SDL_Log("  Processed Input type=%d: realTime=%lu\n", e.evt.type, e.timeStampCounts);
+		}
 	}
+
+	// map inputs using active context stack
+	
+	
 	m_popEvents.clear();
 }
 
@@ -34,8 +50,24 @@ bool InputSystem::handleEvent(const SDL_Event& event) {
 			break;
 		}
 
-		case SDL_TEXTEDITING:
-		case SDL_TEXTINPUT:
+		case SDL_TEXTEDITING: {
+			SDL_Log("key event=%d: text=%s: length=%d: start=%d: windowID=%d: realTime=%lu\n",
+					event.type, event.edit.text, event.edit.length, event.edit.start, event.edit.windowID, timestamp);
+			
+			m_eventsQueue.push({ InputEventType::Keyboard_T, timestamp, std::move(event) });
+			
+			handled = true;
+			break;
+		}
+		case SDL_TEXTINPUT: {
+			SDL_Log("key event=%d: text=%s: windowID=%d: realTime=%lu\n",
+					event.type, event.text.text, event.text.windowID, timestamp);
+			
+			m_eventsQueue.push({ InputEventType::Keyboard_T, timestamp, std::move(event) });
+			
+			handled = true;
+			break;
+		}
 
 		case SDL_MOUSEMOTION: {
 			/*SDL_Log("mouse motion event=%d: which=%d: state=%d: window=%d: x,y=%d,%d: xrel,yrel=%d,%d: realTime=%lu\n",
@@ -50,7 +82,7 @@ bool InputSystem::handleEvent(const SDL_Event& event) {
 			SDL_Log("mouse wheel event=%d: which=%d: window=%d: x,y=%d,%d: realTime=%lu\n",
 					event.type, event.wheel.which, event.wheel.windowID,
 					event.wheel.x, event.wheel.y, timestamp);
-
+			
 			m_eventsQueue.push({ InputEventType::Mouse_T, timestamp, std::move(event) });
 			handled = true;
 			break;
@@ -60,7 +92,7 @@ bool InputSystem::handleEvent(const SDL_Event& event) {
 			SDL_Log("mouse button event=%d: which=%d: button=%d: state=%d: clicks=%d: window=%d: x,y=%d,%d: realTime=%lu\n",
 					event.type, event.button.which, event.button.button, event.button.state,
 					event.button.clicks, event.button.windowID, event.button.x, event.button.y, timestamp);
-
+			
 			m_eventsQueue.push({ InputEventType::Mouse_T, timestamp, std::move(event) });
 			handled = true;
 			break;
@@ -79,7 +111,7 @@ bool InputSystem::handleEvent(const SDL_Event& event) {
 		case SDL_JOYBUTTONUP: {
 			SDL_Log("joystick button event=%d: which=%d: button=%d: state=%d: realTime=%lu\n",
 					event.type, event.jbutton.which, event.jbutton.button, event.jbutton.state, timestamp);
-
+			
 			m_eventsQueue.push({ InputEventType::Joystick_T, timestamp, std::move(event) });
 			handled = true;
 			break;
@@ -137,6 +169,36 @@ void InputSystem::initialize() // should this be the constructor?
 	{
 		createContext(0);
 	}
+}
+
+void InputSystem::startTextInput()
+{
+	SDL_StartTextInput();
+}
+
+void InputSystem::stopTextInput()
+{
+	SDL_StopTextInput();
+}
+
+bool InputSystem::isTextInputActive() const
+{
+	return (SDL_IsTextInputActive() == SDL_TRUE);
+}
+
+void InputSystem::startRelativeMouseMode()
+{
+	SDL_SetRelativeMouseMode(SDL_TRUE);
+}
+
+void InputSystem::stopRelativeMouseMode()
+{
+	SDL_SetRelativeMouseMode(SDL_FALSE);
+}
+
+bool InputSystem::isRelativeMouseModeActive() const
+{
+	return (SDL_GetRelativeMouseMode() == SDL_TRUE);
 }
 
 InputSystem::~InputSystem()

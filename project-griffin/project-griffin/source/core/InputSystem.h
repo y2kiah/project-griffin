@@ -1,4 +1,6 @@
 #pragma once
+#ifndef GRIFFIN_INPUTSYSTEM_H_
+#define GRIFFIN_INPUTSYSTEM_H_
 
 #include <core/CoreSystem.h>
 #include <vector>
@@ -118,6 +120,20 @@ namespace griffin {
 				return f;
 			}
 
+			/**
+			* Text editing mode
+			*/
+			void startTextInput();
+			void stopTextInput();
+			bool isTextInputActive() const;
+
+			/**
+			* Mouse movement mode
+			*/
+			void startRelativeMouseMode();
+			void stopRelativeMouseMode();
+			bool isRelativeMouseModeActive() const;
+
 		private:
 			concurrent_queue<InputEvent>	m_eventsQueue;		//<! push on input thread, pop on update thread
 			vector<InputEvent>				m_popEvents;		//<! pop events from the queue into this buffer
@@ -179,3 +195,5 @@ namespace griffin {
 		
 	}
 }
+
+#endif

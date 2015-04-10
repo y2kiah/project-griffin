@@ -1,6 +1,6 @@
 #pragma once
-#ifndef GRIFFIN_FIXEDTIMESTEP_H
-#define GRIFFIN_FIXEDTIMESTEP_H
+#ifndef GRIFFIN_FIXEDTIMESTEP_H_
+#define GRIFFIN_FIXEDTIMESTEP_H_
 
 #include <cstdint>
 #include <functional>
