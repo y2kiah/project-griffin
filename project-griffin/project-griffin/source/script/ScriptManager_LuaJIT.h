@@ -19,22 +19,22 @@ namespace griffin {
 			explicit ScriptManager() {}
 			~ScriptManager() {}
 
-			bool init(const string &filename);
+			void init(const string &filename);
 			void deinit();
 			
 			/**
 			* Executes a string of Lua code.
 			* @scriptStr null-terminated string
-			* @returns true on success
+			* @returns Lua error code (0 = no errors, LUA_ERRSYNTAX, LUA_ERRMEM, LUA_ERRFILE)
 			*/
-			bool doString(const string &scriptStr);
+			int doString(const string &scriptStr);
 
 			/**
 			* Loads and executes Lua code from a file
 			* @initScriptfilename file name of script to run
-			* @returns true on success
+			* @returns Lua error code (0 = no errors, LUA_ERRSYNTAX, LUA_ERRMEM, LUA_ERRFILE)
 			*/
-			bool doFile(const string &initScriptfilename);
+			int doFile(const string &initScriptfilename, bool throwOnError = true);
 
 			/*template <typename Ret, typename ... Params>
 			Ret callLuaGlobalFunction(const char* func, Params...) {

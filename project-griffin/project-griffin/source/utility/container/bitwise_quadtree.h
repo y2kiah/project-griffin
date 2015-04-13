@@ -3,8 +3,8 @@
  * @author	Jeff Kiah
  */
 #pragma once
-#ifndef GRIFFIN_BITWISE_QUADTREE_H
-#define GRIFFIN_BITWISE_QUADTREE_H
+#ifndef GRIFFIN_BITWISE_QUADTREE_H_
+#define GRIFFIN_BITWISE_QUADTREE_H_
 
 #include <cstdint>
 #include <climits>
@@ -46,6 +46,6 @@ namespace griffin {
 
 }
 
-#include "impl/bitwise_quadtree.inl"
+#include "impl/bitwise_quadtree-inl.h"
 
 #endif

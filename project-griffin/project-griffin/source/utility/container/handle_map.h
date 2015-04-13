@@ -3,8 +3,8 @@
  * @author	Jeff Kiah
  */
 #pragma once
-#ifndef GRIFFIN_HANDLE_MAP_H
-#define GRIFFIN_HANDLE_MAP_H
+#ifndef GRIFFIN_HANDLE_MAP_H_
+#define GRIFFIN_HANDLE_MAP_H_
 
 #include <cstdint>
 #include <vector>
@@ -189,6 +189,6 @@ namespace griffin {
 
 }
 
-#include "impl/handle_map.inl"
+#include "impl/handle_map-inl.h"
 
 #endif

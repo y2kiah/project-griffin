@@ -1,10 +1,10 @@
 /**
- * @file	concurrent_queue.inl
+ * @file	concurrent_queue-inl.h
  * @author	Jeff Kiah
  */
 #pragma once
-#ifndef GRIFFIN_CONCURRENT_QUEUE_INL
-#define GRIFFIN_CONCURRENT_QUEUE_INL
+#ifndef GRIFFIN_CONCURRENT_QUEUE_INL_H_
+#define GRIFFIN_CONCURRENT_QUEUE_INL_H_
 
 #include "../concurrent_queue.h"
 

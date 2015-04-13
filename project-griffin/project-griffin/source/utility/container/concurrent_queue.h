@@ -3,8 +3,8 @@
 * @author	Jeff Kiah
 */
 #pragma once
-#ifndef GRIFFIN_CONCURRENT_QUEUE_H
-#define GRIFFIN_CONCURRENT_QUEUE_H
+#ifndef GRIFFIN_CONCURRENT_QUEUE_H_
+#define GRIFFIN_CONCURRENT_QUEUE_H_
 
 #include <mutex>
 #include <condition_variable>
@@ -150,6 +150,6 @@ namespace griffin {
 
 }
 
-#include "impl/concurrent_queue.inl"
+#include "impl/concurrent_queue-inl.h"
 
 #endif

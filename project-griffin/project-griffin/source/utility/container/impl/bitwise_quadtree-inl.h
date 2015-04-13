@@ -1,10 +1,10 @@
 /**
- * @file	bitwise_quadtree.inl
+ * @file	bitwise_quadtree-inl.h
  * @author	Jeff Kiah
  */
 #pragma once
-#ifndef GRIFFIN_BITWISE_QUADTREE_INL
-#define GRIFFIN_BITWISE_QUADTREE_INL
+#ifndef GRIFFIN_BITWISE_QUADTREE_INL_H_
+#define GRIFFIN_BITWISE_QUADTREE_INL_H_
 
 #include "../bitwise_quadtree.h"
 #include <cassert>

@@ -6,6 +6,8 @@
 */
 
 #pragma once
+#ifndef GRIFFIN_VECTOR_LIST_H_
+#define GRIFFIN_VECTOR_LIST_H_
 
 #include <vector>
 
@@ -73,3 +75,5 @@ namespace griffin {
 
 	}
 }
+
+#endif

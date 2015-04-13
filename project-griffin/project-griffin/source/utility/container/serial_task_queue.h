@@ -2,6 +2,8 @@
 * @see https://github.com/sean-parent/scratch/blob/master/scratch/main.cpp
 */
 #pragma once
+#ifndef GRIFFIN_SERIAL_TASK_QUEUE_H_
+#define GRIFFIN_SERIAL_TASK_QUEUE_H_
 
 #include <memory>
 #include <functional>
@@ -128,3 +130,5 @@ namespace griffin {
 
 	};
 }
+
+#endif

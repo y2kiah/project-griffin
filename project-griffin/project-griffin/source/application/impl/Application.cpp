@@ -15,27 +15,21 @@ namespace griffin {
 	{
 		Application app;
 
+		auto scriptPtr = make_shared<script::ScriptManager>();
+		auto inputPtr  = make_shared<core::InputSystem>();
+		auto loaderPtr = make_shared<resource::ResourceLoader>();
+
 		/**
 		* Build the Lua scripting system
 		*/
 		{
 			using namespace script;
 
-			auto scriptPtr = make_shared<ScriptManager>();
-
 			// init.lua configures the startup settings
-			if (!scriptPtr->init("scripts/init.lua")) {
-				throw std::runtime_error("scripts/init.lua not found");
-			}
-			// config.lua loads configuration files
-			if (!scriptPtr->doFile("scripts/config.lua")) {
-				throw std::runtime_error("scripts/config.lua not found");
-			}
+			scriptPtr->init("scripts/init.lua"); // throws on error
 
 			// add system API functions to Lua
-			
-			// call Lua function to load config
-			scriptPtr->callLuaGlobalFunction("loadInputSystemConfig"); // TEMP
+
 
 			app.scriptManager = scriptPtr;
 		}
@@ -46,13 +40,16 @@ namespace griffin {
 		{
 			using namespace core;
 
-			auto inputPtr = make_shared<InputSystem>();
 			inputPtr->initialize();
 
-			// add Lua APIs
+			// inject dependencies to the InputSystem C API
+			setInputSystemPtr(inputPtr);
 
-			// invoke Lua function to load input config
+			// InputSystem.lua contains initInputSystem function
+			scriptPtr->doFile("scripts/InputSystem.lua"); // throws on error
 
+			// invoke Lua function to init InputSystem
+			scriptPtr->callLuaGlobalFunction("initInputSystem");
 
 			// move input system into application
 			app.inputSystem = inputPtr;
@@ -63,8 +60,6 @@ namespace griffin {
 		*/
 		{
 			using namespace resource;
-
-			auto loaderPtr = make_shared<ResourceLoader>();
 
 			// Build resource caches
 			auto materialsCachePtr = make_shared<ResourceCache>(Cache_Materials_T, 10, 1024 * 1024 /* 1 MB */);

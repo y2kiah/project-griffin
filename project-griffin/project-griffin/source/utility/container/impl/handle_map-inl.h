@@ -1,10 +1,10 @@
 /**
- * @file	handle_map.inl
+ * @file	handle_map-inl.h
  * @author	Jeff Kiah
  */
 #pragma once
-#ifndef GRIFFIN_HANDLE_MAP_INL
-#define GRIFFIN_HANDLE_MAP_INL
+#ifndef GRIFFIN_HANDLE_MAP_INL_H_
+#define GRIFFIN_HANDLE_MAP_INL_H_
 
 #include "../handle_map.h"
 #include <cassert>

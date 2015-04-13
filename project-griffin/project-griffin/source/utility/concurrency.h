@@ -12,8 +12,8 @@
  * @see http://channel9.msdn.com/Shows/Going+Deep/C-and-Beyond-2012-Herb-Sutter-Concurrency-and-Parallelism
  */
 #pragma once
-#ifndef GRIFFIN_CONCURRENCY_H
-#define GRIFFIN_CONCURRENCY_H
+#ifndef GRIFFIN_CONCURRENCY_H_
+#define GRIFFIN_CONCURRENCY_H_
 
 #include <thread>
 #include <mutex>

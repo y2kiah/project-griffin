@@ -24,6 +24,7 @@
     <ClCompile Include="source\application\impl\Timer_win32.cpp" />
     <ClCompile Include="source\application\main.cpp" />
     <ClCompile Include="source\core\impl\InputSystem.cpp" />
+    <ClCompile Include="source\core\impl\InputSystemApi.cpp" />
     <ClCompile Include="source\entity\impl\Component.cpp" />
     <ClCompile Include="source\entity\impl\Entity.cpp" />
     <ClCompile Include="source\render\font\FreeType.cpp" />
@@ -47,6 +48,7 @@
     <ClCompile Include="source\utility\profile\impl\Profile.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\api\InputSystemApi.h" />
     <ClInclude Include="source\application\Application.h" />
     <ClInclude Include="source\application\FixedTimestep.h" />
     <ClInclude Include="source\application\main.h" />
@@ -93,6 +95,7 @@
     <ClInclude Include="source\utility\container\vector_queue.h" />
     <ClInclude Include="source\utility\enum.h" />
     <ClInclude Include="source\utility\concurrency.h" />
+    <ClInclude Include="source\utility\export.h" />
     <ClInclude Include="source\utility\JsonSerializer.h" />
     <ClInclude Include="source\utility\memory_reserve.h" />
     <ClInclude Include="source\utility\prettyprint.h" />
@@ -203,7 +206,7 @@
   <ItemGroup>
     <None Include="data\config\inputcontexts.json" />
     <None Include="data\config\inputs.json" />
-    <None Include="scripts\config.lua" />
+    <None Include="scripts\InputSystem.lua" />
     <None Include="scripts\init.lua" />
     <None Include="scripts\JSON.lua" />
     <None Include="scripts\luaBuild.lua" />
@@ -227,10 +230,10 @@
     <None Include="source\render\shaders\SkyFromSpace.glsl" />
     <None Include="source\render\shaders\ssao.glsl" />
     <None Include="source\render\shaders\terrain.glsl" />
-    <None Include="source\utility\container\impl\bitwise_quadtree.inl" />
-    <None Include="source\utility\container\impl\concurrent_queue.inl" />
-    <None Include="source\utility\container\impl\handle_map.inl" />
-    <None Include="source\utility\container\impl\vector_queue.inl" />
+    <None Include="source\utility\container\impl\bitwise_quadtree-inl.h" />
+    <None Include="source\utility\container\impl\concurrent_queue-inl.h" />
+    <None Include="source\utility\container\impl\handle_map-inl.h" />
+    <None Include="source\utility\container\impl\vector_queue-inl.h" />
     <None Include="vendor\glm\glm\gtc\constants.inl" />
     <None Include="vendor\glm\glm\gtc\epsilon.inl" />
     <None Include="vendor\glm\glm\gtc\matrix_access.inl" />

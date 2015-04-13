@@ -118,6 +118,8 @@ namespace griffin {
 				components(typeId, reserveCount)
 			{}
 
+			ComponentStore(const ComponentStore &) = delete;
+
 		private:
 			// Member Variables
 

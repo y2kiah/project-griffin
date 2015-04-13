@@ -1,12 +1,14 @@
 #include "script/ScriptManager_LuaJIT.h"
 #include <lua.hpp>
 #include <SDL_log.h>
+#include <utility/export.h>
 
 #pragma comment ( lib, "lua51.lib" )
 
 // temporary proof of concept using FFI for Lua binding
 extern "C" {
-	__declspec(dllexport) void debug_printf(const char *fmt) {
+	GRIFFIN_EXPORT
+	void debug_printf(const char *fmt) {
 		SDL_Log(fmt);
 	}
 }
@@ -14,7 +16,7 @@ extern "C" {
 namespace griffin {
 	namespace script {
 
-		bool ScriptManager::init(const string &initScriptfilename)
+		void ScriptManager::init(const string &initScriptfilename)
 		{
 			m_state = luaL_newstate();
 
@@ -23,12 +25,8 @@ namespace griffin {
 			lua_newtable(m_state);
 			lua_setglobal(m_state, "engine");
 
-			// Load the file containing the script we are going to run
-			if (!doFile(initScriptfilename)) {
-				return false;
-			}
-
-			return true;
+			// Load and run the global Lua initialization
+			doFile(initScriptfilename); // throws on error
 		}
 
 
@@ -38,19 +36,45 @@ namespace griffin {
 		}
 
 
-		bool ScriptManager::doString(const string &scriptStr)
+		int ScriptManager::doString(const string &scriptStr)
 		{
-			return (!luaL_dostring(m_state, scriptStr.c_str()));
+			return luaL_dostring(m_state, scriptStr.c_str());
 		}
 
 
-		bool ScriptManager::doFile(const string &filename)
+		int ScriptManager::doFile(const string &filename, bool throwOnError)
 		{
-			int e = luaL_dofile(m_state, filename.c_str());
-			if (e) {
-				SDL_Log("ScriptManager: couldn't load file: %s\n", lua_tostring(m_state, -1));
+			int e = luaL_loadfile(m_state, filename.c_str());
+			if (e == 0) {
+				e = lua_pcall(m_state, 0, LUA_MULTRET, 0);
 			}
-			return (!e);
+			
+			if (e == LUA_ERRRUN) {
+				SDL_Log("ScriptManager: Lua runtime error: %s", lua_tostring(m_state, -1));
+				if (throwOnError) {
+					throw std::runtime_error("ScriptManager: Lua runtime error: " + string{ lua_tostring(m_state, -1) });
+				}
+			}
+			else if (e == LUA_ERRSYNTAX) {
+				SDL_Log("ScriptManager: Lua syntax error: %s", lua_tostring(m_state, -1));
+				if (throwOnError) {
+					throw std::runtime_error("ScriptManager: Lua syntax error: " + string{ lua_tostring(m_state, -1) });
+				}
+			}
+			else if (e == LUA_ERRFILE) {
+				SDL_Log("ScriptManager: couldn't load file: %s", lua_tostring(m_state, -1));
+				if (throwOnError) {
+					throw std::runtime_error("ScriptManager: couldn't load file: " + string{ lua_tostring(m_state, -1) });
+				}
+			}
+			else if (e == LUA_ERRMEM) {
+				SDL_Log("ScriptManager: Lua out of memory");
+				if (throwOnError) {
+					throw std::runtime_error("Lua out of memory");
+				}
+			}
+
+			return e;
 		}
 
 

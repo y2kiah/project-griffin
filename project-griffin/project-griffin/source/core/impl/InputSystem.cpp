@@ -164,11 +164,6 @@ void InputSystem::initialize() // should this be the constructor?
 	// It is NOT the same as the instance ID used to identify the joystick in future events.
 	// See SDL_JoystickInstanceID() for more details about instance IDs.
 
-	// Create the "global" input context, which eats all input, shows mouse cursor
-	// replace this with loading of contexts from Lua
-	{
-		createContext(0);
-	}
 }
 
 void InputSystem::startTextInput()

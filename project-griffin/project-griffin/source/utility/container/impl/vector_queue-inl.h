@@ -1,10 +1,10 @@
 /**
- * @file	vector_queue.inl
+ * @file	vector_queue-inl.h
  * @author	Jeff Kiah
  */
 #pragma once
-#ifndef GRIFFIN_VECTOR_QUEUE_INL
-#define GRIFFIN_VECTOR_QUEUE_INL
+#ifndef GRIFFIN_VECTOR_QUEUE_INL_H_
+#define GRIFFIN_VECTOR_QUEUE_INL_H_
 
 #include "../vector_queue.h"
 

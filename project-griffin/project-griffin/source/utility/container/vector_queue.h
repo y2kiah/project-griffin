@@ -3,8 +3,8 @@
  * @author	Jeff Kiah
  */
 #pragma once
-#ifndef GRIFFIN_VECTOR_QUEUE_H
-#define GRIFFIN_VECTOR_QUEUE_H
+#ifndef GRIFFIN_VECTOR_QUEUE_H_
+#define GRIFFIN_VECTOR_QUEUE_H_
 
 #include <vector>
 
@@ -66,6 +66,6 @@ namespace griffin {
 	};
 }
 
-#include "impl/vector_queue.inl"
+#include "impl/vector_queue-inl.h"
 
 #endif

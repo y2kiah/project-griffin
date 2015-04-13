@@ -20,10 +20,23 @@ using std::bitset;
 namespace griffin {
 	namespace core {
 
+		// Forward declarations
+
 		class InputSystem;
 		class InputContext;
+		
+
+		// Typedefs/Enums
 
 		typedef std::shared_ptr<InputSystem> InputSystemPtr;
+		typedef std::weak_ptr<InputSystem>   InputSystemWeakPtr;
+
+		// Function declarations
+
+		extern void setInputSystemPtr(InputSystemPtr inputPtr);
+
+
+		// Type declarations
 
 		/**
 		* Input Mapping types
@@ -68,6 +81,7 @@ namespace griffin {
 				 (EatMouseEvents)		//<! prevent mouse events from passing down
 				 (EatJoystickEvents)	//<! prevent joystick events from passing down
 				 , NIL);
+
 
 		/**
 		* Input Event
@@ -182,8 +196,24 @@ namespace griffin {
 				m_inputMappings.reserve(RESERVE_INPUTCONTEXT_MAPPINGS);
 			}
 
-			//InputContext(InputContext&& _c) {}
-			//InputContext(const InputContext&) = delete; // I want to delete this and force move semantics only
+			InputContext(InputContext&& _c) _NOEXCEPT :
+				m_options{ _c.m_options },
+				m_inputMappings(std::move(_c.m_inputMappings))
+			{
+				_c.m_options = 0;
+			}
+
+			//InputContext(const InputContext&) = delete; // I want to delete this and force move semantics only, http://stackoverflow.com/questions/12251368/type-requirements-for-stdvectortype
+
+			InputContext& operator=(InputContext&& _c)
+			{
+				if (this != &_c) {
+					m_options = _c.m_options;
+					_c.m_options = 0;
+					m_inputMappings = std::move(_c.m_inputMappings);
+				}
+				return *this;
+			}
 
 		private:
 			bitset<InputContextOptionsCount> m_options = {};	//<! all input context options
