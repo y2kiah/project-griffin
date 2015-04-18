@@ -39,15 +39,6 @@ namespace griffin {
 		// Type declarations
 
 		/**
-		* Input Mapping types
-		*/
-		MakeEnum(InputMappingType, uint8_t,
-				 (Action)	//<! Actions are single-time events
-				 (State)	//<! States are on/off
-				 (Axis)		//<! Axis are ranges of motion normalized to [-1,1]
-				 , _T);
-
-		/**
 		* Input Cursor types
 		*/
 		MakeEnum(InputMouseCursors, uint8_t,
@@ -69,18 +60,6 @@ namespace griffin {
 				 (Touch)
 				 (Text)
 				 , _T);
-
-		/**
-		* Input Context Options
-		*/
-		MakeEnum(InputContextOptions, uint8_t,
-				 (CaptureTextInput)		//<! true if text input events should be captured by this context
-				 (RelativeMouseMode)	//<! true for relative mouse mode vs. regular "GUI" mode
-				 (ShowMouseCursor)		//<! true to show cursor specified by m_cursorIndex
-				 (EatKeyboardEvents)	//<! true to eat all keyboard events, preventing pass-down to lower contexts
-				 (EatMouseEvents)		//<! prevent mouse events from passing down
-				 (EatJoystickEvents)	//<! prevent joystick events from passing down
-				 , NIL);
 
 
 		/**
@@ -165,7 +144,34 @@ namespace griffin {
 
 
 		/**
-		* Input mappings map raw input events or position data to Actions, States or Ranges
+		* Input Mapping types
+		*/
+		MakeEnum(InputMappingType, uint8_t,
+				 (Action)	//<! Actions are single-time events
+				 (State)	//<! States are on/off
+				 (Axis)		//<! Axis are ranges of motion normalized to [-1,1]
+				 , _T);
+
+		/**
+		* Input Mapping Binding types
+		*/
+		MakeEnum(InputMappingBindingType, uint8_t,
+				 (Bind_Down)	//<! Bind to DOWN event of keyboard key, mouse or joystick button
+				 (Bind_Up)		//<! Bind to UP event of keyboard key, mouse or joystick button
+				 (Bind_Toggle)	//<! Axis are ranges of motion normalized to [-1,1]
+				 , _T);
+
+		/**
+		* Input Mapping Axis Curve types
+		*/
+		MakeEnum(InputMappingAxisCurveType, uint8_t,
+				 (Curve_Linear)
+				 (Curve_SCurve)
+				 , _T);
+
+		/**
+		* Input mappings map raw input events or position data to Actions, States or Ranges. These
+		* are high-level game input events obtained from configuration data through Lua.
 		*	Actions: Single-time events, not affected by key repeat, mapped to a single input event
 		*			 e.g. {keydown-G} or {keyup-G}.
 		*	States:  Binary on/off flag mapped to two input events e.g. {on:keydown-G, off:keyup-G}
@@ -175,10 +181,31 @@ namespace griffin {
 		*			 tracking gear, even mouse movement if desired.
 		*/
 		struct InputMapping {
-			InputMappingType	type = Action_T;
-
+			InputMappingType			type = Action_T;
+			InputMappingBindingType		bindIn = Bind_Down_T;	//<! event to start the action or state
+			InputMappingBindingType		bindOut = Bind_Up_T;	//<! event to end the state
+			InputMappingAxisCurveType	curve = Curve_SCurve_T;	//<! curve type of axis
+			uint8_t						deadzone = 0;			//<! deadzone for axis
+			uint8_t						curvature = 0;			//<! curvature of axis
+			uint8_t						saturationX = 100;		//<! saturation of the x axis
+			uint8_t						saturationY = 100;		//<! saturation of the y axis
+			uint8_t						invert = 0;				//<! 0=false, 1=true axis is inverted
+			uint8_t						slider = 0;				//<! 0=false, 1=true axis is a slider
+			char						name[32];				//<! display name of the mapping
 		};
 
+
+		/**
+		* Input Context Options
+		*/
+		MakeEnum(InputContextOptions, uint8_t,
+				 (CaptureTextInput)		//<! true if text input events should be captured by this context
+				 (RelativeMouseMode)	//<! true for relative mouse mode vs. regular "GUI" mode
+				 (ShowMouseCursor)		//<! true to show cursor specified by m_cursorIndex
+				 (EatKeyboardEvents)	//<! true to eat all keyboard events, preventing pass-down to lower contexts
+				 (EatMouseEvents)		//<! prevent mouse events from passing down
+				 (EatJoystickEvents)	//<! prevent joystick events from passing down
+				 , NIL);
 
 		/**
 		* Input Context
@@ -223,6 +250,18 @@ namespace griffin {
 		};
 
 		
+		/**
+		*
+		*/
+		struct MappedInput {
+			InputMappingType	type = Action_T;
+			double				totalMs;
+			int64_t				startCounts;
+			int32_t				totalCounts;
+			int32_t				startFrame;
+			int32_t				totalFrames;
+			InputMapping *		p_inputMapping;
+		};
 	}
 }
 

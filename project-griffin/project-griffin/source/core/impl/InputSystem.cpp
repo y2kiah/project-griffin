@@ -28,7 +28,6 @@ void InputSystem::update(const UpdateInfo& ui) {
 
 	// map inputs using active context stack
 	
-	
 	m_popEvents.clear();
 }
 
