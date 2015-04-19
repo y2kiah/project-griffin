@@ -78,7 +78,8 @@ namespace griffin {
 		class InputSystem : public CoreSystem {
 		public:
 			explicit InputSystem() :
-				m_eventsQueue(RESERVE_INPUTSYSTEM_EVENTQUEUE)
+				m_eventsQueue(RESERVE_INPUTSYSTEM_EVENTQUEUE),
+				m_inputContexts(0, RESERVE_INPUT_CONTEXTS)
 			{
 				m_popEvents.reserve(RESERVE_INPUTSYSTEM_POPQUEUE);
 			}
@@ -107,10 +108,11 @@ namespace griffin {
 			* Thread-safe blocking API to create a context and get back its handle
 			*/
 			Id_T createContext(uint16_t optionsMask) {
-				auto f = tss_([optionsMask](ThreadSafeState& tss_) {
-					return tss_.m_inputContexts.emplace(optionsMask);
-				});
-				return f;
+				//auto f = tss_([optionsMask](ThreadSafeState& tss_) {
+				//	return tss_.m_inputContexts.emplace(optionsMask);
+				//});
+				//return f;
+				return m_inputContexts.emplace(optionsMask);
 			}
 
 			/**
@@ -128,15 +130,20 @@ namespace griffin {
 			bool isRelativeMouseModeActive() const;
 
 		private:
+			/**
+			* Translate input events into mapped into for one frame
+			*/
+			void mapFrameInputs();
+
 			concurrent_queue<InputEvent>	m_eventsQueue;		//<! push on input thread, pop on update thread
 			vector<InputEvent>				m_popEvents;		//<! pop events from the queue into this buffer
 
-			struct ThreadSafeState {
+			//struct ThreadSafeState {
 				handle_map<InputContext>	m_inputContexts;	//<! collection of input contexts
 				
-				ThreadSafeState() : m_inputContexts(0, RESERVE_INPUT_CONTEXTS) {}
-			};
-			monitor<ThreadSafeState>		tss_;
+			//	ThreadSafeState() : m_inputContexts(0, RESERVE_INPUT_CONTEXTS) {}
+			//};
+			//monitor<ThreadSafeState>		tss_;
 
 			SDL_Cursor *					m_cursors[InputMouseCursorsCount]; //<! table of mouse cursors
 			vector<SDL_Joystick*>			m_joysticks;		//<! list of opened joysticks
@@ -223,12 +230,17 @@ namespace griffin {
 				m_inputMappings.reserve(RESERVE_INPUTCONTEXT_MAPPINGS);
 			}
 
-			InputContext(InputContext&& _c) _NOEXCEPT :
-				m_options{ _c.m_options },
+			InputContext(InputContext&& _c) _NOEXCEPT
+			  :	m_options{ _c.m_options },
 				m_inputMappings(std::move(_c.m_inputMappings))
 			{
 				_c.m_options = 0;
 			}
+
+			/**
+			*
+			*/
+			void getInputEventMappings(vector<InputEvent>& inputEvents, vector<MappedInput>& mappedInputs);
 
 			//InputContext(const InputContext&) = delete; // I want to delete this and force move semantics only, http://stackoverflow.com/questions/12251368/type-requirements-for-stdvectortype
 
@@ -251,7 +263,7 @@ namespace griffin {
 
 		
 		/**
-		*
+		* 
 		*/
 		struct MappedInput {
 			InputMappingType	type = Action_T;
@@ -262,6 +274,10 @@ namespace griffin {
 			int32_t				totalFrames;
 			InputMapping *		p_inputMapping;
 		};
+
+
+
+
 	}
 }
 

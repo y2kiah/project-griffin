@@ -4,13 +4,24 @@
 
 using namespace griffin::core;
 
+// class InputSystem
 
-void InputSystem::update(const UpdateInfo& ui) {
+void InputSystem::update(const UpdateInfo& ui)
+{
 	// pop all events up to the game's virtual time
 	m_eventsQueue.try_pop_all_if(m_popEvents, [&](const InputEvent& i) {
 		return (ui.virtualTime >= i.timeStampCounts);
 	});
 
+	// map inputs using active context stack
+	mapFrameInputs();
+
+	m_popEvents.clear();
+}
+
+
+void InputSystem::mapFrameInputs()
+{
 	// accumulate relative mouse movement for this frame
 	int mouse_xrel = 0;
 	int mouse_yrel = 0;
@@ -22,17 +33,14 @@ void InputSystem::update(const UpdateInfo& ui) {
 			mouse_yrel += e.evt.motion.yrel;
 		}
 		else {
-			SDL_Log("  Processed Input type=%d: realTime=%lu\n", e.evt.type, e.timeStampCounts);
+			//SDL_Log("  Processed Input type=%d: realTime=%lu\n", e.evt.type, e.timeStampCounts);
 		}
 	}
-
-	// map inputs using active context stack
-	
-	m_popEvents.clear();
 }
 
 
-bool InputSystem::handleEvent(const SDL_Event& event) {
+bool InputSystem::handleEvent(const SDL_Event& event)
+{
 	bool handled = false;
 	auto timestamp = Timer::queryCounts();
 
@@ -215,5 +223,17 @@ InputSystem::~InputSystem()
 	}
 	if (m_popEvents.capacity() > RESERVE_INPUTSYSTEM_POPQUEUE) {
 		SDL_Log("check RESERVE_INPUTSYSTEM_POPQUEUE: original=%d, highest=%d", RESERVE_INPUTSYSTEM_POPQUEUE, m_popEvents.capacity());
+	}
+}
+
+
+// class InputContext
+
+void InputContext::getInputEventMappings(vector<InputEvent>& inputEvents, vector<MappedInput>& mappedInputs)
+{
+	for (auto& evt : inputEvents) {
+		for (auto& mapping : m_inputMappings) {
+
+		}
 	}
 }
