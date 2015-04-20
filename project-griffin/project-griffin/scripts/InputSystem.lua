@@ -1,7 +1,7 @@
 local ffi = require("ffi")
 
 ffi.cdef[[
-uint64_t griffin_input_createContext();
+uint64_t griffin_input_createContext(uint8_t priority, bool makeActive);
 ]]
 
 -- function invoked by InputSystem initialization

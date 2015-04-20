@@ -21,8 +21,8 @@ extern "C" {
 
 
 	GRIFFIN_EXPORT
-	uint64_t griffin_input_createContext() {
-		auto t = g_inputPtr->createContext(0);
+	uint64_t griffin_input_createContext(uint8_t priority, bool makeActive) {
+		auto t = g_inputPtr->createContext(0, priority, makeActive);
 		return t.value;
 	}
 

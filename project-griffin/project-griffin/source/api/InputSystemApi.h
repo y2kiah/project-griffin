@@ -10,7 +10,7 @@ extern "C" {
 #endif
 
 	GRIFFIN_EXPORT
-	uint64_t griffin_input_createContext();
+	uint64_t griffin_input_createContext(uint8_t priority, bool makeActive);
 
 #ifdef __cplusplus
 }

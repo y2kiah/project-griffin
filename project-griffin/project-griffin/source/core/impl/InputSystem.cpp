@@ -2,7 +2,9 @@
 #include <application/Timer.h>
 #include <SDL_log.h>
 
+using namespace griffin;
 using namespace griffin::core;
+
 
 // class InputSystem
 
@@ -13,29 +15,51 @@ void InputSystem::update(const UpdateInfo& ui)
 		return (ui.virtualTime >= i.timeStampCounts);
 	});
 
+	m_motionEventsQueue.try_pop_all(m_popMotionEvents); // need to pop all events because of the underlying use of vector_queue
+
 	// map inputs using active context stack
-	mapFrameInputs();
+	mapFrameInputs(ui);
 
 	m_popEvents.clear();
 }
 
 
-void InputSystem::mapFrameInputs()
+void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 {
 	// accumulate relative mouse movement for this frame
 	int mouse_xrel = 0;
 	int mouse_yrel = 0;
 
-	// process all events
-	for (const auto& e : m_popEvents) {
-		if (e.evt.type == SDL_MOUSEMOTION) {
-			mouse_xrel += e.evt.motion.xrel;
-			mouse_yrel += e.evt.motion.yrel;
+	// process all motion events, these go to axis mappings
+	auto frameSize = m_popMotionEvents.size();
+	for (int e = 0; e < frameSize; ++e) {
+		const auto& motionEvt = m_popMotionEvents[e];
+
+		// if timestamp is greater than frame time, we're done
+		if (motionEvt.timeStampCounts > ui.virtualTime) {
+			frameSize = e;
+			break;
 		}
-		else {
-			//SDL_Log("  Processed Input type=%d: realTime=%lu\n", e.evt.type, e.timeStampCounts);
+
+		if (motionEvt.evt.type == SDL_MOUSEMOTION) {
+			mouse_xrel += motionEvt.evt.motion.xrel;
+			mouse_yrel += motionEvt.evt.motion.yrel;
 		}
 	}
+	// erase up to the last event for this frame
+	m_popMotionEvents.erase(m_popMotionEvents.begin(), m_popMotionEvents.begin() + frameSize);
+
+
+	// process all other input events
+	m_frameMappedInput.mappedInputs.clear();
+	for (const auto& ac : m_activeInputContexts) {
+		m_inputContexts[ac.contextId].getInputEventMappings(m_popEvents, m_frameMappedInput.mappedInputs);
+	}
+
+	// 
+	//for (const auto& e : m_popEvents) {
+	//	SDL_Log("  Processed Input type=%d: realTime=%lu\n", e.evt.type, e.timeStampCounts);
+	//}
 }
 
 
@@ -51,7 +75,7 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 				SDL_Log("key event=%d: state=%d: key=%d: repeat=%d: realTime=%lu\n",
 						event.type, event.key.state, event.key.keysym.scancode, event.key.repeat, timestamp);
 
-				m_eventsQueue.push({ InputEventType::Keyboard_T, timestamp, std::move(event) });
+				m_eventsQueue.push({ std::move(event), timestamp });
 			}
 			handled = true;
 			break;
@@ -61,7 +85,7 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 			SDL_Log("key event=%d: text=%s: length=%d: start=%d: windowID=%d: realTime=%lu\n",
 					event.type, event.edit.text, event.edit.length, event.edit.start, event.edit.windowID, timestamp);
 			
-			m_eventsQueue.push({ InputEventType::Keyboard_T, timestamp, std::move(event) });
+			m_eventsQueue.push({ std::move(event), timestamp });
 			
 			handled = true;
 			break;
@@ -70,7 +94,7 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 			SDL_Log("key event=%d: text=%s: windowID=%d: realTime=%lu\n",
 					event.type, event.text.text, event.text.windowID, timestamp);
 			
-			m_eventsQueue.push({ InputEventType::Keyboard_T, timestamp, std::move(event) });
+			m_eventsQueue.push({ std::move(event), timestamp });
 			
 			handled = true;
 			break;
@@ -81,7 +105,7 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 					event.type, event.motion.which, event.motion.state, event.motion.windowID,
 					event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel, timestamp);
 					*/
-			m_eventsQueue.push({ InputEventType::Mouse_T, timestamp, std::move(event) });
+			m_motionEventsQueue.push({ std::move(event), timestamp });
 			handled = true;
 			break;
 		}
@@ -90,7 +114,7 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 					event.type, event.wheel.which, event.wheel.windowID,
 					event.wheel.x, event.wheel.y, timestamp);
 			
-			m_eventsQueue.push({ InputEventType::Mouse_T, timestamp, std::move(event) });
+			m_eventsQueue.push({ std::move(event), timestamp });
 			handled = true;
 			break;
 		}
@@ -100,7 +124,7 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 					event.type, event.button.which, event.button.button, event.button.state,
 					event.button.clicks, event.button.windowID, event.button.x, event.button.y, timestamp);
 			
-			m_eventsQueue.push({ InputEventType::Mouse_T, timestamp, std::move(event) });
+			m_eventsQueue.push({ std::move(event), timestamp });
 			handled = true;
 			break;
 		}
@@ -119,7 +143,7 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 			SDL_Log("joystick button event=%d: which=%d: button=%d: state=%d: realTime=%lu\n",
 					event.type, event.jbutton.which, event.jbutton.button, event.jbutton.state, timestamp);
 			
-			m_eventsQueue.push({ InputEventType::Joystick_T, timestamp, std::move(event) });
+			m_eventsQueue.push({ std::move(event), timestamp });
 			handled = true;
 			break;
 		}
@@ -173,6 +197,37 @@ void InputSystem::initialize() // should this be the constructor?
 
 }
 
+Id_T InputSystem::createContext(uint16_t optionsMask, uint8_t priority, bool makeActive)
+{
+	//auto f = tss_([optionsMask](ThreadSafeState& tss_) {
+	//	return tss_.m_inputContexts.emplace(optionsMask);
+	//});
+	//return f;
+
+	auto contextId = m_inputContexts.emplace(optionsMask);
+	m_activeInputContexts.push_back({ contextId, priority, makeActive });
+	std::stable_sort(m_activeInputContexts.begin(), m_activeInputContexts.end(),
+					[](const ActiveInputContext& i, const ActiveInputContext& j) {
+						return i.priority < j.priority;
+					});
+
+	return contextId;
+}
+
+bool InputSystem::makeContextActive(Id_T contextId)
+{
+	if (m_inputContexts.isValid(contextId)) {
+		for (auto& ac : m_activeInputContexts) {
+			if (ac.contextId == contextId) {
+				ac.active = true;
+				break;
+			}
+		}
+		return true;
+	}
+	return false;
+}
+
 void InputSystem::startTextInput()
 {
 	SDL_StartTextInput();
@@ -218,11 +273,20 @@ InputSystem::~InputSystem()
 	}
 
 	// check memory reserves
-	if (m_eventsQueue.unsafe_capacity() > RESERVE_INPUTSYSTEM_EVENTQUEUE) {
-		SDL_Log("check RESERVE_INPUTSYSTEM_EVENTQUEUE: original=%d, highest=%d", RESERVE_INPUTSYSTEM_EVENTQUEUE, m_eventsQueue.unsafe_capacity());
+	if (m_eventsQueue.unsafe_capacity() > RESERVE_INPUTSYSTEM_EVENTSQUEUE) {
+		SDL_Log("check RESERVE_INPUTSYSTEM_EVENTSQUEUE: original=%d, highest=%d", RESERVE_INPUTSYSTEM_EVENTSQUEUE, m_eventsQueue.unsafe_capacity());
+	}
+	if (m_motionEventsQueue.unsafe_capacity() > RESERVE_INPUTSYSTEM_MOTIONEVENTSQUEUE) {
+		SDL_Log("check RESERVE_INPUTSYSTEM_MOTIONEVENTSQUEUE: original=%d, highest=%d", RESERVE_INPUTSYSTEM_MOTIONEVENTSQUEUE, m_motionEventsQueue.unsafe_capacity());
 	}
 	if (m_popEvents.capacity() > RESERVE_INPUTSYSTEM_POPQUEUE) {
 		SDL_Log("check RESERVE_INPUTSYSTEM_POPQUEUE: original=%d, highest=%d", RESERVE_INPUTSYSTEM_POPQUEUE, m_popEvents.capacity());
+	}
+	if (m_popMotionEvents.capacity() > RESERVE_INPUTSYSTEM_MOTIONPOPQUEUE) {
+		SDL_Log("check RESERVE_INPUTSYSTEM_MOTIONPOPQUEUE: original=%d, highest=%d", RESERVE_INPUTSYSTEM_MOTIONPOPQUEUE, m_popMotionEvents.capacity());
+	}
+	if (m_frameMappedInput.mappedInputs.capacity() > RESERVE_INPUTSYSTEM_POPQUEUE) {
+		SDL_Log("check RESERVE_INPUTSYSTEM_POPQUEUE: original=%d, highest=%d", RESERVE_INPUTSYSTEM_POPQUEUE, m_frameMappedInput.mappedInputs.capacity());
 	}
 }
 
@@ -232,8 +296,8 @@ InputSystem::~InputSystem()
 void InputContext::getInputEventMappings(vector<InputEvent>& inputEvents, vector<MappedInput>& mappedInputs)
 {
 	for (auto& evt : inputEvents) {
-		for (auto& mapping : m_inputMappings) {
-
+		for (const auto& mapping : m_inputMappings) {
+			//evt.evt.type
 		}
 	}
 }

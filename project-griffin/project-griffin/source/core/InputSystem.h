@@ -16,6 +16,7 @@
 
 using std::vector;
 using std::bitset;
+using std::tuple;
 
 namespace griffin {
 	namespace core {
@@ -50,25 +51,96 @@ namespace griffin {
 				 , _T);
 
 		/**
-		* Input Event types
+		* Input Mapping types
 		*/
-		MakeEnum(InputEventType, uint8_t,
-				 (Keyboard)
-				 (Mouse)
-				 (Joystick)
-				 (GameController)
-				 (Touch)
-				 (Text)
+		MakeEnum(InputMappingType, uint8_t,
+				 (Action)	//<! Actions are single-time events
+				 (State)	//<! States are on/off
+				 (Axis)		//<! Axis are ranges of motion normalized to [-1,1]
 				 , _T);
 
+		/**
+		* Input Mapping Binding types
+		*/
+		MakeEnum(InputMappingBindEvent, uint8_t,
+				 (Bind_Down)	//<! Bind to DOWN event of keyboard key, mouse or joystick button
+				 (Bind_Up)		//<! Bind to UP event of keyboard key, mouse or joystick button
+				 (Bind_Toggle)	//<! Axis are ranges of motion normalized to [-1,1]
+				 , _T);
+
+		/**
+		* Input Mapping Axis Curve types
+		*/
+		MakeEnum(InputMappingAxisCurve, uint8_t,
+				 (Curve_Linear)
+				 (Curve_SCurve)
+				 , _T);
+
+		/**
+		* Input mappings map raw input events or position data to Actions, States or Ranges. These
+		* are high-level game input events obtained from configuration data through Lua.
+		*	Actions: Single-time events, not affected by key repeat, mapped to a single input event
+		*			 e.g. {keydown-G} or {keyup-G}.
+		*	States:  Binary on/off flag mapped to two input events e.g. {on:keydown-G, off:keyup-G}
+		*			 or {on:keydown-G, off:keydown-G}. The first example would be typical of WASD
+		*			 type movement state, the second example would behave like a toggle.
+		*	Axis:	 Uses position information of joysticks, throttles, rudder pedals, head
+		*			 tracking gear, even mouse movement if desired.
+		*/
+		struct InputMapping {
+
+			InputMappingType		type = Action_T;
+			InputMappingBindEvent	bindIn = Bind_Down_T;	//<! event to start the action or state
+			InputMappingBindEvent	bindOut = Bind_Up_T;	//<! event to end the state
+			InputMappingAxisCurve	curve = Curve_SCurve_T;	//<! curve type of axis
+			uint8_t					deadzone = 0;			//<! deadzone for axis
+			uint8_t					curvature = 0;			//<! curvature of axis
+			uint8_t					saturationX = 100;		//<! saturation of the x axis
+			uint8_t					saturationY = 100;		//<! saturation of the y axis
+			uint8_t					invert = 0;				//<! 0=false, 1=true axis is inverted
+			uint8_t					slider = 0;				//<! 0=false, 1=true axis is a slider
+			char					name[32];				//<! display name of the mapping
+		};
+
+		/**
+		* Mapped Input per action/state/axis per frame
+		*/
+		struct MappedInput {
+			InputMappingType	type = Action_T;
+			InputMapping *		p_inputMapping;
+			float				motionMapped[2]; //<! 2-dimensional for joystick ball, hat, and mouse motion
+			int					motionRaw[2];
+			double				totalMs;
+			int64_t				startCounts;
+			int32_t				totalCounts;
+			int32_t				startFrame;
+			int32_t				totalFrames;
+		};
+
+		/**
+		* Mapped Input per frame
+		*/
+		struct FrameMappedInput {
+			vector<MappedInput>		mappedInputs;
+
+			std::wstring			textInput;
+		};
 
 		/**
 		* Input Event
 		*/
 		struct InputEvent {
-			InputEventType	type;
-			int64_t			timeStampCounts;
-			SDL_Event		evt;
+			SDL_Event	evt;
+			int64_t		timeStampCounts;
+		};
+
+		/**
+		* Active Input Context record
+		*/
+		struct ActiveInputContext {
+			Id_T	contextId;
+			uint8_t	priority;
+			bool	active;
 		};
 
 
@@ -78,10 +150,14 @@ namespace griffin {
 		class InputSystem : public CoreSystem {
 		public:
 			explicit InputSystem() :
-				m_eventsQueue(RESERVE_INPUTSYSTEM_EVENTQUEUE),
+				m_eventsQueue(RESERVE_INPUTSYSTEM_EVENTSQUEUE),
+				m_motionEventsQueue(RESERVE_INPUTSYSTEM_MOTIONEVENTSQUEUE),
 				m_inputContexts(0, RESERVE_INPUT_CONTEXTS)
 			{
 				m_popEvents.reserve(RESERVE_INPUTSYSTEM_POPQUEUE);
+				m_popMotionEvents.reserve(RESERVE_INPUTSYSTEM_MOTIONPOPQUEUE);
+				m_activeInputContexts.reserve(RESERVE_INPUT_CONTEXTS);
+				m_frameMappedInput.mappedInputs.reserve(RESERVE_INPUTSYSTEM_POPQUEUE);
 			}
 			
 			/**
@@ -105,15 +181,14 @@ namespace griffin {
 			bool handleEvent(const SDL_Event& event);
 
 			/**
-			* Thread-safe blocking API to create a context and get back its handle
+			* Create a context and get back its handle
 			*/
-			Id_T createContext(uint16_t optionsMask) {
-				//auto f = tss_([optionsMask](ThreadSafeState& tss_) {
-				//	return tss_.m_inputContexts.emplace(optionsMask);
-				//});
-				//return f;
-				return m_inputContexts.emplace(optionsMask);
-			}
+			Id_T createContext(uint16_t optionsMask /*this needs to change, sink the whole struct*/, uint8_t priority, bool makeActive = false);
+
+			/**
+			* Make the InputContext, true on success
+			*/
+			bool makeContextActive(Id_T contextId);
 
 			/**
 			* Text editing mode
@@ -133,72 +208,24 @@ namespace griffin {
 			/**
 			* Translate input events into mapped into for one frame
 			*/
-			void mapFrameInputs();
+			void mapFrameInputs(const UpdateInfo& ui);
 
-			concurrent_queue<InputEvent>	m_eventsQueue;		//<! push on input thread, pop on update thread
-			vector<InputEvent>				m_popEvents;		//<! pop events from the queue into this buffer
+			concurrent_queue<InputEvent>	m_eventsQueue;			//<! push on input thread, pop on update thread
+			concurrent_queue<InputEvent>	m_motionEventsQueue;
+			vector<InputEvent>				m_popEvents;			//<! pop events from the concurrent_queues into these buffers
+			vector<InputEvent>				m_popMotionEvents;
 
 			//struct ThreadSafeState {
-				handle_map<InputContext>	m_inputContexts;	//<! collection of input contexts
-				
+				handle_map<InputContext>	m_inputContexts;		//<! collection of input contexts
+				vector<ActiveInputContext>	m_activeInputContexts;	//<! active input contexts sorted by priority ascending
+				FrameMappedInput			m_frameMappedInput;		//<! per-frame mapped input buffer
+
 			//	ThreadSafeState() : m_inputContexts(0, RESERVE_INPUT_CONTEXTS) {}
 			//};
 			//monitor<ThreadSafeState>		tss_;
 
 			SDL_Cursor *					m_cursors[InputMouseCursorsCount]; //<! table of mouse cursors
-			vector<SDL_Joystick*>			m_joysticks;		//<! list of opened joysticks
-		};
-
-
-		/**
-		* Input Mapping types
-		*/
-		MakeEnum(InputMappingType, uint8_t,
-				 (Action)	//<! Actions are single-time events
-				 (State)	//<! States are on/off
-				 (Axis)		//<! Axis are ranges of motion normalized to [-1,1]
-				 , _T);
-
-		/**
-		* Input Mapping Binding types
-		*/
-		MakeEnum(InputMappingBindingType, uint8_t,
-				 (Bind_Down)	//<! Bind to DOWN event of keyboard key, mouse or joystick button
-				 (Bind_Up)		//<! Bind to UP event of keyboard key, mouse or joystick button
-				 (Bind_Toggle)	//<! Axis are ranges of motion normalized to [-1,1]
-				 , _T);
-
-		/**
-		* Input Mapping Axis Curve types
-		*/
-		MakeEnum(InputMappingAxisCurveType, uint8_t,
-				 (Curve_Linear)
-				 (Curve_SCurve)
-				 , _T);
-
-		/**
-		* Input mappings map raw input events or position data to Actions, States or Ranges. These
-		* are high-level game input events obtained from configuration data through Lua.
-		*	Actions: Single-time events, not affected by key repeat, mapped to a single input event
-		*			 e.g. {keydown-G} or {keyup-G}.
-		*	States:  Binary on/off flag mapped to two input events e.g. {on:keydown-G, off:keyup-G}
-		*			 or {on:keydown-G, off:keydown-G}. The first example would be typical of WASD
-		*			 type movement state, the second example would behave like a toggle.
-		*	Axis:	 Uses position information of joysticks, throttles, rudder pedals, head
-		*			 tracking gear, even mouse movement if desired.
-		*/
-		struct InputMapping {
-			InputMappingType			type = Action_T;
-			InputMappingBindingType		bindIn = Bind_Down_T;	//<! event to start the action or state
-			InputMappingBindingType		bindOut = Bind_Up_T;	//<! event to end the state
-			InputMappingAxisCurveType	curve = Curve_SCurve_T;	//<! curve type of axis
-			uint8_t						deadzone = 0;			//<! deadzone for axis
-			uint8_t						curvature = 0;			//<! curvature of axis
-			uint8_t						saturationX = 100;		//<! saturation of the x axis
-			uint8_t						saturationY = 100;		//<! saturation of the y axis
-			uint8_t						invert = 0;				//<! 0=false, 1=true axis is inverted
-			uint8_t						slider = 0;				//<! 0=false, 1=true axis is a slider
-			char						name[32];				//<! display name of the mapping
+			vector<SDL_Joystick*>			m_joysticks;			//<! list of opened joysticks
 		};
 
 
@@ -260,23 +287,6 @@ namespace griffin {
 			vector<InputMapping>	m_inputMappings = {};		//<! stores input mapping to actions, states, axes
 
 		};
-
-		
-		/**
-		* 
-		*/
-		struct MappedInput {
-			InputMappingType	type = Action_T;
-			double				totalMs;
-			int64_t				startCounts;
-			int32_t				totalCounts;
-			int32_t				startFrame;
-			int32_t				totalFrames;
-			InputMapping *		p_inputMapping;
-		};
-
-
-
 
 	}
 }
