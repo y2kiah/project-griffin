@@ -88,7 +88,6 @@ namespace griffin {
 		*			 tracking gear, even mouse movement if desired.
 		*/
 		struct InputMapping {
-
 			InputMappingType		type = Action_T;
 			InputMappingBindEvent	bindIn = Bind_Down_T;	//<! event to start the action or state
 			InputMappingBindEvent	bindOut = Bind_Up_T;	//<! event to end the state
@@ -103,22 +102,24 @@ namespace griffin {
 		};
 
 		/**
-		* Mapped Input per action/state/axis per frame
+		* Mapped Input per action/state/axis per frame. All input timings are quantized to the
+		* update frame rate, therefor the first frame a state becomes active includes the full
+		* frame timestep.
 		*/
 		struct MappedInput {
 			InputMappingType	type = Action_T;
 			InputMapping *		p_inputMapping;
-			float				motionMapped[2]; //<! 2-dimensional for joystick ball, hat, and mouse motion
-			int					motionRaw[2];
-			double				totalMs;
-			int64_t				startCounts;
-			int32_t				totalCounts;
-			int32_t				startFrame;
-			int32_t				totalFrames;
+			float				motionMapped[2];	//<! mapped motion, may be relative or absolute position, 2-dimensional for joystick ball, hat, and mouse
+			int					motionRaw[2];		//<! raw values from the device, not normalized or mapped to curve, may be useful but probably not
+			double				totalMs;			//<! total millis the state has been active
+			int64_t				startCounts;		//<! clock counts when state began
+			int32_t				totalCounts;		//<! currentCounts - startCounts + countsPerTick
+			int32_t				startFrame;			//<! frame number when state began
+			int32_t				totalFrames;		//<! currentFrame - startFrame + 1
 		};
 
 		/**
-		* Mapped Input per frame
+		* Container holding all mapped input per frame plus text input and axis motion
 		*/
 		struct FrameMappedInput {
 			vector<MappedInput>		mappedInputs;
