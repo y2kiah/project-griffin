@@ -10,7 +10,8 @@ using namespace griffin::core;
 
 void InputSystem::update(const UpdateInfo& ui)
 {
-	// pop all events up to the game's virtual time
+	// pop all events up to the game's virtual time, key events are kept in buffer for the frame
+	m_popEvents.clear();
 	m_eventsQueue.try_pop_all_if(m_popEvents, [&](const InputEvent& i) {
 		return (ui.virtualTime >= i.timeStampCounts);
 	});
@@ -19,8 +20,6 @@ void InputSystem::update(const UpdateInfo& ui)
 
 	// map inputs using active context stack
 	mapFrameInputs(ui);
-
-	m_popEvents.clear();
 }
 
 
@@ -84,36 +83,41 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 		case SDL_TEXTEDITING: {
 			SDL_Log("key event=%d: text=%s: length=%d: start=%d: windowID=%d: realTime=%lu\n",
 					event.type, event.edit.text, event.edit.length, event.edit.start, event.edit.windowID, timestamp);
-			
+
 			m_eventsQueue.push({ std::move(event), timestamp });
-			
+
 			handled = true;
 			break;
 		}
 		case SDL_TEXTINPUT: {
 			SDL_Log("key event=%d: text=%s: windowID=%d: realTime=%lu\n",
 					event.type, event.text.text, event.text.windowID, timestamp);
-			
+
 			m_eventsQueue.push({ std::move(event), timestamp });
-			
+
 			handled = true;
 			break;
 		}
 
-		case SDL_MOUSEMOTION: {
+		case SDL_MOUSEMOTION:
 			/*SDL_Log("mouse motion event=%d: which=%d: state=%d: window=%d: x,y=%d,%d: xrel,yrel=%d,%d: realTime=%lu\n",
 					event.type, event.motion.which, event.motion.state, event.motion.windowID,
-					event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel, timestamp);
-					*/
+					event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel, timestamp);*/
+		case SDL_JOYAXISMOTION:
+			/*SDL_Log("joystick motion event=%d: which=%d: axis=%d: value=%d: realTime=%lu\n",
+					event.type, event.jaxis.which, event.jaxis.axis, event.jaxis.value, timestamp);*/
+		case SDL_JOYBALLMOTION:
+		case SDL_JOYHATMOTION: {
 			m_motionEventsQueue.push({ std::move(event), timestamp });
 			handled = true;
 			break;
 		}
+
 		case SDL_MOUSEWHEEL: {
 			SDL_Log("mouse wheel event=%d: which=%d: window=%d: x,y=%d,%d: realTime=%lu\n",
 					event.type, event.wheel.which, event.wheel.windowID,
 					event.wheel.x, event.wheel.y, timestamp);
-			
+
 			m_eventsQueue.push({ std::move(event), timestamp });
 			handled = true;
 			break;
@@ -123,21 +127,19 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 			SDL_Log("mouse button event=%d: which=%d: button=%d: state=%d: clicks=%d: window=%d: x,y=%d,%d: realTime=%lu\n",
 					event.type, event.button.which, event.button.button, event.button.state,
 					event.button.clicks, event.button.windowID, event.button.x, event.button.y, timestamp);
-			
+
 			m_eventsQueue.push({ std::move(event), timestamp });
 			handled = true;
 			break;
 		}
-		
+
 		case SDL_JOYDEVICEADDED:
-		case SDL_JOYDEVICEREMOVED:
-		case SDL_JOYAXISMOTION:
-		case SDL_JOYBALLMOTION:
-		case SDL_JOYHATMOTION: {
-			// SDL_JoystickGetAxis
+		case SDL_JOYDEVICEREMOVED: {
+
 			handled = true;
 			break;
 		}
+		
 		case SDL_JOYBUTTONDOWN:
 		case SDL_JOYBUTTONUP: {
 			SDL_Log("joystick button event=%d: which=%d: button=%d: state=%d: realTime=%lu\n",
