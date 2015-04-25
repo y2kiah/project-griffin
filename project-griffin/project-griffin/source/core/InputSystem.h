@@ -110,9 +110,7 @@ namespace griffin {
 		*/
 		struct MappedInput {
 			InputMappingType	type = Action_T;
-			InputMapping *		p_inputMapping;
-			float				motionMapped[2];	//<! mapped motion, may be relative or absolute position, 2-dimensional for joystick ball, hat, and mouse
-			int					motionRaw[2];		//<! raw values from the device, not normalized or mapped to curve, may be useful but probably not
+			
 			double				totalMs;			//<! total millis the state has been active
 			int64_t				startCounts;		//<! clock counts when state began
 			int32_t				totalCounts;		//<! currentCounts - startCounts + countsPerTick
@@ -120,12 +118,17 @@ namespace griffin {
 			int32_t				totalFrames;		//<! currentFrame - startFrame + 1
 		};
 
+		struct MappedMotion {
+			InputMapping *		p_inputMapping;
+			float				motionMapped[2];	//<! mapped motion, may be relative or absolute position, 2-dimensional for joystick ball, hat, and mouse
+			int					motionRaw[2];		//<! raw values from the device, not normalized or mapped to curve, may be useful but probably not
+		};
+
 		/**
 		* Container holding all mapped input per frame plus text input and axis motion
 		*/
 		struct FrameMappedInput {
 			vector<MappedInput>		mappedInputs;
-
 			std::wstring			textInput;
 		};
 
