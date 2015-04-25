@@ -96,6 +96,8 @@ namespace griffin {
 			uint8_t					curvature = 0;			//<! curvature of axis
 			uint8_t					saturationX = 100;		//<! saturation of the x axis
 			uint8_t					saturationY = 100;		//<! saturation of the y axis
+			uint8_t					numAxes = 0;			//<! 1 for most joysticks, 2 for mouse and balls
+			uint8_t					relativeMotion = 0;		//<! 0=false, 1=true motion is relative not absolute
 			uint8_t					invert = 0;				//<! 0=false, 1=true axis is inverted
 			uint8_t					slider = 0;				//<! 0=false, 1=true axis is a slider
 			char					name[32];				//<! display name of the mapping

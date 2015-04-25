@@ -104,7 +104,7 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 			/*SDL_Log("mouse motion event=%d: which=%d: state=%d: window=%d: x,y=%d,%d: xrel,yrel=%d,%d: realTime=%lu\n",
 					event.type, event.motion.which, event.motion.state, event.motion.windowID,
 					event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel, timestamp);
-					*/
+			*/		
 			m_motionEventsQueue.push({ std::move(event), timestamp });
 			handled = true;
 			break;
@@ -182,6 +182,7 @@ void InputSystem::initialize() // should this be the constructor?
 			m_joysticks.push_back(joy);
 
 			SDL_Log("Opened Joystick %d", j);
+			SDL_Log("  Instance ID: %d", SDL_JoystickInstanceID(joy));
 			SDL_Log("  Name: %s", SDL_JoystickNameForIndex(j));
 			SDL_Log("  Number of Axes: %d", SDL_JoystickNumAxes(joy));
 			SDL_Log("  Number of Buttons: %d", SDL_JoystickNumButtons(joy));
