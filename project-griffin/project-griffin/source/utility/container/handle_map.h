@@ -139,6 +139,11 @@ namespace griffin {
 		size_t size() const _NOEXCEPT { return m_items.size(); }
 
 		/**
+		 * @returns capacity of the dense items array
+		 */
+		size_t capacity() const _NOEXCEPT{ return m_items.capacity(); }
+
+		/**
 		 * these functions provide direct access to inner arrays, don't add or remove items, just
 		 * use them for lookups and iterating over the items
 		 */

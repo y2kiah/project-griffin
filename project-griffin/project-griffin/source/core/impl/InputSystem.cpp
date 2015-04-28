@@ -40,10 +40,18 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 			break;
 		}
 
-		if (motionEvt.evt.type == SDL_MOUSEMOTION) {
-			mouse_xrel += motionEvt.evt.motion.xrel;
-			mouse_yrel += motionEvt.evt.motion.yrel;
+		switch (motionEvt.evt.type) {
+			case SDL_MOUSEMOTION: {
+				mouse_xrel += motionEvt.evt.motion.xrel;
+				mouse_yrel += motionEvt.evt.motion.yrel;
+				break;
+			}
+			case SDL_JOYAXISMOTION: {
+
+				break;
+			}
 		}
+
 	}
 	// erase up to the last event for this frame
 	m_popMotionEvents.erase(m_popMotionEvents.begin(), m_popMotionEvents.begin() + frameSize);
@@ -51,8 +59,96 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 
 	// process all other input events
 	m_frameMappedInput.mappedInputs.clear();
-	for (const auto& ac : m_activeInputContexts) {
-		m_inputContexts[ac.contextId].getInputEventMappings(m_popEvents, m_frameMappedInput.mappedInputs);
+	for (auto& evt : m_popEvents) {							// for each input event
+		for (const auto& ac : m_activeInputContexts) {		// for each active context
+			auto& context = m_inputContexts[ac.contextId];
+			
+			// handle key and button events
+			if (evt.eventType == Event_Keyboard_T ||
+				evt.eventType == Event_Joystick_T ||
+				evt.eventType == Event_Mouse_T)
+			{
+				MappedInput mi;
+				Id_T matchMappingId{};
+				const InputMapping* matchInputMapping = nullptr;
+
+				for (Id_T mappingId : context.inputMappings) {	// check all input mappings for a match
+					const auto& mapping = m_inputMappings[mappingId];
+
+					bool matched = false;
+
+					// check for action and state match
+					if (mapping.type == Action_T) {
+						if ((mapping.bindIn == Bind_Down_T && evt.evt.type == SDL_KEYDOWN) ||
+							(mapping.bindIn == Bind_Up_T   && evt.evt.type == SDL_KEYUP))
+						{
+							matched = (evt.evt.key.keysym.sym == mapping.button &&
+									   evt.evt.key.keysym.mod == mapping.modifier);
+						}
+						else if ((mapping.bindIn == Bind_Down_T && evt.evt.type == SDL_MOUSEBUTTONDOWN) ||
+								 (mapping.bindIn == Bind_Up_T   && evt.evt.type == SDL_MOUSEBUTTONUP))
+						{
+							matched = (evt.evt.button.button == mapping.button &&
+									   evt.evt.button.clicks == mapping.clicks);
+							if (matched) {
+								mi.xRaw = evt.evt.button.x;
+								mi.yRaw = evt.evt.button.y;
+							}
+						}
+						else if ((mapping.bindIn == Bind_Down_T && evt.evt.type == SDL_JOYBUTTONDOWN) ||
+								 (mapping.bindIn == Bind_Up_T   && evt.evt.type == SDL_JOYBUTTONUP))
+						{
+							matched = (evt.evt.jbutton.which == mapping.instanceId &&
+									   evt.evt.jbutton.button == mapping.button);
+						}
+						else if (evt.evt.type == SDL_MOUSEWHEEL)
+						{
+							// add a way to map a mouse wheel binding
+							/*evt.evt.wheel.x 
+							if (matched) {
+								mi.xRaw = evt.evt.button.x;
+								mi.yRaw = evt.evt.button.y;
+							}*/
+						}
+					}
+					else if (mapping.type == State_T) {
+
+					}
+
+					// found a matching mapping for the event, save the mapping and break
+					if (matched) {
+						matchMappingId = mappingId;
+						matchInputMapping = &mapping;
+						break; // skip checking the rest of the mappings
+					}
+				}
+
+				// found a mapping, push it and break
+				if (matchInputMapping != nullptr) {
+					mi.type = matchInputMapping->type;
+					mi.mappingId = matchMappingId;
+					mi.inputMapping = matchInputMapping;
+					mi.startCounts = ui.gameTime;
+					mi.startFrame = ui.frame;
+					
+					m_frameMappedInput.mappedInputs.push_back(std::move(mi));
+					break; // move on to the next input event
+				}
+			}
+			// handle text input events
+			else if (context.options[CaptureTextInput_T] && evt.eventType == Event_TextInput_T) {
+				if (evt.evt.type == SDL_TEXTINPUT) {
+					//m_frameMappedInput.textInput += std::wstring(evt.evt.text.text);
+				}
+				break;
+			}
+
+			// didn't find a match, check if this context eats input events or passes them down
+			if (context.options[EatMouseEvents_T]    && evt.eventType == Event_Mouse_T)    { break; }
+			if (context.options[EatJoystickEvents_T] && evt.eventType == Event_Joystick_T) { break; }
+			if (context.options[EatKeyboardEvents_T] &&
+				(evt.eventType == Event_Keyboard_T || evt.eventType == Event_TextInput_T)) { break; }
+		}
 	}
 
 	// 
@@ -74,7 +170,7 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 				SDL_Log("key event=%d: state=%d: key=%d: repeat=%d: realTime=%lu\n",
 						event.type, event.key.state, event.key.keysym.scancode, event.key.repeat, timestamp);
 
-				m_eventsQueue.push({ std::move(event), timestamp });
+				m_eventsQueue.push({ Event_Keyboard_T, std::move(event), timestamp });
 			}
 			handled = true;
 			break;
@@ -84,7 +180,7 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 			SDL_Log("key event=%d: text=%s: length=%d: start=%d: windowID=%d: realTime=%lu\n",
 					event.type, event.edit.text, event.edit.length, event.edit.start, event.edit.windowID, timestamp);
 
-			m_eventsQueue.push({ std::move(event), timestamp });
+			m_eventsQueue.push({ Event_TextInput_T, std::move(event), timestamp });
 
 			handled = true;
 			break;
@@ -93,7 +189,7 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 			SDL_Log("key event=%d: text=%s: windowID=%d: realTime=%lu\n",
 					event.type, event.text.text, event.text.windowID, timestamp);
 
-			m_eventsQueue.push({ std::move(event), timestamp });
+			m_eventsQueue.push({ Event_TextInput_T, std::move(event), timestamp });
 
 			handled = true;
 			break;
@@ -108,7 +204,7 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 					event.type, event.jaxis.which, event.jaxis.axis, event.jaxis.value, timestamp);*/
 		case SDL_JOYBALLMOTION:
 		case SDL_JOYHATMOTION: {
-			m_motionEventsQueue.push({ std::move(event), timestamp });
+			m_motionEventsQueue.push({ Event_Mouse_T, std::move(event), timestamp });
 			handled = true;
 			break;
 		}
@@ -118,7 +214,7 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 					event.type, event.wheel.which, event.wheel.windowID,
 					event.wheel.x, event.wheel.y, timestamp);
 
-			m_eventsQueue.push({ std::move(event), timestamp });
+			m_eventsQueue.push({ Event_Mouse_T, std::move(event), timestamp });
 			handled = true;
 			break;
 		}
@@ -128,7 +224,7 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 					event.type, event.button.which, event.button.button, event.button.state,
 					event.button.clicks, event.button.windowID, event.button.x, event.button.y, timestamp);
 
-			m_eventsQueue.push({ std::move(event), timestamp });
+			m_eventsQueue.push({ Event_Mouse_T, std::move(event), timestamp });
 			handled = true;
 			break;
 		}
@@ -145,7 +241,7 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 			SDL_Log("joystick button event=%d: which=%d: button=%d: state=%d: realTime=%lu\n",
 					event.type, event.jbutton.which, event.jbutton.button, event.jbutton.state, timestamp);
 			
-			m_eventsQueue.push({ std::move(event), timestamp });
+			m_eventsQueue.push({ Event_Joystick_T, std::move(event), timestamp });
 			handled = true;
 			break;
 		}
@@ -176,12 +272,16 @@ void InputSystem::initialize() // should this be the constructor?
 
 	// Initialize the joysticks
 	int numJoysticks = SDL_NumJoysticks();
+	m_joysticks.reserve(numJoysticks);
+	m_frameMappedInput.joystickMotion.reserve(numJoysticks);
+
 	for (int j = 0; j < numJoysticks; ++j) {
 		// Open joystick
 		SDL_Joystick* joy = SDL_JoystickOpen(j);
 
-		if (joy) {
+		if (joy != nullptr) {
 			m_joysticks.push_back(joy);
+			m_frameMappedInput.joystickMotion.emplace_back();
 
 			SDL_Log("Opened Joystick %d", j);
 			SDL_Log("  Name: %s", SDL_JoystickNameForIndex(j));
@@ -287,19 +387,24 @@ InputSystem::~InputSystem()
 	if (m_popMotionEvents.capacity() > RESERVE_INPUTSYSTEM_MOTIONPOPQUEUE) {
 		SDL_Log("check RESERVE_INPUTSYSTEM_MOTIONPOPQUEUE: original=%d, highest=%d", RESERVE_INPUTSYSTEM_MOTIONPOPQUEUE, m_popMotionEvents.capacity());
 	}
+	if (m_inputMappings.capacity() > RESERVE_INPUTSYSTEM_MAPPINGS) {
+		SDL_Log("check RESERVE_INPUTSYSTEM_MAPPINGS: original=%d, highest=%d", RESERVE_INPUTSYSTEM_MAPPINGS, m_inputMappings.capacity());
+	}
+	if (m_inputContexts.capacity() > RESERVE_INPUTSYSTEM_CONTEXTS) {
+		SDL_Log("check RESERVE_INPUTSYSTEM_CONTEXTS: original=%d, highest=%d", RESERVE_INPUTSYSTEM_CONTEXTS, m_inputContexts.capacity());
+	}
 	if (m_frameMappedInput.mappedInputs.capacity() > RESERVE_INPUTSYSTEM_POPQUEUE) {
 		SDL_Log("check RESERVE_INPUTSYSTEM_POPQUEUE: original=%d, highest=%d", RESERVE_INPUTSYSTEM_POPQUEUE, m_frameMappedInput.mappedInputs.capacity());
 	}
+
 }
 
 
 // class InputContext
 
-void InputContext::getInputEventMappings(vector<InputEvent>& inputEvents, vector<MappedInput>& mappedInputs)
+InputContext::~InputContext()
 {
-	for (auto& evt : inputEvents) {
-		for (const auto& mapping : m_inputMappings) {
-			//evt.evt.type
-		}
+	if (inputMappings.capacity() > RESERVE_INPUTCONTEXT_MAPPINGS) {
+		SDL_Log("check RESERVE_INPUTCONTEXT_MAPPINGS: original=%d, highest=%d", RESERVE_INPUTCONTEXT_MAPPINGS, inputMappings.capacity());
 	}
 }

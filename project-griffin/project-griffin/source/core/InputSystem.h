@@ -1,9 +1,13 @@
+/**
+* InputMappings 
+*/
 #pragma once
 #ifndef GRIFFIN_INPUTSYSTEM_H_
 #define GRIFFIN_INPUTSYSTEM_H_
 
 #include <core/CoreSystem.h>
 #include <vector>
+#include <string>
 #include <bitset>
 #include <SDL_events.h>
 #include <memory>
@@ -17,6 +21,7 @@
 using std::vector;
 using std::bitset;
 using std::tuple;
+using std::string;
 
 namespace griffin {
 	namespace core {
@@ -40,9 +45,19 @@ namespace griffin {
 		// Type declarations
 
 		/**
+		* Input Event types
+		*/
+		MakeEnum(InputEventType, uint8_t,
+				 (Event_Keyboard)
+				 (Event_Mouse)
+				 (Event_Joystick)
+				 (Event_TextInput)
+				 , _T);
+
+		/**
 		* Input Cursor types
 		*/
-		MakeEnum(InputMouseCursors, uint8_t,
+		MakeEnum(InputMouseCursor, uint8_t,
 				 (Cursor_Arrow)
 				 (Cursor_Hand)
 				 (Cursor_Wait)
@@ -88,10 +103,16 @@ namespace griffin {
 		*			 tracking gear, even mouse movement if desired.
 		*/
 		struct InputMapping {
-			InputMappingType		type = Action_T;
+			InputMappingType		type = Action_T;		//<! type of this mapping
+			Id_T					mappingId;				//<! the id handle of this mapping
 			InputMappingBindEvent	bindIn = Bind_Down_T;	//<! event to start the action or state
 			InputMappingBindEvent	bindOut = Bind_Up_T;	//<! event to end the state
 			InputMappingAxisCurve	curve = Curve_SCurve_T;	//<! curve type of axis
+			uint32_t				instanceId = 0;			//<! instanceID of the device, comes through event "which"
+			uint32_t				button = 0;				//<! keyboard virtual key code , mouse or joystick button
+			uint16_t				modifier = 0;			//<! keyboard modifier, SDL_Keymod, defaults to 0 (KMOD_NONE)
+			uint8_t					axis = 0;				//<! index of the joystick axis
+			uint8_t					clicks = 1;				//<! number of mouse clicks for binding (2==double-click)
 			uint8_t					deadzone = 0;			//<! deadzone for axis
 			uint8_t					curvature = 0;			//<! curvature of axis
 			uint8_t					saturationX = 100;		//<! saturation of the x axis
@@ -110,18 +131,28 @@ namespace griffin {
 		*/
 		struct MappedInput {
 			InputMappingType	type = Action_T;
-			
-			double				totalMs;			//<! total millis the state has been active
-			int64_t				startCounts;		//<! clock counts when state began
-			int32_t				totalCounts;		//<! currentCounts - startCounts + countsPerTick
-			int32_t				startFrame;			//<! frame number when state began
-			int32_t				totalFrames;		//<! currentFrame - startFrame + 1
+			Id_T				mappingId;
+			uint8_t				handled = 0;		//<! flag set to 1 when event has been handled by a callback
+			const InputMapping*	inputMapping = nullptr;
+			float				x = 0, y = 0;		//<! mouse clicks include normalized position here
+			int					xRaw = 0, yRaw = 0;
+			double				totalMs = 0;		//<! total millis the state has been active
+			int64_t				startCounts = 0;	//<! clock counts when state began
+			int32_t				totalCounts = 0;	//<! currentCounts - startCounts + countsPerTick
+			int32_t				startFrame  = 0;	//<! frame number when state began
+			int32_t				totalFrames = 0;	//<! currentFrame - startFrame + 1
 		};
 
+		/**
+		*
+		*/
 		struct MappedMotion {
-			InputMapping *		p_inputMapping;
-			float				motionMapped[2];	//<! mapped motion, may be relative or absolute position, 2-dimensional for joystick ball, hat, and mouse
-			int					motionRaw[2];		//<! raw values from the device, not normalized or mapped to curve, may be useful but probably not
+			InputMapping *		inputMapping = nullptr;
+			Id_T				mappingId;
+			float				posMapped[2];		//<! mapped motion, absolute position, 2-dimensional for joystick ball, hat, and mouse
+			float				relMapped[2];		//<! mapped motion, relative motion for the frame
+			int					posRaw[2];			//<! raw values from the device, not normalized or mapped to curve, may be useful but probably not
+			int					relRaw[2];			//<! relative raw values from the device
 		};
 
 		/**
@@ -129,24 +160,30 @@ namespace griffin {
 		*/
 		struct FrameMappedInput {
 			vector<MappedInput>		mappedInputs;
-			std::wstring			textInput;
+			MappedMotion			mouseMotion;
+			vector<MappedMotion>	joystickMotion;
+			std::wstring			textInput;				//<! Text input buffer
+			/*std::wstring			textComposition;		//<! Text editing buffer
+			int						cursorPos = 0;			//<! Text editing cursor position
+			int						selectionLength = 0;*/	//<! Text editing selection length (if any)
 		};
 
 		/**
 		* Input Event
 		*/
 		struct InputEvent {
-			SDL_Event	evt;
-			int64_t		timeStampCounts;
+			InputEventType	eventType;
+			SDL_Event		evt;
+			int64_t			timeStampCounts;
 		};
 
 		/**
 		* Active Input Context record
 		*/
 		struct ActiveInputContext {
-			Id_T	contextId;
-			uint8_t	priority;
-			bool	active;
+			Id_T		contextId;
+			uint8_t		priority;
+			bool		active;
 		};
 
 
@@ -158,11 +195,12 @@ namespace griffin {
 			explicit InputSystem() :
 				m_eventsQueue(RESERVE_INPUTSYSTEM_EVENTSQUEUE),
 				m_motionEventsQueue(RESERVE_INPUTSYSTEM_MOTIONEVENTSQUEUE),
-				m_inputContexts(0, RESERVE_INPUT_CONTEXTS)
+				m_inputMappings(0, RESERVE_INPUTSYSTEM_MAPPINGS),
+				m_inputContexts(0, RESERVE_INPUTSYSTEM_CONTEXTS)
 			{
 				m_popEvents.reserve(RESERVE_INPUTSYSTEM_POPQUEUE);
 				m_popMotionEvents.reserve(RESERVE_INPUTSYSTEM_MOTIONPOPQUEUE);
-				m_activeInputContexts.reserve(RESERVE_INPUT_CONTEXTS);
+				m_activeInputContexts.reserve(RESERVE_INPUTSYSTEM_CONTEXTS);
 				m_frameMappedInput.mappedInputs.reserve(RESERVE_INPUTSYSTEM_POPQUEUE);
 			}
 			
@@ -185,6 +223,31 @@ namespace griffin {
 			* Executed on the input/GUI thread
 			*/
 			bool handleEvent(const SDL_Event& event);
+
+
+			// Input Mappings
+
+			/**
+			* Create an input mapping and get back its handle
+			*/
+			Id_T createInputMapping(InputMapping&& i);
+			
+			/**
+			* Get an input mapping id from its name, systems use this at initialization and store
+			* the handle for subsequently matching frame input mappings
+			*/
+			Id_T getInputMappingHandle(const string& name) const;
+			
+			/**
+			* Get an input mapping from its handle, asserts that the handle is valid.
+			*/
+			const InputMapping& getInputMapping(Id_T handle) const
+			{
+				return m_inputMappings[handle];
+			}
+
+
+			// Input Contexts
 
 			/**
 			* Create a context and get back its handle
@@ -222,15 +285,16 @@ namespace griffin {
 			vector<InputEvent>				m_popMotionEvents;
 
 			//struct ThreadSafeState {
-				handle_map<InputContext>	m_inputContexts;		//<! collection of input contexts
-				vector<ActiveInputContext>	m_activeInputContexts;	//<! active input contexts sorted by priority ascending
-				FrameMappedInput			m_frameMappedInput;		//<! per-frame mapped input buffer
+			handle_map<InputMapping>		m_inputMappings;		//<! collection of input mappings (actions,states,axes)
+			handle_map<InputContext>		m_inputContexts;		//<! collection of input contexts
+			vector<ActiveInputContext>		m_activeInputContexts;	//<! active input contexts sorted by priority ascending
+			FrameMappedInput				m_frameMappedInput;		//<! per-frame mapped input buffer
 
 			//	ThreadSafeState() : m_inputContexts(0, RESERVE_INPUT_CONTEXTS) {}
 			//};
 			//monitor<ThreadSafeState>		tss_;
 
-			SDL_Cursor *					m_cursors[InputMouseCursorsCount]; //<! table of mouse cursors
+			SDL_Cursor *					m_cursors[InputMouseCursorCount]; //<! table of mouse cursors
 			vector<SDL_Joystick*>			m_joysticks;			//<! list of opened joysticks
 		};
 
@@ -245,7 +309,7 @@ namespace griffin {
 				 (EatKeyboardEvents)	//<! true to eat all keyboard events, preventing pass-down to lower contexts
 				 (EatMouseEvents)		//<! prevent mouse events from passing down
 				 (EatJoystickEvents)	//<! prevent joystick events from passing down
-				 , NIL);
+				 , _T);
 
 		/**
 		* Input Context
@@ -258,39 +322,37 @@ namespace griffin {
 			explicit InputContext() {}
 
 			explicit InputContext(uint16_t optionsMask) :
-				m_options{ optionsMask }
+				options{ optionsMask }
 			{
-				m_inputMappings.reserve(RESERVE_INPUTCONTEXT_MAPPINGS);
+				inputMappings.reserve(RESERVE_INPUTCONTEXT_MAPPINGS);
 			}
 
 			InputContext(InputContext&& _c) _NOEXCEPT
-			  :	m_options{ _c.m_options },
-				m_inputMappings(std::move(_c.m_inputMappings))
+			  :	options{ _c.options },
+				inputMappings(std::move(_c.inputMappings))
 			{
-				_c.m_options = 0;
+				_c.options = 0;
 			}
 
-			/**
-			*
-			*/
-			void getInputEventMappings(vector<InputEvent>& inputEvents, vector<MappedInput>& mappedInputs);
-
 			//InputContext(const InputContext&) = delete; // I want to delete this and force move semantics only, http://stackoverflow.com/questions/12251368/type-requirements-for-stdvectortype
+
+			~InputContext();
 
 			InputContext& operator=(InputContext&& _c)
 			{
 				if (this != &_c) {
-					m_options = _c.m_options;
-					_c.m_options = 0;
-					m_inputMappings = std::move(_c.m_inputMappings);
+					options = _c.options;
+					_c.options = 0;
+					inputMappings = std::move(_c.inputMappings);
 				}
 				return *this;
 			}
 
-		private:
-			bitset<InputContextOptionsCount> m_options = {};	//<! all input context options
-			//uint8_t					m_cursorIndex;			//<! lookup into input system's cursor table
-			vector<InputMapping>	m_inputMappings = {};		//<! stores input mapping to actions, states, axes
+			// Variables
+
+			bitset<InputContextOptionsCount> options = {};	//<! all input context options
+			//uint8_t		cursorIndex;					//<! lookup into input system's cursor table
+			vector<Id_T>	inputMappings = {};				//<! stores input mapping to actions, states, axes
 
 		};
 
