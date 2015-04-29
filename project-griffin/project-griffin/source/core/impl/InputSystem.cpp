@@ -56,10 +56,15 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 	// erase up to the last event for this frame
 	m_popMotionEvents.erase(m_popMotionEvents.begin(), m_popMotionEvents.begin() + frameSize);
 
+	// clear previous frame actions
+	m_frameMappedInput.actions.clear();
+	// TODO: loop over previous frame states, remove states that are not mappings in any active context
+	// also add to totalCounts, totalMS and totalFrames
 
 	// process all other input events
-	m_frameMappedInput.mappedInputs.clear();
 	for (auto& evt : m_popEvents) {							// for each input event
+		bool matched = false;
+
 		for (const auto& ac : m_activeInputContexts) {		// for each active context
 			auto& context = m_inputContexts[ac.contextId];
 			
@@ -68,17 +73,13 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 				evt.eventType == Event_Joystick_T ||
 				evt.eventType == Event_Mouse_T)
 			{
-				MappedInput mi;
-				Id_T matchMappingId{};
-				const InputMapping* matchInputMapping = nullptr;
-
 				for (Id_T mappingId : context.inputMappings) {	// check all input mappings for a match
 					const auto& mapping = m_inputMappings[mappingId];
 
-					bool matched = false;
-
-					// check for action and state match
+					// check for action mappings
 					if (mapping.type == Action_T) {
+						MappedAction ma;
+
 						if ((mapping.bindIn == Bind_Down_T && evt.evt.type == SDL_KEYDOWN) ||
 							(mapping.bindIn == Bind_Up_T   && evt.evt.type == SDL_KEYUP))
 						{
@@ -91,8 +92,8 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 							matched = (evt.evt.button.button == mapping.button &&
 									   evt.evt.button.clicks == mapping.clicks);
 							if (matched) {
-								mi.xRaw = evt.evt.button.x;
-								mi.yRaw = evt.evt.button.y;
+								ma.xRaw = evt.evt.button.x;
+								ma.yRaw = evt.evt.button.y;
 							}
 						}
 						else if ((mapping.bindIn == Bind_Down_T && evt.evt.type == SDL_JOYBUTTONDOWN) ||
@@ -110,30 +111,87 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 								mi.yRaw = evt.evt.button.y;
 							}*/
 						}
+
+						// found a matching action mapping for the event
+						if (matched) {
+							ma.mappingId = mappingId;
+							ma.inputMapping = &mapping;
+							
+							m_frameMappedInput.actions.push_back(std::move(ma));
+							break; // skip checking the rest of the mappings
+						}
 					}
+
+					// check for state mappings
 					else if (mapping.type == State_T) {
+						auto stateIndex = findActiveState(mappingId);
+						bool stateActive = (stateIndex != -1);
 
-					}
+						if (!stateActive) {
+							if ((mapping.bindIn == Bind_Down_T && evt.evt.type == SDL_KEYDOWN) ||
+								(mapping.bindIn == Bind_Up_T   && evt.evt.type == SDL_KEYUP))
+							{
+								matched = (evt.evt.key.keysym.sym == mapping.button &&
+										   evt.evt.key.keysym.mod == mapping.modifier);
+							}
+							else if ((mapping.bindIn == Bind_Down_T && evt.evt.type == SDL_MOUSEBUTTONDOWN) ||
+									 (mapping.bindIn == Bind_Up_T   && evt.evt.type == SDL_MOUSEBUTTONUP))
+							{
+								matched = (evt.evt.button.button == mapping.button);
+							}
+							else if ((mapping.bindIn == Bind_Down_T && evt.evt.type == SDL_JOYBUTTONDOWN) ||
+									 (mapping.bindIn == Bind_Up_T   && evt.evt.type == SDL_JOYBUTTONUP))
+							{
+								matched = (evt.evt.jbutton.which == mapping.instanceId &&
+										   evt.evt.jbutton.button == mapping.button);
+							}
+						}
+						else { // stateActive
+							if ((mapping.bindOut == Bind_Down_T && evt.evt.type == SDL_KEYDOWN) ||
+								(mapping.bindOut == Bind_Up_T   && evt.evt.type == SDL_KEYUP))
+							{
+								matched = (evt.evt.key.keysym.sym == mapping.button &&
+										   evt.evt.key.keysym.mod == mapping.modifier);
+								// TODO: maybe need to look for sym and mod keys separately here and make state inactive for either one
+							}
+							else if ((mapping.bindOut == Bind_Down_T && evt.evt.type == SDL_MOUSEBUTTONDOWN) ||
+									 (mapping.bindOut == Bind_Up_T   && evt.evt.type == SDL_MOUSEBUTTONUP))
+							{
+								matched = (evt.evt.button.button == mapping.button);
+							}
+							else if ((mapping.bindOut == Bind_Down_T && evt.evt.type == SDL_JOYBUTTONDOWN) ||
+									 (mapping.bindOut == Bind_Up_T   && evt.evt.type == SDL_JOYBUTTONUP))
+							{
+								matched = (evt.evt.jbutton.which == mapping.instanceId &&
+										   evt.evt.jbutton.button == mapping.button);
+							}
+						}
 
-					// found a matching mapping for the event, save the mapping and break
-					if (matched) {
-						matchMappingId = mappingId;
-						matchInputMapping = &mapping;
-						break; // skip checking the rest of the mappings
+						// found a new active state mapping with this event
+						if (matched && !stateActive) {
+							MappedState ms;
+							ms.mappingId = mappingId;
+							ms.inputMapping = &mapping;
+							ms.startCounts = ui.gameTime;
+							ms.startFrame = ui.frame;
+
+							m_frameMappedInput.states.push_back(std::move(ms));
+							break; // skip checking the rest of the mappings
+						}
+						// make state inactive
+						else if (matched && stateActive) {
+							// make inactive, remove from states list by swap with last and pop_back
+							if (m_frameMappedInput.states.size() > 1) {
+								std::swap(m_frameMappedInput.states.at(stateIndex), m_frameMappedInput.states.back());
+							}
+							m_frameMappedInput.states.pop_back();
+							break;
+						}
 					}
 				}
 
-				// found a mapping, push it and break
-				if (matchInputMapping != nullptr) {
-					mi.type = matchInputMapping->type;
-					mi.mappingId = matchMappingId;
-					mi.inputMapping = matchInputMapping;
-					mi.startCounts = ui.gameTime;
-					mi.startFrame = ui.frame;
-					
-					m_frameMappedInput.mappedInputs.push_back(std::move(mi));
-					break; // move on to the next input event
-				}
+				// found a mapping, move on to the next input event
+				if (matched) { break; }
 			}
 			// handle text input events
 			else if (context.options[CaptureTextInput_T] && evt.eventType == Event_TextInput_T) {
@@ -257,6 +315,15 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 }
 
 
+size_t InputSystem::findActiveState(Id_T mappingId) const
+{
+	for (auto s = m_frameMappedInput.states.size() - 1; s >= 0; s--) {
+		if (m_frameMappedInput.states[s].mappingId.value == mappingId.value) { return s; }
+	}
+	return -1;
+}
+
+
 void InputSystem::initialize() // should this be the constructor?
 {
 	// the data structure that holds all of the metadata queried here should use the reflection
@@ -340,7 +407,7 @@ void InputSystem::stopTextInput()
 	SDL_StopTextInput();
 }
 
-bool InputSystem::isTextInputActive() const
+bool InputSystem::textInputActive() const
 {
 	return (SDL_IsTextInputActive() == SDL_TRUE);
 }
@@ -355,7 +422,7 @@ void InputSystem::stopRelativeMouseMode()
 	SDL_SetRelativeMouseMode(SDL_FALSE);
 }
 
-bool InputSystem::isRelativeMouseModeActive() const
+bool InputSystem::relativeMouseModeActive() const
 {
 	return (SDL_GetRelativeMouseMode() == SDL_TRUE);
 }
@@ -382,7 +449,7 @@ InputSystem::~InputSystem()
 		SDL_Log("check RESERVE_INPUTSYSTEM_MOTIONEVENTSQUEUE: original=%d, highest=%d", RESERVE_INPUTSYSTEM_MOTIONEVENTSQUEUE, m_motionEventsQueue.unsafe_capacity());
 	}
 	if (m_popEvents.capacity() > RESERVE_INPUTSYSTEM_POPQUEUE) {
-		SDL_Log("check RESERVE_INPUTSYSTEM_POPQUEUE: original=%d, highest=%d", RESERVE_INPUTSYSTEM_POPQUEUE, m_popEvents.capacity());
+		SDL_Log("check RESERVE_INPUTSYSTEM_POPQUEUE (popEvents): original=%d, highest=%d", RESERVE_INPUTSYSTEM_POPQUEUE, m_popEvents.capacity());
 	}
 	if (m_popMotionEvents.capacity() > RESERVE_INPUTSYSTEM_MOTIONPOPQUEUE) {
 		SDL_Log("check RESERVE_INPUTSYSTEM_MOTIONPOPQUEUE: original=%d, highest=%d", RESERVE_INPUTSYSTEM_MOTIONPOPQUEUE, m_popMotionEvents.capacity());
@@ -393,10 +460,13 @@ InputSystem::~InputSystem()
 	if (m_inputContexts.capacity() > RESERVE_INPUTSYSTEM_CONTEXTS) {
 		SDL_Log("check RESERVE_INPUTSYSTEM_CONTEXTS: original=%d, highest=%d", RESERVE_INPUTSYSTEM_CONTEXTS, m_inputContexts.capacity());
 	}
-	if (m_frameMappedInput.mappedInputs.capacity() > RESERVE_INPUTSYSTEM_POPQUEUE) {
-		SDL_Log("check RESERVE_INPUTSYSTEM_POPQUEUE: original=%d, highest=%d", RESERVE_INPUTSYSTEM_POPQUEUE, m_frameMappedInput.mappedInputs.capacity());
+	// FrameMappedInput reserves
+	if (m_frameMappedInput.actions.capacity() > RESERVE_INPUTSYSTEM_POPQUEUE) {
+		SDL_Log("check RESERVE_INPUTSYSTEM_POPQUEUE (actions): original=%d, highest=%d", RESERVE_INPUTSYSTEM_POPQUEUE, m_frameMappedInput.actions.capacity());
 	}
-
+	if (m_frameMappedInput.states.capacity() > RESERVE_INPUTSYSTEM_POPQUEUE) {
+		SDL_Log("check RESERVE_INPUTSYSTEM_POPQUEUE (states): original=%d, highest=%d", RESERVE_INPUTSYSTEM_POPQUEUE, m_frameMappedInput.states.capacity());
+	}
 }
 
 

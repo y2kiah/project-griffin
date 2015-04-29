@@ -125,18 +125,27 @@ namespace griffin {
 		};
 
 		/**
-		* Mapped Input per action/state/axis per frame. All input timings are quantized to the
-		* update frame rate, therefor the first frame a state becomes active includes the full
-		* frame timestep.
+		* Mapped action for a frame.
 		*/
-		struct MappedInput {
-			InputMappingType	type = Action_T;
+		struct MappedAction {
 			Id_T				mappingId;
 			uint8_t				handled = 0;		//<! flag set to 1 when event has been handled by a callback
 			const InputMapping*	inputMapping = nullptr;
-			float				x = 0, y = 0;		//<! mouse clicks include normalized position here
-			int					xRaw = 0, yRaw = 0;
-			double				totalMs = 0;		//<! total millis the state has been active
+			float				x       = 0;
+			float				y       = 0;		//<! mouse clicks include normalized position here
+			int32_t				xRaw    = 0;
+			int32_t				yRaw    = 0;
+		};
+
+		/**
+		* Mapped active state for a frame. All input timings are quantized to the update frame
+		* rate, therefor the first frame a state becomes active includes the full frame timestep.
+		*/
+		struct MappedState {
+			Id_T				mappingId;
+			uint8_t				handled     = 0;	//<! flag set to 1 when event has been handled by a callback
+			const InputMapping*	inputMapping = nullptr;
+			double				totalMs     = 0;	//<! total millis the state has been active
 			int64_t				startCounts = 0;	//<! clock counts when state began
 			int32_t				totalCounts = 0;	//<! currentCounts - startCounts + countsPerTick
 			int32_t				startFrame  = 0;	//<! frame number when state began
@@ -144,24 +153,27 @@ namespace griffin {
 		};
 
 		/**
-		*
+		* Mapped axis for a frame. Motion events are accumulated for the frame to get relative, and
+		* the last absolute position value is taken for the frame.
 		*/
-		struct MappedMotion {
-			InputMapping *		inputMapping = nullptr;
+		struct MappedAxis {
 			Id_T				mappingId;
+			uint8_t				handled = 0;		//<! flag set to 1 when event has been handled by a callback
+			const InputMapping*	inputMapping = nullptr;
 			float				posMapped[2];		//<! mapped motion, absolute position, 2-dimensional for joystick ball, hat, and mouse
-			float				relMapped[2];		//<! mapped motion, relative motion for the frame
-			int					posRaw[2];			//<! raw values from the device, not normalized or mapped to curve, may be useful but probably not
-			int					relRaw[2];			//<! relative raw values from the device
+			float				relMapped[2];		//<! mapped motion, relative motion since last frame
+			int32_t				posRaw[2];			//<! raw values from the device, not normalized or mapped to curve, may be useful but probably not
+			int32_t				relRaw[2];			//<! relative raw values from the device
 		};
 
 		/**
-		* Container holding all mapped input per frame plus text input and axis motion
+		* Container holding all mapped input for a frame, plus text input
 		*/
 		struct FrameMappedInput {
-			vector<MappedInput>		mappedInputs;
-			MappedMotion			mouseMotion;
-			vector<MappedMotion>	joystickMotion;
+			vector<MappedAction>	actions;
+			vector<MappedState>		states;
+			MappedAxis				mouseMotion;
+			vector<MappedAxis>		joystickMotion;
 			std::wstring			textInput;				//<! Text input buffer
 			/*std::wstring			textComposition;		//<! Text editing buffer
 			int						cursorPos = 0;			//<! Text editing cursor position
@@ -201,7 +213,9 @@ namespace griffin {
 				m_popEvents.reserve(RESERVE_INPUTSYSTEM_POPQUEUE);
 				m_popMotionEvents.reserve(RESERVE_INPUTSYSTEM_MOTIONPOPQUEUE);
 				m_activeInputContexts.reserve(RESERVE_INPUTSYSTEM_CONTEXTS);
-				m_frameMappedInput.mappedInputs.reserve(RESERVE_INPUTSYSTEM_POPQUEUE);
+				// FrameMappedInput reserves
+				m_frameMappedInput.actions.reserve(RESERVE_INPUTSYSTEM_POPQUEUE);
+				m_frameMappedInput.states.reserve(RESERVE_INPUTSYSTEM_POPQUEUE);
 			}
 			
 			/**
@@ -246,6 +260,11 @@ namespace griffin {
 				return m_inputMappings[handle];
 			}
 
+			/**
+			* Get index of active state in frame states array, -1 if not present.
+			*/
+			size_t findActiveState(Id_T mappingId) const;
+
 
 			// Input Contexts
 
@@ -264,14 +283,14 @@ namespace griffin {
 			*/
 			void startTextInput();
 			void stopTextInput();
-			bool isTextInputActive() const;
+			bool textInputActive() const;
 
 			/**
 			* Mouse movement mode
 			*/
 			void startRelativeMouseMode();
 			void stopRelativeMouseMode();
-			bool isRelativeMouseModeActive() const;
+			bool relativeMouseModeActive() const;
 
 		private:
 			/**
