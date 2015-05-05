@@ -103,6 +103,10 @@ namespace griffin {
 		*			 tracking gear, even mouse movement if desired.
 		*/
 		struct InputMapping {
+			enum {
+				Name_Size = 32
+			};
+
 			InputMappingType		type = Action_T;		//<! type of this mapping
 			Id_T					mappingId;				//<! the id handle of this mapping
 			InputMappingBindEvent	bindIn = Bind_Down_T;	//<! event to start the action or state
@@ -122,7 +126,7 @@ namespace griffin {
 			uint8_t					relativeMotion = 0;		//<! 0=false, 1=true motion is relative not absolute
 			uint8_t					invert = 0;				//<! 0=false, 1=true axis is inverted
 			uint8_t					slider = 0;				//<! 0=false, 1=true axis is a slider
-			char					name[32];				//<! display name of the mapping
+			char					name[Name_Size];		//<! display name of the mapping
 		};
 
 		/**
@@ -245,7 +249,10 @@ namespace griffin {
 			/**
 			* Create an input mapping and get back its handle
 			*/
-			Id_T createInputMapping(InputMapping&& i);
+			Id_T createInputMapping(InputMapping&& i)
+			{
+				return m_inputMappings.insert(std::forward<InputMapping>(i));
+			}
 			
 			/**
 			* Get an input mapping id from its name, systems use this at initialization and store

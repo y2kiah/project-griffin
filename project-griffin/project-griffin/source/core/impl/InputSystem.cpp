@@ -335,6 +335,17 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 }
 
 
+Id_T InputSystem::getInputMappingHandle(const string& name) const
+{
+	for (const auto& i : m_inputMappings.getItems()) {
+		if (strncmp(name.c_str(), i.name, InputMapping::Name_Size) == 0) {
+			return i.mappingId;
+		}
+	}
+	return Id_T{};
+}
+
+
 size_t InputSystem::findActiveState(Id_T mappingId) const
 {
 	for (auto s = m_frameMappedInput.states.size() - 1; s >= 0; s--) {
