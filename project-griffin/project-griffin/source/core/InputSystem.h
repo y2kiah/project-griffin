@@ -111,6 +111,7 @@ namespace griffin {
 			uint32_t				instanceId = 0;			//<! instanceID of the device, comes through event "which"
 			uint32_t				button = 0;				//<! keyboard virtual key code , mouse or joystick button
 			uint16_t				modifier = 0;			//<! keyboard modifier, SDL_Keymod, defaults to 0 (KMOD_NONE)
+			uint8_t					mouseWheel = 0;			//<! 0=false, 1=true is a mouse wheel binding
 			uint8_t					axis = 0;				//<! index of the joystick axis
 			uint8_t					clicks = 1;				//<! number of mouse clicks for binding (2==double-click)
 			uint8_t					deadzone = 0;			//<! deadzone for axis
@@ -147,7 +148,7 @@ namespace griffin {
 			const InputMapping*	inputMapping = nullptr;
 			double				totalMs     = 0;	//<! total millis the state has been active
 			int64_t				startCounts = 0;	//<! clock counts when state began
-			int32_t				totalCounts = 0;	//<! currentCounts - startCounts + countsPerTick
+			int64_t				totalCounts = 0;	//<! currentCounts - startCounts + countsPerTick
 			int32_t				startFrame  = 0;	//<! frame number when state began
 			int32_t				totalFrames = 0;	//<! currentFrame - startFrame + 1
 		};
@@ -297,6 +298,9 @@ namespace griffin {
 			* Translate input events into mapped into for one frame
 			*/
 			void mapFrameInputs(const UpdateInfo& ui);
+			void mapFrameMotion(const UpdateInfo& ui);
+
+			// Variables
 
 			concurrent_queue<InputEvent>	m_eventsQueue;			//<! push on input thread, pop on update thread
 			concurrent_queue<InputEvent>	m_motionEventsQueue;

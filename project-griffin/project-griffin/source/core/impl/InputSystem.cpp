@@ -18,54 +18,45 @@ void InputSystem::update(const UpdateInfo& ui)
 
 	m_motionEventsQueue.try_pop_all(m_popMotionEvents); // need to pop all events because of the underlying use of vector_queue
 
-	// map inputs using active context stack
+	// clear previous frame actions
+	m_frameMappedInput.actions.clear();
+
+	// remove active states that are no longer mappings in any active context
+	std::remove_if(m_frameMappedInput.states.begin(), m_frameMappedInput.states.end(),
+				   [&](const MappedState& state) {
+		for (const auto& ac : m_activeInputContexts) {
+			if (!ac.active) { continue; }
+			auto& context = m_inputContexts[ac.contextId];
+			if (std::find(context.inputMappings.begin(), context.inputMappings.end(), state.mappingId) != context.inputMappings.end()) {
+				return false;
+			}
+		}
+		return true;
+	});
+
+	// loop over active states, add to totalCounts, totalMS and totalFrames
+	for (auto& state : m_frameMappedInput.states) {
+		state.totalFrames += 1;
+		state.totalCounts += ui.deltaCounts;
+		state.totalMs += ui.deltaMs;
+	}
+
+	// map inputs using active contexts
 	mapFrameInputs(ui);
+	mapFrameMotion(ui);
 }
 
 
 void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 {
-	// accumulate relative mouse movement for this frame
-	int mouse_xrel = 0;
-	int mouse_yrel = 0;
-
-	// process all motion events, these go to axis mappings
-	auto frameSize = m_popMotionEvents.size();
-	for (int e = 0; e < frameSize; ++e) {
-		const auto& motionEvt = m_popMotionEvents[e];
-
-		// if timestamp is greater than frame time, we're done
-		if (motionEvt.timeStampCounts > ui.virtualTime) {
-			frameSize = e;
-			break;
-		}
-
-		switch (motionEvt.evt.type) {
-			case SDL_MOUSEMOTION: {
-				mouse_xrel += motionEvt.evt.motion.xrel;
-				mouse_yrel += motionEvt.evt.motion.yrel;
-				break;
-			}
-			case SDL_JOYAXISMOTION: {
-
-				break;
-			}
-		}
-
-	}
-	// erase up to the last event for this frame
-	m_popMotionEvents.erase(m_popMotionEvents.begin(), m_popMotionEvents.begin() + frameSize);
-
-	// clear previous frame actions
-	m_frameMappedInput.actions.clear();
-	// TODO: loop over previous frame states, remove states that are not mappings in any active context
-	// also add to totalCounts, totalMS and totalFrames
-
-	// process all other input events
+	// process this frame's input events
 	for (auto& evt : m_popEvents) {							// for each input event
 		bool matched = false;
 
 		for (const auto& ac : m_activeInputContexts) {		// for each active context
+			// skip contexts that aren't active
+			if (!ac.active) { continue; }
+
 			auto& context = m_inputContexts[ac.contextId];
 			
 			// handle key and button events
@@ -104,12 +95,11 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 						}
 						else if (evt.evt.type == SDL_MOUSEWHEEL)
 						{
-							// add a way to map a mouse wheel binding
-							/*evt.evt.wheel.x 
-							if (matched) {
-								mi.xRaw = evt.evt.button.x;
-								mi.yRaw = evt.evt.button.y;
-							}*/
+							matched = (mapping.mouseWheel == 1 &&
+									   (mapping.axis == 0 && mapping.bindIn == Bind_Up_T   && evt.evt.wheel.x > 0) ||
+									   (mapping.axis == 0 && mapping.bindIn == Bind_Down_T && evt.evt.wheel.x < 0) ||
+									   (mapping.axis == 1 && mapping.bindIn == Bind_Up_T   && evt.evt.wheel.y > 0) ||
+									   (mapping.axis == 1 && mapping.bindIn == Bind_Down_T && evt.evt.wheel.y < 0));
 						}
 
 						// found a matching action mapping for the event
@@ -208,11 +198,41 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 				(evt.eventType == Event_Keyboard_T || evt.eventType == Event_TextInput_T)) { break; }
 		}
 	}
+}
 
-	// 
-	//for (const auto& e : m_popEvents) {
-	//	SDL_Log("  Processed Input type=%d: realTime=%lu\n", e.evt.type, e.timeStampCounts);
-	//}
+
+void InputSystem::mapFrameMotion(const UpdateInfo& ui)
+{
+	// accumulate relative mouse movement for this frame
+	int mouse_xrel = 0;
+	int mouse_yrel = 0;
+
+	// process all motion events, these go to axis mappings
+	auto frameSize = m_popMotionEvents.size();
+	for (int e = 0; e < frameSize; ++e) {
+		const auto& motionEvt = m_popMotionEvents[e];
+
+		// if timestamp is greater than frame time, we're done
+		if (motionEvt.timeStampCounts > ui.virtualTime) {
+			frameSize = e;
+			break;
+		}
+
+		switch (motionEvt.evt.type) {
+			case SDL_MOUSEMOTION: {
+				mouse_xrel += motionEvt.evt.motion.xrel;
+				mouse_yrel += motionEvt.evt.motion.yrel;
+				break;
+			}
+			case SDL_JOYAXISMOTION: {
+
+				break;
+			}
+		}
+
+	}
+	// erase up to the last event for this frame
+	m_popMotionEvents.erase(m_popMotionEvents.begin(), m_popMotionEvents.begin() + frameSize);
 }
 
 
