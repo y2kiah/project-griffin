@@ -935,15 +935,6 @@
     <None Include="source\render\shaders\layout.glsli">
       <Filter>render\shaders</Filter>
     </None>
-    <None Include="scripts\init.lua">
-      <Filter>lua</Filter>
-    </None>
-    <None Include="scripts\JSON.lua">
-      <Filter>lua</Filter>
-    </None>
-    <None Include="scripts\luaBuild.lua">
-      <Filter>lua</Filter>
-    </None>
     <None Include="data\config\inputcontexts.json">
       <Filter>config</Filter>
     </None>
@@ -962,7 +953,16 @@
     <None Include="source\utility\container\impl\vector_queue-inl.h">
       <Filter>utility\container\impl</Filter>
     </None>
-    <None Include="scripts\InputSystem.lua">
+    <None Include="source\lua\init.lua">
+      <Filter>lua</Filter>
+    </None>
+    <None Include="source\lua\InputSystem.lua">
+      <Filter>lua</Filter>
+    </None>
+    <None Include="source\lua\JSON.lua">
+      <Filter>lua</Filter>
+    </None>
+    <None Include="source\lua\luaBuild.lua">
       <Filter>lua</Filter>
     </None>
   </ItemGroup>

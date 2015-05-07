@@ -30,7 +30,6 @@ namespace griffin {
 
 		class InputSystem;
 		class InputContext;
-		
 
 		// Typedefs/Enums
 
@@ -285,6 +284,14 @@ namespace griffin {
 			* Make the InputContext, true on success
 			*/
 			bool makeContextActive(Id_T contextId);
+
+			/**
+			* Get an input context from its handle, asserts that the handle is valid.
+			*/
+			InputContext& getContext(Id_T contextId)
+			{
+				return m_inputContexts[contextId];
+			}
 
 			/**
 			* Text editing mode
