@@ -85,6 +85,11 @@ extern "C" {
 	GRIFFIN_EXPORT
 	griffin_InputMapping* griffin_input_getInputMapping(uint64_t mapping);
 
+	//typedef void(*CallbackFunc_T)()
+
+	GRIFFIN_EXPORT
+	void griffin_input_registerCallback();
+
 #endif ffi
 #undef ffi
 // end inclusion in lua FFI declaration

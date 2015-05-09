@@ -295,9 +295,11 @@ namespace griffin {
 
 			// Callbacks
 
-			/*typedef void(*CallbackFunc_T)(FrameMappedInput&, const UpdateInfo&);
-			template<CallbackFunc_T>
-			void registerCallback(CallbackFunc_T)*/
+			typedef std::function<void(FrameMappedInput&, const UpdateInfo&)> CallbackFunc_T;
+			
+			void registerCallback(const CallbackFunc_T& func) {
+				m_callbacks.push_back(func);
+			}
 
 
 			// Input Modes
@@ -334,6 +336,7 @@ namespace griffin {
 			handle_map<InputMapping>		m_inputMappings;		//<! collection of input mappings (actions,states,axes)
 			handle_map<InputContext>		m_inputContexts;		//<! collection of input contexts
 			vector<ActiveInputContext>		m_activeInputContexts;	//<! active input contexts sorted by priority ascending
+			vector<CallbackFunc_T>			m_callbacks;
 			FrameMappedInput				m_frameMappedInput;		//<! per-frame mapped input buffer
 
 			//	ThreadSafeState() : m_inputContexts(0, RESERVE_INPUT_CONTEXTS) {}
