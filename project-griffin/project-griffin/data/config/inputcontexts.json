@@ -5,11 +5,11 @@
 		"visible": false,
 		"actions": [],
 		"states": [
-			{ "name": "Move forward",	"bind": "down" },
-			{ "name": "Move backward",	"bind": "down" },
-			{ "name": "Move left",		"bind": "down" },
-			{ "name": "Move right",		"bind": "down" },
-			{ "name": "High speed",		"bind": "toggle" }
+			{ "name": "Move Forward",	"bind": "down" },
+			{ "name": "Move Backward",	"bind": "down" },
+			{ "name": "Move Left",		"bind": "down" },
+			{ "name": "Move Right",		"bind": "down" },
+			{ "name": "High Speed",		"bind": "toggle" }
 		],
 		"axes": []
 	},
@@ -44,7 +44,7 @@
 			{ "name": "Exit",			"bind": "down" }
 		],
 		"states": [
-			{ "name": "Pause",			"bind": "down" }
+			{ "name": "Pause",			"bind": "toggle" }
 		],
 		"axes": []
 	}

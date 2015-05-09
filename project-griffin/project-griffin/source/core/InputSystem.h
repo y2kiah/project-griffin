@@ -102,17 +102,12 @@ namespace griffin {
 		*			 tracking gear, even mouse movement if desired.
 		*/
 		struct InputMapping {
-			enum {
-				Name_Size = 32
-			};
-
 			InputMappingType		type = Action_T;		//<! type of this mapping
-			Id_T					mappingId;				//<! the id handle of this mapping
 			InputMappingBindEvent	bindIn = Bind_Down_T;	//<! event to start the action or state
 			InputMappingBindEvent	bindOut = Bind_Up_T;	//<! event to end the state
 			InputMappingAxisCurve	curve = Curve_SCurve_T;	//<! curve type of axis
 			uint32_t				instanceId = 0;			//<! instanceID of the device, comes through event "which"
-			uint32_t				button = 0;				//<! keyboard virtual key code , mouse or joystick button
+			uint32_t				button = 0;				//<! keyboard virtual key code, mouse or joystick button
 			uint16_t				modifier = 0;			//<! keyboard modifier, SDL_Keymod, defaults to 0 (KMOD_NONE)
 			uint8_t					mouseWheel = 0;			//<! 0=false, 1=true is a mouse wheel binding
 			uint8_t					axis = 0;				//<! index of the joystick axis
@@ -125,7 +120,9 @@ namespace griffin {
 			uint8_t					relativeMotion = 0;		//<! 0=false, 1=true motion is relative not absolute
 			uint8_t					invert = 0;				//<! 0=false, 1=true axis is inverted
 			uint8_t					slider = 0;				//<! 0=false, 1=true axis is a slider
-			char					name[Name_Size];		//<! display name of the mapping
+			Id_T					mappingId;				//<! the id handle of this mapping
+			Id_T					contextId;				//<! the id handle of the context
+			char					name[32];				//<! display name of the mapping
 		};
 
 		/**
@@ -257,15 +254,13 @@ namespace griffin {
 			* Get an input mapping id from its name, systems use this at initialization and store
 			* the handle for subsequently matching frame input mappings
 			*/
-			Id_T getInputMappingHandle(const string& name) const;
+			Id_T getInputMappingHandle(const string& name, Id_T contextId) const;
 			
 			/**
 			* Get an input mapping from its handle, asserts that the handle is valid.
 			*/
-			const InputMapping& getInputMapping(Id_T handle) const
-			{
-				return m_inputMappings[handle];
-			}
+			InputMapping& getInputMapping(Id_T handle)				{ return m_inputMappings[handle]; }
+			const InputMapping& getInputMapping(Id_T handle) const	{ return m_inputMappings[handle]; }
 
 			/**
 			* Get index of active state in frame states array, -1 if not present.
@@ -278,20 +273,34 @@ namespace griffin {
 			/**
 			* Create a context and get back its handle
 			*/
-			Id_T createContext(uint16_t optionsMask /*this needs to change, sink the whole struct*/, uint8_t priority, bool makeActive = false);
+			Id_T createContext(uint16_t optionsMask, uint8_t priority, bool makeActive = false);
 
 			/**
-			* Make the InputContext, true on success
+			* Set the InputContext, returns true on success
 			*/
-			bool makeContextActive(Id_T contextId);
+			bool setContextActive(Id_T contextId, bool active = true);
+
+			/**
+			* Get an input context id from its name, systems use this at initialization and store
+			* the handle for subsequently manipulating contexts
+			*/
+			Id_T getInputContextHandle(const string& name) const;
 
 			/**
 			* Get an input context from its handle, asserts that the handle is valid.
 			*/
-			InputContext& getContext(Id_T contextId)
-			{
-				return m_inputContexts[contextId];
-			}
+			InputContext& getContext(Id_T contextId)				{ return m_inputContexts[contextId]; }
+			const InputContext& getContext(Id_T contextId) const	{ return m_inputContexts[contextId]; }
+
+
+			// Callbacks
+
+			/*typedef void(*CallbackFunc_T)(FrameMappedInput&, const UpdateInfo&);
+			template<CallbackFunc_T>
+			void registerCallback(CallbackFunc_T)*/
+
+
+			// Input Modes
 
 			/**
 			* Text editing mode
@@ -390,7 +399,8 @@ namespace griffin {
 			bitset<InputContextOptionsCount> options = {};	//<! all input context options
 			//uint8_t		cursorIndex;					//<! lookup into input system's cursor table
 			vector<Id_T>	inputMappings = {};				//<! stores input mapping to actions, states, axes
-
+			Id_T			contextId;						//<! the id handle of this context
+			char			name[32];						//<! display name of the context
 		};
 
 	}

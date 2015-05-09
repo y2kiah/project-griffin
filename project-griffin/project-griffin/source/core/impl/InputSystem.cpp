@@ -44,6 +44,14 @@ void InputSystem::update(const UpdateInfo& ui)
 	// map inputs using active contexts
 	mapFrameInputs(ui);
 	mapFrameMotion(ui);
+
+	// TEMP output mapped inputs
+	for (const auto& s : m_frameMappedInput.states) {
+		SDL_Log("state \"%s\" active", s.inputMapping->name);
+	}
+	for (const auto& a : m_frameMappedInput.actions) {
+		SDL_Log("action \"%s\" triggered", a.inputMapping->name);
+	}
 }
 
 
@@ -119,7 +127,8 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 
 						if (!stateActive) {
 							if ((mapping.bindIn == Bind_Down_T && evt.evt.type == SDL_KEYDOWN) ||
-								(mapping.bindIn == Bind_Up_T   && evt.evt.type == SDL_KEYUP))
+								(mapping.bindIn == Bind_Up_T   && evt.evt.type == SDL_KEYUP) &&
+								(mapping.bindIn != mapping.bindOut || !evt.evt.key.repeat)) // prevent repeat key events from changing toggle states
 							{
 								matched = (evt.evt.key.keysym.sym == mapping.button &&
 										   evt.evt.key.keysym.mod == mapping.modifier);
@@ -245,8 +254,8 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 		case SDL_KEYDOWN:
 		case SDL_KEYUP: {
 			if (event.key.repeat == 0) {
-				SDL_Log("key event=%d: state=%d: key=%d: repeat=%d: realTime=%lu\n",
-						event.type, event.key.state, event.key.keysym.scancode, event.key.repeat, timestamp);
+				/*SDL_Log("key event=%d: state=%d: key=%d: repeat=%d: realTime=%lu\n",
+						event.type, event.key.state, event.key.keysym.scancode, event.key.repeat, timestamp);*/
 
 				m_eventsQueue.push({ Event_Keyboard_T, std::move(event), timestamp });
 			}
@@ -335,26 +344,6 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 }
 
 
-Id_T InputSystem::getInputMappingHandle(const string& name) const
-{
-	for (const auto& i : m_inputMappings.getItems()) {
-		if (strncmp(name.c_str(), i.name, InputMapping::Name_Size) == 0) {
-			return i.mappingId;
-		}
-	}
-	return Id_T{};
-}
-
-
-size_t InputSystem::findActiveState(Id_T mappingId) const
-{
-	for (auto s = m_frameMappedInput.states.size() - 1; s >= 0; s--) {
-		if (m_frameMappedInput.states[s].mappingId.value == mappingId.value) { return s; }
-	}
-	return -1;
-}
-
-
 void InputSystem::initialize() // should this be the constructor?
 {
 	// the data structure that holds all of the metadata queried here should use the reflection
@@ -397,6 +386,30 @@ void InputSystem::initialize() // should this be the constructor?
 
 }
 
+
+Id_T InputSystem::getInputMappingHandle(const string& name, Id_T contextId) const
+{
+	const auto& context = m_inputContexts[contextId];
+
+	for (Id_T m : context.inputMappings) {
+		const auto& mapping = m_inputMappings[m];
+		if (strncmp(name.c_str(), mapping.name, 32) == 0) {
+			return mapping.mappingId;
+		}
+	}
+	return Id_T{};
+}
+
+
+size_t InputSystem::findActiveState(Id_T mappingId) const
+{
+	for (size_t s = 0; s < m_frameMappedInput.states.size();  ++s) {
+		if (m_frameMappedInput.states[s].mappingId.value == mappingId.value) { return s; }
+	}
+	return -1;
+}
+
+
 Id_T InputSystem::createContext(uint16_t optionsMask, uint8_t priority, bool makeActive)
 {
 	//auto f = tss_([optionsMask](ThreadSafeState& tss_) {
@@ -414,12 +427,13 @@ Id_T InputSystem::createContext(uint16_t optionsMask, uint8_t priority, bool mak
 	return contextId;
 }
 
-bool InputSystem::makeContextActive(Id_T contextId)
+
+bool InputSystem::setContextActive(Id_T contextId, bool active)
 {
 	if (m_inputContexts.isValid(contextId)) {
 		for (auto& ac : m_activeInputContexts) {
 			if (ac.contextId == contextId) {
-				ac.active = true;
+				ac.active = active;
 				break;
 			}
 		}
@@ -428,35 +442,53 @@ bool InputSystem::makeContextActive(Id_T contextId)
 	return false;
 }
 
+
+Id_T InputSystem::getInputContextHandle(const string& name) const
+{
+	for (const auto& i : m_inputContexts.getItems()) {
+		if (strncmp(name.c_str(), i.name, 32) == 0) {
+			return i.contextId;
+		}
+	}
+	return Id_T{};
+}
+
+
 void InputSystem::startTextInput()
 {
 	SDL_StartTextInput();
 }
+
 
 void InputSystem::stopTextInput()
 {
 	SDL_StopTextInput();
 }
 
+
 bool InputSystem::textInputActive() const
 {
 	return (SDL_IsTextInputActive() == SDL_TRUE);
 }
+
 
 void InputSystem::startRelativeMouseMode()
 {
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 }
 
+
 void InputSystem::stopRelativeMouseMode()
 {
 	SDL_SetRelativeMouseMode(SDL_FALSE);
 }
 
+
 bool InputSystem::relativeMouseModeActive() const
 {
 	return (SDL_GetRelativeMouseMode() == SDL_TRUE);
 }
+
 
 InputSystem::~InputSystem()
 {

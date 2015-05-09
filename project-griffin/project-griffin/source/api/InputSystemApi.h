@@ -12,6 +12,31 @@ extern "C" {
 // begin inclusion in lua FFI declaration
 #define ffi
 #ifdef ffi
+	enum {
+		CONTEXT_OPTION_CAPTURE_TEXT_INPUT  = 0,		//<! true if text input events should be captured by this context
+		CONTEXT_OPTION_RELATIVE_MOUSE_MODE = 1,		//<! true for relative mouse mode vs. regular "GUI" mode
+		CONTEXT_OPTION_SHOW_MOUSE_CURSOR   = 2,		//<! true to show cursor specified by m_cursorIndex
+		CONTEXT_OPTION_EAT_KEYBOARD_EVENTS = 4,		//<! true to eat all keyboard events, preventing pass-down to lower contexts
+		CONTEXT_OPTION_EAT_MOUSE_EVENTS    = 8,		//<! prevent mouse events from passing down
+		CONTEXT_OPTION_EAT_JOYSTICK_EVENTS = 16		//<! prevent joystick events from passing down
+	};
+
+	enum {
+		MAPPING_TYPE_ACTION = 0,
+		MAPPING_TYPE_STATE  = 1,
+		MAPPING_TYPE_AXIS   = 2
+	};
+
+	enum {
+		MAPPING_BIND_DOWN   = 0,
+		MAPPING_BIND_UP     = 1,
+		MAPPING_BIND_TOGGLE = 2
+	};
+	
+	enum {
+		MAPPING_CURVE_LINEAR = 0,
+		MAPPING_CURVE_SCURVE = 1
+	};
 
 	//////////
 	// Input mappings map raw input events or position data to Actions, States or Ranges. These
@@ -26,12 +51,11 @@ extern "C" {
 	//////////
 	typedef struct {
 		uint8_t		type;				//<! type of this mapping
-		uint64_t	mappingId;			//<! the id handle of this mapping
 		uint8_t		bindIn;				//<! event to start the action or state
 		uint8_t		bindOut;			//<! event to end the state
 		uint8_t		curve;				//<! curve type of axis
 		uint32_t	instanceId;			//<! instanceID of the device, comes through event "which"
-		uint32_t	button;				//<! keyboard virtual key code , mouse or joystick button
+		uint32_t	button;				//<! keyboard virtual key code, mouse or joystick button
 		uint16_t	modifier;			//<! keyboard modifier, SDL_Keymod, defaults to 0 (KMOD_NONE)
 		uint8_t		mouseWheel;			//<! 0=false, 1=true is a mouse wheel binding
 		uint8_t		axis;				//<! index of the joystick axis
@@ -44,14 +68,22 @@ extern "C" {
 		uint8_t		relativeMotion;		//<! 0=false, 1=true motion is relative not absolute
 		uint8_t		invert;				//<! 0=false, 1=true axis is inverted
 		uint8_t		slider;				//<! 0=false, 1=true axis is a slider
+		uint64_t	mappingId;			//<! the id handle of this mapping
+		uint64_t	contextId;			//<! the id handle of the context
 		char		name[32];			//<! display name of the mapping
 	} griffin_InputMapping;
 
 	GRIFFIN_EXPORT
-	uint64_t griffin_input_createContext(uint8_t priority, bool makeActive);
+	uint64_t griffin_input_createContext(uint16_t optionsMask, uint8_t priority, const char name[32], bool makeActive);
 
 	GRIFFIN_EXPORT
-	uint64_t griffin_input_createInputMapping(const griffin_InputMapping* mapping, uint64_t context);
+	bool griffin_input_setContextActive(uint64_t context, bool active);
+
+	GRIFFIN_EXPORT
+	uint64_t griffin_input_createInputMapping(const char name[32], uint64_t context);
+
+	GRIFFIN_EXPORT
+	griffin_InputMapping* griffin_input_getInputMapping(uint64_t mapping);
 
 #endif ffi
 #undef ffi

@@ -1,27 +1,27 @@
 {
 	"actions": [
-		{ "context": "ingame",		"name": "Exit",				"device": "0",	"keycode": 27 },
-		{ "context": "playerfps",	"name": "Jump",				"device": "0",	"keycode": 32 },
-		{ "context": "playerfps",	"name": "Use",				"device": "0",	"keycode": 102 },
-		{ "context": "playerfps",	"name": "Reload",			"device": "0",	"keycode": 114 }
+		{ "context": "ingame",		"name": "Exit",				"device": 0,	"keycode": 27 },
+		{ "context": "playerfps",	"name": "Jump",				"device": 0,	"keycode": 32 },
+		{ "context": "playerfps",	"name": "Use",				"device": 0,	"keycode": 102 },
+		{ "context": "playerfps",	"name": "Reload",			"device": 0,	"keycode": 114 }
 	],
 	"states": [
-		{ "context": "ingame",		"name": "Pause",			"device": "0",	"keycode": 112 },
-		{ "context": "devcamera",	"name": "Move Forward",		"device": "0",	"keycode": 119 },
-		{ "context": "devcamera",	"name": "Move Back",		"device": "0",	"keycode": 115 },
-		{ "context": "devcamera",	"name": "Move Left",		"device": "0",	"keycode": 97 },
-		{ "context": "devcamera",	"name": "Move Right",		"device": "0",	"keycode": 100 },
-		{ "context": "devcamera",	"name": "High Speed",		"device": "0",	"keycode": 1073742049 },
-		{ "context": "playerfps",	"name": "Move Forward",		"device": "0",	"keycode": 119 },
-		{ "context": "playerfps",	"name": "Move Back",		"device": "0",	"keycode": 115 },
-		{ "context": "playerfps",	"name": "Move Left",		"device": "0",	"keycode": 97 },
-		{ "context": "playerfps",	"name": "Move Right",		"device": "0",	"keycode": 100 },
-		{ "context": "playerfps",	"name": "Run/Walk",			"device": "0",	"keycode": 1073742049 },
-		{ "context": "playerfps",	"name": "Run/Walk (Hold)",	"device": "0",	"keycode": 1073742049,	"keymod": 64 },
-		{ "context": "playerfps",	"name": "Crouch",			"device": "0",	"keycode": 99 },
-		{ "context": "playerfps",	"name": "Crouch (Hold)",	"device": "0",	"keycode": 99,			"keymod": 64 },
-		{ "context": "playerfps",	"name": "Prone",			"device": "0",	"keycode": 118 },
-		{ "context": "playerfps",	"name": "Prone (Hold)",		"device": "0",	"keycode": 118,			"keymod": 64 }
+		{ "context": "ingame",		"name": "Pause",			"device": 0,	"keycode": 112 },
+		{ "context": "devcamera",	"name": "Move Forward",		"device": 0,	"keycode": 119 },
+		{ "context": "devcamera",	"name": "Move Backward",	"device": 0,	"keycode": 115 },
+		{ "context": "devcamera",	"name": "Move Left",		"device": 0,	"keycode": 97 },
+		{ "context": "devcamera",	"name": "Move Right",		"device": 0,	"keycode": 100 },
+		{ "context": "devcamera",	"name": "High Speed",		"device": 0,	"keycode": 1073742049 },
+		{ "context": "playerfps",	"name": "Move Forward",		"device": 0,	"keycode": 119 },
+		{ "context": "playerfps",	"name": "Move Back",		"device": 0,	"keycode": 115 },
+		{ "context": "playerfps",	"name": "Move Left",		"device": 0,	"keycode": 97 },
+		{ "context": "playerfps",	"name": "Move Right",		"device": 0,	"keycode": 100 },
+		{ "context": "playerfps",	"name": "Run/Walk",			"device": 0,	"keycode": 1073742049 },
+		{ "context": "playerfps",	"name": "Run/Walk (Hold)",	"device": 0,	"keycode": 1073742049,	"keymod": 64 },
+		{ "context": "playerfps",	"name": "Crouch",			"device": 0,	"keycode": 99 },
+		{ "context": "playerfps",	"name": "Crouch (Hold)",	"device": 0,	"keycode": 99,			"keymod": 64 },
+		{ "context": "playerfps",	"name": "Prone",			"device": 0,	"keycode": 118 },
+		{ "context": "playerfps",	"name": "Prone (Hold)",		"device": 0,	"keycode": 118,			"keymod": 64 }
 	],
 	"axes": []
 }
