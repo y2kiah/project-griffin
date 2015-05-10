@@ -24,22 +24,22 @@ function initInputSystem()
 	config.inputMappings = JSON:decode(inputMappingsContent)
 	--print(config.inputMappings)
 
-	function getKeyBinding(contextName, mapping, bindings)
+	function setKeyBinding(contextName, mapping, bindings)
 		for b = 1,#bindings do
 			local binding = bindings[b]
 			if (binding.context == contextName and
 				binding.name == ffi.string(mapping.name))
 			then
-				if binding.device ~= nil then  mapping.instanceId = binding.device end
-				if binding.keycode ~= nil then mapping.button = binding.keycode end
-				if binding.keymod ~= nil then  mapping.modifier = binding.keymod end
+				if binding.device ~= nil then   mapping.device = binding.device end
+				if binding.keycode ~= nil then  mapping.keycode = binding.keycode end
+				if binding.modifier ~= nil then mapping.modifier = binding.modifier end
 			end
 		end
 	end
 
 	local contextMap = {}
 
-	-- create contexts
+	-- create contexts from inputcontexts.json
 	for contextName,context in pairs(config.inputContexts) do
 		print(contextName)
 
@@ -50,7 +50,7 @@ function initInputSystem()
 
 		local contextMappings = {}
 
-		-- create action mappings
+		-- create action mappings from inputcontexts.json
 		for m = 1,#context.actions do
 			local action = context.actions[m]
 			
@@ -67,11 +67,11 @@ function initInputSystem()
 				mapping.bindIn = C.MAPPING_BIND_UP
 			end
 
-			-- get key bindings
-			getKeyBinding(contextName, mapping, config.inputMappings.actions)
+			-- set key bindings from inputs.json
+			setKeyBinding(contextName, mapping, config.inputMappings.actions)
 		end
 
-		-- create state mappings
+		-- create state mappings from inputcontexts.json
 		for m = 1,#context.states do
 			local state = context.states[m]
 
@@ -88,6 +88,7 @@ function initInputSystem()
 			elseif (state.bind == "up") then
 				mapping.bindIn = C.MAPPING_BIND_UP
 				mapping.bindOut = C.MAPPING_BIND_DOWN
+				-- states with an "up" binding should be active by default, could do that here
 
 			elseif (state.bind == "toggle") then
 				mapping.bindIn = C.MAPPING_BIND_DOWN
@@ -98,8 +99,8 @@ function initInputSystem()
 			--print(mapping.bindIn)
 			--print(mapping.bindOut)
 
-			-- get key bindings
-			getKeyBinding(contextName, mapping, config.inputMappings.states)
+			-- set key bindings from inputs.json
+			setKeyBinding(contextName, mapping, config.inputMappings.states)
 		end
 
 		-- id is 64-bit boxed cdata, unsuitable for use as a table key, use tostring(id) to use as a key

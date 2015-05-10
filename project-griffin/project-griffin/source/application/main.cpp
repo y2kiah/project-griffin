@@ -21,7 +21,6 @@ using std::unique_ptr;
 using std::vector;
 using std::string;
 
-void test_resource_loader(); // test
 
 int main(int argc, char *argv[])
 {
@@ -64,10 +63,11 @@ int main(int argc, char *argv[])
 				// should this simple vector become a task flow graph?
 				// example systems:
 				//	InputSystem
+				//	ResourceLoader
 				//	AISystem
-				//	ResourcePredictionSystem
 				//	PhysicsSystem
 				//	CollisionSystem
+				//	ResourcePredictionSystem
 				//	etc.
 			});
 

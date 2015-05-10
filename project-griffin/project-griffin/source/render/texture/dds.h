@@ -1,6 +1,6 @@
 #pragma once
-#ifndef GRIFFIN_GL_DDS_H
-#define GRIFFIN_GL_DDS_H
+#ifndef GRIFFIN_GL_DDS_H_
+#define GRIFFIN_GL_DDS_H_
 
 #include <cstdint>
 

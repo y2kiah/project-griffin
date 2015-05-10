@@ -19,7 +19,7 @@ namespace griffin {
 			const wstring &name,
 			CacheType cache,
 			BuilderFunc&& builder,
-			Callback callback)
+			CallbackFunc_T callback)
 		{
 			static_assert(std::is_same<std::result_of<BuilderFunc(DataPtr, size_t)>::type, T>::value, "builder must return an object of type T");
 
@@ -68,9 +68,8 @@ namespace griffin {
 				// add handle to index
 				impl.m_nameToHandle[name] = id;
 
-				// don't call this here, it will run the callback on the resource loader thread
-				// instead wrap closure around the callback (binding the resource value) and
-				// add to a callback queue to be called once per frame from the update thread
+				// wrap callback in a closure and queue it to be run on the update thread, this function
+				// is running on the resource loader thread
 				if (callback) {
 					m_callbacks.push([resourcePtr, id, size, callback](){ callback(resourcePtr, id, size); });
 				}

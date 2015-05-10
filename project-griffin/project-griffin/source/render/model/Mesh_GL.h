@@ -1,6 +1,6 @@
 #pragma once
-#ifndef GRIFFIN_MESH_GL_
-#define GRIFFIN_MESH_GL_
+#ifndef GRIFFIN_MESH_GL_H_
+#define GRIFFIN_MESH_GL_H_
 
 #include <cstdint>
 #include <memory>
@@ -36,16 +36,16 @@ namespace griffin {
 		* predetermined and are enabled on an as-needed basis.
 		*/
 		struct DrawSet {
-			uint8_t		vertexFlags = 0;			// <! bits set from enum VertexFlags, checked against a material's requirements
+			uint8_t		vertexFlags = 0;			//<! bits set from enum VertexFlags, checked against a material's requirements
 
-			uint32_t	vertexSize = 0;				// <! size / stride of the vertex
-			uint32_t	numElements = 0;			// <! for GL_TRIANGLES it's number of primitives * 3
-			uint32_t	indexBaseOffset = 0;		// <! base offset into the index buffer
-			uint32_t	indexRangeStart = 0;		// <! range low of indices into the vertex buffer, before vertexBaseOffset is added
-			uint32_t	indexRangeEnd = 0;			// <! range high of indices into the vertex buffer, before vertexBaseOffset is added
-			uint32_t	vertexBaseOffset = 0;		// <! base offset into the vertex buffer
-			uint32_t	glPrimitiveType = 0;		// <! GL_TRIANGLES is the only mode currently supported
-			uint32_t	glVAO = 0;					// <! Vertex Array Object, created during Mesh_GL initialization
+			uint32_t	vertexSize = 0;				//<! size / stride of the vertex
+			uint32_t	numElements = 0;			//<! for GL_TRIANGLES it's number of primitives * 3
+			uint32_t	indexBaseOffset = 0;		//<! base offset into the index buffer
+			uint32_t	indexRangeStart = 0;		//<! range low of indices into the vertex buffer, before vertexBaseOffset is added
+			uint32_t	indexRangeEnd = 0;			//<! range high of indices into the vertex buffer, before vertexBaseOffset is added
+			uint32_t	vertexBaseOffset = 0;		//<! base offset into the vertex buffer
+			uint32_t	glPrimitiveType = 0;		//<! GL_TRIANGLES is the only mode currently supported
+			uint32_t	glVAO = 0;					//<! Vertex Array Object, created during Mesh_GL initialization
 
 			// per-vertex offsets
 			// position is always at offset 0
@@ -55,9 +55,9 @@ namespace griffin {
 			uint8_t		tangentOffset = 0;
 			uint8_t		bitangentOffset = 0;
 
-			uint8_t		numColorChannels = 0;		// <! how many 4-byte colors are there? Up to 8 supported.
-			uint8_t		numTexCoordChannels = 0;	// <! how many U, UV or UVW coordinate sets are there? Up to 8 supported.
-			uint8_t		numTexCoordComponents[8];	// <! indexed by channel, how many components in the channel?
+			uint8_t		numColorChannels = 0;		//<! how many 4-byte colors are there? Up to 8 supported.
+			uint8_t		numTexCoordChannels = 0;	//<! how many U, UV or UVW coordinate sets are there? Up to 8 supported.
+			uint8_t		numTexCoordComponents[8];	//<! indexed by channel, how many components in the channel?
 		};
 
 

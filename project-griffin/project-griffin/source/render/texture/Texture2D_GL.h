@@ -1,6 +1,6 @@
 #pragma once
-#ifndef GRIFFIN_TEXTURE2D_GL_
-#define GRIFFIN_TEXTURE2D_GL_
+#ifndef GRIFFIN_TEXTURE2D_GL_H_
+#define GRIFFIN_TEXTURE2D_GL_H_
 
 #include <memory>
 #include <string>

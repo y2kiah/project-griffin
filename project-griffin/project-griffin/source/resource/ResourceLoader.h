@@ -14,6 +14,7 @@
 #include <unordered_map>
 #include <array>
 #include <utility/concurrency.h>
+#include <core/CoreSystem.h>
 #include "Resource.h"
 #include "ResourceCache.h"
 #include "ResourceSource.h"
@@ -24,32 +25,39 @@ namespace griffin {
 		using std::unique_ptr;
 		using std::shared_ptr;
 		using std::wstring;
+		using griffin::core::CoreSystem;
 
 		/**
 		*
 		*/
-		class ResourceLoader {
+		class ResourceLoader : public CoreSystem {
 		public:
-			typedef std::function<void(const ResourcePtr&, Id_T, size_t)>	Callback;
+			/**
+			* Signature: resource shared_ptr, resource handle, resource size
+			*/
+			typedef std::function<void(const ResourcePtr&, Id_T, size_t)>	CallbackFunc_T;
 
 			explicit ResourceLoader() :
 				m_c{}, m_callbacks{}
 			{}
 
 			/**
+			* update on the update thread calls queued callbacks
+			*/
+			virtual void update(const UpdateInfo& ui) override;
+
+			/**
 			*
 			*/
 			template <typename T, typename BuilderFunc>
 			ResourceHandle<T> load(const wstring &name, CacheType cache,
-								   BuilderFunc&& builder, Callback callback = nullptr);
+								   BuilderFunc&& builder, CallbackFunc_T callback = nullptr);
 
 			/**
 			*
 			*/
 			template <typename T>
 			std::future<ResourcePtr> getResource(const ResourceHandle<T>& h);
-
-			void executeCallbacks();
 
 			void registerCache(const ResourceCachePtr& cachePtr, CacheType cacheTypeId);
 			void registerSource(const IResourceSourcePtr& sourcePtr);
@@ -94,13 +102,13 @@ Goals:
 	4. allow resources of various types to be loaded maintaining type safety
 	5. allow clients to implement a caching algorithm independant of the internal LRU cache
 	6. allow a single container to store many different resource types
-	7. don't be instrusive, resource implementers don't inherit from a common base class, prefer
+	7. don't be intrusive, resource implementers don't inherit from a common base class, prefer
 		duck typing over polymorphism
 
 Myths (to dispell):
-	1. using shared_ptr is a performance concern, causes synchronization - copies are rare,
+	1. using shared_ptr is a performance concern, causes synchronization - Copies are rare,
 		synchronization only occurs when banging on the same shared_ptr at the same time, which is
-		rarely or never
+		unlikely with this system.
 
 Gotchas (things to watch out for):
 	1. storing shared_ptrs to resources within other resources will possibly circumvent the caching

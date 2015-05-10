@@ -130,15 +130,6 @@ namespace griffin {
 				auto& texHandle = g_textureHandleTemp;
 				try {
 					texHandle.resourceId.wait(); // this blocks until the resource is built
-
-					loader->executeCallbacks();  // this runs the callback on this thread to send the texture to GL
-
-					SDL_Log("Id = %llu", texHandle.value());
-					SDL_Log("index = %u", texHandle.resourceId.get().index);
-					SDL_Log("typeid = %u", texHandle.resourceId.get().typeId);
-					SDL_Log("gen = %u", texHandle.resourceId.get().generation);
-					SDL_Log("free = %u", texHandle.resourceId.get().free);
-
 					return true;
 				}
 				catch (std::runtime_error& ex) {
@@ -173,9 +164,6 @@ namespace griffin {
 
 				try {
 					g_programHandleTemp.resourceId.wait();
-
-					loader->executeCallbacks(); // this runs the callback on this thread to compile the shaders
-
 					//auto programHandle = loader->addToCache<ShaderProgram_GL>(shaderProgramPtr, Cache_Materials_T);
 					return true;
 				}

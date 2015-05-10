@@ -82,13 +82,13 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 						if ((mapping.bindIn == Bind_Down_T && evt.evt.type == SDL_KEYDOWN) ||
 							(mapping.bindIn == Bind_Up_T   && evt.evt.type == SDL_KEYUP))
 						{
-							matched = (evt.evt.key.keysym.sym == mapping.button &&
+							matched = (evt.evt.key.keysym.sym == mapping.keycode &&
 									   evt.evt.key.keysym.mod == mapping.modifier);
 						}
 						else if ((mapping.bindIn == Bind_Down_T && evt.evt.type == SDL_MOUSEBUTTONDOWN) ||
 								 (mapping.bindIn == Bind_Up_T   && evt.evt.type == SDL_MOUSEBUTTONUP))
 						{
-							matched = (evt.evt.button.button == mapping.button &&
+							matched = (evt.evt.button.button == mapping.keycode &&
 									   evt.evt.button.clicks == mapping.clicks);
 							if (matched) {
 								ma.xRaw = evt.evt.button.x;
@@ -98,8 +98,8 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 						else if ((mapping.bindIn == Bind_Down_T && evt.evt.type == SDL_JOYBUTTONDOWN) ||
 								 (mapping.bindIn == Bind_Up_T   && evt.evt.type == SDL_JOYBUTTONUP))
 						{
-							matched = (evt.evt.jbutton.which == mapping.instanceId &&
-									   evt.evt.jbutton.button == mapping.button);
+							matched = (evt.evt.jbutton.which == mapping.device &&
+									   evt.evt.jbutton.button == mapping.keycode);
 						}
 						else if (evt.evt.type == SDL_MOUSEWHEEL)
 						{
@@ -130,39 +130,39 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 								(mapping.bindIn == Bind_Up_T   && evt.evt.type == SDL_KEYUP) &&
 								(mapping.bindIn != mapping.bindOut || !evt.evt.key.repeat)) // prevent repeat key events from changing toggle states
 							{
-								matched = (evt.evt.key.keysym.sym == mapping.button &&
+								matched = (evt.evt.key.keysym.sym == mapping.keycode &&
 										   evt.evt.key.keysym.mod == mapping.modifier);
 							}
 							else if ((mapping.bindIn == Bind_Down_T && evt.evt.type == SDL_MOUSEBUTTONDOWN) ||
 									 (mapping.bindIn == Bind_Up_T   && evt.evt.type == SDL_MOUSEBUTTONUP))
 							{
-								matched = (evt.evt.button.button == mapping.button);
+								matched = (evt.evt.button.button == mapping.keycode);
 							}
 							else if ((mapping.bindIn == Bind_Down_T && evt.evt.type == SDL_JOYBUTTONDOWN) ||
 									 (mapping.bindIn == Bind_Up_T   && evt.evt.type == SDL_JOYBUTTONUP))
 							{
-								matched = (evt.evt.jbutton.which == mapping.instanceId &&
-										   evt.evt.jbutton.button == mapping.button);
+								matched = (evt.evt.jbutton.which == mapping.device &&
+										   evt.evt.jbutton.button == mapping.keycode);
 							}
 						}
 						else { // stateActive
 							if ((mapping.bindOut == Bind_Down_T && evt.evt.type == SDL_KEYDOWN) ||
 								(mapping.bindOut == Bind_Up_T   && evt.evt.type == SDL_KEYUP))
 							{
-								matched = (evt.evt.key.keysym.sym == mapping.button &&
+								matched = (evt.evt.key.keysym.sym == mapping.keycode &&
 										   evt.evt.key.keysym.mod == mapping.modifier);
 								// TODO: maybe need to look for sym and mod keys separately here and make state inactive for either one
 							}
 							else if ((mapping.bindOut == Bind_Down_T && evt.evt.type == SDL_MOUSEBUTTONDOWN) ||
 									 (mapping.bindOut == Bind_Up_T   && evt.evt.type == SDL_MOUSEBUTTONUP))
 							{
-								matched = (evt.evt.button.button == mapping.button);
+								matched = (evt.evt.button.button == mapping.keycode);
 							}
 							else if ((mapping.bindOut == Bind_Down_T && evt.evt.type == SDL_JOYBUTTONDOWN) ||
 									 (mapping.bindOut == Bind_Up_T   && evt.evt.type == SDL_JOYBUTTONUP))
 							{
-								matched = (evt.evt.jbutton.which == mapping.instanceId &&
-										   evt.evt.jbutton.button == mapping.button);
+								matched = (evt.evt.jbutton.which == mapping.device &&
+										   evt.evt.jbutton.button == mapping.keycode);
 							}
 						}
 

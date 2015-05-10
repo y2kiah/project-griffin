@@ -1,7 +1,7 @@
 #pragma once
 #ifdef GRIFFIN_TOOLS_BUILD
-#ifndef GRIFFIN_MODEL_IMPORT_ASSIMP_
-#define GRIFFIN_MODEL_IMPORT_ASSIMP_
+#ifndef GRIFFIN_MODEL_IMPORT_ASSIMP_H_
+#define GRIFFIN_MODEL_IMPORT_ASSIMP_H_
 
 #include <memory>
 #include <string>

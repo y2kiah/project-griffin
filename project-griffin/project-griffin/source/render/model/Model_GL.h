@@ -1,6 +1,6 @@
 #pragma once
-#ifndef GRIFFIN_MODEL_GL_
-#define GRIFFIN_MODEL_GL_
+#ifndef GRIFFIN_MODEL_GL_H_
+#define GRIFFIN_MODEL_GL_H_
 
 namespace griffin {
 	namespace render {

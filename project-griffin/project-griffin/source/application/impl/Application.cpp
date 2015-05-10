@@ -98,7 +98,7 @@ namespace griffin {
 		{
 			// create vector in order of system update execution
 			app.systems.push_back(app.inputSystem.get());
-
+			app.systems.push_back(app.resourceLoader.get());
 		}
 
 		return move(app);

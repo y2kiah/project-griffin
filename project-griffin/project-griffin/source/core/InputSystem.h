@@ -106,8 +106,8 @@ namespace griffin {
 			InputMappingBindEvent	bindIn = Bind_Down_T;	//<! event to start the action or state
 			InputMappingBindEvent	bindOut = Bind_Up_T;	//<! event to end the state
 			InputMappingAxisCurve	curve = Curve_SCurve_T;	//<! curve type of axis
-			uint32_t				instanceId = 0;			//<! instanceID of the device, comes through event "which"
-			uint32_t				button = 0;				//<! keyboard virtual key code, mouse or joystick button
+			uint32_t				device = 0;				//<! instanceID of the device, comes through event "which"
+			uint32_t				keycode = 0;			//<! keyboard virtual key code, mouse or joystick button
 			uint16_t				modifier = 0;			//<! keyboard modifier, SDL_Keymod, defaults to 0 (KMOD_NONE)
 			uint8_t					mouseWheel = 0;			//<! 0=false, 1=true is a mouse wheel binding
 			uint8_t					axis = 0;				//<! index of the joystick axis
@@ -232,7 +232,7 @@ namespace griffin {
 			/**
 			* Executed on the update/render thread
 			*/
-			void update(const UpdateInfo& ui);
+			virtual void update(const UpdateInfo& ui) override;
 
 			/**
 			* Executed on the input/GUI thread

@@ -20,9 +20,9 @@ namespace griffin {
 		typedef shared_ptr<Resource_T> ResourcePtr;
 
 		MakeEnum(CacheType, uint16_t,
-			(Cache_Materials)
-			(Cache_Scripts)
-			, _T);
+				 (Cache_Materials)
+				 (Cache_Scripts)
+				 , _T);
 
 		/**
 		*

@@ -4,11 +4,11 @@
 namespace griffin {
 	namespace resource {
 
-		void ResourceLoader::executeCallbacks()
+		void ResourceLoader::update(const UpdateInfo& ui)
 		{
 			std::vector<std::function<void()>> callbacks;
 			callbacks.reserve(RESERVE_RESOURCELOADER_CALLBACKS);
-			m_callbacks.try_pop_all(callbacks);
+			m_callbacks.try_pop_all(callbacks, RESERVE_RESOURCELOADER_CALLBACKS);
 
 			for (auto& cb : callbacks) {
 				cb();
