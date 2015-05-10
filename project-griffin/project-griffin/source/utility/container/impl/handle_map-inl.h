@@ -64,6 +64,13 @@ namespace griffin {
 
 
 	template <typename T>
+	Id_T handle_map<T>::insert(const T& i)
+	{
+		return insert(T{ i });
+	}
+
+
+	template <typename T>
 	template <typename... Params>
 	IdSet_T handle_map<T>::emplaceItems(int n, Params... args)
 	{

@@ -52,6 +52,12 @@ void InputSystem::update(const UpdateInfo& ui)
 	for (const auto& a : m_frameMappedInput.actions) {
 		SDL_Log("action \"%s\" triggered", a.inputMapping->name);
 	}
+
+	// invoke all callbacks, passing this frame's mapped input
+	// TODO: needs to be done in priority order
+	for (auto& cb : m_callbacks.getItems()) {
+		cb(m_frameMappedInput);
+	}
 }
 
 
@@ -220,6 +226,7 @@ void InputSystem::mapFrameMotion(const UpdateInfo& ui)
 	auto frameSize = m_popMotionEvents.size();
 	for (int e = 0; e < frameSize; ++e) {
 		const auto& motionEvt = m_popMotionEvents[e];
+		
 
 		// if timestamp is greater than frame time, we're done
 		if (motionEvt.timeStampCounts > ui.virtualTime) {
@@ -282,16 +289,20 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 			break;
 		}
 
-		case SDL_MOUSEMOTION:
+		case SDL_MOUSEMOTION: {
 			/*SDL_Log("mouse motion event=%d: which=%d: state=%d: window=%d: x,y=%d,%d: xrel,yrel=%d,%d: realTime=%lu\n",
 					event.type, event.motion.which, event.motion.state, event.motion.windowID,
 					event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel, timestamp);*/
+			m_motionEventsQueue.push({ Event_Mouse_T, std::move(event), timestamp });
+			handled = true;
+			break;
+		}
 		case SDL_JOYAXISMOTION:
 			/*SDL_Log("joystick motion event=%d: which=%d: axis=%d: value=%d: realTime=%lu\n",
 					event.type, event.jaxis.which, event.jaxis.axis, event.jaxis.value, timestamp);*/
 		case SDL_JOYBALLMOTION:
 		case SDL_JOYHATMOTION: {
-			m_motionEventsQueue.push({ Event_Mouse_T, std::move(event), timestamp });
+			m_motionEventsQueue.push({ Event_Joystick_T, std::move(event), timestamp });
 			handled = true;
 			break;
 		}
@@ -357,18 +368,44 @@ void InputSystem::initialize() // should this be the constructor?
 	m_cursors[Cursor_Crosshair_T] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_CROSSHAIR);
 
 
-	// Initialize the joysticks
+	// Get number of input devices
 	int numJoysticks = SDL_NumJoysticks();
 	m_joysticks.reserve(numJoysticks);
-	m_frameMappedInput.joystickMotion.reserve(numJoysticks);
-
+	m_frameMappedInput.axes.reserve(numJoysticks * 3 + 2);   // number of joysticks * 3 plus 2 for mouse
+	m_frameMappedInput.motion.reserve(numJoysticks * 3 + 2); // assumes 3 axes per joystick device on average
+	
+	// Initialize the mouse
+	int numPointingDevices = 1; //SDL_GetNumInputDevices();
+	// mouse is always index 0 and 1 (x and y) in AxisMotion array
+	{ // this scope would be a loop in future SDL versions that support multiple mice
+		int numAxes = 2;
+		for (int axis = 0; axis < numAxes; ++axis) {
+			AxisMotion m{};
+			m.device = 0;
+			m.deviceName = "mouse";//SDL_GetInputDeviceName();
+			m.axis = axis;
+			m_frameMappedInput.motion.push_back(std::move(m));
+		}
+	}
+	
+	// Initialize the joysticks
 	for (int j = 0; j < numJoysticks; ++j) {
 		// Open joystick
 		SDL_Joystick* joy = SDL_JoystickOpen(j);
-
+		
 		if (joy != nullptr) {
 			m_joysticks.push_back(joy);
-			m_frameMappedInput.joystickMotion.emplace_back();
+
+			// for each axis, create an AxisMotion struct
+			int numAxes = SDL_JoystickNumAxes(joy);
+			for (int axis = 0; axis < numAxes; ++axis) {
+				AxisMotion m{};
+				m.device = SDL_JoystickInstanceID(joy);
+				m.deviceName = SDL_JoystickName(joy);
+				m.axis = axis;
+				
+				m_frameMappedInput.motion.push_back(std::move(m));
+			}
 
 			SDL_Log("Opened Joystick %d", j);
 			SDL_Log("  Name: %s", SDL_JoystickNameForIndex(j));
@@ -522,6 +559,9 @@ InputSystem::~InputSystem()
 	}
 	if (m_inputContexts.capacity() > RESERVE_INPUTSYSTEM_CONTEXTS) {
 		SDL_Log("check RESERVE_INPUTSYSTEM_CONTEXTS: original=%d, highest=%d", RESERVE_INPUTSYSTEM_CONTEXTS, m_inputContexts.capacity());
+	}
+	if (m_callbacks.capacity() > RESERVE_INPUTSYSTEM_CALLBACKS) {
+		SDL_Log("check RESERVE_INPUTSYSTEM_CALLBACKS: original=%d, highest=%d", RESERVE_INPUTSYSTEM_CALLBACKS, m_callbacks.capacity());
 	}
 	// FrameMappedInput reserves
 	if (m_frameMappedInput.actions.capacity() > RESERVE_INPUTSYSTEM_POPQUEUE) {

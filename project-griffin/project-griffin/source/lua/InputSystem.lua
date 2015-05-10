@@ -111,8 +111,43 @@ function initInputSystem()
 	C.griffin_input_setContextActive(contextMap["ingame"], true)
 	C.griffin_input_setContextActive(contextMap["playerfps"], true)
 
+	local callbackHandle = C.griffin_input_registerCallback(0, frameInputHandler)
+
 	-- build Lua table for the input system
 	_G["InputSystem"] = {
-		["config"] = config
+		config = config,
+		callbackHandle = callbackHandle
 	}
+end
+
+function frameInputHandler(frameMappedInput)
+	local mi = frameMappedInput
+	local luaMappedInput = {}
+	
+	function copyMappedInputToLuaTable(size, mappedInputs, mappingType)
+		for i = 0, size-1 do
+			local mappedInput = mappedInputs[i]
+			
+			if mappedInputs == mi.actions then
+				print("action " .. ffi.string(mappedInput.inputMapping.name) .. " handled")
+			elseif mappedInputs == mi.states then
+				print("state " .. ffi.string(mappedInput.inputMapping.name) .. " handled active")
+			end
+
+			local context = tostring(mappedInput.inputMapping.contextId)
+			local mapping = tostring(mappedInput.inputMapping.mappingId)
+			if luaMappedInput[context] == nil then luaMappedInput[context] = {} end
+
+			luaMappedInput[context][mapping] = {
+				mappingType = mappingType,
+				mappedInput = mappedInput
+			}
+		end
+	end
+
+	copyMappedInputToLuaTable(mi.actionsSize, mi.actions, "action")
+	copyMappedInputToLuaTable(mi.statesSize, mi.states, "state")
+	copyMappedInputToLuaTable(mi.axesSize, mi.axes, "axis")
+
+	-- dispatch to all Lua callbacks from here
 end

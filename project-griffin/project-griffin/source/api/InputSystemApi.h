@@ -48,6 +48,7 @@ extern "C" {
 	//			 type movement state, the second example would behave like a toggle.
 	//	Axis:	 Uses position information of joysticks, throttles, rudder pedals, head
 	//			 tracking gear, even mouse movement if desired.
+	// Layout equivalent to InputMapping
 	//////////
 	typedef struct {
 		uint8_t		type;			//<! type of this mapping
@@ -73,6 +74,77 @@ extern "C" {
 		char		name[32];		//<! display name of the mapping
 	} griffin_InputMapping;
 
+	//////////
+	// Layout equivalent to MappedAction
+	//////////
+	typedef struct {
+		uint64_t					mappingId;
+		uint8_t						handled;
+		const griffin_InputMapping*	inputMapping;
+		float						x;
+		float						y;
+		int32_t						xRaw;
+		int32_t						yRaw;
+	} griffin_MappedAction;
+
+	//////////
+	// Layout equivalent to MappedState
+	//////////
+	typedef struct {
+		uint64_t					mappingId;
+		uint8_t						handled;
+		const griffin_InputMapping*	inputMapping;
+		double						totalMs;
+		int64_t						startCounts;
+		int64_t						totalCounts;
+		int32_t						startFrame;
+		int32_t						totalFrames;
+	} griffin_MappedState;
+
+	//////////
+	// Layout equivalent to AxisMotion
+	//////////
+	typedef struct {
+		uint32_t			device;
+		uint8_t				axis;
+		float				posMapped;
+		float				relMapped;
+		int32_t				posRaw;
+		int32_t				relRaw;
+		const char *		deviceName;
+	} griffin_AxisMotion;
+
+	//////////
+	// Layout equivalent to MappedAxis
+	//////////
+	typedef struct {
+		uint64_t					mappingId;
+		uint8_t						handled;
+		const griffin_InputMapping*	inputMapping;
+		const griffin_AxisMotion *	axisMotion;
+	} griffin_MappedAxis;
+
+	//////////
+	// No equivalent layout on the C++ side
+	//////////
+	typedef struct {
+		int16_t						actionsSize;
+		int16_t						statesSize;
+		int16_t						axesSize;
+		int16_t						axisMotionSize;
+		int16_t						textInputLength;
+		griffin_MappedAction *		actions;
+		griffin_MappedState	*		states;
+		griffin_MappedAxis *		axes;
+		griffin_AxisMotion *		axisMotion;
+		const wchar_t *				textInput;
+	} griffin_FrameMappedInput;
+
+	typedef void(*Callback_T)(griffin_FrameMappedInput*);
+
+
+	// Functions
+
 	GRIFFIN_EXPORT
 	uint64_t griffin_input_createContext(uint16_t optionsMask, uint8_t priority, const char name[32], bool makeActive);
 
@@ -85,10 +157,11 @@ extern "C" {
 	GRIFFIN_EXPORT
 	griffin_InputMapping* griffin_input_getInputMapping(uint64_t mapping);
 
-	//typedef void(*CallbackFunc_T)()
+	GRIFFIN_EXPORT
+	uint64_t griffin_input_registerCallback(int priority, Callback_T callbackFunc);
 
 	GRIFFIN_EXPORT
-	void griffin_input_registerCallback();
+	bool griffin_input_removeCallback(uint64_t callback);
 
 #endif ffi
 #undef ffi

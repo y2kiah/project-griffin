@@ -154,27 +154,37 @@ namespace griffin {
 		};
 
 		/**
-		* Mapped axis for a frame. Motion events are accumulated for the frame to get relative, and
+		* Axis motion for a frame. Motion events are accumulated for the frame to get relative, and
 		* the last absolute position value is taken for the frame.
+		*/
+		struct AxisMotion {
+			uint32_t			device;				//<! instanceID of the device that owns this axis, mouse is always 0 (x) and 1 (y)
+			uint8_t				axis;				//<! axis number on the device
+			float				posMapped = 0;		//<! absolute position of axis mapped to curve
+			float				relMapped = 0;		//<! relative motion of the axis since last frame mapped to curve
+			int32_t				posRaw = 0;			//<! raw value from device, not normalized or mapped to curve, may be useful but use posMapped by default
+			int32_t				relRaw = 0;			//<! relative raw value of the axis
+			const char *		deviceName = nullptr; //<! name of the device
+		};
+
+		/**
+		* MappedAxis matches up AxisMotion with a valid InputMapping for a frame.
 		*/
 		struct MappedAxis {
 			Id_T				mappingId;
 			uint8_t				handled = 0;		//<! flag set to 1 when event has been handled by a callback
 			const InputMapping*	inputMapping = nullptr;
-			float				posMapped[2];		//<! mapped motion, absolute position, 2-dimensional for joystick ball, hat, and mouse
-			float				relMapped[2];		//<! mapped motion, relative motion since last frame
-			int32_t				posRaw[2];			//<! raw values from the device, not normalized or mapped to curve, may be useful but probably not
-			int32_t				relRaw[2];			//<! relative raw values from the device
+			const AxisMotion *	axisMotion = nullptr;
 		};
 
 		/**
 		* Container holding all mapped input for a frame, plus text input
 		*/
 		struct FrameMappedInput {
-			vector<MappedAction>	actions;
-			vector<MappedState>		states;
-			MappedAxis				mouseMotion;
-			vector<MappedAxis>		joystickMotion;
+			vector<MappedAction>	actions;				//<! Actions mapped to an active InputMapping for the frame
+			vector<MappedState>		states;					//<! States mapped to an active InputMapping for the frame
+			vector<MappedAxis>		axes;					//<! AxisMotion mapped to an active InputMapping for the frame
+			vector<AxisMotion>		motion;					//<! Holds accumulated motion for the mouse (index 0) and each joystick (1-n)
 			std::wstring			textInput;				//<! Text input buffer
 			/*std::wstring			textComposition;		//<! Text editing buffer
 			int						cursorPos = 0;			//<! Text editing cursor position
@@ -209,7 +219,8 @@ namespace griffin {
 				m_eventsQueue(RESERVE_INPUTSYSTEM_EVENTSQUEUE),
 				m_motionEventsQueue(RESERVE_INPUTSYSTEM_MOTIONEVENTSQUEUE),
 				m_inputMappings(0, RESERVE_INPUTSYSTEM_MAPPINGS),
-				m_inputContexts(0, RESERVE_INPUTSYSTEM_CONTEXTS)
+				m_inputContexts(0, RESERVE_INPUTSYSTEM_CONTEXTS),
+				m_callbacks(0, RESERVE_INPUTSYSTEM_CALLBACKS)
 			{
 				m_popEvents.reserve(RESERVE_INPUTSYSTEM_POPQUEUE);
 				m_popMotionEvents.reserve(RESERVE_INPUTSYSTEM_MOTIONPOPQUEUE);
@@ -295,10 +306,11 @@ namespace griffin {
 
 			// Callbacks
 
-			typedef std::function<void(FrameMappedInput&, const UpdateInfo&)> CallbackFunc_T;
+			typedef std::function<void(FrameMappedInput&)> CallbackFunc_T;
 			
-			void registerCallback(const CallbackFunc_T& func) {
-				m_callbacks.push_back(func);
+			Id_T registerCallback(int priority, CallbackFunc_T func)
+			{
+				return m_callbacks.insert(std::move(func));
 			}
 
 
@@ -336,7 +348,7 @@ namespace griffin {
 			handle_map<InputMapping>		m_inputMappings;		//<! collection of input mappings (actions,states,axes)
 			handle_map<InputContext>		m_inputContexts;		//<! collection of input contexts
 			vector<ActiveInputContext>		m_activeInputContexts;	//<! active input contexts sorted by priority ascending
-			vector<CallbackFunc_T>			m_callbacks;
+			handle_map<CallbackFunc_T>		m_callbacks;
 			FrameMappedInput				m_frameMappedInput;		//<! per-frame mapped input buffer
 
 			//	ThreadSafeState() : m_inputContexts(0, RESERVE_INPUT_CONTEXTS) {}

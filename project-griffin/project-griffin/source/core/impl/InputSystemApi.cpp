@@ -51,8 +51,9 @@ extern "C" {
 	GRIFFIN_EXPORT
 	uint64_t griffin_input_createInputMapping(const char name[32], uint64_t context)
 	{
-		auto& input = *g_inputPtr;
 		assert(sizeof(griffin_InputMapping) == sizeof(InputMapping) && "InputMapping struct out of sync with API");
+
+		auto& input = *g_inputPtr;
 
 		Id_T contextId;
 		contextId.value = context;
@@ -78,6 +79,40 @@ extern "C" {
 		mappingId.value = mapping;
 
 		return reinterpret_cast<griffin_InputMapping*>(&input.getInputMapping(mappingId));
+	}
+
+	GRIFFIN_EXPORT
+	uint64_t griffin_input_registerCallback(int priority, Callback_T callbackFunc)
+	{
+		assert(sizeof(griffin_MappedAction) == sizeof(MappedAction) && "MappedAction struct out of sync with API");
+		assert(sizeof(griffin_MappedState) == sizeof(MappedState) && "MappedState struct out of sync with API");
+		assert(sizeof(griffin_MappedAxis) == sizeof(MappedAxis) && "MappedAxis struct out of sync with API");
+		assert(sizeof(griffin_AxisMotion) == sizeof(AxisMotion) && "AxisMotion struct out of sync with API");
+		
+		auto& input = *g_inputPtr;
+
+		Id_T id = input.registerCallback(priority, [callbackFunc](FrameMappedInput& mappedInput) {
+			griffin_FrameMappedInput mi{};
+			mi.actions = reinterpret_cast<griffin_MappedAction*>(mappedInput.actions.data());
+			mi.actionsSize = static_cast<int16_t>(mappedInput.actions.size());
+			mi.states = reinterpret_cast<griffin_MappedState*>(mappedInput.states.data());
+			mi.statesSize = static_cast<int16_t>(mappedInput.states.size());
+			mi.axes = reinterpret_cast<griffin_MappedAxis*>(mappedInput.axes.data());
+			mi.axesSize = static_cast<int16_t>(mappedInput.axes.size());
+			mi.axisMotion = reinterpret_cast<griffin_AxisMotion*>(mappedInput.motion.data());
+			mi.axisMotionSize = static_cast<int16_t>(mappedInput.motion.size());
+			mi.textInput = mappedInput.textInput.c_str();
+			mi.textInputLength = static_cast<int16_t>(mappedInput.textInput.length());
+
+			callbackFunc(&mi);
+		});
+		return id.value;
+	}
+
+	GRIFFIN_EXPORT
+	bool griffin_input_removeCallback(uint64_t callback)
+	{
+		return false;
 	}
 
 #ifdef __cplusplus
