@@ -228,6 +228,12 @@ void InputSystem::mapFrameMotion(const UpdateInfo& ui)
 	float inverseWindowWidth  = 1.0f / app->getPrimaryWindow().width;
 	float inverseWindowHeight = 1.0f / app->getPrimaryWindow().height;
 
+	// reset previous frame's relative motion
+	for (auto& motion : m_frameMappedInput.motion) {
+		motion.relRaw = 0;
+		motion.relMapped = 0.0f;
+	}
+
 	// process all motion events, these go into AxisMotion struct
 	auto frameSize = m_popMotionEvents.size();
 	for (int e = 0; e < frameSize; ++e) {
@@ -354,8 +360,8 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 		}
 
 		case SDL_TEXTEDITING: {
-			SDL_Log("key event=%d: text=%s: length=%d: start=%d: windowID=%d: realTime=%lu\n",
-					event.type, event.edit.text, event.edit.length, event.edit.start, event.edit.windowID, timestamp);
+			/*SDL_Log("key event=%d: text=%s: length=%d: start=%d: windowID=%d: realTime=%lu\n",
+					event.type, event.edit.text, event.edit.length, event.edit.start, event.edit.windowID, timestamp);*/
 
 			m_eventsQueue.push({ Event_TextInput_T, std::move(event), timestamp });
 
@@ -363,8 +369,8 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 			break;
 		}
 		case SDL_TEXTINPUT: {
-			SDL_Log("key event=%d: text=%s: windowID=%d: realTime=%lu\n",
-					event.type, event.text.text, event.text.windowID, timestamp);
+			/*SDL_Log("key event=%d: text=%s: windowID=%d: realTime=%lu\n",
+					event.type, event.text.text, event.text.windowID, timestamp);*/
 
 			m_eventsQueue.push({ Event_TextInput_T, std::move(event), timestamp });
 
