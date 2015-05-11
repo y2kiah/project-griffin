@@ -11,12 +11,16 @@
 			{ "name": "Move Right",		"bind": "down" },
 			{ "name": "High Speed",		"bind": "toggle" }
 		],
-		"axes": []
+		"axes": [
+			{ "name": "Mouse Look X" },
+			{ "name": "Mouse Look Y" }
+		]
 	},
 	"playerfps": {
 		"name": "First Person Controls",
 		"priority": 1,
 		"visible": true,
+		"eatsMouseInput": true,
 		"actions": [
 			{ "name": "Jump",			"bind": "down" },
 			{ "name": "Use",			"bind": "down" },
@@ -34,7 +38,10 @@
 			{ "name": "Prone",			"bind": "down" },
 			{ "name": "Prone (Hold)",	"bind": "toggle" }
 		],
-		"axes": []
+		"axes": [
+			{ "name": "Mouse Look X" },
+			{ "name": "Mouse Look Y" }
+		]
 	},
 	"ingame": {
 		"name": "System Controls",

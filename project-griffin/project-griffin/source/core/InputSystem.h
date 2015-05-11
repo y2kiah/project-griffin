@@ -23,6 +23,9 @@ using std::bitset;
 using std::tuple;
 using std::string;
 
+class SDLApplication;
+
+
 namespace griffin {
 	namespace core {
 
@@ -68,9 +71,9 @@ namespace griffin {
 		* Input Mapping types
 		*/
 		MakeEnum(InputMappingType, uint8_t,
-				 (Action)	//<! Actions are single-time events
-				 (State)	//<! States are on/off
-				 (Axis)		//<! Axis are ranges of motion normalized to [-1,1]
+				 (Action)		//<! Actions are single-time events
+				 (State)		//<! States are on/off
+				 (Axis)			//<! Axis are ranges of motion normalized to [-1,1]
 				 , _T);
 
 		/**
@@ -107,19 +110,22 @@ namespace griffin {
 			InputMappingBindEvent	bindOut = Bind_Up_T;	//<! event to end the state
 			InputMappingAxisCurve	curve = Curve_SCurve_T;	//<! curve type of axis
 			uint32_t				device = 0;				//<! instanceID of the device, comes through event "which"
+			// keyboard, mouse button, joystick button, mouse wheel events
 			uint32_t				keycode = 0;			//<! keyboard virtual key code, mouse or joystick button
 			uint16_t				modifier = 0;			//<! keyboard modifier, SDL_Keymod, defaults to 0 (KMOD_NONE)
 			uint8_t					mouseWheel = 0;			//<! 0=false, 1=true is a mouse wheel binding
-			uint8_t					axis = 0;				//<! index of the joystick axis
 			uint8_t					clicks = 1;				//<! number of mouse clicks for binding (2==double-click)
+			// mouse motion, joystick motion, joystick hat motion, ball motion events
+			uint8_t					axis = 0;				//<! index of the joystick axis
 			uint8_t					deadzone = 0;			//<! deadzone for axis
 			uint8_t					curvature = 0;			//<! curvature of axis
 			uint8_t					saturationX = 100;		//<! saturation of the x axis
 			uint8_t					saturationY = 100;		//<! saturation of the y axis
-			uint8_t					numAxes = 0;			//<! 1 for most joysticks, 2 for mouse and balls
 			uint8_t					relativeMotion = 0;		//<! 0=false, 1=true motion is relative not absolute
 			uint8_t					invert = 0;				//<! 0=false, 1=true axis is inverted
 			uint8_t					slider = 0;				//<! 0=false, 1=true axis is a slider
+			float					sensitivity = 1.0f;		//<! sensitivity multiplier, mainly for mouse movement in relative mode
+			// all events
 			Id_T					mappingId;				//<! the id handle of this mapping
 			Id_T					contextId;				//<! the id handle of the context
 			char					name[32];				//<! display name of the mapping
@@ -129,13 +135,13 @@ namespace griffin {
 		* Mapped action for a frame.
 		*/
 		struct MappedAction {
-			Id_T				mappingId;
-			uint8_t				handled = 0;		//<! flag set to 1 when event has been handled by a callback
-			const InputMapping*	inputMapping = nullptr;
-			float				x       = 0;
-			float				y       = 0;		//<! mouse clicks include normalized position here
-			int32_t				xRaw    = 0;
-			int32_t				yRaw    = 0;
+			Id_T					mappingId;
+			uint8_t					handled = 0;			//<! flag set to 1 when event has been handled by a callback
+			const InputMapping *	inputMapping = nullptr;
+			float					x       = 0;
+			float					y       = 0;			//<! mouse clicks include normalized position here
+			int32_t					xRaw    = 0;
+			int32_t					yRaw    = 0;
 		};
 
 		/**
@@ -143,14 +149,14 @@ namespace griffin {
 		* rate, therefor the first frame a state becomes active includes the full frame timestep.
 		*/
 		struct MappedState {
-			Id_T				mappingId;
-			uint8_t				handled     = 0;	//<! flag set to 1 when event has been handled by a callback
-			const InputMapping*	inputMapping = nullptr;
-			double				totalMs     = 0;	//<! total millis the state has been active
-			int64_t				startCounts = 0;	//<! clock counts when state began
-			int64_t				totalCounts = 0;	//<! currentCounts - startCounts + countsPerTick
-			int32_t				startFrame  = 0;	//<! frame number when state began
-			int32_t				totalFrames = 0;	//<! currentFrame - startFrame + 1
+			Id_T					mappingId;
+			uint8_t					handled     = 0;		//<! flag set to 1 when event has been handled by a callback
+			const InputMapping *	inputMapping = nullptr;
+			double					totalMs     = 0;		//<! total millis the state has been active
+			int64_t					startCounts = 0;		//<! clock counts when state began
+			int64_t					totalCounts = 0;		//<! currentCounts - startCounts + countsPerTick
+			int32_t					startFrame  = 0;		//<! frame number when state began
+			int32_t					totalFrames = 0;		//<! currentFrame - startFrame + 1
 		};
 
 		/**
@@ -158,23 +164,23 @@ namespace griffin {
 		* the last absolute position value is taken for the frame.
 		*/
 		struct AxisMotion {
-			uint32_t			device;				//<! instanceID of the device that owns this axis, mouse is always 0 (x) and 1 (y)
-			uint8_t				axis;				//<! axis number on the device
-			float				posMapped = 0;		//<! absolute position of axis mapped to curve
-			float				relMapped = 0;		//<! relative motion of the axis since last frame mapped to curve
-			int32_t				posRaw = 0;			//<! raw value from device, not normalized or mapped to curve, may be useful but use posMapped by default
-			int32_t				relRaw = 0;			//<! relative raw value of the axis
-			const char *		deviceName = nullptr; //<! name of the device
+			uint32_t				device;					//<! instanceID of the device that owns this axis, mouse is always 0 (x) and 1 (y)
+			uint8_t					axis;					//<! axis number on the device
+			float					posMapped = 0;			//<! absolute position of axis mapped to curve
+			float					relMapped = 0;			//<! relative motion of the axis since last frame mapped to curve
+			int32_t					posRaw = 0;				//<! raw value from device, not normalized or mapped to curve, may be useful but use posMapped by default
+			int32_t					relRaw = 0;				//<! relative raw value of the axis
+			const char *			deviceName = nullptr;	//<! name of the device
 		};
 
 		/**
 		* MappedAxis matches up AxisMotion with a valid InputMapping for a frame.
 		*/
 		struct MappedAxis {
-			Id_T				mappingId;
-			uint8_t				handled = 0;		//<! flag set to 1 when event has been handled by a callback
-			const InputMapping*	inputMapping = nullptr;
-			const AxisMotion *	axisMotion = nullptr;
+			Id_T					mappingId;
+			uint8_t					handled = 0;			//<! flag set to 1 when event has been handled by a callback
+			const InputMapping *	inputMapping = nullptr;
+			const AxisMotion *		axisMotion = nullptr;
 		};
 
 		/**
@@ -183,8 +189,8 @@ namespace griffin {
 		struct FrameMappedInput {
 			vector<MappedAction>	actions;				//<! Actions mapped to an active InputMapping for the frame
 			vector<MappedState>		states;					//<! States mapped to an active InputMapping for the frame
-			vector<MappedAxis>		axes;					//<! AxisMotion mapped to an active InputMapping for the frame
-			vector<AxisMotion>		motion;					//<! Holds accumulated motion for the mouse (index 0) and each joystick (1-n)
+			vector<MappedAxis>		axes;					//<! Axes mapped to an active InputMapping for the frame
+			vector<AxisMotion>		motion;					//<! Holds accumulated motion for the mouse and joysticks
 			std::wstring			textInput;				//<! Text input buffer
 			/*std::wstring			textComposition;		//<! Text editing buffer
 			int						cursorPos = 0;			//<! Text editing cursor position
@@ -195,18 +201,18 @@ namespace griffin {
 		* Input Event
 		*/
 		struct InputEvent {
-			InputEventType	eventType;
-			SDL_Event		evt;
-			int64_t			timeStampCounts;
+			InputEventType			eventType;
+			SDL_Event				evt;
+			int64_t					timeStampCounts;
 		};
 
 		/**
 		* Active Input Context record
 		*/
 		struct ActiveInputContext {
-			Id_T		contextId;
-			uint8_t		priority;
-			bool		active;
+			Id_T					contextId;
+			uint8_t					priority;
+			bool					active;
 		};
 
 
@@ -215,6 +221,13 @@ namespace griffin {
 		*/
 		class InputSystem : public CoreSystem {
 		public:
+			// Static Variables
+
+			static const SDLApplication* app;
+
+
+			// Public Functions
+
 			explicit InputSystem() :
 				m_eventsQueue(RESERVE_INPUTSYSTEM_EVENTSQUEUE),
 				m_motionEventsQueue(RESERVE_INPUTSYSTEM_MOTIONEVENTSQUEUE),
@@ -331,13 +344,15 @@ namespace griffin {
 			bool relativeMouseModeActive() const;
 
 		private:
+			// Private Functions
+
 			/**
 			* Translate input events into mapped into for one frame
 			*/
 			void mapFrameInputs(const UpdateInfo& ui);
 			void mapFrameMotion(const UpdateInfo& ui);
 
-			// Variables
+			// Private Variables
 
 			concurrent_queue<InputEvent>	m_eventsQueue;			//<! push on input thread, pop on update thread
 			concurrent_queue<InputEvent>	m_motionEventsQueue;

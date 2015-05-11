@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\application\impl\Application.cpp" />
+    <ClCompile Include="source\application\impl\Engine.cpp" />
     <ClCompile Include="source\application\impl\platform.cpp" />
     <ClCompile Include="source\application\impl\Timer_win32.cpp" />
     <ClCompile Include="source\application\main.cpp" />
@@ -49,7 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\api\InputSystemApi.h" />
-    <ClInclude Include="source\application\Application.h" />
+    <ClInclude Include="source\application\Engine.h" />
     <ClInclude Include="source\application\FixedTimestep.h" />
     <ClInclude Include="source\application\main.h" />
     <ClInclude Include="source\application\platform.h" />

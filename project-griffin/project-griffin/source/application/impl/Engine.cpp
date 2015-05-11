@@ -1,4 +1,4 @@
-#include "../Application.h"
+#include "../Engine.h"
 #include <SDL.h>
 
 // TEMP
@@ -11,9 +11,9 @@ using std::move;
 
 namespace griffin {
 
-	Application make_application()
+	Engine make_engine(const SDLApplication& app)
 	{
-		Application app;
+		Engine engine;
 
 		auto scriptPtr = make_shared<script::ScriptManager>();
 		auto inputPtr  = make_shared<core::InputSystem>();
@@ -31,7 +31,7 @@ namespace griffin {
 			// add system API functions to Lua
 
 
-			app.scriptManager = scriptPtr;
+			engine.scriptManager = scriptPtr;
 		}
 
 		/**
@@ -39,6 +39,9 @@ namespace griffin {
 		*/
 		{
 			using namespace core;
+
+			// inject dependencies into the InputSystem
+			inputPtr->app = &app;
 
 			inputPtr->initialize();
 
@@ -52,7 +55,7 @@ namespace griffin {
 			scriptPtr->callLuaGlobalFunction("initInputSystem");
 
 			// move input system into application
-			app.inputSystem = inputPtr;
+			engine.inputSystem = inputPtr;
 		}
 
 		/**
@@ -69,13 +72,13 @@ namespace griffin {
 			auto fileSystemSourcePtr = IResourceSourcePtr((IResourceSource*)(new FileSystemSource()));
 			loaderPtr->registerSource(fileSystemSourcePtr);
 
-			// inject dependencies to the loader
+			// inject dependencies into the loader
 			render::g_loaderPtr = loaderPtr;
 
 			// add Lua APIs
 
 
-			app.resourceLoader = loaderPtr;
+			engine.resourceLoader = loaderPtr;
 		}
 
 		/**
@@ -89,7 +92,7 @@ namespace griffin {
 			// add Lua APIs
 
 
-			app.entityManager = entityPtr;
+			engine.entityManager = entityPtr;
 		}
 
 		/**
@@ -97,11 +100,11 @@ namespace griffin {
 		*/
 		{
 			// create vector in order of system update execution
-			app.systems.push_back(app.inputSystem.get());
-			app.systems.push_back(app.resourceLoader.get());
+			engine.systems.push_back(engine.inputSystem.get());
+			engine.systems.push_back(engine.resourceLoader.get());
 		}
 
-		return move(app);
+		return move(engine);
 	}
 
 }

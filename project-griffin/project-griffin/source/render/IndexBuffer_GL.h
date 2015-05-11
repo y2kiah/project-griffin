@@ -1,6 +1,6 @@
 #pragma once
-#ifndef GRIFFIN_INDEX_BUFFER_GL_
-#define GRIFFIN_INDEX_BUFFER_GL_
+#ifndef GRIFFIN_INDEX_BUFFER_GL_H_
+#define GRIFFIN_INDEX_BUFFER_GL_H_
 
 #include <cstdint>
 #include <memory>

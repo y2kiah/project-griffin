@@ -1,6 +1,6 @@
 #pragma once
-#ifndef GRIFFIN_RENDER_
-#define GRIFFIN_RENDER_
+#ifndef GRIFFIN_RENDER_H_
+#define GRIFFIN_RENDER_H_
 
 #include <string>
 #include <memory>

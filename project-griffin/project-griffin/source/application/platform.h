@@ -1,4 +1,6 @@
 #pragma once
+#ifndef GRIFFIN_PLATFORM_H_
+#define GRIFFIN_PLATFORM_H_
 
 //#include <functional>
 #include <string>
@@ -26,3 +28,5 @@ namespace griffin {
 		void showErrorBox(const char *text, const char *caption);
 	}
 }
+
+#endif

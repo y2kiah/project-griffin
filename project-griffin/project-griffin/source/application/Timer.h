@@ -3,8 +3,8 @@
  * @author	Jeff Kiah
  */
 #pragma once
-#ifndef GRIFFIN_TIMER_H
-#define GRIFFIN_TIMER_H
+#ifndef GRIFFIN_TIMER_H_
+#define GRIFFIN_TIMER_H_
 
 #include <cstdint>
 

@@ -1,6 +1,6 @@
 #pragma once
-#ifndef GRIFFIN_SHADER_PROGRAM_GL_
-#define GRIFFIN_SHADER_PROGRAM_GL_
+#ifndef GRIFFIN_SHADER_PROGRAM_GL_H_
+#define GRIFFIN_SHADER_PROGRAM_GL_H_
 
 #include <string>
 #include <memory>

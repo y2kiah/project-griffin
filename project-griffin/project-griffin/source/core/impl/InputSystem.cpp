@@ -1,12 +1,18 @@
 #include "../InputSystem.h"
+#include <application/main.h>
 #include <application/Timer.h>
 #include <SDL_log.h>
 
 using namespace griffin;
 using namespace griffin::core;
 
+#define JOYSTICK_INVERSE_MAX_RAW	1.0f / 32768.0f
+
 
 // class InputSystem
+
+const SDLApplication* InputSystem::app = nullptr;
+
 
 void InputSystem::update(const UpdateInfo& ui)
 {
@@ -16,10 +22,11 @@ void InputSystem::update(const UpdateInfo& ui)
 		return (ui.virtualTime >= i.timeStampCounts);
 	});
 
-	m_motionEventsQueue.try_pop_all(m_popMotionEvents); // need to pop all events because of the underlying use of vector_queue
+	m_motionEventsQueue.try_pop_all(m_popMotionEvents); // need to pop all motion events because of the underlying use of vector_queue
 
-	// clear previous frame actions
+	// clear previous frame actions and axis mappings
 	m_frameMappedInput.actions.clear();
+	m_frameMappedInput.axes.clear();
 
 	// remove active states that are no longer mappings in any active context
 	std::remove_if(m_frameMappedInput.states.begin(), m_frameMappedInput.states.end(),
@@ -218,16 +225,14 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 
 void InputSystem::mapFrameMotion(const UpdateInfo& ui)
 {
-	// accumulate relative mouse movement for this frame
-	int mouse_xrel = 0;
-	int mouse_yrel = 0;
+	float inverseWindowWidth  = 1.0f / app->getPrimaryWindow().width;
+	float inverseWindowHeight = 1.0f / app->getPrimaryWindow().height;
 
-	// process all motion events, these go to axis mappings
+	// process all motion events, these go into AxisMotion struct
 	auto frameSize = m_popMotionEvents.size();
 	for (int e = 0; e < frameSize; ++e) {
 		const auto& motionEvt = m_popMotionEvents[e];
 		
-
 		// if timestamp is greater than frame time, we're done
 		if (motionEvt.timeStampCounts > ui.virtualTime) {
 			frameSize = e;
@@ -236,19 +241,96 @@ void InputSystem::mapFrameMotion(const UpdateInfo& ui)
 
 		switch (motionEvt.evt.type) {
 			case SDL_MOUSEMOTION: {
-				mouse_xrel += motionEvt.evt.motion.xrel;
-				mouse_yrel += motionEvt.evt.motion.yrel;
+				auto& mouseX = m_frameMappedInput.motion[0];
+				auto& mouseY = m_frameMappedInput.motion[1];
+				
+				mouseX.posRaw = motionEvt.evt.motion.x;
+				mouseX.relRaw += motionEvt.evt.motion.xrel;
+				mouseX.posMapped = mouseX.posRaw * inverseWindowWidth;
+				mouseX.relMapped += motionEvt.evt.motion.xrel * inverseWindowWidth;
+
+				mouseY.posRaw = motionEvt.evt.motion.y;
+				mouseY.relRaw += motionEvt.evt.motion.yrel;
+				mouseY.posMapped = mouseY.posRaw * inverseWindowHeight;
+				mouseY.relMapped += motionEvt.evt.motion.yrel * inverseWindowHeight;
 				break;
 			}
 			case SDL_JOYAXISMOTION: {
+				auto it = std::find_if(m_frameMappedInput.motion.begin(), m_frameMappedInput.motion.end(),
+					[&motionEvt](const AxisMotion& m){
+						return (m.device == motionEvt.evt.jaxis.which &&
+								m.axis == motionEvt.evt.jaxis.axis);
+					});
 
+				if (it != m_frameMappedInput.motion.end()) {
+					auto& motion = *it;
+					auto newRaw = motionEvt.evt.jaxis.value;
+					motion.relRaw = newRaw - motion.posRaw;
+					motion.posRaw = newRaw;
+					
+					motion.posMapped = motion.posRaw * JOYSTICK_INVERSE_MAX_RAW;
+					motion.relMapped = motion.relRaw * JOYSTICK_INVERSE_MAX_RAW;
+				}
 				break;
 			}
 		}
-
 	}
+
 	// erase up to the last event for this frame
 	m_popMotionEvents.erase(m_popMotionEvents.begin(), m_popMotionEvents.begin() + frameSize);
+
+	// all AxisMotion is aggregated for frame, now map to active InputMappings
+	for (auto& motion : m_frameMappedInput.motion) {		// for each axis
+		bool matched = false;
+		bool isMouse = (motion.device == 0);
+
+		for (const auto& ac : m_activeInputContexts) {		// for each active context
+			// skip contexts that aren't active
+			if (!ac.active) { continue; }
+
+			auto& context = m_inputContexts[ac.contextId];
+
+			for (Id_T mappingId : context.inputMappings) {	// check all input mappings for a match
+				const auto& mapping = m_inputMappings[mappingId];
+
+				// check for axis mappings
+				matched = (mapping.type == Axis_T &&
+						   mapping.device == motion.device &&
+						   mapping.axis == motion.axis);
+				if (matched) {
+					// found a matching axis mapping for the event, apply mapping parameters
+					if (isMouse) {
+						motion.relMapped *= mapping.sensitivity * (mapping.invert == 1 ? -1.0f : 1.0f);
+					}
+					else {
+						// "curved" relative is (curve(posMapped) - curve(posMapped-relMapped)), not curve(relMapped)
+						//mapping.curve
+						//mapping.curvature
+						//mapping.deadzone
+						//mapping.invert
+						//mapping.saturationX
+						//mapping.saturationY
+						//mapping.slider
+					}
+					
+					MappedAxis ma;
+					ma.mappingId = mappingId;
+					ma.inputMapping = &mapping;
+					ma.axisMotion = &motion;
+
+					m_frameMappedInput.axes.push_back(std::move(ma));
+					break; // skip checking the rest of the mappings
+				}
+			}
+
+			if (matched || // found a mapping, move on to the next input event
+				(context.options[EatMouseEvents_T] && isMouse) || // didn't find a match, check if this context eats input events or passes them down
+				(context.options[EatJoystickEvents_T] && !isMouse))
+			{
+				break;
+			}
+		}
+	}
 }
 
 

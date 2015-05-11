@@ -12,7 +12,7 @@
 #include <utility/profile/Profile.h>
 #include "platform.h"
 #include "FixedTimestep.h"
-#include <application/Application.h>
+#include <application/Engine.h>
 
 #define PROGRAM_NAME "Project Griffin"
 
@@ -30,9 +30,9 @@ int main(int argc, char *argv[])
 		SDLApplication app;
 		app.initWindow(PROGRAM_NAME);
 		app.initOpenGL();
-		auto application = make_application();
+		auto engine = make_engine(app);
 		
-		render::initRenderData(app.getPrimaryWindow().width, app.getPrimaryWindow().height);
+		render::initRenderData(app.getPrimaryWindow().width, app.getPrimaryWindow().height); // move into make_application
 
 		test_reflection(); // TEMP
 
@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 						virtualTime, gameTime, deltaCounts, Timer::timerFreq() / 1000);*/
 
 				// call all systems in priority order
-				for (auto& s : application.systems) {
+				for (auto& s : engine.systems) {
 					s->update(ui);
 				}
 				// if all systems operate on 1(+) frame-old-data, can all systems be run in parallel?
@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
 			SDL_Event event;
 			while (SDL_PollEvent(&event)) {
 				// send to the input system to handle the event
-				bool handled = application.inputSystem->handleEvent(event);
+				bool handled = engine.inputSystem->handleEvent(event);
 				
 				if (!handled) {
 					switch (event.type) {

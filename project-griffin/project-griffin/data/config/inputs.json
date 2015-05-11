@@ -23,5 +23,10 @@
 		{ "context": "playerfps",	"name": "Prone",			"device": 0,	"keycode": 118 },
 		{ "context": "playerfps",	"name": "Prone (Hold)",		"device": 0,	"keycode": 118,			"modifier": 64 }
 	],
-	"axes": []
+	"axes": [
+		{ "context": "devcamera",	"name": "Mouse Look X",		"device": 0,	"axis": 0,		"sensitivity": 1.0 },
+		{ "context": "devcamera",	"name": "Mouse Look Y",		"device": 0,	"axis": 1,		"sensitivity": 1.0 },
+		{ "context": "playerfps",	"name": "Mouse Look X",		"device": 0,	"axis": 0,		"sensitivity": 1.0 },
+		{ "context": "playerfps",	"name": "Mouse Look Y",		"device": 0,	"axis": 1,		"sensitivity": 1.0 }
+	]
 }

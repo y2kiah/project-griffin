@@ -24,15 +24,18 @@ function initInputSystem()
 	config.inputMappings = JSON:decode(inputMappingsContent)
 	--print(config.inputMappings)
 
-	function setKeyBinding(contextName, mapping, bindings)
+	function setInputBinding(contextName, mapping, bindings)
 		for b = 1,#bindings do
 			local binding = bindings[b]
 			if (binding.context == contextName and
 				binding.name == ffi.string(mapping.name))
 			then
-				if binding.device ~= nil then   mapping.device = binding.device end
-				if binding.keycode ~= nil then  mapping.keycode = binding.keycode end
-				if binding.modifier ~= nil then mapping.modifier = binding.modifier end
+				if binding.device ~= nil then		mapping.device = binding.device end
+				if binding.keycode ~= nil then		mapping.keycode = binding.keycode end
+				if binding.modifier ~= nil then		mapping.modifier = binding.modifier end
+
+				if binding.axis ~= nil then			mapping.axis = binding.axis end
+				if binding.sensitivity ~= nil then	mapping.sensitivity = binding.sensitivity end
 			end
 		end
 	end
@@ -68,7 +71,7 @@ function initInputSystem()
 			end
 
 			-- set key bindings from inputs.json
-			setKeyBinding(contextName, mapping, config.inputMappings.actions)
+			setInputBinding(contextName, mapping, config.inputMappings.actions)
 		end
 
 		-- create state mappings from inputcontexts.json
@@ -95,16 +98,23 @@ function initInputSystem()
 				mapping.bindOut = C.MAPPING_BIND_DOWN
 			end
 
-			--print(ffi.string(mapping.name))
-			--print(mapping.bindIn)
-			--print(mapping.bindOut)
-
 			-- set key bindings from inputs.json
-			setKeyBinding(contextName, mapping, config.inputMappings.states)
+			setInputBinding(contextName, mapping, config.inputMappings.states)
 		end
 
-		-- id is 64-bit boxed cdata, unsuitable for use as a table key, use tostring(id) to use as a key
-		--print(contextId)
+		-- create state mappings from inputcontexts.json
+		for m = 1,#context.axes do
+			local axis = context.axes[m]
+
+			local mappingId = C.griffin_input_createInputMapping(axis.name, contextId)
+			local mapping = C.griffin_input_getInputMapping(mappingId)
+
+			contextMappings[axis.name] = mapping
+			mapping.type = C.MAPPING_TYPE_AXIS
+
+			-- set Axis bindings from inputs.json
+			setInputBinding(contextName, mapping, config.inputMappings.axes)
+		end
 	end
 
 	-- make ingame context active
@@ -132,8 +142,11 @@ function frameInputHandler(frameMappedInput)
 				print("action " .. ffi.string(mappedInput.inputMapping.name) .. " handled")
 			elseif mappedInputs == mi.states then
 				print("state " .. ffi.string(mappedInput.inputMapping.name) .. " handled active")
+			elseif mappedInputs == mi.axes then
+				print("axis " .. ffi.string(mappedInput.inputMapping.name) .. " handled motion, posMapped=" .. mappedInput.axisMotion.posMapped)
 			end
 
+			-- ids are 64-bit boxed cdata, unsuitable for use as a table key, converting to string to use as a key
 			local context = tostring(mappedInput.inputMapping.contextId)
 			local mapping = tostring(mappedInput.inputMapping.mappingId)
 			if luaMappedInput[context] == nil then luaMappedInput[context] = {} end
