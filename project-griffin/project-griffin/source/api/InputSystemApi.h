@@ -166,6 +166,12 @@ extern "C" {
 	GRIFFIN_EXPORT
 	bool griffin_input_removeCallback(uint64_t callback);
 
+	GRIFFIN_EXPORT
+	void griffin_input_setRelativeMouseMode(bool relative);
+
+	GRIFFIN_EXPORT
+	bool griffin_input_relativeMouseModeActive();
+
 #endif ffi
 #undef ffi
 // end inclusion in lua FFI declaration

@@ -22,7 +22,6 @@ function initInputSystem()
 	fr:close()
 
 	config.inputMappings = JSON:decode(inputMappingsContent)
-	--print(config.inputMappings)
 
 	function setInputBinding(contextName, mapping, bindings)
 		for b = 1,#bindings do
@@ -44,14 +43,15 @@ function initInputSystem()
 
 	-- create contexts from inputcontexts.json
 	for contextName,context in pairs(config.inputContexts) do
-		print(contextName)
-
 		local contextOptions = 0
 		local contextId = C.griffin_input_createContext(contextOptions, context.priority, contextName, false)
-		contextMap[contextName] = contextId;
-		print(tostring(contextId))
+		
+		contextMap[contextName] = {
+			contextId = contextId,
+			mappings = {}
+		}
 
-		local contextMappings = {}
+		local contextMappings = contextMap[contextName].mappings
 
 		-- create action mappings from inputcontexts.json
 		for m = 1,#context.actions do
@@ -60,7 +60,10 @@ function initInputSystem()
 			local mappingId = C.griffin_input_createInputMapping(action.name, contextId)
 			local mapping = C.griffin_input_getInputMapping(mappingId)
 
-			contextMappings[action.name] = mapping
+			contextMappings[action.name] = {
+				mapping = mapping,
+				mappingId = mappingId
+			}
 
 			mapping.type = C.MAPPING_TYPE_ACTION
 			if (action.bind == "down") then
@@ -81,7 +84,10 @@ function initInputSystem()
 			local mappingId = C.griffin_input_createInputMapping(state.name, contextId)
 			local mapping = C.griffin_input_getInputMapping(mappingId)
 
-			contextMappings[state.name] = mapping
+			contextMappings[state.name] = {
+				mapping = mapping,
+				mappingId = mappingId
+			}
 
 			mapping.type = C.MAPPING_TYPE_STATE
 			if (state.bind == "down") then
@@ -109,8 +115,13 @@ function initInputSystem()
 			local mappingId = C.griffin_input_createInputMapping(axis.name, contextId)
 			local mapping = C.griffin_input_getInputMapping(mappingId)
 
-			contextMappings[axis.name] = mapping
+			contextMappings[axis.name] = {
+				mapping = mapping,
+				mappingId = mappingId
+			}
+
 			mapping.type = C.MAPPING_TYPE_AXIS
+			if axis.relativeMotion ~= nil then mapping.relativeMotion = (axis.relativeMotion and 1 or 0) end
 
 			-- set Axis bindings from inputs.json
 			setInputBinding(contextName, mapping, config.inputMappings.axes)
@@ -118,16 +129,22 @@ function initInputSystem()
 	end
 
 	-- make ingame context active
-	C.griffin_input_setContextActive(contextMap["ingame"], true)
-	C.griffin_input_setContextActive(contextMap["playerfps"], true)
+	C.griffin_input_setContextActive(contextMap["ingame"].contextId, true)
+	C.griffin_input_setContextActive(contextMap["playerfps"].contextId, true)
+	--C.griffin_input_setRelativeMouseMode(true);
 
 	local callbackHandle = C.griffin_input_registerCallback(0, frameInputHandler)
 
 	-- build Lua table for the input system
 	_G["InputSystem"] = {
 		config = config,
-		callbackHandle = callbackHandle
+		callbackHandle = callbackHandle,
+		inputHandlers = {},
+		contextMap = contextMap
 	}
+
+	-- add Lua callback for ingame context
+	addInputHandler(ingameInputHandler)
 end
 
 function frameInputHandler(frameMappedInput)
@@ -149,7 +166,7 @@ function frameInputHandler(frameMappedInput)
 			-- ids are 64-bit boxed cdata, unsuitable for use as a table key, converting to string to use as a key
 			local context = tostring(mappedInput.inputMapping.contextId)
 			local mapping = tostring(mappedInput.inputMapping.mappingId)
-			if luaMappedInput[context] == nil then luaMappedInput[context] = {} end
+			luaMappedInput[context] = luaMappedInput[context] or {}
 
 			luaMappedInput[context][mapping] = {
 				mappingType = mappingType,
@@ -163,4 +180,38 @@ function frameInputHandler(frameMappedInput)
 	copyMappedInputToLuaTable(mi.axesSize, mi.axes, "axis")
 
 	-- dispatch to all Lua callbacks from here
+	for k,cb in pairs(InputSystem.inputHandlers) do
+		cb(luaMappedInput)
+	end
+end
+
+function addInputHandler(--[[context, mapping, ]]callback)
+	--InputSystem.inputHandlers[context] = InputSystem.inputHandlers[context] or {}
+	--local contextHandlers = InputSystem.inputHandlers[context];
+	
+	--contextHandlers[mapping] = contextHandlers[mapping] or {}
+	--local mappingHandlers = contextHandlers[mapping]
+
+	--table.insert(mappingHandlers, callback)
+	table.insert(InputSystem.inputHandlers, callback)
+end
+
+-- handle ingame actions including Pause, Capture Mouse
+local ingameContext = nil
+local pauseMapping = nil
+local captureMouseMapping = nil
+
+function ingameInputHandler(mappedInput)
+	ingameContext = ingameContext or InputSystem.contextMap["ingame"]
+	pauseMapping = pauseMapping or ingameContext.mappings["Pause"]
+	captureMouseMapping = captureMouseMapping or ingameContext.mappings["Capture Mouse"]
+
+	local mc = mappedInput[ingameContext.contextId]
+	if mc ~= nil then
+		local mi = mc[captureMouseMapping.mappingId]
+		if mi ~= nil then
+			local relative = C.griffin_input_relativeMouseModeActive()
+			C.griffin_input_setRelativeMouseMode(not relative)
+		end
+	end
 end

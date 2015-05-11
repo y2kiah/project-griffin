@@ -12,8 +12,8 @@
 			{ "name": "High Speed",		"bind": "toggle" }
 		],
 		"axes": [
-			{ "name": "Mouse Look X" },
-			{ "name": "Mouse Look Y" }
+			{ "name": "Mouse Look X",	"relativeMotion": true },
+			{ "name": "Mouse Look Y",	"relativeMotion": true }
 		]
 	},
 	"playerfps": {
@@ -39,8 +39,8 @@
 			{ "name": "Prone (Hold)",	"bind": "toggle" }
 		],
 		"axes": [
-			{ "name": "Mouse Look X" },
-			{ "name": "Mouse Look Y" }
+			{ "name": "Mouse Look X",	"relativeMotion": true },
+			{ "name": "Mouse Look Y",	"relativeMotion": true }
 		]
 	},
 	"ingame": {
@@ -48,7 +48,8 @@
 		"priority": 0,
 		"visibility": true,
 		"actions": [
-			{ "name": "Exit",			"bind": "down" }
+			{ "name": "Exit",			"bind": "down" },
+			{ "name": "Capture Mouse",	"bind": "down" }
 		],
 		"states": [
 			{ "name": "Pause",			"bind": "toggle" }

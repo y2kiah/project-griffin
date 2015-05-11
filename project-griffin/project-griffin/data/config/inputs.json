@@ -1,6 +1,7 @@
 {
 	"actions": [
 		{ "context": "ingame",		"name": "Exit",				"device": 0,	"keycode": 27 },
+		{ "context": "ingame",		"name": "Capture Mouse",	"device": 0,	"keycode": 1073742050 },
 		{ "context": "playerfps",	"name": "Jump",				"device": 0,	"keycode": 32 },
 		{ "context": "playerfps",	"name": "Use",				"device": 0,	"keycode": 102 },
 		{ "context": "playerfps",	"name": "Reload",			"device": 0,	"keycode": 114 }

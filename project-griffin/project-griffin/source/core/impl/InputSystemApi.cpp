@@ -115,6 +115,25 @@ extern "C" {
 		return false;
 	}
 
+	GRIFFIN_EXPORT
+	void griffin_input_setRelativeMouseMode(bool relative)
+	{
+		auto& input = *g_inputPtr;
+
+		if (relative) {
+			input.startRelativeMouseMode();
+		}
+		else {
+			input.stopRelativeMouseMode();
+		}
+	}
+
+	GRIFFIN_EXPORT
+	bool griffin_input_relativeMouseModeActive()
+	{
+		return g_inputPtr->relativeMouseModeActive();
+	}
+
 #ifdef __cplusplus
 }
 #endif

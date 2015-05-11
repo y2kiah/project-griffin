@@ -296,7 +296,8 @@ void InputSystem::mapFrameMotion(const UpdateInfo& ui)
 				// check for axis mappings
 				matched = (mapping.type == Axis_T &&
 						   mapping.device == motion.device &&
-						   mapping.axis == motion.axis);
+						   mapping.axis == motion.axis &&
+						   ((mapping.relativeMotion == 1) == relativeMouseModeActive()));
 				if (matched) {
 					// found a matching axis mapping for the event, apply mapping parameters
 					if (isMouse) {
@@ -307,10 +308,10 @@ void InputSystem::mapFrameMotion(const UpdateInfo& ui)
 						//mapping.curve
 						//mapping.curvature
 						//mapping.deadzone
-						//mapping.invert
 						//mapping.saturationX
 						//mapping.saturationY
 						//mapping.slider
+						motion.relMapped *= (mapping.invert == 1 ? -1.0f : 1.0f);
 					}
 					
 					MappedAxis ma;
