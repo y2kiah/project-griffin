@@ -82,7 +82,7 @@ extern "C" {
 	//////////
 	typedef struct {
 		uint64_t					mappingId;
-		uint8_t						handled;			//<! flag set to 1 when event has been handled by a callback
+		bool						handled;			//<! flag set to true when event has been handled by a callback
 		const griffin_InputMapping*	inputMapping;
 		float						x;
 		float						y;					//<! mouse clicks include normalized position here
@@ -95,7 +95,7 @@ extern "C" {
 	//////////
 	typedef struct {
 		uint64_t					mappingId;
-		uint8_t						handled;			//<! flag set to 1 when event has been handled by a callback
+		bool						handled;			//<! flag set to true when event has been handled by a callback
 		const griffin_InputMapping*	inputMapping;
 		double						totalMs;			//<! total millis the state has been active
 		int64_t						startCounts;		//<! clock counts when state began
@@ -122,7 +122,7 @@ extern "C" {
 	//////////
 	typedef struct {
 		uint64_t					mappingId;
-		uint8_t						handled;			//<! flag set to 1 when event has been handled by a callback
+		bool						handled;			//<! flag set to true when event has been handled by a callback
 		const griffin_InputMapping*	inputMapping;
 		const griffin_AxisMotion *	axisMotion;
 	} griffin_MappedAxis;

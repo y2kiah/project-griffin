@@ -81,6 +81,7 @@ extern "C" {
 		return reinterpret_cast<griffin_InputMapping*>(&input.getInputMapping(mappingId));
 	}
 
+
 	GRIFFIN_EXPORT
 	uint64_t griffin_input_registerCallback(int priority, Callback_T callbackFunc)
 	{
@@ -109,11 +110,16 @@ extern "C" {
 		return id.value;
 	}
 
+
 	GRIFFIN_EXPORT
 	bool griffin_input_removeCallback(uint64_t callback)
 	{
-		return false;
+		Id_T callbackId;
+		callbackId.value = callback;
+
+		return g_inputPtr->unregisterCallback(callbackId);
 	}
+
 
 	GRIFFIN_EXPORT
 	void griffin_input_setRelativeMouseMode(bool relative)
@@ -127,6 +133,7 @@ extern "C" {
 			input.stopRelativeMouseMode();
 		}
 	}
+
 
 	GRIFFIN_EXPORT
 	bool griffin_input_relativeMouseModeActive()

@@ -128,24 +128,83 @@ function initInputSystem()
 		end
 	end
 
-	-- make ingame context active
-	C.griffin_input_setContextActive(contextMap["ingame"].contextId, true)
-	C.griffin_input_setContextActive(contextMap["playerfps"].contextId, true)
-	--C.griffin_input_setRelativeMouseMode(true);
-
+	-- register the Lua callback for the input system, all Lua handlers are dispatched from this callback
 	local callbackHandle = C.griffin_input_registerCallback(0, frameInputHandler)
 
-	-- build Lua table for the input system
+	-- build global InputSystem class
+	-- variables
 	_G["InputSystem"] = {
 		config = config,
 		callbackHandle = callbackHandle,
 		inputHandlers = {},
 		contextMap = contextMap
 	}
+	-- methods
+	function InputSystem:addInputHandler(callback, priority)
+		priority = priority or 100
+
+		local handlerEntry = {
+			priority = priority,
+			callback = callback
+		}
+		setmetatable(handlerEntry, { __mode = "v" }) -- make the values weak references
+
+		table.insert(self.inputHandlers, handlerEntry)
+		table.sort(self.inputHandlers, function(a,b)
+			return a.priority < b.priority
+		end)
+	end
+
+	function InputSystem:removeInputHandler(callback)
+	end
+
+	function InputSystem:setContextActive(contextName, active)
+		if active == nil then active = true end
+
+		local context = self.contextMap[contextName]
+		if context == nil then return false end
+			
+		return C.griffin_input_setContextActive(context.contextId, active)
+	end
+
+	function InputSystem:setRelativeMouseMode(active)
+		if active == nil then active = true end
+			
+		C.griffin_input_setRelativeMouseMode(active);
+	end
+
+	function InputSystem:getRelativeMouseMode()
+		return C.griffin_input_relativeMouseModeActive()
+	end
+
+	function InputSystem:handleInput(contextName, mappingName, mappedInputs, handlerFunc)
+		local context = InputSystem.contextMap[contextName]
+		local mapping = context and context.mappings[mappingName]
+		
+		local mc = mapping and mappedInputs[tostring(context.contextId)]
+		
+		local mappingId = tostring(mapping.mappingId)
+		local mi = mc and mc[mappingId]
+		
+		if mi then
+			if type(handlerFunc) == "function" then
+				local result = handlerFunc(mc, mi)
+				local handled = (result ~= nil and result or true)
+				mi.handled = handled
+				if handled then mc[mappingId] = nil end
+			end
+		end
+	end
+
+	-- make ingame context active
+	InputSystem:setContextActive("ingame")
+	InputSystem:setContextActive("playerfps")
 
 	-- add Lua callback for ingame context
-	addInputHandler(ingameInputHandler)
-	addInputHandler(pauseInputHandler)
+	InputSystem:addInputHandler(ingameInputHandler)
+	InputSystem:addInputHandler(catchAllHandler, 999)
+
+	--InputSystem:setRelativeMouseMode(true)
 end
 
 
@@ -166,16 +225,6 @@ function frameInputHandler(frameMappedInput)
 				luaFrameInput.motion[mappedInput.device] = mappedInput
 
 			else
-				if mappedInputs == mi.actions then
-					print("action " .. ffi.string(mappedInput.inputMapping.name) .. " handled")
-				elseif mappedInputs == mi.states then
-					print("state " .. ffi.string(mappedInput.inputMapping.name) .. " handled active")
-				elseif mappedInputs == mi.axes then
-					if mappedInputs.inputMapping.relativeMotion and mappedInputs.axisMotion.relRaw ~= 0 then
-						print("axis " .. ffi.string(mappedInput.inputMapping.name) .. " handled motion, relRaw=" .. mappedInputs.axisMotion.relRaw .. ", relMapped=" .. mappedInput.axisMotion.relMapped)
-					end
-				end
-
 				local context = tostring(mappedInput.inputMapping.contextId)
 				local mapping = tostring(mappedInput.inputMapping.mappingId)
 				luaFrameInput[mappingType][context] = luaFrameInput[mappingType][context] or {}
@@ -191,18 +240,11 @@ function frameInputHandler(frameMappedInput)
 	copyMappedInputToLuaTable(mi.axisMotionSize, mi.axisMotion, "motion")
 
 	-- dispatch to all Lua callbacks from here
-	for k,cb in pairs(InputSystem.inputHandlers) do
-		cb(luaFrameInput)
+	for k,handler in pairs(InputSystem.inputHandlers) do
+		if handler.callback ~= nil then
+			handler.callback(luaFrameInput)
+		end
 	end
-end
-
-
-function addInputHandler(--[[contextId, mappingId, ]]callback)
-	table.insert(InputSystem.inputHandlers, callback)--[[{
-		callback = callback,
-		contextId = contextId,
-		mappingId = mappingId
-	})]]
 end
 
 
@@ -211,29 +253,28 @@ local ingameContext = nil
 local pauseMapping = nil
 local captureMouseMapping = nil
 
-function ingameInputHandler(luaFrameInput)
-	ingameContext = ingameContext or InputSystem.contextMap["ingame"]
-	captureMouseMapping = captureMouseMapping or ingameContext.mappings["Capture Mouse"]
-
-	local mc = luaFrameInput.actions[tostring(ingameContext.contextId)]
-	if mc ~= nil then
-		local mi = mc[tostring(captureMouseMapping.mappingId)]
-		if mi ~= nil then
-			local relative = C.griffin_input_relativeMouseModeActive()
-			C.griffin_input_setRelativeMouseMode(not relative)
-		end
-	end
+function ingameInputHandler(frameInput)
+	InputSystem:handleInput("ingame", "Capture Mouse", frameInput.actions, function(context, mappedAction)
+		local relative = InputSystem:getRelativeMouseMode()
+		InputSystem:setRelativeMouseMode(not relative)
+		return true
+	end)
 end
 
-function pauseInputHandler(luaFrameInput)
-	ingameContext = ingameContext or InputSystem.contextMap["ingame"]
-	pauseMapping = pauseMapping or ingameContext.mappings["Pause"]
-
-	local mc = luaFrameInput.states[tostring(ingameContext.contextId)]
-	if mc ~= nil then
-		local mi = mc[tostring(pauseMapping.mappingId)]
-		if mi ~= nil then
-			
+function catchAllHandler(frameInput)
+	for i,mc in pairs(frameInput.actions) do
+		for j,mi in pairs(mc) do
+			print("action " .. ffi.string(mi.inputMapping.name) .. " handled")
+		end
+	end
+	for i,mc in pairs(frameInput.states) do
+		for j,mi in pairs(mc) do
+			print("state " .. ffi.string(mi.inputMapping.name) .. " handled active")
+		end
+	end
+	for i,mc in pairs(frameInput.axes) do
+		for j,mi in pairs(mc) do
+			print("axis " .. ffi.string(mi.inputMapping.name) .. " handled motion, relRaw=" .. mi.axisMotion.relRaw .. ", relMapped=" .. mi.axisMotion.relMapped)
 		end
 	end
 end

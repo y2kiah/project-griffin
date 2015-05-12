@@ -41,11 +41,12 @@ void InputSystem::update(const UpdateInfo& ui)
 		return true;
 	});
 
-	// loop over active states, add to totalCounts, totalMS and totalFrames
+	// loop over active states, add to totalCounts, totalMS and totalFrames, reset handled flag
 	for (auto& state : m_frameMappedInput.states) {
 		state.totalFrames += 1;
 		state.totalCounts += ui.deltaCounts;
 		state.totalMs += ui.deltaMs;
+		state.handled = false;
 	}
 
 	// map inputs using active contexts
@@ -227,6 +228,7 @@ void InputSystem::mapFrameMotion(const UpdateInfo& ui)
 {
 	float inverseWindowWidth  = 1.0f / app->getPrimaryWindow().width;
 	float inverseWindowHeight = 1.0f / app->getPrimaryWindow().height;
+	bool relativeMode = relativeMouseModeActive();
 
 	// reset previous frame's relative motion
 	for (auto& motion : m_frameMappedInput.motion) {
@@ -303,7 +305,8 @@ void InputSystem::mapFrameMotion(const UpdateInfo& ui)
 				matched = (mapping.type == Axis_T &&
 						   mapping.device == motion.device &&
 						   mapping.axis == motion.axis &&
-						   ((mapping.relativeMotion == 1) == relativeMouseModeActive()));
+						   ((mapping.relativeMotion == 1) == relativeMode) &&
+						   (motion.relRaw != 0 || !relativeMode));
 				if (matched) {
 					// found a matching axis mapping for the event, apply mapping parameters
 					if (isMouse) {

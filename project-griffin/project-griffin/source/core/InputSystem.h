@@ -136,7 +136,7 @@ namespace griffin {
 		*/
 		struct MappedAction {
 			Id_T					mappingId;
-			uint8_t					handled = 0;			//<! flag set to 1 when event has been handled by a callback
+			bool					handled = false;	//<! flag set to true when event has been handled by a callback
 			const InputMapping *	inputMapping = nullptr;
 			float					x       = 0;
 			float					y       = 0;			//<! mouse clicks include normalized position here
@@ -150,7 +150,7 @@ namespace griffin {
 		*/
 		struct MappedState {
 			Id_T					mappingId;
-			uint8_t					handled     = 0;		//<! flag set to 1 when event has been handled by a callback
+			bool					handled     = false;	//<! flag set to true when event has been handled by a callback
 			const InputMapping *	inputMapping = nullptr;
 			double					totalMs     = 0;		//<! total millis the state has been active
 			int64_t					startCounts = 0;		//<! clock counts when state began
@@ -178,7 +178,7 @@ namespace griffin {
 		*/
 		struct MappedAxis {
 			Id_T					mappingId;
-			uint8_t					handled = 0;			//<! flag set to 1 when event has been handled by a callback
+			bool					handled = false;	//<! flag set to true when event has been handled by a callback
 			const InputMapping *	inputMapping = nullptr;
 			const AxisMotion *		axisMotion = nullptr;
 		};
@@ -324,6 +324,11 @@ namespace griffin {
 			Id_T registerCallback(int priority, CallbackFunc_T func)
 			{
 				return m_callbacks.insert(std::move(func));
+			}
+
+			bool unregisterCallback(Id_T callbackId)
+			{
+				return (m_callbacks.erase(callbackId) == 1);
 			}
 
 
