@@ -14,6 +14,7 @@
 #include <render/model/Mesh_GL.h>
 #include <render/model/ModelImport_Assimp.h>
 #include <render/Camera.h>
+#include <render/RenderTarget_GL.h>
 
 namespace griffin {
 	namespace render {
@@ -37,8 +38,9 @@ namespace griffin {
 		resource::ResourceHandle<Texture2D_GL> g_textureHandleTemp;
 		resource::ResourceHandle<ShaderProgram_GL> g_programHandleTemp;
 		std::unique_ptr<Mesh_GL> g_tempMesh = nullptr;
-		std::unique_ptr<CameraPersp> camera;
-		
+		std::unique_ptr<CameraPersp> camera = nullptr;
+		std::unique_ptr<RenderTarget_GL> mrt = nullptr;
+
 		// Functions
 
 		void initRenderData(int viewportWidth, int viewportHeight) {
@@ -54,6 +56,11 @@ namespace griffin {
 			//loadModelTemp("data/models/landing platform.dae");
 			loadModelTemp("data/models/quadcopter2.dae");
 			//loadModelTemp("data/models/cube.dae");
+
+			mrt = std::make_unique<RenderTarget_GL>(viewportWidth, viewportHeight);
+			if (!mrt->init()) {
+				throw std::runtime_error("Cannot initialize renderer");
+			}
 
 			camera = std::make_unique<CameraPersp>(viewportWidth, viewportHeight, 60.0f, 0.1f, 10000.0f);
 		}
