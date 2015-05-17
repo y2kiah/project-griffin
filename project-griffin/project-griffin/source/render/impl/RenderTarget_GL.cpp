@@ -29,6 +29,13 @@ namespace griffin {
 
 		bool RenderTarget_GL::init()
 		{
+			int maxDrawBuffers = 0;
+			glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxDrawBuffers);
+			if (maxDrawBuffers < 4) {
+				SDL_Log("System does not support enough draw buffers.");
+				return false;
+			}
+
 			// Create and bind the frame buffer object
 			glGenFramebuffers(1, &m_fboId);
 			glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
@@ -95,12 +102,12 @@ namespace griffin {
 			glGenTextures(1, &m_depthTexture);
 			glBindTexture(GL_TEXTURE_2D, m_depthTexture);
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, nullptr);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			// Attach the texture to the FBO
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depthTexture, 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, m_depthTexture, 0);
 
 			// Check if all worked fine and unbind the FBO
 			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
