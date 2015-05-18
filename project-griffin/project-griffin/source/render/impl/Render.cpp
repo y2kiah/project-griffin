@@ -39,7 +39,7 @@ namespace griffin {
 		resource::ResourceHandle<ShaderProgram_GL> g_programHandleTemp;
 		std::unique_ptr<Mesh_GL> g_tempMesh = nullptr;
 		std::unique_ptr<CameraPersp> camera = nullptr;
-		std::unique_ptr<RenderTarget_GL> mrt = nullptr;
+		std::unique_ptr<RenderTarget_GL> gbuffer = nullptr;
 
 		// Functions
 
@@ -57,8 +57,8 @@ namespace griffin {
 			loadModelTemp("data/models/quadcopter2.dae");
 			//loadModelTemp("data/models/cube.dae");
 
-			mrt = std::make_unique<RenderTarget_GL>(viewportWidth, viewportHeight);
-			if (!mrt->init()) {
+			gbuffer = std::make_unique<RenderTarget_GL>(RenderTarget_GL::GBuffer, viewportWidth, viewportHeight);
+			if (!gbuffer->init()) {
 				throw std::runtime_error("Cannot initialize renderer");
 			}
 
