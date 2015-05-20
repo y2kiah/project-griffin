@@ -35,15 +35,16 @@
 	in vec4 color;
 	in vec2 uv;
 
-	out vec3 outColor;
+	layout(location = 0) out vec4 diffuseDisplacement;
+	layout(location = 1) out vec3 eyeSpacePosition;
+	layout(location = 2) out vec4 normalReflectance;
 
 	uniform sampler2D diffuse;
 
 	void main() {
 		//outColor = (texture(diffuse, uv).rgb * color.rgb);
-		//outColor = color.rgb;
-		outColor = abs(normal);
-		//outColor = vec3(1.0, 0, 0);
+		diffuseDisplacement.rgb = vec3(1.0, 0, 0);//color.rgb;
+		normalReflectance.rgb = (normal + 1.0) * 0.5;
 	}
 
 #endif

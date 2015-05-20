@@ -23,7 +23,7 @@ namespace griffin {
 		}
 
 
-		bool VertexBuffer_GL::loadFromMemory(unsigned char* data, size_t size)
+		bool VertexBuffer_GL::loadFromMemory(const unsigned char* data, size_t size)
 		{
 			// generate the buffer
 			glGenBuffers(1, &m_glVertexBuffer);

@@ -411,6 +411,10 @@ namespace griffin {
 			for (uint32_t m = 0; m < numMaterials; ++m) {
 				auto assimpMat = scene.mMaterials[m];
 				auto& mat = materials[m];
+				
+				aiString name;
+				aiGetMaterialString(assimpMat, AI_MATKEY_NAME, &name);
+				// store name in material?
 
 				aiColor4D color;
 				aiGetMaterialColor(assimpMat, AI_MATKEY_COLOR_DIFFUSE, &color);

@@ -5,9 +5,17 @@
 #include <cstdint>
 #include <memory>
 
-
 namespace griffin {
 	namespace render {
+
+		const float g_fullScreenQuadBufferData[] = {
+			-1.0f, -1.0f, 0.0f,
+			 1.0f, -1.0f, 0.0f,
+			-1.0f,  1.0f, 0.0f,
+			-1.0f,  1.0f, 0.0f,
+			 1.0f, -1.0f, 0.0f,
+			 1.0f,  1.0f, 0.0f,
+		};
 
 		/**
 		* Vertex buffers do not necessarily store homogenous vertex data. There may be ranges of
@@ -23,7 +31,7 @@ namespace griffin {
 			VertexBuffer_GL(const VertexBuffer_GL&) = delete;
 			~VertexBuffer_GL();
 
-			bool loadFromMemory(unsigned char* data, size_t size);
+			bool loadFromMemory(const unsigned char* data, size_t size);
 
 			bool loadFromInternalMemory(bool discard = true);
 			

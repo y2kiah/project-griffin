@@ -20,4 +20,7 @@
 // Resource System
 #define RESERVE_RESOURCELOADER_CALLBACKS		5
 
+// Render System
+#define RESERVE_RENDER_QUEUE					500
+
 #endif

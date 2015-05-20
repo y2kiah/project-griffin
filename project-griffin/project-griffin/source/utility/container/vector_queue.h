@@ -24,6 +24,8 @@ namespace griffin {
 	public:
 		// Typedefs
 		typedef typename vector<T>::size_type size_type;
+		typedef typename vector<T>::iterator iterator;
+		typedef typename vector<T>::const_iterator const_iterator;
 
 		// Queue Functions
 		bool empty() const;
@@ -33,6 +35,11 @@ namespace griffin {
 		const T& front() const;
 		T& back();
 		const T& back() const;
+
+		iterator begin() _NOEXCEPT;
+		const_iterator cbegin() const _NOEXCEPT;
+		iterator end() _NOEXCEPT;
+		const_iterator cend() const _NOEXCEPT;
 
 		void push(const T& val);
 		void push(T&& val);

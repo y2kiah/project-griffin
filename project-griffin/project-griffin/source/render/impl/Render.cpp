@@ -39,7 +39,40 @@ namespace griffin {
 		resource::ResourceHandle<ShaderProgram_GL> g_programHandleTemp;
 		std::unique_ptr<Mesh_GL> g_tempMesh = nullptr;
 		std::unique_ptr<CameraPersp> camera = nullptr;
-		std::unique_ptr<RenderTarget_GL> gbuffer = nullptr;
+
+
+		// class RenderQueue
+
+		void RenderQueue::addRenderEntry(RenderQueueKey sortKey, RenderEntry&& entry)
+		{
+			m_entries.push_back(std::forward<RenderEntry>(entry));
+			m_keys.push_back({ sortKey, static_cast<int>(m_entries.size()) });
+		}
+
+		void RenderQueue::sortRenderQueue()
+		{
+			std::sort(m_keys.begin(), m_keys.end(), [](const KeyType& a, const KeyType& b) {
+				return (a.key.value < b.key.value);
+			});
+		}
+
+		RenderQueue::~RenderQueue()
+		{
+			if (m_keys.capacity() > RESERVE_RENDER_QUEUE) {
+				SDL_Log("check RESERVE_RENDER_QUEUE: original=%d, highest=%d", RESERVE_RENDER_QUEUE, m_keys.capacity());
+			}
+		}
+
+
+		// class DeferredRenderer_GL
+
+		bool DeferredRenderer_GL::init(int viewportWidth, int viewportHeight) {
+			if (!m_gbuffer.init(viewportWidth, viewportHeight)) {
+				throw std::runtime_error("Cannot initialize renderer");
+			}
+
+			m_fullScreenQuad.loadFromMemory(reinterpret_cast<const unsigned char*>(g_fullScreenQuadBufferData), sizeof(g_fullScreenQuadBufferData));
+		}
 
 		// Functions
 
@@ -56,11 +89,6 @@ namespace griffin {
 			//loadModelTemp("data/models/landing platform.dae");
 			loadModelTemp("data/models/quadcopter2.dae");
 			//loadModelTemp("data/models/cube.dae");
-
-			gbuffer = std::make_unique<RenderTarget_GL>(RenderTarget_GL::GBuffer, viewportWidth, viewportHeight);
-			if (!gbuffer->init()) {
-				throw std::runtime_error("Cannot initialize renderer");
-			}
 
 			camera = std::make_unique<CameraPersp>(viewportWidth, viewportHeight, 60.0f, 0.1f, 10000.0f);
 		}

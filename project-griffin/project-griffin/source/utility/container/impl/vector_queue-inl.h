@@ -71,6 +71,34 @@ namespace griffin {
 
 
 	template <typename T>
+	inline typename vector_queue<T>::iterator vector_queue<T>::begin() _NOEXCEPT
+	{
+		return (m_queue.begin() + m_offset);
+	}
+	
+
+	template <typename T>
+	inline typename vector_queue<T>::const_iterator vector_queue<T>::cbegin() const _NOEXCEPT
+	{
+		return (m_queue.cbegin() + m_offset);
+	}
+
+	
+	template <typename T>
+	inline typename vector_queue<T>::iterator vector_queue<T>::end() _NOEXCEPT
+	{
+		return m_queue.end();
+	}
+
+	
+	template <typename T>
+	inline typename vector_queue<T>::const_iterator vector_queue<T>::cend() const _NOEXCEPT
+	{
+		return m_queue.cend();
+	}
+
+
+	template <typename T>
 	inline void vector_queue<T>::push(const T& val)
 	{
 		m_queue.push_back(val);

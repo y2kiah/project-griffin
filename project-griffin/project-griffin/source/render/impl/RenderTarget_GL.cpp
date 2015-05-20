@@ -27,8 +27,11 @@ namespace griffin {
 			}
 		}
 
-		bool RenderTarget_GL::init()
+		bool RenderTarget_GL::init(int width, int height)
 		{
+			m_width = width;
+			m_height = height;
+
 			int maxDrawBuffers = 0;
 			glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxDrawBuffers);
 			if (maxDrawBuffers < 4) {
@@ -66,6 +69,9 @@ namespace griffin {
 			*/
 
 			if (m_type != Depth) {
+				if (m_diffuseTexture != 0) {
+					glDeleteTextures(1, &m_diffuseTexture);
+				}
 				// Generate and bind the texture for diffuse + displacement
 				glGenTextures(1, &m_diffuseTexture);
 				glBindTexture(GL_TEXTURE_2D, m_diffuseTexture);
@@ -79,6 +85,9 @@ namespace griffin {
 			}
 
 			if (m_type == GBuffer) {
+				if (m_positionTexture != 0) {
+					glDeleteTextures(1, &m_positionTexture);
+				}
 				// Generate and bind the texture for eye-space position
 				glGenTextures(1, &m_positionTexture);
 				glBindTexture(GL_TEXTURE_2D, m_positionTexture);
@@ -90,10 +99,13 @@ namespace griffin {
 				// Attach the texture to the FBO
 				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_positionTexture, 0);
 
+				if (m_normalsTexture != 0) {
+					glDeleteTextures(1, &m_normalsTexture);
+				}
 				// Generate and bind the texture for normal + reflectance
 				glGenTextures(1, &m_normalsTexture);
 				glBindTexture(GL_TEXTURE_2D, m_normalsTexture);
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, nullptr);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_width, m_height, 0, GL_RGBA, GL_HALF_FLOAT, nullptr);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -103,6 +115,9 @@ namespace griffin {
 			}
 
 			if (m_type != Color) {
+				if (m_depthTexture != 0) {
+					glDeleteTextures(1, &m_depthTexture);
+				}
 				// Generate and bind the texture for depth + stencil
 				glGenTextures(1, &m_depthTexture);
 				glBindTexture(GL_TEXTURE_2D, m_depthTexture);
