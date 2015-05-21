@@ -44,7 +44,7 @@ namespace griffin {
 
 			GLenum indexType = m_indexBuffer.getIndexType();
 			DrawSet& drawSet = m_drawSets[drawSetIndex];
-			
+
 			glDrawRangeElements(drawSet.glPrimitiveType, drawSet.indexRangeStart, drawSet.indexRangeEnd,
 								drawSet.numElements, indexType, reinterpret_cast<const GLvoid*>(drawSet.indexBaseOffset));
 
@@ -54,7 +54,7 @@ namespace griffin {
 		}
 
 
-		void Mesh_GL::draw(int modelMatLoc, int normalMatLoc, const glm::mat4& viewMat/*All TEMP*/) const
+		void Mesh_GL::draw(int modelMatLoc, int normalMatLoc, int diffuseMatLoc, const glm::mat4& viewMat/*All TEMP*/) const
 		{
 			glm::mat4 modelToWorld;
 			// temp
@@ -86,6 +86,10 @@ namespace griffin {
 				// draw this node's meshes
 				for (uint32_t m = 0; m < node.numMeshes; ++m) {
 					uint32_t drawSet = m_meshScene.meshIndices[node.meshIndexOffset + m];
+
+					Material& mat = m_materials[drawSet];
+					glUniform3fv(diffuseMatLoc, 1, &mat.diffuseColor[0]);
+
 					drawMesh(drawSet);
 				}
 
@@ -101,10 +105,6 @@ namespace griffin {
 
 				bfsQueue.pop();
 			}
-			
-			/*for (auto ds = 0; ds < m_numDrawSets; ++ds) {
-				drawMesh(ds);
-			}*/
 		}
 
 

@@ -34,6 +34,15 @@ namespace griffin {
 
 		weak_ptr<resource::ResourceLoader> g_loaderPtr;
 
+		const float g_fullScreenQuadBufferData[] = {
+			-1.0f, -1.0f, 0.0f,
+			 1.0f, -1.0f, 0.0f,
+			-1.0f,  1.0f, 0.0f,
+			-1.0f,  1.0f, 0.0f,
+			 1.0f, -1.0f, 0.0f,
+			 1.0f,  1.0f, 0.0f,
+		};
+
 		// TEMP
 		resource::ResourceHandle<Texture2D_GL> g_textureHandleTemp;
 		resource::ResourceHandle<ShaderProgram_GL> g_programHandleTemp;
@@ -71,7 +80,8 @@ namespace griffin {
 				throw std::runtime_error("Cannot initialize renderer");
 			}
 
-			m_fullScreenQuad.loadFromMemory(reinterpret_cast<const unsigned char*>(g_fullScreenQuadBufferData), sizeof(g_fullScreenQuadBufferData));
+			m_fullScreenQuad.loadFromMemory(reinterpret_cast<const unsigned char*>(g_fullScreenQuadBufferData),
+											sizeof(g_fullScreenQuadBufferData));
 		}
 
 		// Functions
@@ -123,6 +133,7 @@ namespace griffin {
 			GLint modelMatLoc    = glGetUniformLocation(programId, "modelToWorld");
 			GLint viewProjMatLoc = glGetUniformLocation(programId, "viewProjection");
 			GLint normalMatLoc   = glGetUniformLocation(programId, "normalMatrix");
+			GLint diffuseMatLoc  = glGetUniformLocation(programId, "diffuseColor");
 			glUniformMatrix4fv(viewProjMatLoc, 1, GL_FALSE, &viewProjMat[0][0]);
 
 			// bind the texture
@@ -137,7 +148,7 @@ namespace griffin {
 			catch (...) {}
 
 			// draw the test mesh
-			g_tempMesh->draw(modelMatLoc, normalMatLoc, viewMat); // temporarily passing in the modelMatLoc
+			g_tempMesh->draw(modelMatLoc, normalMatLoc, diffuseMatLoc, viewMat); // temporarily passing in the modelMatLoc
 		}
 
 		bool loadTexturesTemp()

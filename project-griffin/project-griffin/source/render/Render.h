@@ -23,10 +23,10 @@ namespace griffin {
 
 		/**
 		* @struct RenderQueueKey
-		* @var	material	
-		* @var	depth		
+		* @var	material	internal material feature bits, determines shader
+		* @var	depth		depth value converted to 16 bit integer
 		* @var	instance	
-		* @var	translucencyType	
+		* @var	translucencyType	opaque, back-to-front translucent, additive, and subtractive
 		* @var	viewportLayer
 		* @var	viewport
 		* @var	fullscreenLayer
@@ -34,26 +34,30 @@ namespace griffin {
 		*/
 		struct RenderQueueKey {
 			union {
-				struct {
-					uint16_t material;
-					
-					uint16_t depth;
+				struct OpaqueKey {
+					uint64_t frontToBackDepth : 20;
 
-					uint16_t instance : 14;
-					uint16_t translucencyType : 2;
+					uint64_t mesh             : 10;
+					uint64_t model            : 10;
 
-					uint16_t viewportLayer : 3;
-					uint16_t viewport : 3;
-					uint16_t fullscreenLayer : 2;
+					uint64_t material         : 14;
+					uint64_t translucencyType : 2;
+
+					uint64_t viewportLayer    : 3;
+					uint64_t viewport         : 3;
+					uint64_t fullscreenLayer  : 2;
+				};
+				struct TranslucentKey {
+					uint64_t backToFrontDepth : 54;
+					uint64_t translucentPad   : 10;
 				};
 				uint64_t value;
 			};
 		};
 
-
+		struct SceneNode;
 		struct RenderEntry {
-			RenderQueueKey	key;
-			glm::mat4		modelToWorldTransform;
+			SceneNode*	sceneNode;
 
 		};
 

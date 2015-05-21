@@ -8,15 +8,6 @@
 namespace griffin {
 	namespace render {
 
-		const float g_fullScreenQuadBufferData[] = {
-			-1.0f, -1.0f, 0.0f,
-			 1.0f, -1.0f, 0.0f,
-			-1.0f,  1.0f, 0.0f,
-			-1.0f,  1.0f, 0.0f,
-			 1.0f, -1.0f, 0.0f,
-			 1.0f,  1.0f, 0.0f,
-		};
-
 		/**
 		* Vertex buffers do not necessarily store homogenous vertex data. There may be ranges of
 		* vertices within the buffer that include different components (e.g. position, normal,

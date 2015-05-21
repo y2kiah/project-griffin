@@ -40,6 +40,7 @@
 #endif
 
 #ifdef _FRAGMENT_
+	uniform vec3 diffuseColor;
 
 	in vec3 normal;
 	in vec4 color;
@@ -53,7 +54,7 @@
 
 	void main() {
 		//outColor = (texture(diffuse, uv).rgb * color.rgb);
-		diffuseDisplacement.rgb = vec3(1.0, 0, 0);//color.rgb;
+		diffuseDisplacement.rgb = diffuseColor;
 		normalReflectance.rgb = (normal + 1.0) * 0.5;
 	}
 
