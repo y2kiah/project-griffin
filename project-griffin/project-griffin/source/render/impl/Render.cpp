@@ -91,8 +91,8 @@ namespace griffin {
 			//loadShadersTemp(L"shaders/linearDepth.glsl");
 			loadShadersTemp(L"shaders/atmosphere/earth.glsl");
 			//loadShadersTemp(L"shaders/atmosphere/atmosphere.glsl");
-			//loadShadersTemp(L"shaders/ads.glsl");
-			loadShadersTemp(L"shaders/SimpleShader.glsl");
+			loadShadersTemp(L"shaders/ads.glsl");
+			//loadShadersTemp(L"shaders/SimpleShader.glsl");
 
 			loadTexturesTemp();
 			//loadModelTemp("data/models/ship.dae");
@@ -105,6 +105,7 @@ namespace griffin {
 
 
 		void renderFrame(double interpolation) {
+			glClearColor(0.2f, 0.4f, 0.8f, 1.0f); // temp
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			auto loader = g_loaderPtr.lock();
@@ -130,10 +131,17 @@ namespace griffin {
 			//glUniformMatrix4fv(UniformLayout_ModelView, 1, GL_FALSE, &camera->getModelViewMatrix()[0][0]);
 			//glUniformMatrix4fv(UniformLayout_Projection, 1, GL_FALSE, &camera->getProjectionMatrix()[0][0]);
 			//glUniformMatrix4fv(UniformLayout_ModelViewProjection, 1, GL_FALSE, &mvp[0][0]);
-			GLint modelMatLoc    = glGetUniformLocation(programId, "modelToWorld");
-			GLint viewProjMatLoc = glGetUniformLocation(programId, "viewProjection");
-			GLint normalMatLoc   = glGetUniformLocation(programId, "normalMatrix");
-			GLint diffuseMatLoc  = glGetUniformLocation(programId, "diffuseColor");
+			GLint modelMatLoc     = glGetUniformLocation(programId, "modelToWorld");
+			GLint modelViewMatLoc = glGetUniformLocation(programId, "modelView");
+			GLint viewProjMatLoc  = glGetUniformLocation(programId, "viewProjection");
+			GLint mvpMatLoc       = glGetUniformLocation(programId, "modelViewProjection");
+			GLint normalMatLoc    = glGetUniformLocation(programId, "normalMatrix");
+			
+			GLint ambientLoc   = glGetUniformLocation(programId, "materialKa");
+			GLint diffuseLoc   = glGetUniformLocation(programId, "materialKd");
+			GLint specularLoc  = glGetUniformLocation(programId, "materialKs");
+			GLint shininessLoc = glGetUniformLocation(programId, "materialShininess");
+			
 			glUniformMatrix4fv(viewProjMatLoc, 1, GL_FALSE, &viewProjMat[0][0]);
 
 			// bind the texture
@@ -148,7 +156,9 @@ namespace griffin {
 			catch (...) {}
 
 			// draw the test mesh
-			g_tempMesh->draw(modelMatLoc, normalMatLoc, diffuseMatLoc, viewMat); // temporarily passing in the modelMatLoc
+			g_tempMesh->draw(modelMatLoc, modelViewMatLoc, mvpMatLoc, normalMatLoc,
+							 ambientLoc, diffuseLoc, specularLoc, shininessLoc,
+							 viewMat, viewProjMat); // temporarily passing in the modelMatLoc
 		}
 
 		bool loadTexturesTemp()

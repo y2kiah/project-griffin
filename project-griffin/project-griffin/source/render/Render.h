@@ -23,41 +23,38 @@ namespace griffin {
 
 		/**
 		* @struct RenderQueueKey
-		* @var	material	internal material feature bits, determines shader
 		* @var	depth		depth value converted to 16 bit integer
-		* @var	instance	
-		* @var	translucencyType	opaque, back-to-front translucent, additive, and subtractive
-		* @var	viewportLayer
-		* @var	viewport
-		* @var	fullscreenLayer
+		* @var	material	internal material feature bits, determines shader
+		* @var	instanced	0=no, 1=yes mesh is instanced
+		* @var	translucencyType	0=opaque, 1=back-to-front translucent, 2=additive, 3=subtractive
+		* @var	viewportLayer	0=skybox, 1=scene geometry, etc.
+		* @var	viewport	viewport index to render
+		* @var	fullscreenLayer	0=light pre-pass, 1=scene, 2=post filter, 3=HUD, 4=UI
 		* @var	value		unioned with the above four vars, used for sorting
 		*/
 		struct RenderQueueKey {
 			union {
 				struct OpaqueKey {
-					uint64_t frontToBackDepth : 20;
+					uint32_t frontToBackDepth;
+					uint16_t material;
 
-					uint64_t mesh             : 10;
-					uint64_t model            : 10;
-
-					uint64_t material         : 14;
-					uint64_t translucencyType : 2;
-
-					uint64_t viewportLayer    : 3;
-					uint64_t viewport         : 3;
-					uint64_t fullscreenLayer  : 2;
+					uint16_t instanced        : 1;
+					uint16_t translucencyType : 2;
+					uint16_t viewportLayer    : 4;
+					uint16_t viewport         : 5;
+					uint16_t fullscreenLayer  : 4;
 				};
 				struct TranslucentKey {
-					uint64_t backToFrontDepth : 54;
-					uint64_t translucentPad   : 10;
+					uint64_t backToFrontDepth : 48;
+					uint64_t translucentPad   : 16;
 				};
 				uint64_t value;
 			};
 		};
 
-		struct SceneNode;
+
 		struct RenderEntry {
-			SceneNode*	sceneNode;
+			glm::mat4	modelToWorld;
 
 		};
 

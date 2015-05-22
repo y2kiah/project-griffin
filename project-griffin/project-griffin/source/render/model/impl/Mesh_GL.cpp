@@ -54,16 +54,24 @@ namespace griffin {
 		}
 
 
-		void Mesh_GL::draw(int modelMatLoc, int normalMatLoc, int diffuseMatLoc, const glm::mat4& viewMat/*All TEMP*/) const
+		void Mesh_GL::draw(int modelMatLoc, int modelViewMatLoc, int mvpMatLoc, int normalMatLoc,
+						   int ambientLoc, int diffuseLoc, int specularLoc, int shininessLoc,
+						   const glm::mat4& viewMat, const glm::mat4& viewProjMat/*All TEMP*/) const
 		{
 			glm::mat4 modelToWorld;
 			// temp
 			modelToWorld = glm::rotate(modelToWorld, glm::radians(0.0f), glm::vec3(0, 1.0f, 0));
 			modelToWorld = glm::translate(modelToWorld, glm::vec3(0.0f, 0.0f, 50.0f));
 			modelToWorld = glm::scale(modelToWorld, glm::vec3(Meters_to_Feet));
-			glUniformMatrix4fv(modelMatLoc, 1, GL_FALSE, &modelToWorld[0][0]);
-			glm::mat4 normalMat(glm::transpose(glm::inverse(modelToWorld)));
-			glUniformMatrix4fv(normalMatLoc, 1, GL_FALSE, &normalMat[0][0]);
+			
+			glm::mat4 modelView(viewMat * modelToWorld);
+			glm::mat4 mvp(viewProjMat * modelToWorld);
+			glm::mat4 normalMat(glm::transpose(glm::inverse(glm::mat3(modelView))));
+
+			glUniformMatrix4fv(modelMatLoc,     1, GL_FALSE, &modelToWorld[0][0]);
+			glUniformMatrix4fv(modelViewMatLoc, 1, GL_FALSE, &modelView[0][0]);
+			glUniformMatrix4fv(mvpMatLoc,       1, GL_FALSE, &mvp[0][0]);
+			glUniformMatrix4fv(normalMatLoc,    1, GL_FALSE, &normalMat[0][0]);
 
 			struct BFSQueueItem {
 				uint32_t  nodeIndex;
@@ -88,7 +96,10 @@ namespace griffin {
 					uint32_t drawSet = m_meshScene.meshIndices[node.meshIndexOffset + m];
 
 					Material& mat = m_materials[drawSet];
-					glUniform3fv(diffuseMatLoc, 1, &mat.diffuseColor[0]);
+					glUniform3fv(ambientLoc, 1, &mat.ambientColor[0]);
+					glUniform3fv(diffuseLoc, 1, &mat.diffuseColor[0]);
+					glUniform3fv(specularLoc, 1, &mat.specularColor[0]);
+					glUniform1f(shininessLoc, mat.shininess);
 
 					drawMesh(drawSet);
 				}

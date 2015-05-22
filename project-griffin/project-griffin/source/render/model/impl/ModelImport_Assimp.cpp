@@ -416,6 +416,12 @@ namespace griffin {
 				aiGetMaterialString(assimpMat, AI_MATKEY_NAME, &name);
 				// store name in material?
 
+				aiGetMaterialFloat(assimpMat, AI_MATKEY_OPACITY, &mat.opacity);
+				aiGetMaterialFloat(assimpMat, AI_MATKEY_REFLECTIVITY, &mat.reflectivity);
+				aiGetMaterialFloat(assimpMat, AI_MATKEY_REFRACTI, &mat.refracti);
+				aiGetMaterialFloat(assimpMat, AI_MATKEY_SHININESS, &mat.shininess);
+				aiGetMaterialFloat(assimpMat, AI_MATKEY_SHININESS_STRENGTH, &mat.shininessStrength);
+
 				aiColor4D color;
 				aiGetMaterialColor(assimpMat, AI_MATKEY_COLOR_DIFFUSE, &color);
 				mat.diffuseColor = { color.r, color.g, color.b };
