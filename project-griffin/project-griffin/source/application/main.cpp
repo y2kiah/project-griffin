@@ -173,8 +173,8 @@ void SDLApplication::initWindow(const char* appName)
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
 
-	int width = 1280;
-	int height = 720;
+	int width = 1600;
+	int height = 900;
 
 	auto window = SDL_CreateWindow(
 		appName,

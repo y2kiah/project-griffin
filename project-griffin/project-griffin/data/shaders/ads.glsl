@@ -31,9 +31,6 @@
 	out vec4 positionViewspace;
 	out vec3 normalViewspace;
 
-	out vec4 positionWorldspace; // temp
-	out vec3 normalWorldspace;   // temp
-
 	//out vec4 color;
 	//out vec2 uv;
 
@@ -49,9 +46,6 @@
 		//uv = vertexUV;
 
 		gl_Position = modelViewProjection * vec4(vertexPosition_modelspace, 1.0);
-		
-		positionWorldspace = gl_Position; // temp
-		normalWorldspace = normalize(modelToWorld * vec4(vertexNormal, 0.0)).xyz;
 	}
 	
 #endif
@@ -66,10 +60,8 @@
 		vec3 Ls; // Specular light intensity
 	};
 	uniform LightInfo light;*/
-	// temp
-	const vec4 lightPosition = { 80.0, 40.0, -40.0, 1.0 };
-	//const vec3 lightLa = { 0.6, 0.7, 0.8 };
-	const vec3 lightLa = { 0.1, 0.2, 0.3 };
+	const vec3 lightLa = { 0.6, 0.7, 0.8 };
+	//const vec3 lightLa = { 0.1, 0.2, 0.3 };
 	const vec3 lightLd = { 1.0, 0.5, 0.5 };
 	const vec3 lightLs = { 1.0, 0.5, 0.5 };
 
@@ -81,16 +73,16 @@
 	};
 	uniform MaterialInfo material;*/
 	// temp
-	uniform vec3 materialKa;
+	//uniform vec3 materialKa;
 	uniform vec3 materialKd;
 	uniform vec3 materialKs;
 	//uniform float materialShininess;
-	const float materialShininess = 50.0; // temp
+	const float materialShininess = 30.0; // temp
 
-	//vec3 materialKa = materialKd; // temp
+	vec3 materialKa = materialKd; // temp
 	
-	vec4 cameraPosition = { 120.0, 40.0, 0.0, 1.0 }; // temp
-	float lightDistanceSquared = 100000.0; // falloff distance of light squared, temp
+	const vec4 lightPosition = { 80.0, 0.0, 0.0, 1.0 }; // temp
+	float lightDistanceSquared = 20000.0; // falloff distance of light squared, temp
 
 	//uniform vec3 diffuseColor;
 	//uniform sampler2D diffuse;
@@ -99,9 +91,6 @@
 
 	in vec4 positionViewspace;
 	in vec3 normalViewspace;
-
-	in vec4 positionWorldspace; // temp
-	in vec3 normalWorldspace;   // temp
 
 	//in vec4 color;
 	//in vec2 uv;
@@ -112,53 +101,129 @@
 	
 	// Functions
 
-	vec3 phongModel(vec4 positionViewspace, vec3 normalViewspace)
+	vec3 phongPointLight(vec4 positionViewspace, vec3 normalViewspace)
 	{
-		vec3 s = normalize(vec3(lightPosition - positionViewspace));
-		vec3 v = normalize(-positionViewspace.xyz);
-		vec3 r = reflect(-s, normalViewspace);
-		vec3 ambient = lightLa * materialKa;
-		float sDotN = clamp(dot(s, normalViewspace), 0.0, 1.0);
-		vec3 diffuse = lightLd * materialKd * sDotN;
+		vec3 normal = normalize(normalViewspace);
+		vec3 lightDir = normalize(vec3(lightPosition - positionViewspace));
 		
-		//vec3 halfAngle = normalize(v - s);
+		float lambertian = max(dot(lightDir, normal), 0.0);
 
-		vec3 spec = vec3(0.0);
-		if (sDotN > 0.0) {
-			spec = lightLs * materialKs * pow(clamp(dot(r,v), 0.0, 1.0), materialShininess);
+		vec3 specular = vec3(0.0);
+		if (lambertian > 0.0) {
+			vec3 viewDir = normalize(vec3(-positionViewspace));
+			vec3 reflectDir = normalize(reflect(-lightDir, normalViewspace));
+
+			float specAngle = max(dot(reflectDir,viewDir), 0.0);
+			specular = lightLs * materialKs * pow(specAngle, materialShininess);
 		}
-		return ambient + (diffuse * 0.6) + (spec * 0.5);
+
+		vec3 ambient = lightLa * materialKa;
+		vec3 diffuse = lightLd * materialKd * lambertian;
+
+		//return ambient + (diffuse * 0.6) + (specular * 0.5);
+		return ambient + diffuse + specular;
 	}
 
-	vec3 phongWithFalloff(vec4 positionWorldspace, vec3 normalWorldspace)
+	vec3 blinnPhongDirectionalLight(vec4 positionViewspace, vec3 normalViewspace)
 	{
-		// Phong relfection is ambient + light-diffuse + spec highlights.
-		// I = Ia*ka*Oda + fatt*Ip[kd*Od(N.L) + ks(R.V)^n]
-		// Ref: http://www.whisqu.se/per/docs/graphics8.htm
-		// and http://en.wikipedia.org/wiki/Phong_shading
-		// Get light direction for this fragment
-		vec3 lightDir = normalize(positionWorldspace - lightPosition).xyz;
+		vec3 normal = normalize(normalViewspace);
+		vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0)); // temp
+
+		vec3 specular = vec3(0.0);
 		
-		float diffuseLighting = clamp(dot(normalWorldspace, -lightDir), 0.0, 1.0); // per pixel diffuse lighting
- 
-		// Introduce fall-off of light intensity
-		diffuseLighting *= (lightDistanceSquared / dot(lightPosition - positionWorldspace, lightPosition - positionWorldspace));
- 
-		// Using Blinn half angle modification for performance over correctness
-		vec3 h = normalize(normalize(cameraPosition - positionWorldspace).xyz - lightDir);
- 
-		float specLighting = pow(clamp(dot(h, normalWorldspace), 0.0, 1.0), materialShininess);
- 
-		return vec3(clamp((lightLa * materialKa) +
-						  (materialKd * lightLd * diffuseLighting * 0.6) + // Use light diffuse vector as intensity multiplier
-						  (materialKs * lightLs * specLighting * 0.5)      // Use light specular vector as intensity multiplier
-						  , 0.0, 1.0));
+		float lambertian = max(dot(lightDir,normal), 0.0);
+
+		if (lambertian > 0.0) {
+			vec3 viewDir = normalize(vec3(-positionViewspace));
+			vec3 halfDir = normalize(lightDir + viewDir);
+
+			float specAngle = max(dot(halfDir, normal), 0.0);
+			specular = lightLs * materialKs * pow(specAngle, materialShininess * 4.0);
+		}
+
+		vec3 ambient = lightLa * materialKa;
+		vec3 diffuse = lightLd * materialKd * lambertian;
+
+		//return ambient + (diffuse * 0.6) + (specular * 0.5);
+		return ambient + diffuse + specular;
+		//return max(diffuse + specular, ambient);
+	}
+
+	vec3 blinnPhongPointLight(vec4 positionViewspace, vec3 normalViewspace)
+	{
+		vec4 positionToLight = lightPosition - positionViewspace;
+		vec3 lightDir = normalize(vec3(positionToLight));
+
+		vec3 specular = vec3(0.0);
+		
+		float distanceFalloff = (lightDistanceSquared / dot(positionToLight, positionToLight));
+
+		vec3 normal = normalize(normalViewspace);
+		float lambertian = max(dot(lightDir,normal), 0.0) * distanceFalloff;
+
+		if (lambertian > 0.0) {
+			vec3 viewDir = normalize(vec3(-positionViewspace));
+			vec3 halfDir = normalize(lightDir + viewDir);
+
+			float specAngle = max(dot(halfDir, normal), 0.0);
+			specular = lightLs * materialKs * pow(specAngle, materialShininess * 4.0) * distanceFalloff;
+		}
+
+		vec3 ambient = lightLa * materialKa;
+		vec3 diffuse = lightLd * materialKd * lambertian;
+		
+		//return ambient + (diffuse * 0.6) + (specular * 0.5);
+		return ambient + diffuse + specular;
+		//return max(diffuse + specular, ambient);
+	}
+
+	vec3 blinnPhongSpotlight(vec4 positionViewspace, vec3 normalViewspace)
+	{
+		vec4 positionToLight = lightPosition - positionViewspace;
+		vec3 lightDir = normalize(vec3(positionToLight));
+
+		// temp spotlight stuff
+		vec4 spotlightDirection = { -1.0, 0.0, -1.0, 0.0 };
+		float spotlightCutoff = 0.98;
+		float spotlightEdgeFalloff = (1.0 - spotlightCutoff) * 0.2;
+		vec3 sd = normalize(vec3(-spotlightDirection));
+		/////
+
+		float lambertian = 0.0;
+		vec3 specular = vec3(0.0);
+
+		float lightAngle = max(dot(sd,lightDir), 0.0);
+		if (lightAngle > spotlightCutoff) {
+			float angleFalloff = smoothstep(spotlightCutoff, spotlightCutoff + spotlightEdgeFalloff, lightAngle);
+			float distanceFalloff = (lightDistanceSquared / dot(positionToLight, positionToLight));
+
+			vec3 normal = normalize(normalViewspace);
+			lambertian = max(dot(lightDir,normal), 0.0) * angleFalloff * distanceFalloff;
+
+			if (lambertian > 0.0) {
+				vec3 viewDir = normalize(vec3(-positionViewspace));
+				vec3 halfDir = normalize(lightDir + viewDir);
+
+				float specAngle = max(dot(halfDir, normal), 0.0);
+				specular = lightLs * materialKs * pow(specAngle, materialShininess * 4.0) * angleFalloff * distanceFalloff;
+			}
+		}
+
+		vec3 ambient = lightLa * materialKa;
+		vec3 diffuse = lightLd * materialKd * lambertian;
+
+		//return ambient + (diffuse * 0.6) + (specular * 0.5);
+		return ambient + diffuse + specular;
+		//return max(diffuse + specular, ambient);
 	}
 
 	void main() {
 		// Evaluate the lighting equation
-		vec3 lightIntensity = phongModel(positionViewspace, normalViewspace);
-		//vec3 lightIntensity = phongWithFalloff(positionWorldspace, normalWorldspace);
+		//vec3 lightIntensity = phongPointLight(positionViewspace, normalViewspace);
+		
+		//vec3 lightIntensity = blinnPhongDirectionalLight(positionViewspace, normalViewspace);
+		//vec3 lightIntensity = blinnPhongPointLight(positionViewspace, normalViewspace);
+		vec3 lightIntensity = blinnPhongSpotlight(positionViewspace, normalViewspace);
 
 		//outColor = (texture(diffuse, uv).rgb * color.rgb);
 		outColor = vec4(lightIntensity, 1.0);
