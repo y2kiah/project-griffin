@@ -73,9 +73,10 @@
 	};
 	uniform MaterialInfo material;*/
 	// temp
-	//uniform vec3 materialKa;
-	uniform vec3 materialKd;
-	uniform vec3 materialKs;
+	//uniform vec3 materialKa; // ambient color
+	uniform vec3 materialKe; // emissive color
+	uniform vec3 materialKd; // diffuse color
+	uniform vec3 materialKs; // specular color
 	//uniform float materialShininess;
 	const float materialShininess = 30.0; // temp
 	const float materialMetallic = 0.85; // temp
@@ -119,10 +120,10 @@
 		}
 
 		vec3 ambient = lightLa * materialKa;
+		vec3 emissive = materialKe;
 		vec3 diffuse = lightLd * materialKd * lambertian;
 
-		//return ambient + (diffuse * 0.6) + (specular * 0.5);
-		return ambient + diffuse + specular;
+		return ambient + emissive + diffuse + specular;
 	}
 
 	vec3 blinnPhongDirectionalLight(vec4 positionViewspace, vec3 normalViewspace)
@@ -143,11 +144,10 @@
 		}
 
 		vec3 ambient = lightLa * materialKa;
+		vec3 emissive = materialKe;
 		vec3 diffuse = lightLd * materialKd * lambertian;
 
-		//return ambient + (diffuse * 0.6) + (specular * 0.5);
-		return ambient + diffuse + specular;
-		//return max(diffuse + specular, ambient);
+		return ambient + emissive + diffuse + specular;
 	}
 
 	vec3 blinnPhongPointLight(vec4 positionViewspace, vec3 normalViewspace)
@@ -171,11 +171,10 @@
 		}
 
 		vec3 ambient = lightLa * materialKa;
+		vec3 emissive = materialKe;
 		vec3 diffuse = lightLd * materialKd * lambertian;
 		
-		//return ambient + (diffuse * 0.6) + (specular * 0.5);
-		return ambient + diffuse + specular;
-		//return max(diffuse + specular, ambient);
+		return ambient + emissive + diffuse + specular;
 	}
 
 	vec3 blinnPhongSpotlight(vec4 positionViewspace, vec3 normalViewspace)
@@ -216,11 +215,10 @@
 		}
 
 		vec3 ambient = lightLa * materialKa;
+		vec3 emissive = materialKe;
 		vec3 diffuse = lightLd * materialKd * lambertian;
 
-		//return ambient + (diffuse * 0.6) + (specular * 0.5);
-		return ambient + diffuse + specular;
-		//return max(diffuse + specular, ambient);
+		return ambient + emissive + diffuse + specular;
 	}
 
 	void main() {
