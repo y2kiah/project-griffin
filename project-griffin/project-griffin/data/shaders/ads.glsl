@@ -62,8 +62,8 @@
 	uniform LightInfo light;*/
 	const vec3 lightLa = { 0.6, 0.7, 0.8 };
 	//const vec3 lightLa = { 0.1, 0.2, 0.3 };
-	const vec3 lightLd = { 1.0, 0.5, 0.5 };
-	const vec3 lightLs = { 1.0, 0.5, 0.5 };
+	const vec3 lightLd = { 1.0, 0.2, 0.2 };
+	const vec3 lightLs = lightLd;
 
 	/*struct MaterialInfo {
 		vec3 Ka; // Ambient reflectivity
@@ -78,9 +78,10 @@
 	uniform vec3 materialKs;
 	//uniform float materialShininess;
 	const float materialShininess = 30.0; // temp
+	const float materialMetallic = 0.85; // temp
 
 	vec3 materialKa = materialKd; // temp
-	
+
 	const vec4 lightPosition = { 80.0, 0.0, 0.0, 1.0 }; // temp
 	float lightDistanceSquared = 20000.0; // falloff distance of light squared, temp
 
@@ -205,7 +206,12 @@
 				vec3 halfDir = normalize(lightDir + viewDir);
 
 				float specAngle = max(dot(halfDir, normal), 0.0);
-				specular = lightLs * materialKs * pow(specAngle, materialShininess * 4.0) * angleFalloff * distanceFalloff;
+
+				// determines the specular highlight color with a "metallic" property
+				// specular highlight of plastics is light combined with surface, metalic is mostly surface
+				vec3 specColor = mix(lightLs * materialKs, materialKs, materialMetallic);
+
+				specular = specColor * pow(specAngle, materialShininess * 4.0) * angleFalloff * distanceFalloff;
 			}
 		}
 
