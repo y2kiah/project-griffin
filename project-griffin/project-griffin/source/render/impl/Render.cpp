@@ -96,8 +96,9 @@ namespace griffin {
 
 			loadTexturesTemp();
 			//loadModelTemp("data/models/ship.dae");
-			//loadModelTemp("data/models/landing platform.dae");
-			loadModelTemp("data/models/quadcopter2.dae");
+			//loadModelTemp("data/models/riggedFighter.dae");
+			loadModelTemp("data/models/landing platform.dae");
+			//loadModelTemp("data/models/quadcopter2.dae");
 			//loadModelTemp("data/models/cube.dae");
 
 			camera = std::make_unique<CameraPersp>(viewportWidth, viewportHeight, 60.0f, 0.1f, 10000.0f);
@@ -114,7 +115,10 @@ namespace griffin {
 			program.useProgram();
 			auto programId = program.getProgramId();
 
-			camera->setEyePoint({ 0.0f, 40.0f, -40.0f });//{ 120.0f, 40.0f, 0.0f });
+			//camera->setEyePoint({ 0.0f, 100.0f, 200.0f });
+			//camera->setEyePoint({ 10.0f, 0.0f, 90.0f });
+			//camera->setEyePoint({ 0.0f, 40.0f, -40.0f });
+			camera->setEyePoint({ 120.0f, 40.0f, 0.0f });
 			camera->lookAt({ 0.0f, 0.0f, 0.0f });
 			camera->setWorldUp({ 0.0f, 1.0f, 0.0f });
 			camera->calcMatrices();
