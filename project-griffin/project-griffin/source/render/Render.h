@@ -20,8 +20,10 @@ namespace griffin {
 
 		using std::unique_ptr;
 		using std::weak_ptr;
+		using std::shared_ptr;
 		using std::wstring;
 		using resource::ResourceHandle;
+		using resource::ResourcePtr;
 		using resource::CacheType;
 
 		// Variables
@@ -109,7 +111,9 @@ namespace griffin {
 			/**
 			* Initialize the renderer
 			*/
-			bool init(int viewportWidth, int viewportHeight);
+			void init(int viewportWidth, int viewportHeight);
+
+			void renderFrame(double interpolation);
 
 			void drawFullscreenQuad(/*Viewport?*/) const;
 
@@ -119,9 +123,9 @@ namespace griffin {
 			uint32_t			m_glQuadVAO = 0;			//<! Vertex Array Object for fullScreenQuad
 			VertexBuffer_GL		m_fullScreenQuad;
 
-			ShaderProgramPtr	m_mrtProgram;				//<! multiple render target geometry pass, renders the g-buffer
-			ShaderProgramPtr	m_fullScreenQuadProgram;	//<! fullscreen quad program for deferred lighting and post-processing
-			ShaderProgramPtr	m_ssaoProgram;				//<! post-process screen space ambient occlusion shader
+			ResourcePtr			m_mrtProgram;				//<! multiple render target geometry pass, renders the g-buffer
+			ResourcePtr			m_fullScreenQuadProgram;	//<! fullscreen quad program for deferred lighting and post-processing
+			ResourcePtr			m_ssaoProgram;				//<! post-process screen space ambient occlusion shader
 		};
 
 
@@ -145,12 +149,20 @@ namespace griffin {
 		*/
 		class RenderSystem {
 		public:
+			explicit RenderSystem() :
+				m_cameras(0, RESERVE_RENDER_CAMERAS)
+			{}
+
+			~RenderSystem();
+
 			void init(int viewportWidth, int viewportHeight);
 
 			// needed?
 			void interpolateStates(double interpolation) {}
 
-			void renderFrame(double interpolation);
+			void renderFrame(double interpolation) {
+				m_renderer.renderFrame(interpolation);
+			}
 
 		private:
 			handle_map<unique_ptr<Camera>>  m_cameras;
@@ -159,6 +171,8 @@ namespace griffin {
 			DeferredRenderer_GL m_renderer;
 		};
 
+
+		typedef shared_ptr<RenderSystem> RenderSystemPtr;
 	}
 }
 

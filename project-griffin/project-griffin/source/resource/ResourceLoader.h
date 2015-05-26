@@ -45,6 +45,11 @@ namespace griffin {
 			* update on the update thread calls queued callbacks
 			*/
 			virtual void update(const UpdateInfo& ui) override;
+			
+			/**
+			* executing on each frame currently, not tied to the update fixed timestep
+			*/
+			void executeCallbacks();
 
 			/**
 			*

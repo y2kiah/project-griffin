@@ -68,7 +68,7 @@ namespace griffin {
 
 		// class DeferredRenderer_GL
 
-		bool DeferredRenderer_GL::init(int viewportWidth, int viewportHeight)
+		void DeferredRenderer_GL::init(int viewportWidth, int viewportHeight)
 		{
 			// get the resource loader
 			using namespace resource;
@@ -96,7 +96,7 @@ namespace griffin {
 			// load shader programs for deferred rendering
 			// hold a shared_ptr to these shader programs so they never fall out of cache
 
-			auto fsq  = loadShaderProgram(L"shaders/fullscreenQuad.glsl");
+			//auto fsq  = loadShaderProgram(L"shaders/fullscreenQuad.glsl");
 			auto ssao = loadShaderProgram(L"shaders/ssao.glsl");
 			auto mrt  = loadShaderProgram(L"shaders/ads.glsl"); // temporarily ads.glsl
 			//L"shaders/linearDepth.glsl"
@@ -104,11 +104,9 @@ namespace griffin {
 			//L"shaders/atmosphere/atmosphere.glsl"
 			//L"shaders/SimpleShader.glsl"
 
-			m_fullScreenQuadProgram = loader->getResource(fsq).get(); // wait on the futures and assign shared_ptrs
+			//m_fullScreenQuadProgram = loader->getResource(fsq).get(); // wait on the futures and assign shared_ptrs
 			m_ssaoProgram = loader->getResource(ssao).get();
 			m_mrtProgram = loader->getResource(mrt).get();
-
-			return true;
 		}
 
 		void DeferredRenderer_GL::drawFullscreenQuad(/*Viewport*/) const
@@ -117,35 +115,14 @@ namespace griffin {
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 		}
 
-		DeferredRenderer_GL::~DeferredRenderer_GL()
+		// class DeferredRenderer_GL
+
+		void DeferredRenderer_GL::renderFrame(double interpolation)
 		{
-			if (m_glQuadVAO != 0) {
-				glDeleteVertexArrays(1, &m_glQuadVAO);
-			}
-		}
-
-
-		// Functions
-
-		void RenderSystem::init(int viewportWidth, int viewportHeight) {
-			//loadModelTemp("data/models/ship.dae");
-			//loadModelTemp("data/models/riggedFighter.dae");
-			loadModelTemp("data/models/landing platform.dae");
-			//loadModelTemp("data/models/quadcopter2.dae");
-			//loadModelTemp("data/models/cube.dae");
-			//loadModelTemp("data/models/untitled.blend");
-
-			camera = std::make_unique<CameraPersp>(viewportWidth, viewportHeight, 60.0f, 0.1f, 10000.0f);
-		}
-
-
-		void DeferredRenderer_GL::renderFrame(double interpolation) {
 			glClearColor(0.2f, 0.4f, 0.8f, 1.0f); // temp
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-			auto loader = g_loaderPtr.lock();
-			auto programRes = loader->getResource<ShaderProgram_GL>(g_programHandleTemp);
-			auto& program = programRes.get()->getResource<ShaderProgram_GL>();
+			auto& program = m_mrtProgram.get()->getResource<ShaderProgram_GL>();
 			program.useProgram();
 			auto programId = program.getProgramId();
 
@@ -169,27 +146,27 @@ namespace griffin {
 			//glUniformMatrix4fv(UniformLayout_ModelView, 1, GL_FALSE, &camera->getModelViewMatrix()[0][0]);
 			//glUniformMatrix4fv(UniformLayout_Projection, 1, GL_FALSE, &camera->getProjectionMatrix()[0][0]);
 			//glUniformMatrix4fv(UniformLayout_ModelViewProjection, 1, GL_FALSE, &mvp[0][0]);
-			GLint modelMatLoc     = glGetUniformLocation(programId, "modelToWorld");
+			GLint modelMatLoc = glGetUniformLocation(programId, "modelToWorld");
 			GLint modelViewMatLoc = glGetUniformLocation(programId, "modelView");
-			GLint viewProjMatLoc  = glGetUniformLocation(programId, "viewProjection");
-			GLint mvpMatLoc       = glGetUniformLocation(programId, "modelViewProjection");
-			GLint normalMatLoc    = glGetUniformLocation(programId, "normalMatrix");
-			
-			GLint ambientLoc      = glGetUniformLocation(programId, "materialKa");
-			GLint diffuseLoc      = glGetUniformLocation(programId, "materialKd");
-			GLint specularLoc     = glGetUniformLocation(programId, "materialKs");
-			GLint shininessLoc    = glGetUniformLocation(programId, "materialShininess");
-			
+			GLint viewProjMatLoc = glGetUniformLocation(programId, "viewProjection");
+			GLint mvpMatLoc = glGetUniformLocation(programId, "modelViewProjection");
+			GLint normalMatLoc = glGetUniformLocation(programId, "normalMatrix");
+
+			GLint ambientLoc = glGetUniformLocation(programId, "materialKa");
+			GLint diffuseLoc = glGetUniformLocation(programId, "materialKd");
+			GLint specularLoc = glGetUniformLocation(programId, "materialKs");
+			GLint shininessLoc = glGetUniformLocation(programId, "materialShininess");
+
 			glUniformMatrix4fv(viewProjMatLoc, 1, GL_FALSE, &viewProjMat[0][0]);
 
 			// bind the texture
 			/*if (!loader) { return; }
 			try {
-				auto fTex = loader->getResource<Texture2D_GL>(g_textureHandleTemp);
-				fTex.get()->getResource<Texture2D_GL>().bind(GL_TEXTURE0);
-				
-				GLint diffuse = glGetUniformLocation(programId, "diffuse"); // <-- uniform locations could be stored in shaderprogram structure
-				glUniform1i(diffuse, 0);
+			auto fTex = loader->getResource<Texture2D_GL>(g_textureHandleTemp);
+			fTex.get()->getResource<Texture2D_GL>().bind(GL_TEXTURE0);
+
+			GLint diffuse = glGetUniformLocation(programId, "diffuse"); // <-- uniform locations could be stored in shaderprogram structure
+			glUniform1i(diffuse, 0);
 			}
 			catch (...) {}*/
 
@@ -199,6 +176,38 @@ namespace griffin {
 							 viewMat, viewProjMat); // temporarily passing in the modelMatLoc
 		}
 
+		DeferredRenderer_GL::~DeferredRenderer_GL()
+		{
+			if (m_glQuadVAO != 0) {
+				glDeleteVertexArrays(1, &m_glQuadVAO);
+			}
+		}
+
+
+		// class RenderSystem
+
+		void RenderSystem::init(int viewportWidth, int viewportHeight) {
+			m_renderer.init(viewportWidth, viewportHeight);
+
+			//loadModelTemp("data/models/ship.dae");
+			//loadModelTemp("data/models/riggedFighter.dae");
+			loadModelTemp("data/models/landing platform.dae");
+			//loadModelTemp("data/models/quadcopter2.dae");
+			//loadModelTemp("data/models/cube.dae");
+			//loadModelTemp("data/models/untitled.blend");
+
+			camera = std::make_unique<CameraPersp>(viewportWidth, viewportHeight, 60.0f, 0.1f, 10000.0f);
+		}
+
+		RenderSystem::~RenderSystem()
+		{
+			if (m_cameras.capacity() > RESERVE_RENDER_CAMERAS) {
+				SDL_Log("check RESERVE_RENDER_CAMERAS: original=%d, highest=%d", RESERVE_RENDER_CAMERAS, m_cameras.capacity());
+			}
+		}
+
+
+		// Free Functions
 
 		ResourceHandle<Texture2D_GL> loadTexture(wstring texturePath, CacheType cache)
 		{

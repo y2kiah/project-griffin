@@ -82,6 +82,18 @@ namespace griffin {
 		}
 
 		/**
+		* Build the RenderSystem
+		*/
+		{
+			using namespace render;
+
+			auto renderSystemPtr = make_shared<RenderSystem>();
+			renderSystemPtr->init(app.getPrimaryWindow().width, app.getPrimaryWindow().height);
+
+			engine.renderSystem = renderSystemPtr;
+		}
+
+		/**
 		* Build the entity-component system
 		*/
 		{
@@ -101,7 +113,7 @@ namespace griffin {
 		{
 			// create vector in order of system update execution
 			engine.systems.push_back(engine.inputSystem.get());
-			engine.systems.push_back(engine.resourceLoader.get());
+			//engine.systems.push_back(engine.resourceLoader.get());
 		}
 
 		return move(engine);

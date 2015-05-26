@@ -31,8 +31,6 @@ int main(int argc, char *argv[])
 		app.initWindow(PROGRAM_NAME);
 		app.initOpenGL();
 		auto engine = make_engine(app);
-		
-		render::initRenderData(app.getPrimaryWindow().width, app.getPrimaryWindow().height); // move into make_application
 
 		test_reflection(); // TEMP
 
@@ -85,7 +83,9 @@ int main(int argc, char *argv[])
 				/*SDL_Log("Render realTime=%lu: interpolation=%0.3f: threadIdHash=%lu\n",
 						realTime, interpolation, std::this_thread::get_id().hash());*/
 
-				render::renderFrame(interpolation);
+				engine.resourceLoader->executeCallbacks();
+
+				engine.renderSystem->renderFrame(interpolation);
 
 				SDL_GL_SwapWindow(app.getPrimaryWindow().window);
 				platform::yieldThread();

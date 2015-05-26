@@ -9,6 +9,7 @@
 #include <resource/ResourceLoader.h>
 #include <script/ScriptManager_LuaJIT.h>
 #include <entity/Entity.h>
+#include <render/Render.h>
 
 
 namespace griffin {
@@ -18,6 +19,7 @@ namespace griffin {
 		core::InputSystemPtr			inputSystem		= nullptr;
 		resource::ResourceLoaderPtr		resourceLoader	= nullptr;
 		entity::EntityManagerPtr		entityManager	= nullptr;
+		render::RenderSystemPtr			renderSystem	= nullptr;
 
 		std::vector<core::CoreSystem*>	systems;
 	};

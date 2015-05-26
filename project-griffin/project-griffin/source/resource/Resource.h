@@ -3,8 +3,8 @@
 * @author	Jeff Kiah
 */
 #pragma once
-#ifndef GRIFFIN_RESOURCE_
-#define GRIFFIN_RESOURCE_
+#ifndef GRIFFIN_RESOURCE_H_
+#define GRIFFIN_RESOURCE_H_
 
 #include <memory>
 #include <future>

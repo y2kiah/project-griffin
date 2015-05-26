@@ -22,5 +22,6 @@
 
 // Render System
 #define RESERVE_RENDER_QUEUE					500
+#define RESERVE_RENDER_CAMERAS					10
 
 #endif
