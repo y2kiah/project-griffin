@@ -95,7 +95,7 @@ namespace griffin {
 				for (uint32_t m = 0; m < node.numMeshes; ++m) {
 					uint32_t drawSet = m_meshScene.meshIndices[node.meshIndexOffset + m];
 
-					Material& mat = m_materials[drawSet];
+					Material_GL& mat = m_materials[drawSet];
 					glUniform3fv(ambientLoc, 1, &mat.ambientColor[0]);
 					glUniform3fv(diffuseLoc, 1, &mat.diffuseColor[0]);
 					glUniform3fv(specularLoc, 1, &mat.specularColor[0]);

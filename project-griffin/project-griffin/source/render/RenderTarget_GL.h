@@ -1,6 +1,6 @@
 #pragma once
-#ifndef GRIFFIN_RENDERTARGET_H_
-#define GRIFFIN_RENDERTARGET_H_
+#ifndef GRIFFIN_RENDERTARGET_GL_H_
+#define GRIFFIN_RENDERTARGET_GL_H_
 
 #include <cstdint>
 

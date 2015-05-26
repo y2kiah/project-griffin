@@ -7,7 +7,7 @@
 #include <string>
 #include "render/VertexBuffer_GL.h"
 #include "render/IndexBuffer_GL.h"
-#include "render/material/Material.h"
+#include "render/material/Material_GL.h"
 #include <glm/mat4x4.hpp>
 
 
@@ -151,7 +151,7 @@ namespace griffin {
 			uint32_t		m_meshSceneOffset = 0;
 
 			DrawSet *		m_drawSets = nullptr;
-			Material *		m_materials = nullptr;
+			Material_GL *	m_materials = nullptr;
 			MeshSceneGraph	m_meshScene;
 
 			VertexBuffer_GL	m_vertexBuffer;
@@ -189,7 +189,7 @@ namespace griffin {
 		{
 			// fix up the internal pointers into m_modelData
 			m_drawSets = reinterpret_cast<DrawSet*>(m_modelData.get());
-			m_materials = reinterpret_cast<Material*>(m_modelData.get() + m_materialsOffset);
+			m_materials = reinterpret_cast<Material_GL*>(m_modelData.get() + m_materialsOffset);
 
 			initializeVAOs();
 		}

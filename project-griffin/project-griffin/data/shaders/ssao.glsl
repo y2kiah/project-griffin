@@ -76,7 +76,7 @@ uniform float rad = 0.006;
 			ray = radD*reflect(pSphere[i],fres);
  
 			// if the ray is outside the hemisphere then change direction
-			se = ep + sign(dot(ray,norm) )*ray;
+			se = ep + sign(dot(ray,norm))*ray;
  
 			// get the depth of the occluder fragment
 			vec4 occluderFragment = texture2D(normalMap,se.xy);

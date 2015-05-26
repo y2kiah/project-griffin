@@ -54,7 +54,7 @@
 	// Uniform Variables
 
 	/*struct LightInfo {
-		vec4 position; // Light position in eye coords.
+		vec4 positionViewspace; // Light position in eye coords.
 		vec3 La; // Ambient light intensity
 		vec3 Ld; // Diffuse light intensity
 		vec3 Ls; // Specular light intensity
@@ -62,7 +62,7 @@
 	uniform LightInfo light;*/
 	const vec3 lightLa = { 0.6, 0.7, 0.8 };
 	//const vec3 lightLa = { 0.1, 0.2, 0.3 };
-	const vec3 lightLd = { 1.0, 0.2, 0.2 };
+	const vec3 lightLd = { 1.0, 0.6, 0.3 };
 	const vec3 lightLs = lightLd;
 
 	/*struct MaterialInfo {
@@ -70,6 +70,7 @@
 		vec3 Kd; // Diffuse reflectivity
 		vec3 Ks; // Specular reflectivity
 		float shininess; // Specular shininess factor
+		float metallic;
 	};
 	uniform MaterialInfo material;*/
 	// temp

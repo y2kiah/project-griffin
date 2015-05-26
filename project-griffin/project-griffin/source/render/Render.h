@@ -7,6 +7,10 @@
 #include "VertexBuffer_GL.h"
 #include "RenderTarget_GL.h"
 #include <utility/memory_reserve.h>
+#include <resource/Resource.h>
+#include <render/texture/Texture2D_GL.h>
+#include <render/ShaderProgram_GL.h>
+#include <render/Camera.h>
 
 namespace griffin {
 	// Forward Declarations
@@ -17,6 +21,8 @@ namespace griffin {
 		using std::unique_ptr;
 		using std::weak_ptr;
 		using std::wstring;
+		using resource::ResourceHandle;
+		using resource::CacheType;
 
 		// Variables
 		extern weak_ptr<resource::ResourceLoader> g_loaderPtr;
@@ -98,22 +104,60 @@ namespace griffin {
 			explicit DeferredRenderer_GL() :
 				m_gbuffer(RenderTarget_GL::GBuffer)
 			{}
+			~DeferredRenderer_GL();
 
 			/**
 			* Initialize the renderer
 			*/
 			bool init(int viewportWidth, int viewportHeight);
 
-		private:
-			VertexBuffer_GL		m_fullScreenQuad;
-			RenderTarget_GL		m_gbuffer;
-//			ShaderProgram_GL	m_fullScreenQuadProgram;
+			void drawFullscreenQuad(/*Viewport?*/) const;
 
+		private:
+			RenderTarget_GL		m_gbuffer;
+			
+			uint32_t			m_glQuadVAO = 0;			//<! Vertex Array Object for fullScreenQuad
+			VertexBuffer_GL		m_fullScreenQuad;
+
+			ShaderProgramPtr	m_mrtProgram;				//<! multiple render target geometry pass, renders the g-buffer
+			ShaderProgramPtr	m_fullScreenQuadProgram;	//<! fullscreen quad program for deferred lighting and post-processing
+			ShaderProgramPtr	m_ssaoProgram;				//<! post-process screen space ambient occlusion shader
 		};
 
-		// Functions
-		void initRenderData(int viewportWidth, int viewportHeight);
-		void renderFrame(double interpolation);
+
+		// Resource Loading Functions - do these belong here?
+		ResourceHandle<Texture2D_GL>     loadTexture(wstring texturePath, CacheType cache = CacheType::Cache_Materials_T);
+		ResourceHandle<ShaderProgram_GL> loadShaderProgram(wstring programPath, CacheType cache = CacheType::Cache_Materials_T);
+
+		/**
+		* need the systems to
+		*	- get full render states 1 and 2 from entity store, each holds copy of components
+		*		- if object in state 1 is missing from state 2, or vice versa, don't render it
+		*		- for each component in both states, interpolate between state 1 and state 2
+		*			- update position to interpolated value in quadtree culling system
+		*		- for each viewport, active camera's frustum sent to culling system
+		*			- frustum culled against quad tree objects, sends back list of rendered objects
+		*			- render called on each object, submits RenderEntry to render system
+		*	
+		*	- update on fixed timesteps
+		*		- scene graph transforms updated, with dirty flag optimization
+		*		- when new scene info is ready, queue an event to tell render thread to swap states
+		*/
+		class RenderSystem {
+		public:
+			void init(int viewportWidth, int viewportHeight);
+
+			// needed?
+			void interpolateStates(double interpolation) {}
+
+			void renderFrame(double interpolation);
+
+		private:
+			handle_map<unique_ptr<Camera>>  m_cameras;
+
+			RenderQueue         m_renderQueue;
+			DeferredRenderer_GL m_renderer;
+		};
 
 	}
 }

@@ -13,6 +13,7 @@ namespace griffin {
 		
 		using std::string;
 		using std::vector;
+		using std::shared_ptr;
 
 
 		class Shader_GL {
@@ -76,6 +77,8 @@ namespace griffin {
 			string				m_shaderCode;
 		};
 
+
+		typedef shared_ptr<ShaderProgram_GL> ShaderProgramPtr;
 	}
 }
 

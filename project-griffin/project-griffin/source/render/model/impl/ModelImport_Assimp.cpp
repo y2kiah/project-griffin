@@ -18,7 +18,7 @@
 #include <limits>
 
 #include <render/model/Mesh_GL.h>
-#include <render/material/Material.h>
+#include <render/material/Material_GL.h>
 #include <glm/vec4.hpp>
 
 using namespace Assimp;
@@ -36,7 +36,7 @@ namespace griffin {
 		uint32_t fillVertexBuffer(const aiScene&, unsigned char*, size_t);
 		uint32_t getTotalIndexBufferSize(const aiScene&, DrawSet*, size_t);
 		uint32_t fillIndexBuffer(const aiScene&, unsigned char*, size_t, size_t, DrawSet*);
-		void     fillMaterials(const aiScene&, Material*, size_t);
+		void     fillMaterials(const aiScene&, Material_GL*, size_t);
 		std::tuple<uint32_t, uint32_t, uint32_t> getSceneArraySizes(const aiScene&);
 		void     fillSceneGraph(const aiScene&, MeshSceneGraph&);
 
@@ -67,7 +67,7 @@ namespace griffin {
 
 			// get materials size
 			uint32_t numMaterials = scene.mNumMaterials;
-			size_t totalMaterialsSize = numMaterials * sizeof(Material);
+			size_t totalMaterialsSize = numMaterials * sizeof(Material_GL);
 
 			// get mesh scene graph size
 			MeshSceneGraph meshScene;
@@ -103,7 +103,7 @@ namespace griffin {
 
 			// fill materials
 			uint32_t materialsOffset = static_cast<uint32_t>(totalDrawSetsSize);
-			Material* materials = reinterpret_cast<Material*>(modelData.get() + materialsOffset);
+			Material_GL* materials = reinterpret_cast<Material_GL*>(modelData.get() + materialsOffset);
 			fillMaterials(scene, materials, numMaterials);
 
 			// fill scene graph
@@ -405,7 +405,7 @@ namespace griffin {
 		/**
 		* fill materials buffer
 		*/
-		void fillMaterials(const aiScene& scene, Material* materials,
+		void fillMaterials(const aiScene& scene, Material_GL* materials,
 						   size_t numMaterials)
 		{
 			for (uint32_t m = 0; m < numMaterials; ++m) {
@@ -420,7 +420,6 @@ namespace griffin {
 				aiGetMaterialFloat(assimpMat, AI_MATKEY_REFLECTIVITY, &mat.reflectivity);
 				aiGetMaterialFloat(assimpMat, AI_MATKEY_REFRACTI, &mat.refracti);
 				aiGetMaterialFloat(assimpMat, AI_MATKEY_SHININESS, &mat.shininess);
-				aiGetMaterialFloat(assimpMat, AI_MATKEY_SHININESS_STRENGTH, &mat.shininessStrength);
 
 				aiColor4D color;
 				aiGetMaterialColor(assimpMat, AI_MATKEY_COLOR_DIFFUSE, &color);
