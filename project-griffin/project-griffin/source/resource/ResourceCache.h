@@ -3,8 +3,8 @@
 * @author	Jeff Kiah
 */
 #pragma once
-#ifndef GRIFFIN_RESOURCE_CACHE_
-#define GRIFFIN_RESOURCE_CACHE_
+#ifndef GRIFFIN_RESOURCE_CACHE_H_
+#define GRIFFIN_RESOURCE_CACHE_H_
 
 #include <memory>
 #include <utility/container/handle_map.h>

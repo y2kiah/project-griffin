@@ -104,9 +104,13 @@ namespace griffin {
 			//L"shaders/atmosphere/atmosphere.glsl"
 			//L"shaders/SimpleShader.glsl"
 
+			//auto nrml = loadTexture(L"textures/normal-noise.png"); // convert to dds
+
 			//m_fullScreenQuadProgram = loader->getResource(fsq).get(); // wait on the futures and assign shared_ptrs
 			m_ssaoProgram = loader->getResource(ssao).get();
 			m_mrtProgram = loader->getResource(mrt).get();
+
+			//m_normalsTexture = loader->getResource(nrml).get();
 		}
 
 		void DeferredRenderer_GL::drawFullscreenQuad(/*Viewport*/) const
@@ -174,6 +178,17 @@ namespace griffin {
 			g_tempMesh->draw(modelMatLoc, modelViewMatLoc, mvpMatLoc, normalMatLoc,
 							 ambientLoc, diffuseLoc, specularLoc, shininessLoc,
 							 viewMat, viewProjMat); // temporarily passing in the modelMatLoc
+
+			// Post-Processing, SSAO, etc.
+			/*auto& ssao = m_ssaoProgram.get()->getResource<ShaderProgram_GL>();
+			ssao.useProgram();
+			auto ssaoId = ssao.getProgramId();
+
+			m_normalsTexture.get()->getResource<Texture2D_GL>().bind(GL_TEXTURE0);
+			GLint normalNoise = glGetUniformLocation(ssaoId, "normalNoise"); // <-- uniform locations could be stored in shaderprogram structure
+			glUniform1i(normalNoise, 0);
+
+			drawFullscreenQuad();*/
 		}
 
 		DeferredRenderer_GL::~DeferredRenderer_GL()

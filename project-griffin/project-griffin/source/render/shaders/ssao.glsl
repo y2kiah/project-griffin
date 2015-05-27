@@ -2,7 +2,7 @@
 
 #define SAMPLES 16 // 10 is good
 
-uniform sampler2D rnm;
+uniform sampler2D normalNoise;
 uniform sampler2D normalMap;
 	
 uniform float totStrength = 1.38;
@@ -43,7 +43,7 @@ uniform float rad = 0.006;
 		//const vec3 pSphere[10] = vec3[](vec3(-0.010735935, 0.01647018, 0.0062425877),vec3(-0.06533369, 0.3647007, -0.13746321),vec3(-0.6539235, -0.016726388, -0.53000957),vec3(0.40958285, 0.0052428036, -0.5591124),vec3(-0.1465366, 0.09899267, 0.15571679),vec3(-0.44122112, -0.5458797, 0.04912532),vec3(0.03755566, -0.10961345, -0.33040273),vec3(0.019100213, 0.29652783, 0.066237666),vec3(0.8765323, 0.011236004, 0.28265962),vec3(0.29264435, -0.40794238, 0.15964167));
 		
 		// grab a normal for reflecting the sample rays later on
-		vec3 fres = normalize((texture2D(rnm,uv*offset).xyz*2.0) - vec3(1.0));
+		vec3 fres = normalize((texture2D(normalNoise,uv*offset).xyz*2.0) - vec3(1.0));
 
 		vec4 currentPixelSample = texture2D(normalMap,uv);
  
@@ -94,7 +94,7 @@ uniform float rad = 0.006;
 
 	#define SAMPLES 10 // 10 is good
 
-	uniform sampler2D rnm;
+	uniform sampler2D normalNoise;
 	uniform sampler2D normalMap;
 	
 	const float totStrength = 1.38;
@@ -113,7 +113,7 @@ uniform float rad = 0.006;
 		vec3 pSphere[10] = vec3[](vec3(-0.010735935, 0.01647018, 0.0062425877),vec3(-0.06533369, 0.3647007, -0.13746321),vec3(-0.6539235, -0.016726388, -0.53000957),vec3(0.40958285, 0.0052428036, -0.5591124),vec3(-0.1465366, 0.09899267, 0.15571679),vec3(-0.44122112, -0.5458797, 0.04912532),vec3(0.03755566, -0.10961345, -0.33040273),vec3(0.019100213, 0.29652783, 0.066237666),vec3(0.8765323, 0.011236004, 0.28265962),vec3(0.29264435, -0.40794238, 0.15964167));
 
 		// grab a normal for reflecting the sample rays later on
-		vec3 fres = normalize((texture2D(rnm,uv*offset).xyz*2.0) - vec3(1.0));
+		vec3 fres = normalize((texture2D(normalNoise,uv*offset).xyz*2.0) - vec3(1.0));
  
 		vec4 currentPixelSample = texture2D(normalMap,uv);
  

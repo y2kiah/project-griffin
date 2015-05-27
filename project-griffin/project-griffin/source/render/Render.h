@@ -120,12 +120,14 @@ namespace griffin {
 		private:
 			RenderTarget_GL		m_gbuffer;
 			
-			uint32_t			m_glQuadVAO = 0;			//<! Vertex Array Object for fullScreenQuad
+			uint32_t			m_glQuadVAO = 0;					//<! Vertex Array Object for fullScreenQuad
 			VertexBuffer_GL		m_fullScreenQuad;
 
-			ResourcePtr			m_mrtProgram;				//<! multiple render target geometry pass, renders the g-buffer
-			ResourcePtr			m_fullScreenQuadProgram;	//<! fullscreen quad program for deferred lighting and post-processing
-			ResourcePtr			m_ssaoProgram;				//<! post-process screen space ambient occlusion shader
+			ResourcePtr			m_mrtProgram = nullptr;				//<! multiple render target geometry pass, renders the g-buffer
+			ResourcePtr			m_fullScreenQuadProgram = nullptr;	//<! fullscreen quad program for deferred lighting and post-processing
+			ResourcePtr			m_ssaoProgram = nullptr;			//<! post-process screen space ambient occlusion shader
+
+			ResourcePtr			m_normalsTexture = nullptr;			//<! random normal noise texture for ssao
 		};
 
 
