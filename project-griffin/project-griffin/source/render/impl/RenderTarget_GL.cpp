@@ -10,17 +10,17 @@ namespace griffin {
 			/*if (m_depthBufferId != 0) {
 				glDeleteRenderbuffers(1, &m_depthBufferId);
 			}*/
-			if (m_diffuseTexture != 0) {
-				glDeleteTextures(1, &m_diffuseTexture);
+			if (m_textureIds[Albedo_Displacement] != 0) {
+				glDeleteTextures(1, &m_textureIds[Albedo_Displacement]);
 			}
-			if (m_positionTexture != 0) {
-				glDeleteTextures(1, &m_positionTexture);
+			if (m_textureIds[Position] != 0) {
+				glDeleteTextures(1, &m_textureIds[Position]);
 			}
-			if (m_normalsTexture != 0) {
-				glDeleteTextures(1, &m_normalsTexture);
+			if (m_textureIds[Normal_Reflectance] != 0) {
+				glDeleteTextures(1, &m_textureIds[Normal_Reflectance]);
 			}
-			if (m_depthTexture != 0) {
-				glDeleteTextures(1, &m_depthTexture);
+			if (m_textureIds[Depth_Stencil] != 0) {
+				glDeleteTextures(1, &m_textureIds[Depth_Stencil]);
 			}
 			if (m_fboId != 0) {
 				glDeleteFramebuffers(1, &m_fboId);
@@ -69,65 +69,90 @@ namespace griffin {
 			*/
 
 			if (m_type != Depth) {
-				if (m_diffuseTexture != 0) {
-					glDeleteTextures(1, &m_diffuseTexture);
+				unsigned int albedo = m_textureIds[Albedo_Displacement];
+
+				if (albedo != 0) {
+					glDeleteTextures(1, &albedo);
 				}
 				// Generate and bind the texture for diffuse + displacement
-				glGenTextures(1, &m_diffuseTexture);
-				glBindTexture(GL_TEXTURE_2D, m_diffuseTexture);
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-				// Attach the texture to the FBO
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_diffuseTexture, 0);
-			}
-
-			if (m_type == GBuffer) {
-				if (m_positionTexture != 0) {
-					glDeleteTextures(1, &m_positionTexture);
-				}
-				// Generate and bind the texture for eye-space position
-				glGenTextures(1, &m_positionTexture);
-				glBindTexture(GL_TEXTURE_2D, m_positionTexture);
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, nullptr);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-				// Attach the texture to the FBO
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_positionTexture, 0);
-
-				if (m_normalsTexture != 0) {
-					glDeleteTextures(1, &m_normalsTexture);
-				}
-				// Generate and bind the texture for normal + reflectance
-				glGenTextures(1, &m_normalsTexture);
-				glBindTexture(GL_TEXTURE_2D, m_normalsTexture);
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_width, m_height, 0, GL_RGBA, GL_HALF_FLOAT, nullptr);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-				// Attach the texture to the FBO
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_normalsTexture, 0);
-			}
-
-			if (m_type != Color) {
-				if (m_depthTexture != 0) {
-					glDeleteTextures(1, &m_depthTexture);
-				}
-				// Generate and bind the texture for depth + stencil
-				glGenTextures(1, &m_depthTexture);
-				glBindTexture(GL_TEXTURE_2D, m_depthTexture);
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+				glGenTextures(1, &albedo);
+				m_textureIds[Albedo_Displacement] = albedo;
+				glBindTexture(GL_TEXTURE_2D, albedo);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 				// Attach the texture to the FBO
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depthTexture, 0);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, albedo, 0);
+			}
+
+			if (m_type == GBuffer) {
+				unsigned int position = m_textureIds[Position];
+				unsigned int normal = m_textureIds[Normal_Reflectance];
+
+				if (position != 0) {
+					glDeleteTextures(1, &position);
+				}
+				// Generate and bind the texture for eye-space position
+				glGenTextures(1, &position);
+				m_textureIds[Position] = position;
+				glBindTexture(GL_TEXTURE_2D, position);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_HALF_FLOAT, nullptr);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				// Attach the texture to the FBO
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, position, 0);
+
+				if (normal != 0) {
+					glDeleteTextures(1, &normal);
+				}
+				// Generate and bind the texture for normal + reflectance
+				glGenTextures(1, &normal);
+				m_textureIds[Normal_Reflectance] = normal;
+				glBindTexture(GL_TEXTURE_2D, normal);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_HALF_FLOAT, nullptr);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				// Attach the texture to the FBO
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, normal, 0);
+			}
+
+			if (m_type != Color) {
+				unsigned int depth = m_textureIds[Depth_Stencil];
+
+				if (depth != 0) {
+					glDeleteTextures(1, &depth);
+				}
+				// Generate and bind the texture for depth + stencil
+				glGenTextures(1, &depth);
+				m_textureIds[Depth_Stencil] = depth;
+				glBindTexture(GL_TEXTURE_2D, depth);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+				// Attach the texture to the FBO
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth, 0);
+			}
+
+			if (m_type == Color) {
+				GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
+				glDrawBuffers(1, buffers);
+			}
+			else if (m_type == Depth) {
+				glDrawBuffer(GL_NONE); // no color buffer
+			}
+			else if (m_type == GBuffer) {
+				GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+				glDrawBuffers(3, buffers);
 			}
 
 			// Check if all worked fine and unbind the FBO
@@ -150,32 +175,24 @@ namespace griffin {
 		{
 			// Bind our FBO and set the viewport to the proper size
 			glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
-			glPushAttrib(GL_VIEWPORT_BIT);
-			glViewport(0, 0, 1, 1); // why 1 for deferred rendering? Due to shader? Some tutorials use pixel width and height.
+			//glPushAttrib(GL_VIEWPORT_BIT);
+			//glViewport(0, 0, 1, 1); // why 1 for deferred rendering? Due to shader? Some tutorials use pixel width and height.
+			glViewport(0, 0, m_width, m_height);
 
 			// Clear color of the render targets
-			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+			glClearColor(0.2f, 0.4f, 0.8f, 1.0f);
 
 			//glActiveTexture(GL_TEXTURE0);
 			//glEnable(GL_TEXTURE_2D);
 
-			// Specify what to render an start acquiring
 			if (m_type == Color) {
 				glClear(GL_COLOR_BUFFER_BIT);
-				
-				GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
-				glDrawBuffers(1, buffers);
 			}
 			else if (m_type == Depth) {
 				glClear(GL_DEPTH_BUFFER_BIT);
-				
-				glDrawBuffer(GL_NONE); // no color buffer
 			}
 			else if (m_type == GBuffer) {
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-				GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-				glDrawBuffers(3, buffers);
 			}
 		}
 
@@ -186,9 +203,13 @@ namespace griffin {
 		{
 			// Stop acquiring and unbind the FBO
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			glPopAttrib();
+			//glPopAttrib();
 		}
 
-
+		void RenderTarget_GL::bind(RenderTargetTexture renderTarget, unsigned int textureSlot) const
+		{
+			glActiveTexture(textureSlot);
+			glBindTexture(GL_TEXTURE_2D, m_textureIds[renderTarget]);
+		}
 	}
 }

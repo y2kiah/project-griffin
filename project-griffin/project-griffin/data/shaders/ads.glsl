@@ -18,7 +18,11 @@
 	uniform mat4 viewProjection;
 	uniform mat4 modelViewProjection;
 	uniform mat4 normalMatrix;
-	
+
+	uniform float frustumNear;
+	uniform float frustumFar;
+	uniform float inverseFrustumDistance; // inverse max distance of the camera, to get linear depth
+
 	// Input Variables
 
 	layout(location = VertexLayout_Position) in vec3 vertexPosition_modelspace;
@@ -30,7 +34,8 @@
 
 	out vec4 positionViewspace;
 	out vec3 normalViewspace;
-
+	out float linearDepth;
+	
 	//out vec4 color;
 	//out vec2 uv;
 
@@ -42,8 +47,12 @@
 		normalViewspace = normalize(normalMatrix * vec4(vertexNormal, 0.0)).xyz;
 		positionViewspace = modelView * vec4(vertexPosition_modelspace, 1.0);
 		
+		linearDepth = (-positionViewspace.z - frustumNear) * inverseFrustumDistance; // map near..far linearly to 0..1
+		
+
 		//color = vertexColor;
 		//uv = vertexUV;
+		//z = log(z / zn) / log(zf / zn); // logarithmic z
 
 		gl_Position = modelViewProjection * vec4(vertexPosition_modelspace, 1.0);
 	}
@@ -94,13 +103,16 @@
 
 	in vec4 positionViewspace;
 	in vec3 normalViewspace;
+	in float linearDepth;
 
 	//in vec4 color;
 	//in vec2 uv;
 	
 	// Output Variables
 
-	layout(location = 0) out vec4 outColor;
+	layout(location = 0) out vec4 albedoDisplacement;
+	layout(location = 1) out vec3 eyeSpacePosition;
+	layout(location = 2) out vec4 normalReflectance;
 	
 	// Functions
 
@@ -231,8 +243,10 @@
 		vec3 lightIntensity = blinnPhongSpotlight(positionViewspace, normalViewspace);
 
 		//outColor = (texture(diffuse, uv).rgb * color.rgb);
-		outColor = vec4(lightIntensity, 1.0);
-		//normalReflectance.rgb = (normal + 1.0) * 0.5;
+		albedoDisplacement = vec4(lightIntensity, 1.0);
+		eyeSpacePosition = positionViewspace.xyz;
+		normalReflectance = vec4(normalViewspace.xyz, gl_FragCoord.z);// vec4((normalViewspace + 1.0) * 0.5, 0.0);
+		//gl_FragDepth = linearDepth;
 	}
 
 #endif

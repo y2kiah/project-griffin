@@ -2,7 +2,10 @@
 #ifndef GRIFFIN_RENDERTARGET_GL_H_
 #define GRIFFIN_RENDERTARGET_GL_H_
 
+#pragma warning(disable: 4351) // disable "new behavior" warning on array initialization
+
 #include <cstdint>
+#include <utility/enum.h>
 
 namespace griffin {
 	namespace render {
@@ -13,6 +16,13 @@ namespace griffin {
 				Color = 0,		//<! builds only the diffuse render target texture
 				Depth = 1,		//<! builds only the depth render target texture
 				GBuffer = 2		//<! builds diffuse, position, normals, and depth render target textures
+			};
+
+			enum RenderTargetTexture : uint8_t {
+				Albedo_Displacement = 0,	//<! diffuse albedo (rgb) + displacement (a) render target
+				Position = 1,				//<! the eye-space position render target
+				Normal_Reflectance = 2,		//<! normal (rgb) + reflectance (a) render target
+				Depth_Stencil = 3			//<! depth (rgb) + stencil (a) render target
 			};
 
 			explicit RenderTarget_GL(RenderTargetType type = Color) :
@@ -37,16 +47,20 @@ namespace griffin {
 			*/
 			void stop();
 
+			/**
+			* Bind a render target to an active texture slot (GL_TEXTURE0 - GL_TEXTURE31) to be
+			* sampled from a shader program.
+			* @
+			*/
+			void bind(RenderTargetTexture renderTarget, unsigned int textureSlot) const;
+
 		private:
 			// Variables
 			RenderTargetType	m_type = Color;
 			int					m_width = 0;
 			int					m_height = 0;
-			unsigned int		m_fboId = 0;			// frame buffer object handle
-			unsigned int		m_diffuseTexture = 0;	// texture id for the diffuse (rgb) + displacement (a) render target
-			unsigned int		m_positionTexture = 0;	// texture id for the eye-space position render target
-			unsigned int		m_normalsTexture = 0;	// texture id for the normal (rgb) + reflectance (a) render target
-			unsigned int		m_depthTexture = 0;		// texture id for the depth (rgb) + stencil (a) render target
+			unsigned int		m_fboId = 0;	//<! frame buffer object handle
+			unsigned int		m_textureIds[4] = {};
 		};
 		
 

@@ -104,13 +104,13 @@ namespace griffin {
 			//L"shaders/atmosphere/atmosphere.glsl"
 			//L"shaders/SimpleShader.glsl"
 
-			//auto nrml = loadTexture(L"textures/normal-noise.png"); // convert to dds
+			auto nrml = loadTexture(L"textures/normal-noise.dds");
 
 			//m_fullScreenQuadProgram = loader->getResource(fsq).get(); // wait on the futures and assign shared_ptrs
 			m_ssaoProgram = loader->getResource(ssao).get();
 			m_mrtProgram = loader->getResource(mrt).get();
 
-			//m_normalsTexture = loader->getResource(nrml).get();
+			m_normalsTexture = loader->getResource(nrml).get();
 		}
 
 		void DeferredRenderer_GL::drawFullscreenQuad(/*Viewport*/) const
@@ -123,8 +123,12 @@ namespace griffin {
 
 		void DeferredRenderer_GL::renderFrame(double interpolation)
 		{
-			glClearColor(0.2f, 0.4f, 0.8f, 1.0f); // temp
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			// start call above clears these
+			//glClearColor(0.2f, 0.4f, 0.8f, 1.0f); // temp
+			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			// Start g-buffer rendering
+			m_gbuffer.start();
 
 			auto& program = m_mrtProgram.get()->getResource<ShaderProgram_GL>();
 			program.useProgram();
@@ -139,6 +143,7 @@ namespace griffin {
 			camera->calcMatrices();
 			mat4 viewMat(camera->getModelViewMatrix());
 			mat4 viewProjMat(camera->getProjectionMatrix() * viewMat);
+			float inverseCameraDistance = 1.0f / (camera->getFarClip() - camera->getNearClip());
 
 			/*camera->setTranslationYawPitchRoll({ 10.0f, 10.0f, 10.0f }, glm::radians(315.0f), glm::radians(45.0f), 0);
 			//camera->lookAt({ 10.0f, 10.0f, 10.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f });
@@ -156,6 +161,10 @@ namespace griffin {
 			GLint mvpMatLoc = glGetUniformLocation(programId, "modelViewProjection");
 			GLint normalMatLoc = glGetUniformLocation(programId, "normalMatrix");
 
+			GLint frustumNearLoc = glGetUniformLocation(programId, "frustumNear");
+			GLint frustumFarLoc = glGetUniformLocation(programId, "frustumFar");
+			GLint inverseFrustumDistanceLoc = glGetUniformLocation(programId, "inverseFrustumDistance");
+
 			GLint ambientLoc = glGetUniformLocation(programId, "materialKa");
 			GLint diffuseLoc = glGetUniformLocation(programId, "materialKd");
 			GLint specularLoc = glGetUniformLocation(programId, "materialKs");
@@ -163,32 +172,44 @@ namespace griffin {
 
 			glUniformMatrix4fv(viewProjMatLoc, 1, GL_FALSE, &viewProjMat[0][0]);
 
-			// bind the texture
-			/*if (!loader) { return; }
-			try {
-			auto fTex = loader->getResource<Texture2D_GL>(g_textureHandleTemp);
-			fTex.get()->getResource<Texture2D_GL>().bind(GL_TEXTURE0);
-
-			GLint diffuse = glGetUniformLocation(programId, "diffuse"); // <-- uniform locations could be stored in shaderprogram structure
-			glUniform1i(diffuse, 0);
-			}
-			catch (...) {}*/
+			glUniform1f(frustumNearLoc, camera->getNearClip());
+			glUniform1f(frustumFarLoc, camera->getFarClip());
+			glUniform1f(inverseFrustumDistanceLoc, inverseCameraDistance);
 
 			// draw the test mesh
 			g_tempMesh->draw(modelMatLoc, modelViewMatLoc, mvpMatLoc, normalMatLoc,
 							 ambientLoc, diffuseLoc, specularLoc, shininessLoc,
 							 viewMat, viewProjMat); // temporarily passing in the modelMatLoc
 
-			// Post-Processing, SSAO, etc.
-			/*auto& ssao = m_ssaoProgram.get()->getResource<ShaderProgram_GL>();
+			m_gbuffer.stop();
+			// End g-buffer rendering
+
+			glClearColor(0.2f, 0.4f, 0.8f, 1.0f); // temp
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			// Start post-processing, SSAO, etc.
+			auto& ssao = m_ssaoProgram.get()->getResource<ShaderProgram_GL>();
 			ssao.useProgram();
 			auto ssaoId = ssao.getProgramId();
 
 			m_normalsTexture.get()->getResource<Texture2D_GL>().bind(GL_TEXTURE0);
-			GLint normalNoise = glGetUniformLocation(ssaoId, "normalNoise"); // <-- uniform locations could be stored in shaderprogram structure
-			glUniform1i(normalNoise, 0);
+			m_gbuffer.bind(RenderTarget_GL::Albedo_Displacement, GL_TEXTURE1);
+			m_gbuffer.bind(RenderTarget_GL::Normal_Reflectance, GL_TEXTURE2);
+			m_gbuffer.bind(RenderTarget_GL::Depth_Stencil, GL_TEXTURE3);
 
-			drawFullscreenQuad();*/
+			GLint normalNoiseLoc = glGetUniformLocation(ssaoId, "normalNoise"); // <-- uniform locations could be stored in shaderprogram structure
+			GLint colorMapLoc    = glGetUniformLocation(ssaoId, "colorMap");
+			GLint normalMapLoc   = glGetUniformLocation(ssaoId, "normalMap");
+			GLint depthMapLoc    = glGetUniformLocation(ssaoId, "depthMap");
+			glUniform1i(normalNoiseLoc, 0);
+			glUniform1i(colorMapLoc, 1);
+			glUniform1i(normalMapLoc, 2);
+			glUniform1i(depthMapLoc, 3);
+
+			//glDisable(GL_DEPTH_TEST);
+			drawFullscreenQuad();
+			//glEnable(GL_DEPTH_TEST);
+			// End post-processing
 		}
 
 		DeferredRenderer_GL::~DeferredRenderer_GL()
@@ -211,7 +232,7 @@ namespace griffin {
 			//loadModelTemp("data/models/cube.dae");
 			//loadModelTemp("data/models/untitled.blend");
 
-			camera = std::make_unique<CameraPersp>(viewportWidth, viewportHeight, 60.0f, 0.1f, 10000.0f);
+			camera = std::make_unique<CameraPersp>(viewportWidth, viewportHeight, 60.0f, 0.1f, 100000.0f);
 		}
 
 		RenderSystem::~RenderSystem()

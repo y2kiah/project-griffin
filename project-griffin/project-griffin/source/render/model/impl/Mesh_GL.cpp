@@ -51,6 +51,7 @@ namespace griffin {
 			//glDrawRangeElementsBaseVertex(/*GL_POINTS*/drawSet.glPrimitiveType, drawSet.indexRangeStart, drawSet.indexRangeEnd,
 			//							  drawSet.numElements, indexType,
 			//							  reinterpret_cast<const GLvoid*>(drawSet.indexBaseOffset), drawSet.vertexBaseOffset);
+			//unbind(drawSetIndex);
 		}
 
 
@@ -205,11 +206,13 @@ namespace griffin {
 		}
 		
 
-		/*void Mesh_GL::unbind(int drawSetIndex) const
+		void Mesh_GL::unbind(int drawSetIndex) const
 		{
 			assert(drawSetIndex >= 0 && drawSetIndex < m_numDrawSets && "drawSetIndex out of range");
 
-			auto& drawSet = m_drawSets[drawSetIndex];
+			glBindVertexArray(0); // break the existing vertex array object binding
+
+			/*auto& drawSet = m_drawSets[drawSetIndex];
 
 			if (drawSet.vertexFlags & Vertex_Positions) {
 				glDisableVertexAttribArray(VertexLayout_Position);
@@ -234,7 +237,7 @@ namespace griffin {
 				for (int c = 0; c < drawSet.numColorChannels; ++c) {
 					glDisableVertexAttribArray(VertexLayout_Colors + c);
 				}
-			}
-		}*/
+			}*/
+		}
 	}
 }

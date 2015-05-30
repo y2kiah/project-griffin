@@ -115,7 +115,7 @@ namespace griffin {
 			* Disables vertex attrib pointers, does not unbind the vertex + index buffers since the
 			* next draw call will just bind its own buffers.
 			*/
-			//void unbind(int drawSetIndex) const;
+			void unbind(int drawSetIndex) const;
 
 			/**
 			* Draws a single DrawSet

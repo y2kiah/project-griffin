@@ -28,7 +28,7 @@ namespace griffin {
 			*/
 			bool loadFromFile(const std::string &name);
 
-			void bind(unsigned int texture); // is "sampler" the right term? should it be slot or something else?
+			void bind(unsigned int textureSlot) const;
 
 		private:
 			unsigned int m_glTexture = 0;

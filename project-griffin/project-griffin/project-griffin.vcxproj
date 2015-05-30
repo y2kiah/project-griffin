@@ -206,6 +206,7 @@
   <ItemGroup>
     <None Include="data\config\inputcontexts.json" />
     <None Include="data\config\inputs.json" />
+    <None Include="fxaa.glsl" />
     <None Include="source\lua\init.lua" />
     <None Include="source\lua\InputSystem.lua" />
     <None Include="source\lua\JSON.lua" />

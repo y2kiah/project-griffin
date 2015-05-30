@@ -31,7 +31,7 @@ namespace griffin {
 				data, static_cast<int>(size),
 				SOIL_LOAD_AUTO,
 				SOIL_CREATE_NEW_ID,
-				SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_MIPMAPS | SOIL_FLAG_DDS_LOAD_DIRECT | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT);
+				SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_MIPMAPS | SOIL_FLAG_DDS_LOAD_DIRECT | SOIL_FLAG_COMPRESS_TO_DXT);
 
 			SDL_Log("tex: %d\n", m_glTexture);
 
@@ -60,10 +60,10 @@ namespace griffin {
 			// if image is already loaded, do some cleanup?
 
 			m_glTexture = SOIL_load_OGL_texture(
-				"vendor/soil/img_test.png",
+				name.c_str(),
 				SOIL_LOAD_AUTO,
 				SOIL_CREATE_NEW_ID,
-				SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_MIPMAPS | SOIL_FLAG_DDS_LOAD_DIRECT | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT);
+				SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_MIPMAPS | SOIL_FLAG_DDS_LOAD_DIRECT | SOIL_FLAG_COMPRESS_TO_DXT);
 
 			SDL_Log("tex: %d\n", m_glTexture);
 
@@ -75,9 +75,9 @@ namespace griffin {
 			return (m_glTexture != 0);
 		}
 
-		void Texture2D_GL::bind(unsigned int texture = GL_TEXTURE0)
+		void Texture2D_GL::bind(unsigned int textureSlot = GL_TEXTURE0) const
 		{
-			glActiveTexture(texture);
+			glActiveTexture(textureSlot);
 			glBindTexture(GL_TEXTURE_2D, m_glTexture);
 		}
 

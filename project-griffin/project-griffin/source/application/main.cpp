@@ -167,7 +167,7 @@ void SDLApplication::initWindow(const char* appName)
 	// Turn on double buffering with a 24bit Z buffer.
 	// You may need to change this to 16 or 32 for your system
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 32);
 
 	// Turn on antialiasing
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
@@ -248,7 +248,7 @@ void SDLApplication::initOpenGL()
 
 	// Set the clear color to black and clear the screen
 	glClearColor(0.0, 0.0, 0.0, 1.0);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	SDL_GL_SwapWindow(getPrimaryWindow().window);
 }
 
