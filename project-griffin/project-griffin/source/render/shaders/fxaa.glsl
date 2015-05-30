@@ -1,29 +1,30 @@
 #include "source/render/shaders/layout.glsli"
 
-#define FxaaTexOff(t, p, o, r) textureLodOffset(t, p, 0.0, o)
-
 #define FXAA_REDUCE_MIN   (1.0/128.0)
 
 uniform float FXAA_SUBPIX_SHIFT = 1.0/4.0;
 uniform float FXAA_SPAN_MAX = 8.0;
 uniform float FXAA_REDUCE_MUL = 1.0/8.0;
 
-uniform float viewportWidth;
-uniform float viewportHeight;
+uniform float viewportWidth = 1600;
+uniform float viewportHeight = 900;
+
+vec2 rcpFrame = vec2(1.0/viewportWidth, 1.0/viewportHeight);
 
 #ifdef _VERTEX_
 	
 	layout(location = VertexLayout_Position) in vec3 vertexPosition;
 
+	const vec2 madd = vec2(0.5, 0.5);
+
 	out vec4 posPos;
- 
+
 	void main()
 	{
-		gl_Position = ftransform();
-		gl_TexCoord[0] = gl_MultiTexCoord0;
-		vec2 rcpFrame = vec2(1.0/viewportWidth, 1.0/viewportHeight);
-		posPos.xy = gl_MultiTexCoord0.xy;
-		posPos.zw = gl_MultiTexCoord0.xy - (rcpFrame * (0.5 + FXAA_SUBPIX_SHIFT));
+		gl_Position = vec4(vertexPosition, 1.0);
+
+		posPos.xy = vertexPosition.xy * madd + madd;
+		posPos.zw = posPos.xy - (rcpFrame * (0.5 + FXAA_SUBPIX_SHIFT));
 	}
 
 #endif
@@ -31,12 +32,13 @@ uniform float viewportHeight;
 #ifdef _FRAGMENT_
 
 	uniform sampler2D colorMap;		// 0
-	uniform float vx_offset;
 
 	in vec4 posPos;
 
+	out vec3 outColor;
+
 	vec3 fxaaPixelShader(
-			vec4 posPos, // Output of FxaaVertexShader interpolated across screen.
+			vec4 posPos,   // Output of vertex interpolated across screen.
 			sampler2D tex, // Input texture.
 			vec2 rcpFrame) // Constant {1.0/frameWidth, 1.0/frameHeight}.
 	{
@@ -81,97 +83,21 @@ uniform float viewportHeight;
 		float lumaB = dot(rgbB, luma);
 
 		if ((lumaB < lumaMin) || (lumaB > lumaMax)) {
-			return rgbA
-		};
+			return rgbA;
+		}
 
 		return rgbB;
 	}
 
-	vec4 postFX(sampler2D tex, vec2 uv, float time)
-	{
-		vec4 c = vec4(0.0);
-		vec2 rcpFrame = vec2(1.0/viewportWidth, 1.0/viewportHeight); // make inverse values a uniform
-		c.rgb = fxaaPixelShader(posPos, tex, rcpFrame);
-		//c.rgb = 1.0 - texture(tex, posPos.xy).rgb;
-		c.a = 1.0;
-		return c;
-	}
-    
 	void main()
 	{
-		vec2 uv = gl_TexCoord[0].st;
-		gl_FragColor = postFX(colorMap, uv, 0.0);
+		outColor = fxaaPixelShader(posPos, colorMap, rcpFrame);
 	}
 
 
 
 
 /*
-//
-// FXAA_PS3 and FXAA_360 choose the console algorithm (FXAA3 CONSOLE).
-//
-// 1 = Use API.
-// 0 = Don't use API.
-//
-/*--------------------------------------------------------------------------*/
-#ifndef FXAA_PS3
-    #define FXAA_PS3 0
-#endif
-/*--------------------------------------------------------------------------*/
-#ifndef FXAA_360
-    #define FXAA_360 0
-#endif
-/*==========================================================================*/
-#ifndef FXAA_PC
-    //
-    // FXAA Quality 
-    // The high quality PC algorithm.
-    //
-    #define FXAA_PC 0
-#endif
-/*--------------------------------------------------------------------------*/
-#ifndef FXAA_PC_CONSOLE
-    //
-    // The console algorithm for PC is included 
-    // for developers targeting really low spec machines.
-    //
-    #define FXAA_PC_CONSOLE 0
-#endif
-/*--------------------------------------------------------------------------*/
-#ifndef FXAA_GLSL_120
-    #define FXAA_GLSL_120 0
-#endif
-/*--------------------------------------------------------------------------*/
-#ifndef FXAA_GLSL_130
-    #define FXAA_GLSL_130 0
-#endif
-/*--------------------------------------------------------------------------*/
-#ifndef FXAA_HLSL_3
-    #define FXAA_HLSL_3 0
-#endif
-/*--------------------------------------------------------------------------*/
-#ifndef FXAA_HLSL_4
-    #define FXAA_HLSL_4 0
-#endif    
-/*--------------------------------------------------------------------------*/
-#ifndef FXAA_HLSL_5
-    #define FXAA_HLSL_5 0
-#endif    
-/*==========================================================================*/
-#ifndef FXAA_EARLY_EXIT
-    // 
-    // Controls algorithm's early exit path.
-    // On PS3 turning this on adds 2 cycles to the shader.
-    // On 360 turning this off adds 10ths of a millisecond to the shader.
-    // Turning this off on console will result in a more blurry image.
-    // So this defaults to on.
-    // 
-    // 1 = On.
-    // 0 = Off.
-    // 
-    #define FXAA_EARLY_EXIT 1
-#endif
-/*--------------------------------------------------------------------------*/
 #ifndef FXAA_DISCARD
     // 
     // Only valid for PC OpenGL currently.
@@ -182,7 +108,7 @@ uniform float viewportHeight;
     // 
     #define FXAA_DISCARD 0
 #endif    
-/*--------------------------------------------------------------------------*/
+
 #ifndef FXAA_LINEAR
     //
     // 0 = Work in non-linear color space.
@@ -194,105 +120,7 @@ uniform float viewportHeight;
     //
     #define FXAA_LINEAR 0
 #endif
-/*--------------------------------------------------------------------------*/
-#ifndef FXAA_FAST_PIXEL_OFFSET
-    //
-    // Used for GLSL 120 only.
-    //
-    // 1 = GL API supports fast pixel offsets
-    // 0 = do not use fast pixel offsets
-    // 
-    #ifdef GL_EXT_gpu_shader4
-        #define FXAA_FAST_PIXEL_OFFSET 1
-    #endif
-    #ifdef GL_NV_gpu_shader5
-        #define FXAA_FAST_PIXEL_OFFSET 1
-    #endif
-    #ifdef GL_ARB_gpu_shader5
-        #define FXAA_FAST_PIXEL_OFFSET 1
-    #endif
-    #ifndef FXAA_FAST_PIXEL_OFFSET
-        #define FXAA_FAST_PIXEL_OFFSET 0
-    #endif
-#endif
-/*--------------------------------------------------------------------------*/
-#ifndef FXAA_GATHER4_ALPHA
-    //
-    // 1 = API supports gather4 on alpha channel.
-    // 0 = API does not support gather4 on alpha channel.
-    //
-    #if (FXAA_HLSL_5 == 1)
-        #define FXAA_GATHER4_ALPHA 1
-    #endif
-    #ifdef GL_ARB_gpu_shader5
-        #define FXAA_GATHER4_ALPHA 1
-    #endif
-    #ifdef GL_NV_gpu_shader5
-        #define FXAA_GATHER4_ALPHA 1
-    #endif
-    #ifndef FXAA_GATHER4_ALPHA
-        #define FXAA_GATHER4_ALPHA 0
-    #endif
-#endif
 
-/*============================================================================
-                         FXAA CONSOLE - TUNING KNOBS
-============================================================================*/
-#ifndef FXAA_CONSOLE__EDGE_SHARPNESS
-    //
-    // Consoles the sharpness of edges.
-    // 
-    // Due to the PS3 being ALU bound, 
-    // there are only two safe values here: 4 and 8.
-    // These options use the shaders ability to a free *|/ by 4|8.
-    //
-    // 8.0 is sharper
-    // 4.0 is softer
-    //
-    #if 1 
-        #define FXAA_CONSOLE__EDGE_SHARPNESS 8.0
-    #else
-        #define FXAA_CONSOLE__EDGE_SHARPNESS 4.0
-    #endif
-#endif
-/*--------------------------------------------------------------------------*/
-#ifndef FXAA_CONSOLE__EDGE_THRESHOLD
-    //
-    // The minimum amount of local contrast required to apply algorithm.
-    // The console setting has a different mapping than the quality setting.
-    //
-    // This only applies when FXAA_EARLY_EXIT is 1.
-    //
-    // Due to the PS3 being ALU bound, 
-    // there are only two safe values here: 0.25 and 0.125.
-    // These options use the shaders ability to a free *|/ by 4|8.
-    //
-    // 0.125 leaves less aliasing, but is softer
-    // 0.25 leaves more aliasing, and is sharper
-    //
-    #if 1
-        #define FXAA_CONSOLE__EDGE_THRESHOLD 0.125
-    #else
-        #define FXAA_CONSOLE__EDGE_THRESHOLD 0.25
-    #endif        
-#endif
-/*--------------------------------------------------------------------------*/
-#ifndef FXAA_CONSOLE__EDGE_THRESHOLD_MIN
-    //
-    // Trims the algorithm from processing darks.
-    // The console setting has a different mapping than the quality setting.
-    //
-    // This only applies when FXAA_EARLY_EXIT is 1.
-    //
-    // This does not apply to PS3.
-    // PS3 was simplified to avoid more shader instructions.
-    // 
-    #define FXAA_CONSOLE__EDGE_THRESHOLD_MIN 0.05
-#endif
-
-/*============================================================================
-                         FXAA QUALITY - TUNING KNOBS
-============================================================================*/
 #ifndef FXAA_QUALITY__EDGE_THRESHOLD
     //
     // The minimum amount of local contrast required to apply algorithm.
@@ -305,7 +133,7 @@ uniform float viewportHeight;
     //
     #define FXAA_QUALITY__EDGE_THRESHOLD (1.0/6.0)
 #endif
-/*--------------------------------------------------------------------------*/
+
 #ifndef FXAA_QUALITY__EDGE_THRESHOLD_MIN
     //
     // Trims the algorithm from processing darks.
@@ -316,7 +144,7 @@ uniform float viewportHeight;
     //
     #define FXAA_QUALITY__EDGE_THRESHOLD_MIN (1.0/12.0)
 #endif
-/*--------------------------------------------------------------------------*/
+
 #ifndef FXAA_QUALITY__SUBPIX_CAP
     //
     // Insures fine detail is not completely removed.
@@ -328,7 +156,7 @@ uniform float viewportHeight;
     //
     #define FXAA_QUALITY__SUBPIX_CAP (3.0/4.0)
 #endif
-/*--------------------------------------------------------------------------*/
+
 #ifndef FXAA_QUALITY__SUBPIX_TRIM
     //
     // Controls removal of sub-pixel aliasing,
@@ -343,7 +171,7 @@ uniform float viewportHeight;
 #endif
 
 
-	vec4 FxaaPixelShader(
+	vec4 fxaaPixelShader(
 			// {xy} = center of pixel
 			vec2 pos,
 			// {xyzw} = not used on FXAA3 Quality
@@ -432,15 +260,15 @@ uniform float viewportHeight;
 		for (int i = 0; i < FXAA_SEARCH_STEPS; i++) {
 			lumaEndN = textureLod(tex, posN.xy, 0.0).w;
 			lumaEndP = textureLod(tex, posP.xy, 0.0).w;
-			bool doneN2 = abs(lumaEndN - lumaN) >= gradientN;
-			bool doneP2 = abs(lumaEndP - lumaN) >= gradientN;
-			if(doneN2 && !doneN) posN += offNP;
-			if(doneP2 && !doneP) posP -= offNP;
-			if(doneN2 && doneP2) break;
+			bool doneN2 = (abs(lumaEndN - lumaN) >= gradientN);
+			bool doneP2 = (abs(lumaEndP - lumaN) >= gradientN);
+			if (doneN2 && !doneN) { posN += offNP; }
+			if (doneP2 && !doneP) { posP -= offNP; }
+			if (doneN2 && doneP2) { break; }
 			doneN = doneN2;
 			doneP = doneP2;
-			if(!doneN) posN -= offNP * 2.0;
-			if(!doneP) posP += offNP * 2.0;
+			if (!doneN) { posN -= offNP * 2.0; }
+			if (!doneP) { posP += offNP * 2.0; }
 		}
 
 		float dstN = horzSpan ? pos.x - posN.x : pos.y - posN.y;

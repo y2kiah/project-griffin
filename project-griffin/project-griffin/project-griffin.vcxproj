@@ -206,7 +206,6 @@
   <ItemGroup>
     <None Include="data\config\inputcontexts.json" />
     <None Include="data\config\inputs.json" />
-    <None Include="fxaa.glsl" />
     <None Include="source\lua\init.lua" />
     <None Include="source\lua\InputSystem.lua" />
     <None Include="source\lua\JSON.lua" />
@@ -225,6 +224,7 @@
     <None Include="source\render\shaders\atmosphere\irradianceN.glsl" />
     <None Include="source\render\shaders\atmosphere\transmittance.glsl" />
     <None Include="source\render\shaders\Font.glsl" />
+    <None Include="source\render\shaders\fxaa.glsl" />
     <None Include="source\render\shaders\layout.glsli" />
     <None Include="source\render\shaders\linearDepth.glsl" />
     <None Include="source\render\shaders\SimpleShader.glsl" />

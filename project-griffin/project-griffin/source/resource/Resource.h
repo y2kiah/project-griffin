@@ -103,7 +103,7 @@ namespace griffin {
 			};
 
 			// pointer to internal model (like PIMPL)
-			std::shared_ptr<const concept> m_selfPtr;
+			std::shared_ptr<const concept> m_selfPtr = nullptr;
 		};
 
 	}

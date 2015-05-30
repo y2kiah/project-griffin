@@ -965,7 +965,7 @@
     <None Include="source\lua\luaBuild.lua">
       <Filter>lua</Filter>
     </None>
-    <None Include="fxaa.glsl">
+    <None Include="source\render\shaders\fxaa.glsl">
       <Filter>render\shaders</Filter>
     </None>
   </ItemGroup>

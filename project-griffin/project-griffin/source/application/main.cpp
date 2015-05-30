@@ -167,7 +167,7 @@ void SDLApplication::initWindow(const char* appName)
 	// Turn on double buffering with a 24bit Z buffer.
 	// You may need to change this to 16 or 32 for your system
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 32);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
 	// Turn on antialiasing
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
@@ -181,8 +181,8 @@ void SDLApplication::initWindow(const char* appName)
 		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 		width, height,
 		SDL_WINDOW_OPENGL);
-	//0, 0,
-	//SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP);
+		//0, 0,
+		//SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP);
 
 	if (window == nullptr) {
 		throw std::runtime_error(SDL_GetError());
@@ -237,7 +237,7 @@ void SDLApplication::initOpenGL()
 	SDL_GL_SetSwapInterval(1);
 
 	// Enable multisampling
-	glEnable(GL_MULTISAMPLE);
+	//glEnable(GL_MULTISAMPLE);
 
 	// Enable back face culling
 	glEnable(GL_CULL_FACE);

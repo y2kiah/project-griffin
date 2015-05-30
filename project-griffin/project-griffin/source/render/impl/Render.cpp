@@ -35,9 +35,9 @@ namespace griffin {
 			-1.0f,  1.0f, 0.0f,
 			-1.0f,  1.0f, 0.0f,
 			 1.0f, -1.0f, 0.0f,
-			 1.0f,  1.0f, 0.0f,
+			 1.0f,  1.0f, 0.0f
 		};
-
+		
 		// TEMP
 		std::unique_ptr<Mesh_GL> g_tempMesh = nullptr;
 		std::unique_ptr<CameraPersp> camera = nullptr;
@@ -82,6 +82,14 @@ namespace griffin {
 				throw std::runtime_error("Cannot initialize renderer");
 			}
 
+			// initialize the fxaa colorBuffer
+			/*if (!m_colorBuffer.init(viewportWidth, viewportHeight)) {
+				throw std::runtime_error("Connot initialize color buffer");
+			}
+			m_colorBuffer.bind(RenderTarget_GL::Albedo_Displacement, GL_TEXTURE0);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // fxaa sampler requires bilinear filtering
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			*/
 			// build fullscreen quad vertex buffer
 			m_fullScreenQuad.loadFromMemory(reinterpret_cast<const unsigned char*>(g_fullScreenQuadBufferData),
 											sizeof(g_fullScreenQuadBufferData));
@@ -97,8 +105,9 @@ namespace griffin {
 			// hold a shared_ptr to these shader programs so they never fall out of cache
 
 			//auto fsq  = loadShaderProgram(L"shaders/fullscreenQuad.glsl");
-			auto ssao = loadShaderProgram(L"shaders/ssao.glsl");
 			auto mrt  = loadShaderProgram(L"shaders/ads.glsl"); // temporarily ads.glsl
+			auto ssao = loadShaderProgram(L"shaders/ssao.glsl");
+			auto fxaa = loadShaderProgram(L"shaders/fxaa.glsl");
 			//L"shaders/linearDepth.glsl"
 			//L"shaders/atmosphere/earth.glsl"
 			//L"shaders/atmosphere/atmosphere.glsl"
@@ -107,8 +116,9 @@ namespace griffin {
 			auto nrml = loadTexture(L"textures/normal-noise.dds");
 
 			//m_fullScreenQuadProgram = loader->getResource(fsq).get(); // wait on the futures and assign shared_ptrs
-			m_ssaoProgram = loader->getResource(ssao).get();
 			m_mrtProgram = loader->getResource(mrt).get();
+			m_ssaoProgram = loader->getResource(ssao).get();
+			m_fxaaProgram = loader->getResource(fxaa).get();
 
 			m_normalsTexture = loader->getResource(nrml).get();
 		}
@@ -129,86 +139,103 @@ namespace griffin {
 
 			// Start g-buffer rendering
 			m_gbuffer.start();
+			{
+				auto& program = m_mrtProgram.get()->getResource<ShaderProgram_GL>();
+				program.useProgram();
+				auto programId = program.getProgramId();
 
-			auto& program = m_mrtProgram.get()->getResource<ShaderProgram_GL>();
-			program.useProgram();
-			auto programId = program.getProgramId();
+				//camera->setEyePoint({ 0.0f, 100.0f, 200.0f });
+				//camera->setEyePoint({ 10.0f, 0.0f, 90.0f });
+				//camera->setEyePoint({ 0.0f, 40.0f, -40.0f });
+				camera->setEyePoint({ 120.0f, 40.0f, 0.0f });
+				camera->lookAt({ 0.0f, 0.0f, 0.0f });
+				camera->setWorldUp({ 0.0f, 1.0f, 0.0f });
+				camera->calcMatrices();
+				mat4 viewMat(camera->getModelViewMatrix());
+				mat4 viewProjMat(camera->getProjectionMatrix() * viewMat);
+				float inverseCameraDistance = 1.0f / (camera->getFarClip() - camera->getNearClip());
 
-			//camera->setEyePoint({ 0.0f, 100.0f, 200.0f });
-			//camera->setEyePoint({ 10.0f, 0.0f, 90.0f });
-			//camera->setEyePoint({ 0.0f, 40.0f, -40.0f });
-			camera->setEyePoint({ 120.0f, 40.0f, 0.0f });
-			camera->lookAt({ 0.0f, 0.0f, 0.0f });
-			camera->setWorldUp({ 0.0f, 1.0f, 0.0f });
-			camera->calcMatrices();
-			mat4 viewMat(camera->getModelViewMatrix());
-			mat4 viewProjMat(camera->getProjectionMatrix() * viewMat);
-			float inverseCameraDistance = 1.0f / (camera->getFarClip() - camera->getNearClip());
+				/*camera->setTranslationYawPitchRoll({ 10.0f, 10.0f, 10.0f }, glm::radians(315.0f), glm::radians(45.0f), 0);
+				//camera->lookAt({ 10.0f, 10.0f, 10.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f });
+				camera->calcMatrices();
+				mat4 model(1.0f);
+				mat4 mvp(camera->getViewProjection() * model);
+				*/
 
-			/*camera->setTranslationYawPitchRoll({ 10.0f, 10.0f, 10.0f }, glm::radians(315.0f), glm::radians(45.0f), 0);
-			//camera->lookAt({ 10.0f, 10.0f, 10.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f });
-			camera->calcMatrices();
-			mat4 model(1.0f);
-			mat4 mvp(camera->getViewProjection() * model);
-			*/
+				//glUniformMatrix4fv(UniformLayout_ModelView, 1, GL_FALSE, &camera->getModelViewMatrix()[0][0]);
+				//glUniformMatrix4fv(UniformLayout_Projection, 1, GL_FALSE, &camera->getProjectionMatrix()[0][0]);
+				//glUniformMatrix4fv(UniformLayout_ModelViewProjection, 1, GL_FALSE, &mvp[0][0]);
+				GLint modelMatLoc = glGetUniformLocation(programId, "modelToWorld");
+				GLint modelViewMatLoc = glGetUniformLocation(programId, "modelView");
+				GLint viewProjMatLoc = glGetUniformLocation(programId, "viewProjection");
+				GLint mvpMatLoc = glGetUniformLocation(programId, "modelViewProjection");
+				GLint normalMatLoc = glGetUniformLocation(programId, "normalMatrix");
 
-			//glUniformMatrix4fv(UniformLayout_ModelView, 1, GL_FALSE, &camera->getModelViewMatrix()[0][0]);
-			//glUniformMatrix4fv(UniformLayout_Projection, 1, GL_FALSE, &camera->getProjectionMatrix()[0][0]);
-			//glUniformMatrix4fv(UniformLayout_ModelViewProjection, 1, GL_FALSE, &mvp[0][0]);
-			GLint modelMatLoc = glGetUniformLocation(programId, "modelToWorld");
-			GLint modelViewMatLoc = glGetUniformLocation(programId, "modelView");
-			GLint viewProjMatLoc = glGetUniformLocation(programId, "viewProjection");
-			GLint mvpMatLoc = glGetUniformLocation(programId, "modelViewProjection");
-			GLint normalMatLoc = glGetUniformLocation(programId, "normalMatrix");
+				GLint frustumNearLoc = glGetUniformLocation(programId, "frustumNear");
+				GLint frustumFarLoc = glGetUniformLocation(programId, "frustumFar");
+				GLint inverseFrustumDistanceLoc = glGetUniformLocation(programId, "inverseFrustumDistance");
 
-			GLint frustumNearLoc = glGetUniformLocation(programId, "frustumNear");
-			GLint frustumFarLoc = glGetUniformLocation(programId, "frustumFar");
-			GLint inverseFrustumDistanceLoc = glGetUniformLocation(programId, "inverseFrustumDistance");
+				GLint ambientLoc = glGetUniformLocation(programId, "materialKa");
+				GLint diffuseLoc = glGetUniformLocation(programId, "materialKd");
+				GLint specularLoc = glGetUniformLocation(programId, "materialKs");
+				GLint shininessLoc = glGetUniformLocation(programId, "materialShininess");
 
-			GLint ambientLoc = glGetUniformLocation(programId, "materialKa");
-			GLint diffuseLoc = glGetUniformLocation(programId, "materialKd");
-			GLint specularLoc = glGetUniformLocation(programId, "materialKs");
-			GLint shininessLoc = glGetUniformLocation(programId, "materialShininess");
+				glUniformMatrix4fv(viewProjMatLoc, 1, GL_FALSE, &viewProjMat[0][0]);
 
-			glUniformMatrix4fv(viewProjMatLoc, 1, GL_FALSE, &viewProjMat[0][0]);
+				glUniform1f(frustumNearLoc, camera->getNearClip());
+				glUniform1f(frustumFarLoc, camera->getFarClip());
+				glUniform1f(inverseFrustumDistanceLoc, inverseCameraDistance);
 
-			glUniform1f(frustumNearLoc, camera->getNearClip());
-			glUniform1f(frustumFarLoc, camera->getFarClip());
-			glUniform1f(inverseFrustumDistanceLoc, inverseCameraDistance);
-
-			// draw the test mesh
-			g_tempMesh->draw(modelMatLoc, modelViewMatLoc, mvpMatLoc, normalMatLoc,
-							 ambientLoc, diffuseLoc, specularLoc, shininessLoc,
-							 viewMat, viewProjMat); // temporarily passing in the modelMatLoc
-
+				// draw the test mesh
+				g_tempMesh->draw(modelMatLoc, modelViewMatLoc, mvpMatLoc, normalMatLoc,
+								 ambientLoc, diffuseLoc, specularLoc, shininessLoc,
+								 viewMat, viewProjMat); // temporarily passing in the modelMatLoc
+			}
 			m_gbuffer.stop();
 			// End g-buffer rendering
 
-			glClearColor(0.2f, 0.4f, 0.8f, 1.0f); // temp
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			// Start post-processing
+			//m_colorBuffer.start();
+			{
+				glClearColor(0.2f, 0.4f, 0.8f, 1.0f); // temp
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-			// Start post-processing, SSAO, etc.
-			auto& ssao = m_ssaoProgram.get()->getResource<ShaderProgram_GL>();
-			ssao.useProgram();
-			auto ssaoId = ssao.getProgramId();
+				// SSAO
+				auto& ssao = m_ssaoProgram.get()->getResource<ShaderProgram_GL>();
+				ssao.useProgram();
+				auto ssaoId = ssao.getProgramId();
 
-			m_normalsTexture.get()->getResource<Texture2D_GL>().bind(GL_TEXTURE0);
-			m_gbuffer.bind(RenderTarget_GL::Albedo_Displacement, GL_TEXTURE1);
-			m_gbuffer.bind(RenderTarget_GL::Normal_Reflectance, GL_TEXTURE2);
-			m_gbuffer.bind(RenderTarget_GL::Depth_Stencil, GL_TEXTURE3);
+				m_normalsTexture.get()->getResource<Texture2D_GL>().bind(GL_TEXTURE0);
+				m_gbuffer.bind(RenderTarget_GL::Albedo_Displacement, GL_TEXTURE1);
+				m_gbuffer.bind(RenderTarget_GL::Normal_Reflectance, GL_TEXTURE2);
+				m_gbuffer.bind(RenderTarget_GL::Depth_Stencil, GL_TEXTURE3);
 
-			GLint normalNoiseLoc = glGetUniformLocation(ssaoId, "normalNoise"); // <-- uniform locations could be stored in shaderprogram structure
-			GLint colorMapLoc    = glGetUniformLocation(ssaoId, "colorMap");
-			GLint normalMapLoc   = glGetUniformLocation(ssaoId, "normalMap");
-			GLint depthMapLoc    = glGetUniformLocation(ssaoId, "depthMap");
-			glUniform1i(normalNoiseLoc, 0);
-			glUniform1i(colorMapLoc, 1);
-			glUniform1i(normalMapLoc, 2);
-			glUniform1i(depthMapLoc, 3);
+				GLint normalNoiseLoc = glGetUniformLocation(ssaoId, "normalNoise"); // <-- uniform locations could be stored in shaderprogram structure
+				GLint colorMapLoc = glGetUniformLocation(ssaoId, "colorMap");
+				GLint normalMapLoc = glGetUniformLocation(ssaoId, "normalMap");
+				GLint depthMapLoc = glGetUniformLocation(ssaoId, "depthMap");
+				glUniform1i(normalNoiseLoc, 0);
+				glUniform1i(colorMapLoc, 1);
+				glUniform1i(normalMapLoc, 2);
+				glUniform1i(depthMapLoc, 3);
 
-			//glDisable(GL_DEPTH_TEST);
-			drawFullscreenQuad();
-			//glEnable(GL_DEPTH_TEST);
+				drawFullscreenQuad();
+			}
+			//m_colorBuffer.stop();
+
+			/*{
+				// FXAA
+				auto& fxaa = m_fxaaProgram.get()->getResource<ShaderProgram_GL>();
+				fxaa.useProgram();
+				auto fxaaId = fxaa.getProgramId();
+
+				GLint colorMapLoc = glGetUniformLocation(fxaaId, "colorMap");
+
+				drawFullscreenQuad();
+
+				//glClearColor(0.2f, 0.4f, 0.8f, 1.0f); // temp
+				//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			}*/
 			// End post-processing
 		}
 

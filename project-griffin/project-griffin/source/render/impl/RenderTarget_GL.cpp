@@ -43,24 +43,7 @@ namespace griffin {
 			glGenFramebuffers(1, &m_fboId);
 			glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
 
-			// Bind the diffuse render target
-			/*glGenRenderbuffers(1, &m_diffuseId);
-			glBindRenderbuffer(GL_RENDERBUFFER, m_diffuseId);
-			glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA, m_width, m_height);
-			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_diffuseId);
-
-			// Bind the position render target
-			glGenRenderbuffers(1, &m_positionId);
-			glBindRenderbuffer(GL_RENDERBUFFER, m_positionId);
-			glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA32F, m_width, m_height);
-			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_RENDERBUFFER, m_positionId);
-
-			// Bind the normal render target
-			glGenRenderbuffers(1, &m_normalsId);
-			glBindRenderbuffer(GL_RENDERBUFFER, m_normalsId);
-			glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA16F, m_width, m_height);
-			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_RENDERBUFFER, m_normalsId);
-
+			/*
 			// Bind the depth buffer
 			glGenRenderbuffers(1, &m_depthBufferId);
 			glBindRenderbuffer(GL_RENDERBUFFER, m_depthBufferId);
@@ -176,14 +159,10 @@ namespace griffin {
 			// Bind our FBO and set the viewport to the proper size
 			glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
 			//glPushAttrib(GL_VIEWPORT_BIT);
-			//glViewport(0, 0, 1, 1); // why 1 for deferred rendering? Due to shader? Some tutorials use pixel width and height.
 			glViewport(0, 0, m_width, m_height);
 
 			// Clear color of the render targets
 			glClearColor(0.2f, 0.4f, 0.8f, 1.0f);
-
-			//glActiveTexture(GL_TEXTURE0);
-			//glEnable(GL_TEXTURE_2D);
 
 			if (m_type == Color) {
 				glClear(GL_COLOR_BUFFER_BIT);
