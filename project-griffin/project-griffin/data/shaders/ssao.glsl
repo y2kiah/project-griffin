@@ -16,7 +16,7 @@ uniform float totStrength = 0.35; //1.38;
 uniform float strength = 0.07;
 uniform float offset = 18.0;
 uniform float falloff = 0.000002;
-uniform float rad = 0.005; //0.006;
+uniform float rad = 0.006; //0.006;
 
 uniform sampler2D normalNoise;	// 0
 uniform sampler2D colorMap;		// 1
@@ -45,7 +45,11 @@ uniform sampler2D depthMap;		// 3
 	const float invSamples = 1.0 / SAMPLES;
 
 	in vec2 uv;
-	out vec3 outColor;
+	out vec4 outColor;
+
+	float luma(vec3 color) {
+		return dot(color, vec3(0.299, 0.587, 0.114));
+	}
 
 	void main()
 	{
@@ -99,9 +103,8 @@ uniform sampler2D depthMap;		// 3
 
 		// output the result
 		float ao = 1.0-totStrength*bl*invSamples;
-		outColor = texture(colorMap,uv).rgb * ao;
-		//outColor = vec3(ao);
-		//outColor = vec3(texture(normalMap,uv).a);
+		outColor.rgb = texture(colorMap,uv).rgb * ao;
+		outColor.a = luma(outColor.rgb);
 	}
 
 /*

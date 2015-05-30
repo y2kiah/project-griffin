@@ -83,13 +83,13 @@ namespace griffin {
 			}
 
 			// initialize the fxaa colorBuffer
-			/*if (!m_colorBuffer.init(viewportWidth, viewportHeight)) {
+			if (!m_colorBuffer.init(viewportWidth, viewportHeight)) {
 				throw std::runtime_error("Connot initialize color buffer");
 			}
 			m_colorBuffer.bind(RenderTarget_GL::Albedo_Displacement, GL_TEXTURE0);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // fxaa sampler requires bilinear filtering
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			*/
+			
 			// build fullscreen quad vertex buffer
 			m_fullScreenQuad.loadFromMemory(reinterpret_cast<const unsigned char*>(g_fullScreenQuadBufferData),
 											sizeof(g_fullScreenQuadBufferData));
@@ -195,7 +195,7 @@ namespace griffin {
 			// End g-buffer rendering
 
 			// Start post-processing
-			//m_colorBuffer.start();
+			m_colorBuffer.start();
 			{
 				glClearColor(0.2f, 0.4f, 0.8f, 1.0f); // temp
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -221,21 +221,20 @@ namespace griffin {
 
 				drawFullscreenQuad();
 			}
-			//m_colorBuffer.stop();
+			m_colorBuffer.stop();
 
-			/*{
+			{
 				// FXAA
 				auto& fxaa = m_fxaaProgram.get()->getResource<ShaderProgram_GL>();
 				fxaa.useProgram();
 				auto fxaaId = fxaa.getProgramId();
 
+				m_colorBuffer.bind(RenderTarget_GL::Albedo_Displacement, GL_TEXTURE0);
 				GLint colorMapLoc = glGetUniformLocation(fxaaId, "colorMap");
+				glUniform1i(colorMapLoc, 0);
 
 				drawFullscreenQuad();
-
-				//glClearColor(0.2f, 0.4f, 0.8f, 1.0f); // temp
-				//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			}*/
+			}
 			// End post-processing
 		}
 

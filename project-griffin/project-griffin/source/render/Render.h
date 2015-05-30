@@ -120,7 +120,6 @@ namespace griffin {
 
 		private:
 			RenderTarget_GL		m_gbuffer;							//<! g-buffer for deferred rendering
-			RenderTarget_GL		m_colorBuffer;						//<! color buffer for FXAA
 			
 			uint32_t			m_glQuadVAO = 0;					//<! Vertex Array Object for fullScreenQuad
 			VertexBuffer_GL		m_fullScreenQuad;
@@ -131,6 +130,8 @@ namespace griffin {
 			ResourcePtr			m_fxaaProgram = nullptr;			//<! post-process FXAA shader
 
 			ResourcePtr			m_normalsTexture = nullptr;			//<! random normal noise texture for ssao
+
+			RenderTarget_GL		m_colorBuffer;						//<! color buffer for FXAA
 		};
 
 

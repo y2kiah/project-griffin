@@ -2,8 +2,6 @@
 #ifndef GRIFFIN_RENDERTARGET_GL_H_
 #define GRIFFIN_RENDERTARGET_GL_H_
 
-#pragma warning(disable: 4351) // disable "new behavior" warning on array initialization
-
 #include <cstdint>
 #include <utility/enum.h>
 
@@ -27,7 +25,9 @@ namespace griffin {
 
 			explicit RenderTarget_GL(RenderTargetType type = Color) :
 				m_type{ type }
-			{}
+			{
+				memset(&m_textureIds, 0, sizeof(m_textureIds));
+			}
 			~RenderTarget_GL();
 
 			/**
@@ -60,7 +60,7 @@ namespace griffin {
 			int					m_width = 0;
 			int					m_height = 0;
 			unsigned int		m_fboId = 0;	//<! frame buffer object handle
-			unsigned int		m_textureIds[4] = {};
+			unsigned int		m_textureIds[4];
 		};
 		
 

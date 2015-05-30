@@ -47,7 +47,7 @@ vec2 rcpFrame = vec2(1.0/viewportWidth, 1.0/viewportHeight);
 
 	out vec3 outColor;
 
-	vec3 fxaaPixelShader(
+/*	vec3 fxaaPixelShader(
 			vec4 posPos,   // Output of vertex interpolated across screen.
 			sampler2D tex, // Input texture.
 			vec2 rcpFrame) // Constant {1.0/frameWidth, 1.0/frameHeight}.
@@ -98,94 +98,85 @@ vec2 rcpFrame = vec2(1.0/viewportWidth, 1.0/viewportHeight);
 
 		return rgbB;
 	}
+*/
+	
+	#ifndef FXAA_DISCARD
+		// 
+		// Only valid for PC OpenGL currently.
+		// 
+		// 1 = Use discard on pixels which don't need AA.
+		//     For APIs which enable concurrent TEX+ROP from same surface.
+		// 0 = Return unchanged color on pixels which don't need AA.
+		// 
+		#define FXAA_DISCARD 0
+	#endif    
 
-	void main()
-	{
-		outColor = fxaaPixelShader(posPos, colorMap, rcpFrame);
-	}
+	#ifndef FXAA_LINEAR
+		//
+		// 0 = Work in non-linear color space.
+		//     Use this for standard 32-bit RGBA formats.
+		//
+		// 1 = Work in RGB=linear, A=non-linear luma.
+		//     Use this for sRGB and FP16 formats. 
+		//     Works with either FXAA_ALGORITHM = 1 or 0. 
+		//
+		#define FXAA_LINEAR 0
+	#endif
 
+	#ifndef FXAA_QUALITY__EDGE_THRESHOLD
+		//
+		// The minimum amount of local contrast required to apply algorithm.
+		//
+		// 1/3 - too little
+		// 1/4 - low quality
+		// 1/6 - default
+		// 1/8 - high quality
+		// 1/16 - overkill
+		//
+		#define FXAA_QUALITY__EDGE_THRESHOLD (1.0/6.0)
+	#endif
 
+	#ifndef FXAA_QUALITY__EDGE_THRESHOLD_MIN
+		//
+		// Trims the algorithm from processing darks.
+		//
+		// 1/32 - visible limit
+		// 1/16 - high quality
+		// 1/12 - upper limit (default, the start of visible unfiltered edges)
+		//
+		#define FXAA_QUALITY__EDGE_THRESHOLD_MIN (1.0/12.0)
+	#endif
 
+	#ifndef FXAA_QUALITY__SUBPIX_CAP
+		//
+		// Insures fine detail is not completely removed.
+		// This partly overrides FXAA_SUBPIX_TRIM.
+		//
+		// 3/4 - default amount of filtering
+		// 7/8 - high amount of filtering
+		// 1 - no capping of filtering
+		//
+		#define FXAA_QUALITY__SUBPIX_CAP (3.0/4.0)
+	#endif
 
-/*
-#ifndef FXAA_DISCARD
-    // 
-    // Only valid for PC OpenGL currently.
-    // 
-    // 1 = Use discard on pixels which don't need AA.
-    //     For APIs which enable concurrent TEX+ROP from same surface.
-    // 0 = Return unchanged color on pixels which don't need AA.
-    // 
-    #define FXAA_DISCARD 0
-#endif    
-
-#ifndef FXAA_LINEAR
-    //
-    // 0 = Work in non-linear color space.
-    //     Use this for standard 32-bit RGBA formats.
-    //
-    // 1 = Work in RGB=linear, A=non-linear luma.
-    //     Use this for sRGB and FP16 formats. 
-    //     Works with either FXAA_ALGORITHM = 1 or 0. 
-    //
-    #define FXAA_LINEAR 0
-#endif
-
-#ifndef FXAA_QUALITY__EDGE_THRESHOLD
-    //
-    // The minimum amount of local contrast required to apply algorithm.
-    //
-    // 1/3 - too little
-    // 1/4 - low quality
-    // 1/6 - default
-    // 1/8 - high quality
-    // 1/16 - overkill
-    //
-    #define FXAA_QUALITY__EDGE_THRESHOLD (1.0/6.0)
-#endif
-
-#ifndef FXAA_QUALITY__EDGE_THRESHOLD_MIN
-    //
-    // Trims the algorithm from processing darks.
-    //
-    // 1/32 - visible limit
-    // 1/16 - high quality
-    // 1/12 - upper limit (default, the start of visible unfiltered edges)
-    //
-    #define FXAA_QUALITY__EDGE_THRESHOLD_MIN (1.0/12.0)
-#endif
-
-#ifndef FXAA_QUALITY__SUBPIX_CAP
-    //
-    // Insures fine detail is not completely removed.
-    // This partly overrides FXAA_SUBPIX_TRIM.
-    //
-    // 3/4 - default amount of filtering
-    // 7/8 - high amount of filtering
-    // 1 - no capping of filtering
-    //
-    #define FXAA_QUALITY__SUBPIX_CAP (3.0/4.0)
-#endif
-
-#ifndef FXAA_QUALITY__SUBPIX_TRIM
-    //
-    // Controls removal of sub-pixel aliasing,
-    //
-    // 1/2 - low removal (sharper but more sub-pixel aliasing)
-    // 1/3 - medium removal
-    // 1/4 - default removal
-    // 1/8 - high removal
-    // 0 - complete removal (softer but less sub-pixel aliasing)
-    //
-    #define FXAA_QUALITY__SUBPIX_TRIM (1.0/4.0)
-#endif
-
+	#ifndef FXAA_QUALITY__SUBPIX_TRIM
+		//
+		// Controls removal of sub-pixel aliasing,
+		//
+		// 1/2 - low removal (sharper but more sub-pixel aliasing)
+		// 1/3 - medium removal
+		// 1/4 - default removal
+		// 1/8 - high removal
+		// 0 - complete removal (softer but less sub-pixel aliasing)
+		//
+		#define FXAA_QUALITY__SUBPIX_TRIM (1.0/4.0)
+	#endif
 
 	vec4 fxaaPixelShader(
 			// {xy} = center of pixel
 			vec2 pos,
 			// {xyzw} = not used on FXAA3 Quality
-			vec4 posPos,
+		//	vec4 posPos,
 			// {rgb_} = color in linear or perceptual color space
 			// {___a} = luma in perceptual color space (not linear)
 			sampler2D tex,
@@ -236,17 +227,17 @@ vec2 rcpFrame = vec2(1.0/viewportWidth, 1.0/viewportHeight);
 					abs(lumaNW + (-2.0 * lumaW) + lumaSW) +
 			  2.0 * abs(lumaN  + (-2.0 * lumaM) + lumaS ) +
 					abs(lumaNE + (-2.0 * lumaE) + lumaSE);
-		bool horzSpan = edgeHorz >= edgeVert;
+		bool horzSpan = (edgeHorz >= edgeVert);
 
 		float lengthSign = horzSpan ? -rcpFrame.y : -rcpFrame.x;
-		if (!horzSpan) { lumaN = lumaW };
-		if (!horzSpan) { lumaS = lumaE };
+		if (!horzSpan) { lumaN = lumaW; }
+		if (!horzSpan) { lumaS = lumaE; }
 		float gradientN = abs(lumaN - lumaM);
 		float gradientS = abs(lumaS - lumaM);
 		lumaN = (lumaN + lumaM) * 0.5;
 		lumaS = (lumaS + lumaM) * 0.5;
 
-		bool pairN = gradientN >= gradientS;
+		bool pairN = (gradientN >= gradientS);
 		if (!pairN) { lumaN = lumaS; }
 		if (!pairN) { gradientN = gradientS; }
 		if (!pairN) { lengthSign *= -1.0; }
@@ -284,7 +275,7 @@ vec2 rcpFrame = vec2(1.0/viewportWidth, 1.0/viewportHeight);
 		float dstN = horzSpan ? pos.x - posN.x : pos.y - posN.y;
 		float dstP = horzSpan ? posP.x - pos.x : posP.y - pos.y;
 
-		bool directionN = dstN < dstP;
+		bool directionN = (dstN < dstP);
 		lumaEndN = directionN ? lumaEndN : lumaEndP;
 
 		if (((lumaM - lumaN) < 0.0) == ((lumaEndN - lumaN) < 0.0)) {
@@ -311,6 +302,10 @@ vec2 rcpFrame = vec2(1.0/viewportWidth, 1.0/viewportHeight);
 		rgbF *= scale;
 		return vec4(rgbF, lumaM);
 	}
-	*/
+	
+	void main()
+	{
+		outColor = fxaaPixelShader(posPos.xy, colorMap, rcpFrame).rgb;
+	}
 
 #endif
