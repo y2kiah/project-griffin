@@ -87,12 +87,13 @@ uniform sampler2D depthMap;		// 3
 
 			// get the depth of the occluder fragment
 			vec4 occluderFragment = texture(normalMap,se.xy);
+			float occluderDepth = texture(depthMap, se.xy).x;
 
 			// get the normal of the occluder fragment
 			occNorm = occluderFragment.xyz;
 
 			// if depthDifference is negative = occluder is behind current fragment
-			depthDifference = currentPixelDepth-occluderFragment.a;
+			depthDifference = currentPixelDepth - occluderDepth; //occluderFragment.a;
 
 			// calculate the difference between the normals as a weight
 
@@ -105,6 +106,7 @@ uniform sampler2D depthMap;		// 3
 		float ao = 1.0-totStrength*bl*invSamples;
 		outColor.rgb = texture(colorMap,uv).rgb * ao;
 		outColor.a = luma(outColor.rgb);
+		//outColor = vec4(ao,ao,ao,0.0);
 	}
 
 /*

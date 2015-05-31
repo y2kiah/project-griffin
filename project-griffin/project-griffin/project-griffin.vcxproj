@@ -225,6 +225,7 @@
     <None Include="source\render\shaders\atmosphere\transmittance.glsl" />
     <None Include="source\render\shaders\Font.glsl" />
     <None Include="source\render\shaders\fxaa.glsl" />
+    <None Include="source\render\shaders\hbao.glsl" />
     <None Include="source\render\shaders\layout.glsli" />
     <None Include="source\render\shaders\linearDepth.glsl" />
     <None Include="source\render\shaders\SimpleShader.glsl" />

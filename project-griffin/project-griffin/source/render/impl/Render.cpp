@@ -107,6 +107,7 @@ namespace griffin {
 			//auto fsq  = loadShaderProgram(L"shaders/fullscreenQuad.glsl");
 			auto mrt  = loadShaderProgram(L"shaders/ads.glsl"); // temporarily ads.glsl
 			auto ssao = loadShaderProgram(L"shaders/ssao.glsl");
+			auto atms = loadShaderProgram(L"shaders/atmosphere/atmosphere.glsl");
 			auto fxaa = loadShaderProgram(L"shaders/fxaa.glsl");
 			//L"shaders/linearDepth.glsl"
 			//L"shaders/atmosphere/earth.glsl"
@@ -118,6 +119,7 @@ namespace griffin {
 			//m_fullScreenQuadProgram = loader->getResource(fsq).get(); // wait on the futures and assign shared_ptrs
 			m_mrtProgram = loader->getResource(mrt).get();
 			m_ssaoProgram = loader->getResource(ssao).get();
+			m_atmosphereProgram = loader->getResource(atms).get();
 			m_fxaaProgram = loader->getResource(fxaa).get();
 
 			m_normalsTexture = loader->getResource(nrml).get();

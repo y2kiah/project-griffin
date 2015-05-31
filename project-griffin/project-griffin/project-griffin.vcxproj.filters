@@ -968,5 +968,8 @@
     <None Include="source\render\shaders\fxaa.glsl">
       <Filter>render\shaders</Filter>
     </None>
+    <None Include="source\render\shaders\hbao.glsl">
+      <Filter>render\shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
