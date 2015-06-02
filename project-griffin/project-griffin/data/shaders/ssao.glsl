@@ -15,8 +15,8 @@
 uniform float totStrength = 0.35; //1.38;
 uniform float strength = 0.07;
 uniform float offset = 18.0;
-uniform float falloff = 0.0000002; //0.000002;
-uniform float rad = 0.000006; //0.006;
+uniform float falloff = 0.000002; //0.000002;
+uniform float rad = 0.006; //0.006;
 
 uniform sampler2D normalNoise;	// 0
 uniform sampler2D colorMap;		// 1
@@ -64,7 +64,7 @@ uniform sampler2D depthMap;		// 3
 
 		vec4 currentPixelSample = texture(normalMap,uv);
 
-		float currentPixelDepth = texture(depthMap, uv).x; //currentPixelSample.a;
+		float currentPixelDepth = texture(depthMap, uv).x;
 
 		// current fragment coords in screen space
 		vec3 ep = vec3(uv.xy,currentPixelDepth);
@@ -87,13 +87,13 @@ uniform sampler2D depthMap;		// 3
 
 			// get the depth of the occluder fragment
 			vec4 occluderFragment = texture(normalMap,se.xy);
-			float occluderDepth = texture(depthMap, se.xy).x;
+			float occluderDepth = texture(depthMap, se.xy).x; //occluderFragment.a;
 
 			// get the normal of the occluder fragment
 			occNorm = occluderFragment.xyz;
 
 			// if depthDifference is negative = occluder is behind current fragment
-			depthDifference = currentPixelDepth - occluderDepth; //occluderFragment.a;
+			depthDifference = currentPixelDepth - occluderDepth;
 
 			// calculate the difference between the normals as a weight
 
@@ -107,6 +107,7 @@ uniform sampler2D depthMap;		// 3
 		outColor.rgb = texture(colorMap,uv).rgb * ao;
 		outColor.a = luma(outColor.rgb);
 		//outColor = vec4(ao,ao,ao,0.0);
+		outColor = vec4(currentPixelDepth,currentPixelDepth,currentPixelDepth,0.0);
 	}
 
 /*

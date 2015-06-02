@@ -106,7 +106,7 @@ namespace griffin {
 
 			//auto fsq  = loadShaderProgram(L"shaders/fullscreenQuad.glsl");
 			auto mrt  = loadShaderProgram(L"shaders/ads.glsl"); // temporarily ads.glsl
-			auto ssao = loadShaderProgram(L"shaders/ssao.glsl");
+			auto ssao = loadShaderProgram(L"shaders/ssao2.glsl");
 			auto atms = loadShaderProgram(L"shaders/atmosphere/atmosphere.glsl");
 			auto fxaa = loadShaderProgram(L"shaders/fxaa.glsl");
 			//L"shaders/linearDepth.glsl"
@@ -199,8 +199,8 @@ namespace griffin {
 			// Start post-processing
 			m_colorBuffer.start();
 			{
-				glClearColor(0.2f, 0.4f, 0.8f, 1.0f); // temp
-				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				//glClearColor(0.2f, 0.4f, 0.8f, 1.0f); // temp
+				//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 				// SSAO
 				auto& ssao = m_ssaoProgram.get()->getResource<ShaderProgram_GL>();
@@ -260,7 +260,7 @@ namespace griffin {
 			//loadModelTemp("data/models/cube.dae");
 			//loadModelTemp("data/models/untitled.blend");
 
-			camera = std::make_unique<CameraPersp>(viewportWidth, viewportHeight, 60.0f, 0.1f, 100000.0f);
+			camera = std::make_unique<CameraPersp>(viewportWidth, viewportHeight, 60.0f, 0.1f, 1000.0f);
 		}
 
 		RenderSystem::~RenderSystem()
