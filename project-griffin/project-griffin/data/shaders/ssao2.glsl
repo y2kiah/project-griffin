@@ -1,16 +1,3 @@
-/**
- * @author alteredq / http://alteredqualia.com/
- *
- * Screen-space ambient occlusion shader
- * - ported from
- *   SSAO GLSL shader v1.2
- *   assembled by Martins Upitis (martinsh) (http://devlog-martinsh.blogspot.com)
- *   original technique is made by ArKano22 (http://www.gamedev.net/topic/550699-ssao-no-halo-artifacts/)
- * - modifications
- * - modified to use RGBA packed depth texture (use clear color 1,1,1,1 for depth pass)
- * - refactoring and optimizations
- */
-
 //#define UniformLayout_ModelToWorld        0
 //#define UniformLayout_ViewProjection      1
 //#define UniformLayout_ModelViewProjection 2
@@ -47,7 +34,7 @@
 	uniform float cameraNear;
 	uniform float cameraFar;
 
-	uniform vec2  size = ivec2(512,512);	// texture width, height
+	uniform vec2  size = ivec2(1600,900);	// texture width, height
 	uniform float aoClamp = 0.5;			// depth clamp - reduces haloing at screen edges
 
 	uniform float lumInfluence = 0.5;		// how much luminance affects occlusion
@@ -71,7 +58,7 @@
 	const int samples = 8;					// ao sample count
 	const float radius = 5.0;				// ao radius
 
-	const bool useNoise = false;			// use noise instead of pattern for sample dithering
+	const bool useNoise = true;			// use noise instead of pattern for sample dithering
 	const float noiseAmount = 0.0003;		// dithering amount
 
 	const float diffArea = 0.4;				// self-shadowing reduction
@@ -115,11 +102,11 @@
 		return (noise * 2.0  - 1.0) * noiseAmount;
 	}
 
-	/*float readDepth(const in vec2 coord) {
+	float readDepth(const in vec2 coord) {
 		// return (2.0 * cameraNear) / (cameraFar + cameraNear - unpackDepth(texture(depthMap, coord)) * (cameraFar - cameraNear));
 		//return cameraCoef / (cameraFarPlusNear - unpackDepth(texture(depthMap, coord)) * cameraFarMinusNear);
 		return cameraCoef / (cameraFarPlusNear - texture(depthMap, coord).x * cameraFarMinusNear);
-	}*/
+	}
 
 	float compareDepths(const in float depth1, const in float depth2, inout int far) {
 		float garea = 2.0;                       // gauss bell width
@@ -147,18 +134,13 @@
 		vec2 coord1 = uv + dd * vv;
 		vec2 coord2 = uv - dd * vv;
 
-		float temp1 = 0.0;
-		float temp2 = 0.0;
-
 		int far = 0;
-		float depth1 = texture(depthMap, coord1).x;
-		temp1 = compareDepths(depth, depth1/*readDepth(coord1)*/, far);
+		float temp1 = compareDepths(depth, readDepth(coord1), far);
 
 		// DEPTH EXTRAPOLATION
 
 		if (far > 0) {
-			float depth2 = texture(depthMap, coord2).x;
-			temp2 = compareDepths(depth2/*readDepth(coord2)*/, depth, far);
+			float temp2 = compareDepths(readDepth(coord2), depth, far);
 			temp1 += (1.0 - temp1) * temp2;
 		}
 
@@ -167,7 +149,7 @@
 
 	void main() {
 		vec2 noise = rand(uv);
-		float depth = texture(depthMap, uv).x;//readDepth(uv);
+		float depth = readDepth(uv);
 
 		float tt = clamp(depth, aoClamp, 1.0);
 
@@ -195,6 +177,7 @@
 
 		outColor.rgb = texture(colorMap, uv).rgb * ao; //vec3(color * mix(vec3(ao), vec3(1.0), luma?? * lumInfluence));  // mix(color * ao, white, luminance)
 		outColor.a = luma(outColor.rgb);
+		outColor = vec4(ao, ao, ao, 0.0);
 	}
 
 #endif

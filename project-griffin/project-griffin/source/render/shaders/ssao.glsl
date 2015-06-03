@@ -5,14 +5,8 @@
 uniform float totStrength = 0.35; //1.38;
 uniform float strength = 0.07;
 uniform float offset = 18.0;
-uniform float falloff = 0.000002; //0.000002;
-uniform float rad = 0.006; //0.006;
-
-uniform sampler2D normalNoise;	// 0
-uniform sampler2D colorMap;		// 1
-uniform sampler2D normalMap;	// 2
-uniform sampler2D depthMap;		// 3
-
+uniform float falloff = 0.000000002; //0.000002;
+uniform float rad = 0.000006; //0.006;
 
 #ifdef _VERTEX_
 
@@ -31,6 +25,11 @@ uniform sampler2D depthMap;		// 3
 #endif
 
 #ifdef _FRAGMENT_
+	
+	uniform sampler2D normalNoise;	// 0
+	uniform sampler2D colorMap;		// 1
+	uniform sampler2D normalMap;	// 2
+	uniform sampler2D depthMap;		// 3
 
 	const float invSamples = 1.0 / SAMPLES;
 
@@ -97,7 +96,7 @@ uniform sampler2D depthMap;		// 3
 		outColor.rgb = texture(colorMap,uv).rgb * ao;
 		outColor.a = luma(outColor.rgb);
 		//outColor = vec4(ao,ao,ao,0.0);
-		outColor = vec4(currentPixelDepth,currentPixelDepth,currentPixelDepth,0.0);
+		//outColor = vec4(currentPixelDepth,currentPixelDepth,currentPixelDepth,0.0);
 	}
 
 /*

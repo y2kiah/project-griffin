@@ -106,7 +106,7 @@ namespace griffin {
 
 			//auto fsq  = loadShaderProgram(L"shaders/fullscreenQuad.glsl");
 			auto mrt  = loadShaderProgram(L"shaders/ads.glsl"); // temporarily ads.glsl
-			auto ssao = loadShaderProgram(L"shaders/ssao2.glsl");
+			auto ssao = loadShaderProgram(L"shaders/ssao.glsl");
 			auto atms = loadShaderProgram(L"shaders/atmosphere/atmosphere.glsl");
 			auto fxaa = loadShaderProgram(L"shaders/fxaa.glsl");
 			//L"shaders/linearDepth.glsl"
@@ -216,10 +216,17 @@ namespace griffin {
 				GLint colorMapLoc = glGetUniformLocation(ssaoId, "colorMap");
 				GLint normalMapLoc = glGetUniformLocation(ssaoId, "normalMap");
 				GLint depthMapLoc = glGetUniformLocation(ssaoId, "depthMap");
+				
+				GLint cameraNearLoc = glGetUniformLocation(ssaoId, "cameraNear");
+				GLint cameraFarLoc = glGetUniformLocation(ssaoId, "cameraFar");
+				
 				glUniform1i(normalNoiseLoc, 0);
 				glUniform1i(colorMapLoc, 1);
 				glUniform1i(normalMapLoc, 2);
 				glUniform1i(depthMapLoc, 3);
+				
+				glUniform1f(cameraNearLoc, camera->getNearClip());
+				glUniform1f(cameraFarLoc, camera->getFarClip());
 
 				drawFullscreenQuad();
 			}
@@ -260,7 +267,7 @@ namespace griffin {
 			//loadModelTemp("data/models/cube.dae");
 			//loadModelTemp("data/models/untitled.blend");
 
-			camera = std::make_unique<CameraPersp>(viewportWidth, viewportHeight, 60.0f, 0.1f, 1000.0f);
+			camera = std::make_unique<CameraPersp>(viewportWidth, viewportHeight, 60.0f, 0.1f, 100000.0f);
 		}
 
 		RenderSystem::~RenderSystem()
