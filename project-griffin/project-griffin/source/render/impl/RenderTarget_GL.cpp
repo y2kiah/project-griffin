@@ -61,7 +61,7 @@ namespace griffin {
 				glGenTextures(1, &albedo);
 				m_textureIds[Albedo_Displacement] = albedo;
 				glBindTexture(GL_TEXTURE_2D, albedo);
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -115,7 +115,7 @@ namespace griffin {
 				glGenTextures(1, &depth);
 				m_textureIds[Depth_Stencil] = depth;
 				glBindTexture(GL_TEXTURE_2D, depth);
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH32F_STENCIL8, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -158,6 +158,7 @@ namespace griffin {
 		{
 			// Bind our FBO and set the viewport to the proper size
 			glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
+			glEnable(GL_DEPTH_TEST);
 			//glPushAttrib(GL_VIEWPORT_BIT);
 			glViewport(0, 0, m_width, m_height);
 
@@ -180,6 +181,7 @@ namespace griffin {
 		*/
 		void RenderTarget_GL::stop()
 		{
+			glDisable(GL_DEPTH_TEST);
 			// Stop acquiring and unbind the FBO
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			//glPopAttrib();

@@ -177,7 +177,7 @@
 
 		outColor.rgb = texture(colorMap, uv).rgb * ao; //vec3(color * mix(vec3(ao), vec3(1.0), luma?? * lumInfluence));  // mix(color * ao, white, luminance)
 		outColor.a = luma(outColor.rgb);
-		outColor = vec4(ao, ao, ao, 0.0);
+		//outColor = vec4(ao, ao, ao, 0.0);
 	}
 
 #endif
