@@ -158,7 +158,6 @@ namespace griffin {
 		{
 			// Bind our FBO and set the viewport to the proper size
 			glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
-			glEnable(GL_DEPTH_TEST);
 			//glPushAttrib(GL_VIEWPORT_BIT);
 			glViewport(0, 0, m_width, m_height);
 
@@ -181,7 +180,6 @@ namespace griffin {
 		*/
 		void RenderTarget_GL::stop()
 		{
-			glDisable(GL_DEPTH_TEST);
 			// Stop acquiring and unbind the FBO
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			//glPopAttrib();

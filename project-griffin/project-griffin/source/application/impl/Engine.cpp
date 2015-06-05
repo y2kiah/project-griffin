@@ -22,11 +22,12 @@ namespace griffin {
 		/**
 		* Build the Lua scripting system
 		*/
+		Id_T initLuaStateId{};
 		{
 			using namespace script;
 
 			// init.lua configures the startup settings
-			scriptPtr->init("scripts/init.lua"); // throws on error
+			initLuaStateId = scriptPtr->createState("scripts/init.lua"); // throws on error
 
 			// add system API functions to Lua
 
@@ -49,10 +50,10 @@ namespace griffin {
 			setInputSystemPtr(inputPtr);
 
 			// InputSystem.lua contains initInputSystem function
-			scriptPtr->doFile("scripts/InputSystem.lua"); // throws on error
+			scriptPtr->doFile(initLuaStateId, "scripts/InputSystem.lua"); // throws on error
 
 			// invoke Lua function to init InputSystem
-			scriptPtr->callLuaGlobalFunction("initInputSystem");
+			scriptPtr->callLuaGlobalFunction(initLuaStateId, "initInputSystem");
 
 			// move input system into application
 			engine.inputSystem = inputPtr;
@@ -106,6 +107,19 @@ namespace griffin {
 
 			engine.entityManager = entityPtr;
 		}
+
+		#ifdef GRIFFIN_TOOLS_BUILD
+		{
+			using namespace tools;
+
+			Id_T toolsLuaStateId = scriptPtr->createState();
+
+			auto toolsPtr = make_shared<GriffinToolsManager>();
+			//"scripts/tools/toolsServer.lua"
+
+			engine.toolsManager = toolsPtr;
+		}
+		#endif
 
 		/**
 		* Build the systems list for ordered updates

@@ -24,4 +24,7 @@
 #define RESERVE_RENDER_QUEUE					500
 #define RESERVE_RENDER_CAMERAS					10
 
+// Scripting System
+#define RESERVE_LUA_STATES						10
+
 #endif

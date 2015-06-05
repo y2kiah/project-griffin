@@ -4,6 +4,9 @@
 
 #include <memory>
 #include <string>
+#include <utility/container/handle_map.h>
+#include <utility/memory_reserve.h>
+
 
 typedef struct lua_State lua_State;
 
@@ -16,25 +19,28 @@ namespace griffin {
 
 		class ScriptManager {
 		public:
-			explicit ScriptManager() {}
-			~ScriptManager() {}
+			explicit ScriptManager() :
+				m_states(0, RESERVE_LUA_STATES)
+			{}
+			~ScriptManager();
 
-			void init(const string &filename);
-			void deinit();
+			Id_T createState(const string &initScriptfilename = "");
 			
+			void destroyState(Id_T stateId);
+
 			/**
 			* Executes a string of Lua code.
 			* @scriptStr null-terminated string
 			* @returns Lua error code (0 = no errors, LUA_ERRSYNTAX, LUA_ERRMEM, LUA_ERRFILE)
 			*/
-			int doString(const string &scriptStr);
+			int doString(Id_T stateId, const string &scriptStr) const;
 
 			/**
 			* Loads and executes Lua code from a file
 			* @initScriptfilename file name of script to run
 			* @returns Lua error code (0 = no errors, LUA_ERRSYNTAX, LUA_ERRMEM, LUA_ERRFILE)
 			*/
-			int doFile(const string &initScriptfilename, bool throwOnError = true);
+			int doFile(Id_T stateId, const string &initScriptfilename, bool throwOnError = true);
 
 			/*template <typename Ret, typename ... Params>
 			Ret callLuaGlobalFunction(const char* func, Params...) {
@@ -42,13 +48,20 @@ namespace griffin {
 
 				return 
 			}*/
-			void callLuaGlobalFunction(const char* func); // TEMP
+			void callLuaGlobalFunction(Id_T stateId, const char* func); // TEMP?
 
 			void runUpdateScripts() const;
 			void runFrameScripts() const;
 
 		private:
-			lua_State * m_state;
+			int doString(lua_State* state, const string &scriptStr) const;
+			int doFile(lua_State* state, const string &filename, bool throwOnError = true);
+			void callLuaGlobalFunction(lua_State* state, const char* func); // TEMP?
+
+
+			// Variables
+
+			handle_map<lua_State*>	m_states;
 
 			ScriptManager(const ScriptManager&) = delete;
 		};

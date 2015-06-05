@@ -116,6 +116,24 @@
     <Filter Include="api">
       <UniqueIdentifier>{6adc130d-2f50-469f-a577-061e4077c1ff}</UniqueIdentifier>
     </Filter>
+    <Filter Include="scene">
+      <UniqueIdentifier>{bab61f5f-d64a-4106-a75e-7048d5d96d52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="scene\impl">
+      <UniqueIdentifier>{05a566d5-a0c8-4859-84be-ded9714927a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lua\tools">
+      <UniqueIdentifier>{de7ae16e-07dd-4c5b-ab09-1fdaef133f4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lua\tools\xavante">
+      <UniqueIdentifier>{bcbe2d0c-ea0a-4127-9d2f-c76f37e579f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools">
+      <UniqueIdentifier>{6ad7bb7c-9043-4b82-932f-7192260a802a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\impl">
+      <UniqueIdentifier>{243aedb8-d182-4295-a929-37ebda6bc0cc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">
@@ -663,6 +681,12 @@
     <ClInclude Include="source\render\material\Material_GL.h">
       <Filter>render\material</Filter>
     </ClInclude>
+    <ClInclude Include="source\scene\Scene.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="source\tools\GriffinTools.h">
+      <Filter>tools</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="vendor\glm\glm\gtc\constants.inl">
@@ -973,6 +997,45 @@
     </None>
     <None Include="source\render\shaders\ssao2.glsl">
       <Filter>render\shaders</Filter>
+    </None>
+    <None Include="source\lua\tools\toolsServer.lua">
+      <Filter>lua\tools</Filter>
+    </None>
+    <None Include="source\lua\tools\xavante\cgiluahandler.lua">
+      <Filter>lua\tools\xavante</Filter>
+    </None>
+    <None Include="source\lua\tools\xavante\encoding.lua">
+      <Filter>lua\tools\xavante</Filter>
+    </None>
+    <None Include="source\lua\tools\xavante\filehandler.lua">
+      <Filter>lua\tools\xavante</Filter>
+    </None>
+    <None Include="source\lua\tools\xavante\httpd.lua">
+      <Filter>lua\tools\xavante</Filter>
+    </None>
+    <None Include="source\lua\tools\xavante\indexhandler.lua">
+      <Filter>lua\tools\xavante</Filter>
+    </None>
+    <None Include="source\lua\tools\xavante\mime.lua">
+      <Filter>lua\tools\xavante</Filter>
+    </None>
+    <None Include="source\lua\tools\xavante\patternhandler.lua">
+      <Filter>lua\tools\xavante</Filter>
+    </None>
+    <None Include="source\lua\tools\xavante\redirecthandler.lua">
+      <Filter>lua\tools\xavante</Filter>
+    </None>
+    <None Include="source\lua\tools\xavante\ruleshandler.lua">
+      <Filter>lua\tools\xavante</Filter>
+    </None>
+    <None Include="source\lua\tools\xavante\urlhandler.lua">
+      <Filter>lua\tools\xavante</Filter>
+    </None>
+    <None Include="source\lua\tools\xavante\vhostshandler.lua">
+      <Filter>lua\tools\xavante</Filter>
+    </None>
+    <None Include="source\lua\tools\xavante\xavante.lua">
+      <Filter>lua\tools\xavante</Filter>
     </None>
   </ItemGroup>
 </Project>

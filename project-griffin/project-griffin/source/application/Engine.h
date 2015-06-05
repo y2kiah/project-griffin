@@ -10,6 +10,7 @@
 #include <script/ScriptManager_LuaJIT.h>
 #include <entity/Entity.h>
 #include <render/Render.h>
+#include <tools/GriffinTools.h>
 
 
 namespace griffin {
@@ -22,6 +23,10 @@ namespace griffin {
 		render::RenderSystemPtr			renderSystem	= nullptr;
 
 		std::vector<core::CoreSystem*>	systems;
+
+		#ifdef GRIFFIN_TOOLS_BUILD
+		tools::GriffinToolsManagerPtr	toolsManager = nullptr;
+		#endif
 	};
 
 	Engine make_engine(const SDLApplication& app);

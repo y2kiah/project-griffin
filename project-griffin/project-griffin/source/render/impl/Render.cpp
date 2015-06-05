@@ -135,13 +135,11 @@ namespace griffin {
 
 		void DeferredRenderer_GL::renderFrame(double interpolation)
 		{
-			// start call above clears these
-			//glClearColor(0.2f, 0.4f, 0.8f, 1.0f); // temp
-			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 			// Start g-buffer rendering
 			m_gbuffer.start();
 			{
+				glEnable(GL_DEPTH_TEST);
+
 				auto& program = m_mrtProgram.get()->getResource<ShaderProgram_GL>();
 				program.useProgram();
 				auto programId = program.getProgramId();
@@ -192,6 +190,8 @@ namespace griffin {
 				g_tempMesh->draw(modelMatLoc, modelViewMatLoc, mvpMatLoc, normalMatLoc,
 								 ambientLoc, diffuseLoc, specularLoc, shininessLoc,
 								 viewMat, viewProjMat); // temporarily passing in the modelMatLoc
+				
+				glDisable(GL_DEPTH_TEST);
 			}
 			m_gbuffer.stop();
 			// End g-buffer rendering
@@ -233,6 +233,10 @@ namespace griffin {
 			m_colorBuffer.stop();
 
 			{
+				// start call above clears these
+				glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 				// FXAA
 				auto& fxaa = m_fxaaProgram.get()->getResource<ShaderProgram_GL>();
 				fxaa.useProgram();
