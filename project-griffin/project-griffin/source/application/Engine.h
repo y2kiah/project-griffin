@@ -25,7 +25,7 @@ namespace griffin {
 		std::vector<core::CoreSystem*>	systems;
 
 		#ifdef GRIFFIN_TOOLS_BUILD
-		tools::GriffinToolsManagerPtr	toolsManager = nullptr;
+		tools::GriffinToolsManagerPtr	toolsManager	= nullptr;
 		#endif
 	};
 

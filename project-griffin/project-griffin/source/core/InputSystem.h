@@ -254,7 +254,7 @@ namespace griffin {
 			void initialize();
 
 			/**
-			* Executed on the update/render thread
+			* Executed on the update thread
 			*/
 			virtual void update(const UpdateInfo& ui) override;
 

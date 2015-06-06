@@ -3,7 +3,14 @@ local copas = require("copas")
 local socket = require("socket")
 
 ffi.cdef[[
-#include "source/api/GriffinToolsApi.h"
+
+
+	
+
+
+
+
+
 ]]
 local C = ffi.C;
 
@@ -35,6 +42,7 @@ function initToolsServer()
 	local server = socket.bind(host, port)
 
 	function echoHandler(skt)
+		copas.send(skt, "hello from griffin\n")
 		while true do
 			local data = copas.receive(skt)
 			if data == "quit" then

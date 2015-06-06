@@ -6,6 +6,7 @@
 #pragma comment ( lib, "lua51.lib" )
 
 // temporary proof of concept using FFI for Lua binding
+// MOVE debug_printf into a file in the API area
 extern "C" {
 	GRIFFIN_EXPORT
 	void debug_printf(const char *fmt) {
@@ -117,6 +118,7 @@ namespace griffin {
 
 			callLuaGlobalFunction(m_states[stateId], func);
 		}
+
 
 		void ScriptManager::callLuaGlobalFunction(lua_State* state, const char* func)
 		{

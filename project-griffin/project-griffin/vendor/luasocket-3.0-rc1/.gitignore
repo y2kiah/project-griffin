@@ -1,0 +1,7 @@
+!x64/
+!*.lib
+!*.dll
+!build/
+!bin/
+!Release/
+*.exp

@@ -1,4 +1,4 @@
-#include "../Engine.h"
+#include <application/Engine.h>
 #include <SDL.h>
 
 // TEMP
@@ -27,13 +27,31 @@ namespace griffin {
 			using namespace script;
 
 			// init.lua configures the startup settings
-			initLuaStateId = scriptPtr->createState("scripts/init.lua"); // throws on error
+			initLuaStateId = scriptPtr->createState("scripts/initState.lua"); // throws on error
 
 			// add system API functions to Lua
 
 
 			engine.scriptManager = scriptPtr;
 		}
+
+		/**
+		* Build the tools manager, GRIFFIN_TOOLS_BUILD only
+		*/
+		#ifdef GRIFFIN_TOOLS_BUILD
+		{
+			using namespace tools;
+
+			Id_T toolsLuaStateId = scriptPtr->createState("scripts/initState.lua");
+
+			auto toolsPtr = make_shared<GriffinToolsManager>(toolsLuaStateId);
+
+			// executes tools build scripts, and starts http server on a new thread
+			toolsPtr->init(scriptPtr);
+
+			engine.toolsManager = toolsPtr;
+		}
+		#endif
 
 		/**
 		* Build the input system
@@ -108,19 +126,6 @@ namespace griffin {
 			engine.entityManager = entityPtr;
 		}
 
-		#ifdef GRIFFIN_TOOLS_BUILD
-		{
-			using namespace tools;
-
-			Id_T toolsLuaStateId = scriptPtr->createState();
-
-			auto toolsPtr = make_shared<GriffinToolsManager>();
-			//"scripts/tools/toolsServer.lua"
-
-			engine.toolsManager = toolsPtr;
-		}
-		#endif
-
 		/**
 		* Build the systems list for ordered updates
 		*/
@@ -128,6 +133,8 @@ namespace griffin {
 			// create vector in order of system update execution
 			engine.systems.push_back(engine.inputSystem.get());
 			//engine.systems.push_back(engine.resourceLoader.get());
+
+			engine.systems.push_back(engine.toolsManager.get());
 		}
 
 		return move(engine);

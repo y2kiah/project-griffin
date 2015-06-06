@@ -121,33 +121,35 @@ end
 local luaSourcePath = "source/lua/"
 local luaBuildPath  = "scripts/"
 
-files = getDirectoryFiles(luaSourcePath, "*.lua", true)
+files = getDirectoryFiles(luaSourcePath, "*", true)
 
 for file, attribs in pairs(files) do
-	-- read original lua source
-	local fr = assert(io.open(file, "r"))
-	local content = fr:read("*all")
-	fr:close()
+	if (string.endsWith(file, ".lua")) then
+		-- read original lua source
+		local fr = assert(io.open(file, "r"))
+		local content = fr:read("*all")
+		fr:close()
 
-	-- look for occurrences of #include lines and replace with included file
-	local newContent = string.gsub(content, "#include \"(%C+)\"",
-		function(includeFile)
-			local fInc = assert(io.open(includeFile, "r"))
-			local fIncContent = fInc:read("*all")
-			fInc:close()
+		-- look for occurrences of #include lines and replace with included file
+		local newContent = string.gsub(content, "#include \"(%C+)\"",
+			function(includeFile)
+				local fInc = assert(io.open(includeFile, "r"))
+				local fIncContent = fInc:read("*all")
+				fInc:close()
 
-			-- get sections between #ifdef ffi and #endif ffi
-			local includeContent = string.match(fIncContent, "#ifdef ffi(.*)#endif ffi")
+				-- get sections between #ifdef ffi and #endif ffi
+				local includeContent = string.match(fIncContent, "#ifdef ffi(.*)#endif ffi")
 
-			-- erase export macro
-			includeContent = string.gsub(includeContent, "GRIFFIN_EXPORT", "")
+				-- erase export macro
+				includeContent = string.gsub(includeContent, "GRIFFIN_EXPORT", "")
 			
-			return includeContent
-		end)
+				return includeContent
+			end)
 
-	-- create lua in build path with new content
-	local newPath = string.gsub(file, luaSourcePath, luaBuildPath, 1)
-	local fw = assert(io.open(newPath, "w+"))
-	fw:write(newContent)
-	fw:close()
+		-- create lua in build path with new content
+		local newPath = string.gsub(file, luaSourcePath, luaBuildPath, 1)
+		local fw = assert(io.open(newPath, "w+"))
+		fw:write(newContent)
+		fw:close()
+	end
 end

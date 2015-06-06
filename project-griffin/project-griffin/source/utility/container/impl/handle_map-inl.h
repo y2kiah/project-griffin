@@ -10,6 +10,7 @@
 #include <cassert>
 #include <algorithm>
 
+
 namespace griffin {
 
 	// struct Id_T comparison free functions

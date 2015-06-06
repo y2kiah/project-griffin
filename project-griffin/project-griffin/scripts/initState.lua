@@ -1,3 +1,6 @@
+package.path  = "./scripts/?.lua;./scripts/extension/?.lua"
+package.cpath = "./scripts/?.dll;./scripts/?.so;./scripts/extension/?.dll;./scripts/extension/?.so"
+
 local ffi = require("ffi")
 
 ffi.cdef[[
@@ -69,9 +72,8 @@ function string.endsWith(str, endsWith)
 end
 
 
-ffi.C.debug_printf("Hello World from Lua" .. "JIT" .. " script!")
+--ffi.C.debug_printf("Hello World from Lua" .. "JIT" .. " script!")
 --print(_G)
 
-dofile("scripts/luaBuild.lua")
 JSON = dofile("scripts/JSON.lua")
 JSON.strictTypes = true
