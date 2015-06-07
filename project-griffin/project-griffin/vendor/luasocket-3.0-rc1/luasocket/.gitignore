@@ -1,0 +1,11 @@
+*.o
+*.so
+*.so.*
+*.obj
+*.lib
+*.dll*
+*.user
+Debug
+Release
+*.swp
+x64
