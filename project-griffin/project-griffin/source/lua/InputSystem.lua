@@ -3,7 +3,7 @@ local ffi = require("ffi")
 ffi.cdef[[
 #include "source/api/InputSystemApi.h"
 ]]
-local C = ffi.C;
+local C = ffi.C
 
 -- function invoked by InputSystem initialization
 function initInputSystem()

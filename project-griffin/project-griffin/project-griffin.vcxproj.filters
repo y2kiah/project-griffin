@@ -143,6 +143,9 @@
     <Filter Include="lua\extension\socket">
       <UniqueIdentifier>{bce892ff-656c-44cc-a8ea-06f2fcb0d964}</UniqueIdentifier>
     </Filter>
+    <Filter Include="lua\tools\web">
+      <UniqueIdentifier>{e63c98a5-64fe-4ba9-bd45-327c6314c647}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">
@@ -1094,8 +1097,11 @@
     <None Include="source\lua\extension\xavante\vhostshandler.lua">
       <Filter>lua\extension\xavante</Filter>
     </None>
-    <None Include="source\lua\extension\xavante\xavante.lua">
-      <Filter>lua\extension\xavante</Filter>
+    <None Include="source\lua\extension\xavante.lua">
+      <Filter>lua\extension</Filter>
+    </None>
+    <None Include="source\lua\tools\web\index.html">
+      <Filter>lua\tools\web</Filter>
     </None>
   </ItemGroup>
 </Project>

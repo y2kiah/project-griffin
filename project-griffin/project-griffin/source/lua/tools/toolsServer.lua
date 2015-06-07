@@ -1,50 +1,57 @@
 local ffi = require("ffi")
+
 local copas = require("copas")
 local socket = require("socket")
+
+--local xavante = require("xavante.httpd")
+--local hvhost = require("xavante.vhostshandler")
+--local hurl = require("xavante.urlhandler")
+local indexhandler = require("xavante.indexhandler")
+local redirecthandler = require("xavante.redirecthandler")
+local filehandler = require("xavante.filehandler")
+--local hcgilua = require("xavante.cgiluahandler")
+
+local xavante = require("xavante")
+
+--local turbo = require("turbo")
 
 ffi.cdef[[
 #include "source/api/GriffinToolsApi.h"
 ]]
-local C = ffi.C;
-
---[[
-local xavante = require("xavante.httpd")
-
-local hvhost = require("xavante.vhostshandler")
-local hurl = require("xavante.urlhandler")
-local hindex = require("xavante.indexhandler")
-local hfile = require("xavante.filehandler")
-local hcgilua = require("xavante.cgiluahandler")
-
-
-xavante.handle_request = hvhost({
-	[""] = hurl({
-		["/"] = hindex("/cgi/index.lp"),
-		["/cgi/"] = hcgilua.makeHandler(XAVANTE_WEB),
-		["/img/"] = hfile(XAVANTE_WEB.."/img"),
-	})
-})
-
-xavante.register("*", 8080, "Griffin Tools 0.1.0")
-]]
-
+local C = ffi.C
 
 function initToolsServer()
 	local host = "*"
-	local port = 8080
-	local server = socket.bind(host, port)
+	local port = 8888
 
-	function echoHandler(skt)
-		while true do
-			local data = copas.receive(skt)
-			if data == "quit" then
-				break
-			end
-			copas.send(skt, data)
-		end
-	end
+	-- Xavante http server
+	-- Define here where Xavante HTTP documents scripts are located
+	local webDir = "scripts/tools/web"
 
-	copas.addserver(server, echoHandler)
+	local routes = {
+		--[[{
+			match = "^/$", --"^[^%./]*/$",
+			with = indexhandler,
+			params = { indexname = "/index.html" }
+		},]]
+		{ -- index
+			match = "^[^%./]*/$",
+			with = redirecthandler,
+			params = { "index.html" }
+		},
+		{ -- filehandler
+			match = ".",
+			with = filehandler,
+			params = { baseDir = webDir }
+		}
+	} 
+
+	xavante.HTTP {
+		server = { host = host, port = port },
+		defaultHost = {
+			rules = routes
+		}
+	}
 end
 
 

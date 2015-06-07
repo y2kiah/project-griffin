@@ -164,7 +164,7 @@ ffi.cdef[[
 
 
 ]]
-local C = ffi.C;
+local C = ffi.C
 
 -- function invoked by InputSystem initialization
 function initInputSystem()

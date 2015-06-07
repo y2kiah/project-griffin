@@ -124,7 +124,9 @@ local luaBuildPath  = "scripts/"
 files = getDirectoryFiles(luaSourcePath, "*", true)
 
 for file, attribs in pairs(files) do
-	if (string.endsWith(file, ".lua")) then
+	if (string.endsWith(file, ".lua") or
+		string.endsWith(file, ".html"))
+	then
 		-- read original lua source
 		local fr = assert(io.open(file, "r"))
 		local content = fr:read("*all")

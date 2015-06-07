@@ -225,6 +225,7 @@
     <None Include="source\lua\extension\socket\smtp.lua" />
     <None Include="source\lua\extension\socket\tp.lua" />
     <None Include="source\lua\extension\socket\url.lua" />
+    <None Include="source\lua\extension\xavante.lua" />
     <None Include="source\lua\extension\xavante\cgiluahandler.lua" />
     <None Include="source\lua\extension\xavante\encoding.lua" />
     <None Include="source\lua\extension\xavante\filehandler.lua" />
@@ -236,12 +237,12 @@
     <None Include="source\lua\extension\xavante\ruleshandler.lua" />
     <None Include="source\lua\extension\xavante\urlhandler.lua" />
     <None Include="source\lua\extension\xavante\vhostshandler.lua" />
-    <None Include="source\lua\extension\xavante\xavante.lua" />
     <None Include="source\lua\initState.lua" />
     <None Include="source\lua\InputSystem.lua" />
     <None Include="source\lua\JSON.lua" />
     <None Include="source\lua\luaBuild.lua" />
     <None Include="source\lua\tools\ToolsServer.lua" />
+    <None Include="source\lua\tools\web\index.html" />
     <None Include="source\render\shaders\ads.glsl" />
     <None Include="source\render\shaders\atmosphere\atmosphere.glsl" />
     <None Include="source\render\shaders\atmosphere\common.glsli" />
