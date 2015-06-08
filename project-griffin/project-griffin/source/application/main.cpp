@@ -199,6 +199,11 @@ void SDLApplication::initWindow(const char* appName)
 	windowData[0].glContext = glContext;
 	windowData[0].width = width;
 	windowData[0].height = height;
+	windowData[0].wmInfo = platform::getWindowInfo(window);
+
+	platform::setWindowIcon(&windowData[0]);
+
+	SDL_DisableScreenSaver();
 }
 
 

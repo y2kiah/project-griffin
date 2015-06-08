@@ -49,6 +49,7 @@
     <ClCompile Include="source\utility\profile\impl\Profile.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="resource.h" />
     <ClInclude Include="source\api\GriffinToolsApi.h" />
     <ClInclude Include="source\api\InputSystemApi.h" />
     <ClInclude Include="source\application\Engine.h" />
@@ -243,6 +244,7 @@
     <None Include="source\lua\luaBuild.lua" />
     <None Include="source\lua\tools\ToolsServer.lua" />
     <None Include="source\lua\tools\web\index.html" />
+    <None Include="source\lua\tools\web\test.lp" />
     <None Include="source\render\shaders\ads.glsl" />
     <None Include="source\render\shaders\atmosphere\atmosphere.glsl" />
     <None Include="source\render\shaders\atmosphere\common.glsli" />
@@ -341,6 +343,12 @@
     <None Include="vendor\glm\glm\gtx\vector_query.inl" />
     <None Include="vendor\glm\glm\gtx\wrap.inl" />
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="project-griffin.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon.ico" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0699B998-133B-4F7A-8AAF-99D139407963}</ProjectGuid>
     <RootNamespace>projectgriffin</RootNamespace>
@@ -431,6 +439,8 @@
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;SOIL_d.lib;glew32sd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib</IgnoreSpecificDefaultLibraries>
+      <EmbedManagedResourceFile>
+      </EmbedManagedResourceFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -471,7 +481,13 @@
       <SubSystem>Windows</SubSystem>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib</IgnoreSpecificDefaultLibraries>
       <Profile>false</Profile>
+      <EmbedManagedResourceFile>
+      </EmbedManagedResourceFile>
     </Link>
+    <PreLinkEvent>
+      <Command>
+      </Command>
+    </PreLinkEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

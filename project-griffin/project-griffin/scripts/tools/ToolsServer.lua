@@ -9,7 +9,7 @@ local socket = require("socket")
 local indexhandler = require("xavante.indexhandler")
 local redirecthandler = require("xavante.redirecthandler")
 local filehandler = require("xavante.filehandler")
---local hcgilua = require("xavante.cgiluahandler")
+--local cgiluahandler = require("xavante.cgiluahandler")
 
 local xavante = require("xavante")
 
@@ -46,6 +46,10 @@ function initToolsServer()
 			with = redirecthandler,
 			params = { "index.html" }
 		},
+		--[[{ -- cgiluahandler example
+			match = {"%.lp$", "%.lp/.*$", "%.lua$", "%.lua/.*$" },
+			with = cgiluahandler.makeHandler(webDir)
+		},]]
 		{ -- filehandler
 			match = ".",
 			with = filehandler,

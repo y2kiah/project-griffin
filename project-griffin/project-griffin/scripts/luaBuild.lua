@@ -155,3 +155,16 @@ for file, attribs in pairs(files) do
 		fw:close()
 	end
 end
+
+
+-- copy web dir
+local io = require("io")
+
+function exec_silent(command)
+    local p = assert(io.popen(command))
+    local result = p:read("*all")
+    p:close()
+    return result
+end
+
+print(exec_silent("copy /Y .\\source\\lua\\tools\\web\\ .\\scripts\\tools\\web\\"))

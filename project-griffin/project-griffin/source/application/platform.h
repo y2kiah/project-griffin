@@ -4,6 +4,14 @@
 
 //#include <functional>
 #include <string>
+#include <memory>
+
+struct WindowData;
+struct SDL_Window;
+struct SDL_SysWMinfo;
+
+using std::shared_ptr;
+
 
 namespace griffin {
 	namespace platform {
@@ -23,9 +31,13 @@ namespace griffin {
 		std::string getPreferencesPath();
 		std::wstring getPreferencesPathW();
 
+		shared_ptr<SDL_SysWMinfo> getWindowInfo(SDL_Window* window);
+
 		void yieldThread();
 
 		void showErrorBox(const char *text, const char *caption);
+
+		void setWindowIcon(const WindowData *windowData);
 	}
 }
 

@@ -164,10 +164,10 @@ void test_reflection() {
 	oss << vals;
 	SDL_Log("\n\n%s\n\n", oss.str().c_str());
 
-	std::ofstream ofs;
-	ofs.open("test.txt", std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
-	ofs.write(reinterpret_cast<const char*>(&s), sizeof(s));
-	ofs.close();
+//	std::ofstream ofs;
+//	ofs.open("test.txt", std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
+//	ofs.write(reinterpret_cast<const char*>(&s), sizeof(s));
+//	ofs.close();
 
 	// testing ComponentId comparisons
 	// we want the ComponentType portion to sort at a higher priority than the index or generation,

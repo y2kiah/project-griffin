@@ -705,6 +705,7 @@
     <ClInclude Include="source\api\GriffinToolsApi.h">
       <Filter>api</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="vendor\glm\glm\gtc\constants.inl">
@@ -1103,5 +1104,18 @@
     <None Include="source\lua\tools\web\index.html">
       <Filter>lua\tools\web</Filter>
     </None>
+    <None Include="source\lua\tools\web\test.lp">
+      <Filter>lua\tools\web</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="project-griffin.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
