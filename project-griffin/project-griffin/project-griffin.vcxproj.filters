@@ -146,6 +146,9 @@
     <Filter Include="lua\tools\web">
       <UniqueIdentifier>{e63c98a5-64fe-4ba9-bd45-327c6314c647}</UniqueIdentifier>
     </Filter>
+    <Filter Include="lua\extension\wsapi">
+      <UniqueIdentifier>{74f91dd7-a25a-4406-99c8-0e8e88b677d2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">
@@ -1106,6 +1109,39 @@
     </None>
     <None Include="source\lua\tools\web\test.lp">
       <Filter>lua\tools\web</Filter>
+    </None>
+    <None Include="source\lua\extension\wsapi\cgi.lua">
+      <Filter>lua\extension\wsapi</Filter>
+    </None>
+    <None Include="source\lua\extension\wsapi\common.lua">
+      <Filter>lua\extension\wsapi</Filter>
+    </None>
+    <None Include="source\lua\extension\wsapi\fastcgi.lua">
+      <Filter>lua\extension\wsapi</Filter>
+    </None>
+    <None Include="source\lua\extension\wsapi\mock.lua">
+      <Filter>lua\extension\wsapi</Filter>
+    </None>
+    <None Include="source\lua\extension\wsapi\request.lua">
+      <Filter>lua\extension\wsapi</Filter>
+    </None>
+    <None Include="source\lua\extension\wsapi\response.lua">
+      <Filter>lua\extension\wsapi</Filter>
+    </None>
+    <None Include="source\lua\extension\wsapi\ringer.lua">
+      <Filter>lua\extension\wsapi</Filter>
+    </None>
+    <None Include="source\lua\extension\wsapi\sapi.lua">
+      <Filter>lua\extension\wsapi</Filter>
+    </None>
+    <None Include="source\lua\extension\wsapi\util.lua">
+      <Filter>lua\extension\wsapi</Filter>
+    </None>
+    <None Include="source\lua\extension\wsapi\xavante.lua">
+      <Filter>lua\extension\wsapi</Filter>
+    </None>
+    <None Include="source\lua\extension\wsapi.lua">
+      <Filter>lua\extension</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

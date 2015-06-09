@@ -226,6 +226,17 @@
     <None Include="source\lua\extension\socket\smtp.lua" />
     <None Include="source\lua\extension\socket\tp.lua" />
     <None Include="source\lua\extension\socket\url.lua" />
+    <None Include="source\lua\extension\wsapi.lua" />
+    <None Include="source\lua\extension\wsapi\cgi.lua" />
+    <None Include="source\lua\extension\wsapi\common.lua" />
+    <None Include="source\lua\extension\wsapi\fastcgi.lua" />
+    <None Include="source\lua\extension\wsapi\mock.lua" />
+    <None Include="source\lua\extension\wsapi\request.lua" />
+    <None Include="source\lua\extension\wsapi\response.lua" />
+    <None Include="source\lua\extension\wsapi\ringer.lua" />
+    <None Include="source\lua\extension\wsapi\sapi.lua" />
+    <None Include="source\lua\extension\wsapi\util.lua" />
+    <None Include="source\lua\extension\wsapi\xavante.lua" />
     <None Include="source\lua\extension\xavante.lua" />
     <None Include="source\lua\extension\xavante\cgiluahandler.lua" />
     <None Include="source\lua\extension\xavante\encoding.lua" />

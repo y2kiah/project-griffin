@@ -3,6 +3,7 @@ local ffi = require("ffi")
 local copas = require("copas")
 local socket = require("socket")
 
+local xavante = require("xavante")
 --local xavante = require("xavante.httpd")
 --local hvhost = require("xavante.vhostshandler")
 --local hurl = require("xavante.urlhandler")
@@ -10,10 +11,7 @@ local indexhandler = require("xavante.indexhandler")
 local redirecthandler = require("xavante.redirecthandler")
 local filehandler = require("xavante.filehandler")
 --local cgiluahandler = require("xavante.cgiluahandler")
-
-local xavante = require("xavante")
-
---local turbo = require("turbo")
+local wsx = require("wsapi.xavante")
 
 ffi.cdef[[
 
@@ -36,20 +34,24 @@ function initToolsServer()
 	local webDir = "scripts/tools/web"
 
 	local routes = {
-		--[[{
-			match = "^/$", --"^[^%./]*/$",
-			with = indexhandler,
-			params = { indexname = "/index.html" }
-		},]]
+--		{
+--			match = "^/$", --"^[^%./]*/$",
+--			with = indexhandler,
+--			params = { indexname = "/index.html" }
+--		},
 		{ -- index
 			match = "^[^%./]*/$",
 			with = redirecthandler,
 			params = { "index.html" }
 		},
-		--[[{ -- cgiluahandler example
-			match = {"%.lp$", "%.lp/.*$", "%.lua$", "%.lua/.*$" },
-			with = cgiluahandler.makeHandler(webDir)
-		},]]
+		{ -- WSAPI application will be mounted under /app
+			match = { "%.lp$", "%.lp/.*$", "%.lua$", "%.lua/.*$" },
+			with = wsx.makeGenericHandler(webDir)
+		},
+--		{ -- cgiluahandler example
+--			match = {"%.lp$", "%.lp/.*$", "%.lua$", "%.lua/.*$" },
+--			with = cgiluahandler.makeHandler(webDir)
+--		},
 		{ -- filehandler
 			match = ".",
 			with = filehandler,
