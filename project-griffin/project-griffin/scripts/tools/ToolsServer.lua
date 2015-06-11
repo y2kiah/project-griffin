@@ -12,6 +12,7 @@ local redirecthandler = require("xavante.redirecthandler")
 local filehandler = require("xavante.filehandler")
 --local cgiluahandler = require("xavante.cgiluahandler")
 local wsx = require("wsapi.xavante")
+local sapi = require("wsapi.sapi")
 
 ffi.cdef[[
 
@@ -45,9 +46,13 @@ function initToolsServer()
 			params = { "index.html" }
 		},
 		{ -- WSAPI application will be mounted under /app
-			match = { "%.lp$", "%.lp/.*$", "%.lua$", "%.lua/.*$" },
+			match = { "%.lua$", "%.lua/.*$" },
 			with = wsx.makeGenericHandler(webDir)
 		},
+--		{ -- WSAPI application will be mounted under /app
+--			match = { "%.lp$", "%.lp/.*$" },
+--			with = wsapi.xavante.makeHandler(sapi.run, nil, webDir, webDir)
+--		},
 --		{ -- cgiluahandler example
 --			match = {"%.lp$", "%.lp/.*$", "%.lua$", "%.lua/.*$" },
 --			with = cgiluahandler.makeHandler(webDir)

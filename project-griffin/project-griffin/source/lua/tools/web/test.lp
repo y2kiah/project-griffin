@@ -5,6 +5,6 @@
 	<title>GriffinTools-0.1.0</title>
 </head>
 <body>
-    <% print "hello world" %>
+    <%= "hello world" %>
 </body>
 </html>
