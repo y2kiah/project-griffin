@@ -1002,9 +1002,6 @@
     <None Include="source\lua\InputSystem.lua">
       <Filter>lua</Filter>
     </None>
-    <None Include="source\lua\JSON.lua">
-      <Filter>lua</Filter>
-    </None>
     <None Include="source\lua\luaBuild.lua">
       <Filter>lua</Filter>
     </None>
@@ -1104,12 +1101,6 @@
     <None Include="source\lua\extension\xavante.lua">
       <Filter>lua\extension</Filter>
     </None>
-    <None Include="source\lua\tools\web\index.html">
-      <Filter>lua\tools\web</Filter>
-    </None>
-    <None Include="source\lua\tools\web\test.lp">
-      <Filter>lua\tools\web</Filter>
-    </None>
     <None Include="source\lua\extension\wsapi\cgi.lua">
       <Filter>lua\extension\wsapi</Filter>
     </None>
@@ -1141,6 +1132,24 @@
       <Filter>lua\extension\wsapi</Filter>
     </None>
     <None Include="source\lua\extension\wsapi.lua">
+      <Filter>lua\extension</Filter>
+    </None>
+    <None Include="scripts\tools\web\index.html">
+      <Filter>lua\tools\web</Filter>
+    </None>
+    <None Include="scripts\tools\web\test.lp">
+      <Filter>lua\tools\web</Filter>
+    </None>
+    <None Include="scripts\tools\web\test.lua">
+      <Filter>lua\tools\web</Filter>
+    </None>
+    <None Include="source\lua\extension\cgilua.lua">
+      <Filter>lua\extension</Filter>
+    </None>
+    <None Include="source\lua\extension\JSON.lua">
+      <Filter>lua\extension</Filter>
+    </None>
+    <None Include="source\lua\extension\stable.lua">
       <Filter>lua\extension</Filter>
     </None>
   </ItemGroup>

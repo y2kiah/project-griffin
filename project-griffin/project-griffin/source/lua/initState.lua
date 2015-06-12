@@ -75,5 +75,5 @@ end
 --ffi.C.debug_printf("Hello World from Lua" .. "JIT" .. " script!")
 --print(_G)
 
-JSON = dofile("scripts/JSON.lua")
+JSON = require("JSON")
 JSON.strictTypes = true

@@ -22,10 +22,6 @@ local init = [==[
     _, package.path = remotedostring("return package.path")
     _, package.cpath = remotedostring("return package.cpath")
   end
-
-package.path  = "../../?.lua;../../extension/?.lua"
-package.cpath = "../../?.dll;../../?.so;../../extension/?.dll;../../extension/?.so"
-
   local common = require"wsapi.common"
   local coxpcall = require "coxpcall"
   pcall = coxpcall.pcall

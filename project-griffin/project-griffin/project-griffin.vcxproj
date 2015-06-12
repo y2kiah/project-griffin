@@ -211,12 +211,17 @@
   <ItemGroup>
     <None Include="data\config\inputcontexts.json" />
     <None Include="data\config\inputs.json" />
+    <None Include="scripts\tools\web\index.html" />
+    <None Include="scripts\tools\web\test.lp" />
+    <None Include="scripts\tools\web\test.lua" />
+    <None Include="source\lua\extension\cgilua.lua" />
     <None Include="source\lua\extension\copas.lua" />
     <None Include="source\lua\extension\copas\ftp.lua" />
     <None Include="source\lua\extension\copas\http.lua" />
     <None Include="source\lua\extension\copas\limit.lua" />
     <None Include="source\lua\extension\copas\smtp.lua" />
     <None Include="source\lua\extension\coxpcall.lua" />
+    <None Include="source\lua\extension\JSON.lua" />
     <None Include="source\lua\extension\ltn12.lua" />
     <None Include="source\lua\extension\mime.lua" />
     <None Include="source\lua\extension\socket.lua" />
@@ -226,6 +231,7 @@
     <None Include="source\lua\extension\socket\smtp.lua" />
     <None Include="source\lua\extension\socket\tp.lua" />
     <None Include="source\lua\extension\socket\url.lua" />
+    <None Include="source\lua\extension\stable.lua" />
     <None Include="source\lua\extension\wsapi.lua" />
     <None Include="source\lua\extension\wsapi\cgi.lua" />
     <None Include="source\lua\extension\wsapi\common.lua" />
@@ -251,11 +257,8 @@
     <None Include="source\lua\extension\xavante\vhostshandler.lua" />
     <None Include="source\lua\initState.lua" />
     <None Include="source\lua\InputSystem.lua" />
-    <None Include="source\lua\JSON.lua" />
     <None Include="source\lua\luaBuild.lua" />
     <None Include="source\lua\tools\ToolsServer.lua" />
-    <None Include="source\lua\tools\web\index.html" />
-    <None Include="source\lua\tools\web\test.lp" />
     <None Include="source\render\shaders\ads.glsl" />
     <None Include="source\render\shaders\atmosphere\atmosphere.glsl" />
     <None Include="source\render\shaders\atmosphere\common.glsli" />

@@ -1,18 +1,20 @@
+package.path  = "./scripts/?.lua;./scripts/extension/?.lua;../../../scripts/?.lua;../../../scripts/extension/?.lua;./?.lua"
+package.cpath = "./scripts/?.dll;./scripts/?.so;./scripts/extension/?.dll;./scripts/extension/?.so;../../../scripts/?.dll;../../../scripts/?.so;../../../scripts/extension/?.dll;../../../scripts/extension/?.so"
+
 local ffi = require("ffi")
 
 local copas = require("copas")
 local socket = require("socket")
 
 local xavante = require("xavante")
---local xavante = require("xavante.httpd")
---local hvhost = require("xavante.vhostshandler")
---local hurl = require("xavante.urlhandler")
 local indexhandler = require("xavante.indexhandler")
 local redirecthandler = require("xavante.redirecthandler")
 local filehandler = require("xavante.filehandler")
---local cgiluahandler = require("xavante.cgiluahandler")
+local cgiluahandler = require("xavante.cgiluahandler")
+local orbithandler = require("orbit.ophandler")
 local wsx = require("wsapi.xavante")
 local sapi = require("wsapi.sapi")
+
 
 ffi.cdef[[
 #include "source/api/GriffinToolsApi.h"
@@ -27,29 +29,29 @@ function initToolsServer()
 	-- Define here where Xavante HTTP documents scripts are located
 	local webDir = "scripts/tools/web"
 
-	local routes = {
+	local rules = {
 --		{
 --			match = "^/$", --"^[^%./]*/$",
 --			with = indexhandler,
 --			params = { indexname = "/index.html" }
 --		},
-		{ -- index
+		{ -- cgiluahandler example
+			match = { "%.lp$", "%.lp/.*$", "%.lua$", "%.lua/.*$" },
+			with = cgiluahandler.makeHandler(webDir)
+		},
+		{ -- wsapihandler example
+			match = { "%.ws$", "%.ws/" },
+			with = wsx.makeGenericHandler(webDir)
+		},
+--		{ -- orbitpages handler
+--			match = { "%.op$", "%.op/.*$" },
+--			with = orbithandler.makeHandler(webDir)
+--		},
+		{ -- index redirect
 			match = "^[^%./]*/$",
 			with = redirecthandler,
 			params = { "index.html" }
 		},
-		{ -- WSAPI application will be mounted under /app
-			match = { "%.lua$", "%.lua/.*$" },
-			with = wsx.makeGenericHandler(webDir)
-		},
---		{ -- WSAPI application will be mounted under /app
---			match = { "%.lp$", "%.lp/.*$" },
---			with = wsapi.xavante.makeHandler(sapi.run, nil, webDir, webDir)
---		},
---		{ -- cgiluahandler example
---			match = {"%.lp$", "%.lp/.*$", "%.lua$", "%.lua/.*$" },
---			with = cgiluahandler.makeHandler(webDir)
---		},
 		{ -- filehandler
 			match = ".",
 			with = filehandler,
@@ -60,7 +62,7 @@ function initToolsServer()
 	xavante.HTTP {
 		server = { host = host, port = port },
 		defaultHost = {
-			rules = routes
+			rules = rules
 		}
 	}
 end
