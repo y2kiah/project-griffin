@@ -30,9 +30,9 @@ namespace griffin {
 		std::string ComponentStore<T>::to_string() const {
 			std::ostringstream oss;
 
-			auto ids = components.getIds();
-			auto cmps = components.getItems();
-			auto meta = components.getMeta();
+			auto ids = m_components.getIds();
+			auto cmps = m_components.getItems();
+			auto meta = m_components.getMeta();
 
 			// print componentIds array
 			oss << "ComponentStore<" << T::Reflection::getClassType() << ">: {\ncomponentIds: [";
@@ -47,8 +47,8 @@ namespace griffin {
 				oss << meta[c].denseToSparse << ", ";
 			}
 			if (cmps.size() > 10) { oss << "... n=" << cmps.size(); }
-			oss << " ],\nfreeListFront: " << components.getFreeListFront() << ",\nfreeListBack: "
-				<< components.getFreeListBack() << "\n}\n";
+			oss << " ],\nfreeListFront: " << m_components.getFreeListFront() << ",\nfreeListBack: "
+				<< m_components.getFreeListBack() << "\n}\n";
 
 			return oss.str();
 		}

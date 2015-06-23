@@ -63,7 +63,7 @@
 
 #define REFLECT(ClassType, ...) \
 	struct Reflection { \
-		MakeEnum(Fields, uint8_t, \
+		MakeEnum(Field, uint8_t, \
 			FOR_EACH(EACH_ENUM, __VA_ARGS__), \
 		) \
 		typedef std::tuple<FOR_EACH_I(EACH_TYPE, __VA_ARGS__)> PropertiesTuple; \
@@ -126,7 +126,13 @@ MakeEnum(FieldType, uint8_t,
 	(vec2)
 	(vec3)
 	(vec4)
+	(dvec2)
+	(dvec3)
+	(dvec4)
+	(mat3)
 	(mat4)
+	(dmat3)
+	(dmat4)
 	(quat)
 	(vectorChar)
 	(vectorShort)
@@ -158,7 +164,13 @@ MakeEnum(FieldType, uint8_t,
 	(vectorVec2)
 	(vectorVec3)
 	(vectorVec4)
+	(vectorDvec2)
+	(vectorDvec3)
+	(vectorDvec4)
+	(vectorMat3)
 	(vectorMat4)
+	(vectorDmat3)
+	(vectorDmat4)
 	(vectorQuat)
 	, _T	/* postfix _T */
 );

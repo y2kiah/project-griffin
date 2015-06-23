@@ -48,6 +48,10 @@ namespace griffin {
 
 		void swap(vector_queue<T>& x) _NOEXCEPT;
 
+		// Vector-Queue Functions
+		size_type get_offset() const _NOEXCEPT;
+		void reset_offset();
+
 		// Vector Functions
 		T& operator[](size_type n);
 		const T& operator[](size_type n) const;

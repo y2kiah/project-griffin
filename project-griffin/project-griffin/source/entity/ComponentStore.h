@@ -40,35 +40,35 @@ namespace griffin {
 			* get a const ref to the components handle_map, useful for systems
 			*/
 			inline const ComponentMap& getComponents() const {
-				return components;
+				return m_components;
 			}
 
 			/**
 			* create one component with default zero-initialization
 			*/
 			inline ComponentId createComponent(EntityId entityId) {
-				return components.insert({ T{}, entityId });
+				return m_components.insert({ T{}, entityId });
 			}
 
 			/**
 			* create n components and return a vector of their ComponentIds
 			*/
 			inline ComponentIdList createComponents(int n, EntityId entityId) {
-				return components.emplaceItems(n, T{}, entityId);
+				return m_components.emplaceItems(n, T{}, entityId);
 			}
 
 			/**
 			* add one component, moving the provided cmp into the store, return ComponentId
 			*/
 			inline ComponentId addComponent(T&& cmp, EntityId entityId) {
-				return components.insert({ std::forward<T>(cmp), entityId });
+				return m_components.insert({ std::forward<T>(cmp), entityId });
 			}
 
 			/**
 			* remove the component identified by the provided outerId
 			*/
 			inline void removeComponent(ComponentId outerId) {
-				components.removeItem(outerId);
+				m_components.removeItem(outerId);
 			}
 
 			/**
@@ -76,7 +76,7 @@ namespace griffin {
 			* for storage of references to the component.
 			*/
 			inline const ComponentRecord& getComponentRecord(ComponentId outerId) {
-				return components[outerId];
+				return m_components[outerId];
 			}
 
 			/**
@@ -85,14 +85,14 @@ namespace griffin {
 			* would also be unsafe to hold a reference to invalid memory, incase the store is deleted.
 			*/
 			inline T& getComponent(ComponentId outerId) {
-				return components[outerId].component;
+				return m_components[outerId].component;
 			}
 
 			/**
 			* Get the entityId of the parent Entity for a component
 			*/
 			inline EntityId getEntityId(ComponentId outerId) {
-				return components[outerId].entityId;
+				return m_components[outerId].entityId;
 			}
 
 			/**
@@ -105,7 +105,7 @@ namespace griffin {
 			* automatically set to T::componentType
 			*/
 			explicit ComponentStore(size_t reserveCount) :
-				components(T::componentType, reserveCount)
+				m_components(T::componentType, reserveCount)
 			{}
 
 			/**
@@ -115,7 +115,7 @@ namespace griffin {
 			* that case would likely be homogenous
 			*/
 			explicit ComponentStore(uint16_t typeId, size_t reserveCount) :
-				components(typeId, reserveCount)
+				m_components(typeId, reserveCount)
 			{}
 
 			ComponentStore(const ComponentStore &) = delete;
@@ -123,7 +123,7 @@ namespace griffin {
 		private:
 			// Member Variables
 
-			ComponentMap components;
+			ComponentMap m_components;
 		};
 
 	}

@@ -62,7 +62,8 @@ namespace griffin {
 
 
 		struct RenderEntry {
-			glm::mat4	modelToWorld;
+			glm::dvec3	translationWorld;
+			glm::quat	orientationWorld;
 			// render callback function
 			// render flags?
 		};

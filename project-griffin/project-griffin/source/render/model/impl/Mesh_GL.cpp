@@ -78,6 +78,7 @@ namespace griffin {
 				uint32_t  nodeIndex;
 				glm::mat4 toWorld;
 			};
+			// TODO: convert to vector_queue
 			std::queue<BFSQueueItem> bfsQueue; // lot of memory being created and destroyed every frame, should all be pre-calculated and stored for non-animated meshes?
 			//bfsQueue.reserve(m_meshScene.numNodes);
 

@@ -39,6 +39,7 @@ namespace griffin {
 		};
 	};
 	typedef std::vector<Id_T> IdSet_T;
+	#define NullId_T	Id_T{}
 
 	/**
 	* @class handle_map
@@ -167,6 +168,11 @@ namespace griffin {
 		uint16_t			getItemTypeId() const		{ return m_itemTypeId; }
 
 		/**
+		* @returns index into the inner DenseSet for a given outer id
+		*/
+		uint32_t			getInnerIndex(Id_T handle) const;
+
+		/**
 		* Constructor
 		* @param	itemTypeId		typeId used by the Id_T::typeId variable for this container
 		* @param	reserveCount	reserve space for inner storage
@@ -194,7 +200,7 @@ namespace griffin {
 
 		uint16_t	m_itemTypeId;	//!< the Id_T::typeId to use for ids produced by this handle_map<T>
 
-		IdSet_T		m_sparseIds;	//!< stores a set of Id_T
+		IdSet_T		m_sparseIds;	//!< stores a set of Id_Ts, these are "inner" ids indexing into m_items
 		DenseSet_T	m_items;		//!< stores items of type T
 		MetaSet_T	m_meta;			//!< stores Meta_T type for each item
 	};

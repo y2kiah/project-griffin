@@ -9,38 +9,44 @@
 #include "Component.h"
 #include "ComponentStore.h"
 
-// disable BOOST_PP_EXPAND_I warning that showed up in 1.57
-// see this thread http://comments.gmane.org/gmane.comp.lib.boost.user/82952
-#pragma warning(disable:4003)
+namespace griffin {
+	namespace entity {
 
-// This can be improved. Instead of defining a list and each component separately, define just the
-// components within a macro, and import this file in multiple locations, each time redefining the
-// surrounding macro, thus interpreting the data in different ways. So I can define one list of
-// components and get the list and struct definitions out of it, in the correct order.
+		/**
+		* The component list forward declares all component structs, defines an enum to give each type
+		* known at compile type a unique id, and also defines a type cast to get the component's type from
+		* its id. This does not actually define the component, that's done using the COMPONENT macro.
+		*/
+		COMPONENT_LIST(
+			(SceneNode)
+			(Orientation)
+			(Transform)
+			(Person)
+		)
 
-COMPONENT_LIST(
-	(Position)
-	(Orientation)
-	(Transform)
-	(Person)
-)
+		/**
+		* MAX_COMPONENTS includes compile-time components plus script-based components
+		*/
+		#define MAX_COMPONENTS	64
+		typedef std::bitset<MAX_COMPONENTS> ComponentMask;
 
-typedef std::bitset<ComponentTypeCount> ComponentMask;
+		COMPONENT(SceneNode,
+			(glm::dvec3,		(position,		(FieldType::dvec3_T,		("3D position coordinate", NIL))))
+		)
 
-COMPONENT(Position,
-	(glm::dvec3, (position, (FieldType::vec3_T, ("3D position coordinate", NIL))))
-)
+		COMPONENT(Transform,
+			(glm::dvec3,		(position,		(FieldType::dvec3_T,		("3D position coordinate", NIL)))),
+			(glm::quat,			(orientation,	(FieldType::quat_T,			("Orientation quaternion", NIL))))
+		)
 
-COMPONENT(Transform,
-	(glm::dvec3, (position,    (FieldType::vec3_T, ("3D position coordinate", NIL)))),
-	(glm::quat,  (orientation, (FieldType::quat_T, ("Orientation quaternion", NIL))))
-)
+		COMPONENT(Person,
+			(int,				(age,			(FieldType::int_T,			("Person's age in years", NIL)))),
+			(float,				(speed,			(FieldType::float_T,		("How fast person walks in ft/s", NIL)))),
+			(std::string,		(name,			(FieldType::string_T,		("Person's name", NIL)))),
+			(std::vector<int>,	(stuff,			(FieldType::vectorInt_T,	("Person's integer stuff", NIL))))
+		)
 
-COMPONENT(Person,
-	(int,              (age,   (FieldType::int_T,       ("Person's age in years", NIL)))),
-	(float,            (speed, (FieldType::float_T,     ("How fast person walks in ft/s", NIL)))),
-	(std::string,      (name,  (FieldType::string_T,    ("Person's name", NIL)))),
-	(std::vector<int>, (stuff, (FieldType::vectorInt_T, ("Person's integer stuff", NIL))))
-)
+	}
+}
 
 #endif

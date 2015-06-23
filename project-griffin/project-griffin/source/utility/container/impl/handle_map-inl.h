@@ -182,6 +182,21 @@ namespace griffin {
 				handle.typeId == m_itemTypeId &&
 				handle.generation == innerId.generation);
 	}
+
+
+	template <typename T>
+	inline uint32_t handle_map<T>::getInnerIndex(Id_T handle) const
+	{
+		assert(handle.index < m_sparseIds.size() && "outer index out of range");
+
+		Id_T innerId = m_sparseIds[handle.index];
+
+		assert(handle.typeId == m_itemTypeId && "typeId mismatch");
+		assert(handle.generation == innerId.generation && "at called with old generation");
+		assert(innerId.index < m_items.size() && "inner index out of range");
+
+		return innerId.index;
+	}
 }
 
 #endif

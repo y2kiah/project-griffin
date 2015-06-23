@@ -8,7 +8,7 @@
 #define GRIFFIN_ENTITY_H_
 
 #include <boost/container/flat_set.hpp>
-//#include <boost/container/flat_map.hpp>
+#include <boost/container/flat_map.hpp>
 #include <memory>
 #include "components.h"
 #include <utility/memory_reserve.h>
@@ -72,8 +72,8 @@ namespace griffin {
 				if (hasComponent(ct)) {
 					componentMask.set(ct, false);
 
-					auto lower = components.lower_bound({ { { 0, 0, ct, 0 } } });
-					auto upper = components.upper_bound({ { { 0xFFFFFFFF, 0xFFFF, ct, 0 } } });
+					auto lower = components.lower_bound({{{ 0, 0, ct, 0 }}});
+					auto upper = components.upper_bound({{{ 0xFFFFFFFF, 0xFFFF, ct, 0 }}});
 					components.erase(lower, upper);
 					//auto it = components.
 					//components.erase(ct);
@@ -114,14 +114,15 @@ namespace griffin {
 		public:
 			// Typedefs
 			typedef griffin::handle_map<Entity> EntityMap;
+			typedef boost::container::flat_multimap<ComponentMask, EntityId> ComponentMaskMap;
 			typedef std::vector<std::unique_ptr<ComponentStoreBase>> ComponentStoreMap;
 
 			// Functions
 
 			explicit EntityManager() :
-				entityStore(0, RESERVE_ENTITYMANAGER_ENTITIES)
+				m_entityStore(0, RESERVE_ENTITYMANAGER_ENTITIES)
 			{
-				componentStores.reserve(RESERVE_ENTITYMANAGER_COMPONENTSTORES);
+				m_componentStores.reserve(RESERVE_ENTITYMANAGER_COMPONENTSTORES);
 			}
 
 			/**
@@ -154,17 +155,24 @@ namespace griffin {
 				return createComponentStore(T::componentType, reserve);
 			}
 
+			/**
+			* Create a store for script-based components
+			*/
+			uint16_t createScriptComponentStore() {
+				const int ComponentType_FirstDynamic = ComponentType::last_ComponentType_enum;
+
+			}
+
 
 			std::shared_ptr<Entity> createEntity(ComponentMask componentMask); // TEMP
 
 		private:
-			// Entity indexed by handle, stores relationship to components internally
-			EntityMap         entityStore;
+			EntityMap			m_entityStore;		//<! Entity indexed by handle, stores relationship to components internally
 
-			// ComponentStore indexed by componentType, stores component and parent entityId
-			ComponentStoreMap componentStores;
+			ComponentMaskMap	m_componentIndex;	//<! flat_multimap of sorted ComponentMask keys for O(log n) entity search
+			ComponentStoreMap	m_componentStores;	//<! ComponentStore indexed by componentType, stores component and parent entityId
 
-
+			
 		};
 
 		typedef std::shared_ptr<EntityManager>	EntityManagerPtr;

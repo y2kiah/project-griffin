@@ -138,6 +138,29 @@ namespace griffin {
 
 
 	template <typename T>
+	inline typename vector_queue<T>::size_type vector_queue<T>::get_offset() const _NOEXCEPT
+	{
+		return m_offset;
+	}
+
+
+	/**
+	* Force a reset of the offset to 0, moving queued values from the end of the vector to the
+	* front. This function can be used to enforce a maximum size of the queue, but should only be
+	* used occasionally, as it incurs a potentially large memory move.
+	*/
+	template <typename T>
+	inline void vector_queue<T>::reset_offset()
+	{
+		if (m_offset != 0) {
+			std::move(begin(), end(), m_queue.begin());
+			m_queue.resize(size());
+			m_offset = 0;
+		}
+	}
+
+
+	template <typename T>
 	inline T& vector_queue<T>::operator[](typename vector_queue<T>::size_type n)
 	{
 		return m_queue[m_offset + n];

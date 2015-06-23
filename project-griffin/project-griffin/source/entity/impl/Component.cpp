@@ -15,7 +15,7 @@
 using namespace griffin::entity;
 
 const size_t numTestComponents = 100000;
-auto personStore = ComponentStore<Person>(numTestComponents);
+ComponentStore<Person> personStore(numTestComponents);
 std::vector<ComponentId> componentIds;
 std::vector<std::unique_ptr<Person>> personHeap;
 griffin::Timer timer;
@@ -37,21 +37,7 @@ auto getMemberVal(const T& t, F f) -> decltype(t.*f()) {
 }
 
 // example cast objects
-template <int Ct>
-struct component_type {
-	typedef void type;
-};
 
-template <>
-struct component_type<2> {
-	typedef Person* type;
-};
-
-template <typename T, int Ct>
-auto component_cast(T* x) -> decltype(component_type<Ct>::type)
-{
-	return reinterpret_cast<component_type<Ct>::type>(x);
-}
 
 /**
 * The following two functions demonstrate the performance difference between iterating through
@@ -112,8 +98,8 @@ void profileTestComponents() {
 }
 
 void test_reflection() {
-	addTestComponents();
-	profileTestComponents();
+	//addTestComponents();
+	//profileTestComponents();
 
 	SDL_Log(personStore.to_string().c_str());
 	Person& person = personStore.getComponent(componentIds[0]);
@@ -130,12 +116,12 @@ void test_reflection() {
 	float b = std::get<Person::Reflection::speed>(vals);
 	auto& c = std::get<Person::Reflection::name>(vals);
 	SDL_Log("person values: %d, %f, %s\n", a, b, c.c_str());
-	SDL_Log("age description: %s\n", personProps[Person::Reflection::FieldsToEnum("age")].description.c_str());
+	SDL_Log("age description: %s\n", personProps[Person::Reflection::FieldToEnum("age")].description.c_str());
 	std::get<Person::Reflection::age>(vals) = 30;
 	SDL_Log("age after set = %d\n", person.age); // should now be 30
 
 	ComponentMask bit_test;
-	bit_test.set(ComponentType::Position_T, true);
+	bit_test.set(ComponentType::SceneNode_T, true);
 	ComponentMask bit_and(0xFFFFFFFF);
 	ComponentMask bit_res = bit_test | bit_and;
 	SDL_Log("bit_test = %s\n", bit_test.to_string().c_str());
@@ -177,7 +163,7 @@ void test_reflection() {
 			{{{0xFFFFFFFF, 0xFFFF, ComponentType::Orientation_T, 0}}},
 			{{{50, 1, ComponentType::Person_T, 1}}},
 			{{{5, 1, ComponentType::Person_T, 0}}},
-			{{{5, 1, ComponentType::Position_T, 0}}},
+			{{{5, 1, ComponentType::SceneNode_T, 0}}},
 			{{{5, 3, ComponentType::Orientation_T, 0}}}
 		};
 	std::sort(sortIds.begin(), sortIds.end());
