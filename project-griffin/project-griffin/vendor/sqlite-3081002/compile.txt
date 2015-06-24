@@ -1,0 +1,1 @@
+cl sqlite3.c -nologo -O2 -D"SQLITE_ENABLE_RTREE" -link -dll -out:sqlite3.dll -machine:X64
