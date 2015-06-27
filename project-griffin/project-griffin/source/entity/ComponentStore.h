@@ -9,7 +9,7 @@ namespace griffin {
 	namespace entity {
 
 		typedef griffin::Id_T    ComponentId;
-		typedef griffin::IdSet_T ComponentIdList;
+		typedef griffin::IdSet_T ComponentIdSet;
 		typedef griffin::Id_T    EntityId;
 
 		inline std::ostream& operator<<(std::ostream& os, ComponentId id);
@@ -21,7 +21,9 @@ namespace griffin {
 		class ComponentStoreBase {};
 
 		/**
-		*
+		* @class ComponentStore
+		* Wrapper around a handle_map specifically for storing the components of the ECS.
+		* Each item in the internal data contains the component object and its parent EntityId.
 		*/
 		template <typename T>
 		class ComponentStore : public ComponentStoreBase {
@@ -37,7 +39,14 @@ namespace griffin {
 			// Functions
 
 			/**
-			* get a const ref to the components handle_map, useful for systems
+			* get the components handle_map, useful for systems
+			*/
+			inline ComponentMap& getComponents() {
+				return m_components;
+			}
+
+			/**
+			* get the components handle_map, useful for systems
 			*/
 			inline const ComponentMap& getComponents() const {
 				return m_components;
@@ -53,7 +62,7 @@ namespace griffin {
 			/**
 			* create n components and return a vector of their ComponentIds
 			*/
-			inline ComponentIdList createComponents(int n, EntityId entityId) {
+			inline ComponentIdSet createComponents(int n, EntityId entityId) {
 				return m_components.emplaceItems(n, T{}, entityId);
 			}
 
@@ -68,7 +77,7 @@ namespace griffin {
 			* remove the component identified by the provided outerId
 			*/
 			inline void removeComponent(ComponentId outerId) {
-				m_components.removeItem(outerId);
+				m_components.erase(outerId);
 			}
 
 			/**
@@ -76,6 +85,20 @@ namespace griffin {
 			* for storage of references to the component.
 			*/
 			inline const ComponentRecord& getComponentRecord(ComponentId outerId) {
+				return m_components[outerId];
+			}
+
+			/**
+			* Get the component and parent EntityId for a component
+			*/
+			inline ComponentRecord& operator[](ComponentId outerId) {
+				return m_components[outerId];
+			}
+
+			/**
+			* Get the component and parent EntityId for a component
+			*/
+			inline const ComponentRecord& operator[](ComponentId outerId) const {
 				return m_components[outerId];
 			}
 

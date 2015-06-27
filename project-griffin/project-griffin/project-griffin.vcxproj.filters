@@ -712,6 +712,9 @@
       <Filter>api</Filter>
     </ClInclude>
     <ClInclude Include="resource.h" />
+    <ClInclude Include="source\utility\container\intrusive_tree_helper.h">
+      <Filter>utility\container</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="vendor\glm\glm\gtc\constants.inl">

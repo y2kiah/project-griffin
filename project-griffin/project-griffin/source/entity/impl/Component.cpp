@@ -97,28 +97,32 @@ void profileTestComponents() {
 	SDL_Log("age=%d\n", age);
 }
 
-void test_reflection() {
-	//addTestComponents();
+void griffin::entity::test_reflection() {
+	addTestComponents();
 	//profileTestComponents();
 
 	SDL_Log(personStore.to_string().c_str());
 	Person& person = personStore.getComponent(componentIds[0]);
 	
 	auto& personProps = Person::Reflection::getProperties();
-	personProps.emplace_back(FieldType::bool_T, "added", "added this to properties at runtime", sizeof(bool));
 	auto vals = Person::Reflection::getAllValues(person);
 
 	SDL_Log("%s:\n", Person::Reflection::getClassType().c_str());
 	for (const auto &f : personProps) {
-		SDL_Log("%s %s : %s\n", FieldTypeToString(f.type), f.name.c_str(), f.description.c_str());
+		SDL_Log("%s : %s\n", f.name.c_str(), f.description.c_str());
 	}
+	
+	auto& props = Person::Reflection::getProperties();
+	
 	int a = std::get<Person::Reflection::age>(vals);
 	float b = std::get<Person::Reflection::speed>(vals);
 	auto& c = std::get<Person::Reflection::name>(vals);
 	SDL_Log("person values: %d, %f, %s\n", a, b, c.c_str());
 	SDL_Log("age description: %s\n", personProps[Person::Reflection::FieldToEnum("age")].description.c_str());
 	std::get<Person::Reflection::age>(vals) = 30;
+	std::get<Person::Reflection::speed>(vals) = 4.0f;
 	SDL_Log("age after set = %d\n", person.age); // should now be 30
+	SDL_Log("speed after set = %1.1f\n", person.speed); // should now be 4
 
 	ComponentMask bit_test;
 	bit_test.set(ComponentType::SceneNode_T, true);
@@ -139,8 +143,7 @@ void test_reflection() {
 	// output person properties
 	SDL_Log("%s {\n", Person::Reflection::getClassType().c_str());
 	for (auto p : Person::Reflection::getProperties()) {
-		SDL_Log("  %s %s (%d): %s\n", FieldTypeToString(p.type), p.name.c_str(),
-				p.size, p.description.c_str());
+		SDL_Log("  %s (%d): %s, isArray=%d, isTriviallyCopyable=%d\n", p.name.c_str(), p.size, p.description.c_str(), p.isArray, p.isTriviallyCopyable);
 	}
 	SDL_Log("}\n\n");
 
@@ -159,12 +162,12 @@ void test_reflection() {
 	// we want the ComponentType portion to sort at a higher priority than the index or generation,
 	vector<ComponentId> sortIds = {
 			{{{0, 0, ComponentType::Person_T, 0}}},
-			{{{0, 0, ComponentType::Orientation_T, 0}}},
-			{{{0xFFFFFFFF, 0xFFFF, ComponentType::Orientation_T, 0}}},
+			{{{0, 0, ComponentType::Person_T, 0}}},
+			{{{0xFFFFFFFF, 0xFFFF, ComponentType::Person_T, 0}}},
 			{{{50, 1, ComponentType::Person_T, 1}}},
 			{{{5, 1, ComponentType::Person_T, 0}}},
 			{{{5, 1, ComponentType::SceneNode_T, 0}}},
-			{{{5, 3, ComponentType::Orientation_T, 0}}}
+			{{{5, 3, ComponentType::Person_T, 0}}}
 		};
 	std::sort(sortIds.begin(), sortIds.end());
 	oss.clear();

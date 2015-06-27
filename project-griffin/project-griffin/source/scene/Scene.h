@@ -5,15 +5,39 @@
 #include <string>
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include <utility/container/handle_map.h>
+#include <entity/ComponentStore.h>
+#include <entity/components.h>
 #include <utility/container/vector_queue.h>
 
 namespace griffin {
 	namespace scene {
 
+		using namespace griffin::entity;
+
+		COMPONENT(SceneNode,
+			(uint8_t,		positionDirty,		"position needs recalc"),
+			(uint8_t,		orientationDirty,	"orientation needs recalc"),
+
+			// transform vars
+			(glm::dvec3,	translationLocal,	"translation relative to parent"),
+			(glm::quat,		orientationLocal,	"local orientation quaternion relative to parent"),
+
+			(glm::dvec3,	positionWorld,		"double-precision position in world space"),
+			(glm::quat,		orientationWorld,	"orientation in world space"),
+
+			// support scale??
+
+			// intrusive tree vars
+			(uint32_t,		numChildren,		"number of children contained"),
+			(ComponentId,	firstChild,			"first child node index"),
+			(ComponentId,	nextSibling,		"next sibling node index"),
+			(ComponentId,	prevSibling,		"previous sibling node index"),
+			(ComponentId,	parent,				"parent node index")
+		)
+
 		// TODO: this should be an entity component
 		// TODO: optimize memory layout for cache
-		struct SceneNode {
+		/*struct SceneNode {
 			uint8_t		positionDirty = 0;
 			uint8_t		orientationDirty = 0;
 
@@ -26,15 +50,13 @@ namespace griffin {
 			
 			// support scale??
 
-			// should contain entity handle
-
 			// intrusive linked list vars
 			uint32_t	numChildren = 0;
-			Id_T		firstChild = NullId_T;	//<! index into array of nodes
-			Id_T		nextSibling = NullId_T;
-			Id_T		prevSibling = NullId_T;
-			Id_T		parent = NullId_T;
-		};
+			ComponentId	firstChild = NullId_T;	//<! index into array of nodes
+			ComponentId	nextSibling = NullId_T;
+			ComponentId	prevSibling = NullId_T;
+			ComponentId	parent = NullId_T;
+		};*/
 
 
 		// TODO: this should be a system using entity components
@@ -46,9 +68,9 @@ namespace griffin {
 			void update();
 
 			// TODO: should this really take a full scene node? We really only want the transform and entity
-			Id_T addNode(SceneNode&& node, Id_T parentId = NullId_T);
+			ComponentId addNode(SceneNode&& node, ComponentId parentNodeId, EntityId entityId);
 
-			void removeNode(Id_T nodeId);
+			void removeNode(ComponentId nodeId);
 
 		private:
 			struct BFSQueueItem {
@@ -59,8 +81,8 @@ namespace griffin {
 				glm::quat	rotationToWorld;
 			};
 
-			handle_map<SceneNode>		m_nodes;	//<! contains all scene graph nodes
-			Id_T						m_rootNode;	//<! root of the scene graph, always start traversal from here
+			ComponentStore<SceneNode>	m_nodes;	//<! contains all scene graph nodes
+			ComponentId					m_rootNode;	//<! root of the scene graph, always start traversal from here
 
 			vector_queue<BFSQueueItem>	m_bfsQueue;	//<! queue for breadth-first-search traversal of scene graph
 		};

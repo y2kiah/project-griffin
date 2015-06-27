@@ -18,10 +18,8 @@ namespace griffin {
 		* its id. This does not actually define the component, that's done using the COMPONENT macro.
 		*/
 		COMPONENT_LIST(
-			(SceneNode)
-			(Orientation)
-			(Transform)
-			(Person)
+			SceneNode,
+			Person
 		)
 
 		/**
@@ -30,20 +28,11 @@ namespace griffin {
 		#define MAX_COMPONENTS	64
 		typedef std::bitset<MAX_COMPONENTS> ComponentMask;
 
-		COMPONENT(SceneNode,
-			(glm::dvec3,		(position,		(FieldType::dvec3_T,		("3D position coordinate", NIL))))
-		)
-
-		COMPONENT(Transform,
-			(glm::dvec3,		(position,		(FieldType::dvec3_T,		("3D position coordinate", NIL)))),
-			(glm::quat,			(orientation,	(FieldType::quat_T,			("Orientation quaternion", NIL))))
-		)
-
 		COMPONENT(Person,
-			(int,				(age,			(FieldType::int_T,			("Person's age in years", NIL)))),
-			(float,				(speed,			(FieldType::float_T,		("How fast person walks in ft/s", NIL)))),
-			(std::string,		(name,			(FieldType::string_T,		("Person's name", NIL)))),
-			(std::vector<int>,	(stuff,			(FieldType::vectorInt_T,	("Person's integer stuff", NIL))))
+			(int,				age,	"Person's age in years"),
+			(float,				speed,	"How fast person walks in ft/s"),
+			(std::string,		name,	"Person's name"),
+			(std::vector<int>,	stuff,	"Person's integer stuff")
 		)
 
 	}

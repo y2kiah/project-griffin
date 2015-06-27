@@ -96,6 +96,7 @@
     <ClInclude Include="source\utility\container\concurrent_queue.h" />
     <ClInclude Include="source\utility\container\handle_map.h" />
     <ClInclude Include="source\utility\container\bitwise_quadtree.h" />
+    <ClInclude Include="source\utility\container\intrusive_tree_helper.h" />
     <ClInclude Include="source\utility\container\serial_task_queue.h" />
     <ClInclude Include="source\utility\container\vector_list.h" />
     <ClInclude Include="source\utility\container\vector_queue.h" />
@@ -487,6 +488,9 @@
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
+      <PreprocessToFile>false</PreprocessToFile>
+      <PreprocessKeepComments>false</PreprocessKeepComments>
+      <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

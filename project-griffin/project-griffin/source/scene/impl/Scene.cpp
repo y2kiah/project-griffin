@@ -12,18 +12,18 @@ namespace griffin {
 			// start traversal at the root node
 			m_bfsQueue.empty();
 			m_bfsQueue.push({
-				m_nodes.getInnerIndex(m_rootNode),
+				m_nodes.getComponents().getInnerIndex(m_rootNode),
 				0, 0,
 				glm::dvec3{ 0.0, 0.0, 0.0 },
 				glm::angleAxis(0.0f, glm::vec3{ 0.0f, 1.0f, 0.0f })
 			});
 
-			auto& nodes = m_nodes.getItems();
+			auto& nodes = m_nodes.getComponents().getItems();
 
 			while (!m_bfsQueue.empty()) {
 				const auto& bfs = m_bfsQueue.front();
 
-				SceneNode& node = nodes[bfs.nodeIndex];
+				SceneNode& node = nodes[bfs.nodeIndex].component;
 
 				// recalc world position if this, or any acestors have moved since last frame
 				bool positionDirty = node.positionDirty || bfs.ancestorPositionDirty;
@@ -46,9 +46,9 @@ namespace griffin {
 					}
 
 					// add all children to the traversal queue
-					Id_T childId = node.firstChild;
+					ComponentId childId = node.firstChild;
 					do {
-						auto childInnerIndex = m_nodes.getInnerIndex(childId);
+						auto childInnerIndex = m_nodes.getComponents().getInnerIndex(childId);
 						auto& child = nodes[childInnerIndex];
 
 						m_bfsQueue.push({
@@ -58,7 +58,7 @@ namespace griffin {
 							node.orientationWorld
 						});
 
-						childId = child.nextSibling;
+						childId = child.component.nextSibling;
 					} while (childId != NullId_T);
 				}
 
@@ -67,23 +67,23 @@ namespace griffin {
 		}
 
 
-		Id_T SceneGraph::addNode(SceneNode&& node, Id_T parentId)
+		ComponentId SceneGraph::addNode(SceneNode&& node, ComponentId parentId, EntityId entityId)
 		{
 			if (parentId == NullId_T) {
 				parentId = m_rootNode;
 			}
 
 			// push node to the front of child parent't list
-			auto& parentNode = m_nodes[parentId];
+			auto& parentNode = m_nodes[parentId].component;
 			node.parent = parentId;
 			node.nextSibling = parentNode.firstChild;
 
 			// add the new node
-			Id_T nodeId = m_nodes.insert(std::forward<SceneNode>(node));
+			ComponentId nodeId = m_nodes.addComponent(std::forward<SceneNode>(node), entityId);
 			
 			// set the prevSibling of the former first child
 			if (parentNode.firstChild != NullId_T) {
-				m_nodes[parentNode.firstChild].prevSibling = nodeId;
+				m_nodes[parentNode.firstChild].component.prevSibling = nodeId;
 			}
 			
 			// make the new node the first child of its parent
@@ -94,23 +94,37 @@ namespace griffin {
 		}
 
 
-		void SceneGraph::removeNode(Id_T nodeId)
+		void SceneGraph::removeNode(ComponentId nodeId)
 		{
-			auto& node = m_nodes[nodeId];
-			auto& parentNode = m_nodes[node.parent];
+			auto& node = m_nodes.getComponent(nodeId);
+			auto& parentNode = m_nodes.getComponent(node.parent);
 
 			// if this was the firstChild, set the new one
 			if (node.prevSibling == NullId_T) {
 				parentNode.firstChild = node.nextSibling;
+				m_nodes.getComponent(parentNode.firstChild).prevSibling = NullId_T;
 			}
-			// fix the linked list
+			// fix the node's sibling linked list
 			else {
-				m_nodes[node.prevSibling].nextSibling = node.nextSibling;
+				m_nodes.getComponent(node.prevSibling).nextSibling = node.nextSibling;
 			}
 			
 			--parentNode.numChildren;
 
-			m_nodes.erase(nodeId);
+			// gather the node's child tree ComponentIds breadth-first
+			// this gives us a list of components to remove, plus their parent entityIds
+			/*static vector<ComponentId> removeIds;
+			removeIds.clear();
+
+			auto gatherId = node.firstChild;
+			while (gatherId != NullId_T) {
+				auto& n = m_nodes[gatherId];
+				n.
+				removeIds.push_back
+			}*/
+			
+			// remove this node
+			m_nodes.removeComponent(nodeId);
 		}
 
 
@@ -120,13 +134,13 @@ namespace griffin {
 			m_bfsQueue.reserve(RESERVE_SCENEGRAPH_TRAVERSAL_QUEUE);
 
 			// add the root scene node
-			m_rootNode = m_nodes.insert({});
+			m_rootNode = m_nodes.addComponent(SceneNode{}, NullId_T);
 		}
 		
 
 		SceneGraph::~SceneGraph() {
-			if (m_nodes.capacity() > RESERVE_SCENEGRAPH_NODES) {
-				SDL_Log("check RESERVE_SCENEGRAPH_NODES: original=%d, highest=%d", RESERVE_SCENEGRAPH_NODES, m_nodes.capacity());
+			if (m_nodes.getComponents().capacity() > RESERVE_SCENEGRAPH_NODES) {
+				SDL_Log("check RESERVE_SCENEGRAPH_NODES: original=%d, highest=%d", RESERVE_SCENEGRAPH_NODES, m_nodes.getComponents().capacity());
 			}
 			if (m_bfsQueue.capacity() > RESERVE_SCENEGRAPH_TRAVERSAL_QUEUE) {
 				SDL_Log("check RESERVE_SCENEGRAPH_TRAVERSAL_QUEUE: original=%d, highest=%d", RESERVE_SCENEGRAPH_TRAVERSAL_QUEUE, m_bfsQueue.capacity());

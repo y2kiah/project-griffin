@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 		app.initOpenGL();
 		auto engine = make_engine(app);
 
-		test_reflection(); // TEMP
+		entity::test_reflection(); // TEMP
 
 		bool done = false;
 		int32_t frame = 0;

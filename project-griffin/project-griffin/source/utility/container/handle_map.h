@@ -1,6 +1,6 @@
 /**
 * @file	handle_map.h
-* @author	Jeff Kiah
+* @author Jeff Kiah
 */
 #pragma once
 #ifndef GRIFFIN_HANDLE_MAP_H_
