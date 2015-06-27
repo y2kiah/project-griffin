@@ -82,6 +82,8 @@ namespace griffin {
 			return reinterpret_cast<component_type<Ct>::type>(x);
 		}
 
+
+
 		extern void test_reflection(); // TEMP
 
 	}

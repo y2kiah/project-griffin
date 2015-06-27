@@ -5,21 +5,26 @@
 #include <mutex>
 #include <memory>
 #include <entity/Entity.h>
+#include <SDL_log.h>
 
 using namespace griffin::entity;
 
 
-std::shared_ptr<Entity> EntityManager::createEntity(ComponentMask componentMask)
+// class Entity
+
+#ifdef GRIFFIN_TOOLS_BUILD
+Entity::~Entity()
 {
-	//	static mutex mut;
-	//	lock_guard<mutex> hold(mut);
+	if (components.capacity() > RESERVE_ENTITY_COMPONENTS) {
+		SDL_Log("check RESERVE_ENTITY_COMPONENTS: original=%d, highest=%d", RESERVE_ENTITY_COMPONENTS, components.capacity());
+	}
+}
+#endif
 
-	auto esp = std::make_shared<Entity>();
-	/*for (uint8_t ct = 0; ct < componentMask.size(); ++ct) {
-		if (componentMask[ct]) {
-		esp->addComponent((ComponentType)ct);
-		}
-		}*/
 
-	return esp;
+// class EntityManager
+
+EntityId EntityManager::createEntity()
+{
+	return m_entityStore.emplace();
 }

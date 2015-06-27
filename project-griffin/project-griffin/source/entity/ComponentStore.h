@@ -29,6 +29,11 @@ namespace griffin {
 		class ComponentStore : public ComponentStoreBase {
 		public:
 			// Typedefs
+
+			/**
+			* ComponentRecord stores the component object plus its parent entity id. This provides
+			* a fast index to find all entities that contain this component type.
+			*/
 			typedef struct {
 				T        component;
 				EntityId entityId;

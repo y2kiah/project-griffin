@@ -27,7 +27,9 @@ namespace griffin {
 		using resource::CacheType;
 
 		// Variables
-		extern weak_ptr<resource::ResourceLoader> g_loaderPtr;
+		extern weak_ptr<resource::ResourceLoader> g_resourceLoader;
+
+		// Structs
 
 		/**
 		* @struct RenderQueueKey

@@ -17,6 +17,7 @@
 #include <boost/preprocessor/tuple/rem.hpp>
 #include <boost/preprocessor/variadic/to_seq.hpp>
 #include <boost/preprocessor/control/if.hpp>
+#include <boost/preprocessor/control/iif.hpp>
 #include <boost/preprocessor/comparison/equal.hpp>
 #include <boost/preprocessor/logical/or.hpp>
 #include <boost/preprocessor/logical/not.hpp>

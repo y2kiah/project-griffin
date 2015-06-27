@@ -27,7 +27,7 @@ namespace griffin {
 
 		// Global Variables
 
-		weak_ptr<resource::ResourceLoader> g_loaderPtr;
+		weak_ptr<resource::ResourceLoader> g_resourceLoader;
 
 		const float g_fullScreenQuadBufferData[] = {
 			-1.0f, -1.0f, 0.0f,
@@ -72,7 +72,7 @@ namespace griffin {
 		{
 			// get the resource loader
 			using namespace resource;
-			auto loader = g_loaderPtr.lock();
+			auto loader = g_resourceLoader.lock();
 			if (!loader) {
 				throw std::runtime_error("no resource loader");
 			}
@@ -288,7 +288,7 @@ namespace griffin {
 		{
 			using namespace resource;
 
-			auto loader = g_loaderPtr.lock();
+			auto loader = g_resourceLoader.lock();
 
 			if (!loader) {
 				throw std::runtime_error("no resource loader");
@@ -317,7 +317,7 @@ namespace griffin {
 		{
 			using namespace resource;
 
-			auto loader = g_loaderPtr.lock();
+			auto loader = g_resourceLoader.lock();
 
 			if (!loader) {
 				throw std::runtime_error("no resource loader");
@@ -348,7 +348,7 @@ namespace griffin {
 
 			/*using namespace resource;
 
-			auto loader = g_loaderPtr.lock();
+			auto loader = g_resourceLoader.lock();
 
 			if (loader) {
 				auto modelResourceBuilder = [](DataPtr data, size_t size) {

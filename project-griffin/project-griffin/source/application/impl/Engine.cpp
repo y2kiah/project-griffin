@@ -1,9 +1,6 @@
 #include <application/Engine.h>
 #include <SDL.h>
 
-// TEMP
-#include <render/Render.h>
-
 
 using std::make_unique;
 using std::make_shared;
@@ -91,8 +88,8 @@ namespace griffin {
 			auto fileSystemSourcePtr = IResourceSourcePtr((IResourceSource*)(new FileSystemSource()));
 			loaderPtr->registerSource(fileSystemSourcePtr);
 
-			// inject dependencies into the loader
-			render::g_loaderPtr = loaderPtr;
+			// inject loader dependencies into other system
+			render::g_resourceLoader = loaderPtr;
 
 			// add Lua APIs
 
@@ -101,7 +98,7 @@ namespace griffin {
 		}
 
 		/**
-		* Build the RenderSystem
+		* Build the render system
 		*/
 		{
 			using namespace render;
@@ -120,10 +117,24 @@ namespace griffin {
 
 			auto entityPtr = make_shared<EntityManager>();
 
+			// inject entity dependencies into other system
+			scene::g_entityManager = entityPtr;
+
 			// add Lua APIs
 
 
 			engine.entityManager = entityPtr;
+		}
+
+		/**
+		* Build the scene manager
+		*/
+		{
+			using namespace scene;
+
+			auto scenePtr = make_shared<SceneManager>();
+
+			engine.sceneManager = scenePtr;
 		}
 
 		/**

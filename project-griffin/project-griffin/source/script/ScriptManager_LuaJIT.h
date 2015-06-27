@@ -1,3 +1,7 @@
+/**
+* @file ScriptManager_LuaJIT
+* @author Jeff Kiah
+*/
 #pragma once
 #ifndef GRIFFIN_SCRIPTMANAGER_LUAJIT_H_
 #define GRIFFIN_SCRIPTMANAGER_LUAJIT_H_
@@ -16,6 +20,8 @@ namespace griffin {
 		using std::shared_ptr;
 		using std::string;
 
+
+		// TODO: compute a CRC of each script delivered and do a simple check at runtime to see if it has been modified
 
 		class ScriptManager {
 		public:

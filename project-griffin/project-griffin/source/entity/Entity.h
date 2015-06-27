@@ -1,15 +1,15 @@
 /**
-* @file   Entity.h
+* @file Entity.h
 * @author Jeff Kiah
 */
-
 #pragma once
 #ifndef GRIFFIN_ENTITY_H_
 #define GRIFFIN_ENTITY_H_
 
-#include <boost/container/flat_set.hpp>
 #include <boost/container/flat_map.hpp>
+#include <vector>
 #include <memory>
+#include <algorithm>
 #include "components.h"
 #include <utility/memory_reserve.h>
 
@@ -17,96 +17,97 @@
 namespace griffin {
 	namespace entity {
 
-		typedef boost::container::flat_set<ComponentId> ComponentSet;
-		//typedef boost::container::flat_multimap<ComponentType, ComponentId> ComponentMap;
-
-
-		class Entity {
+		// Entity should have relationships to other entities through components
+		// Entity is a messaging (event) hub, both sending and handling events, allowing for direct
+		// dispatch, broadcast, observer, pub/sub, and event bubbling up and down
+		struct Entity {
 		public:
 			/**
-			* Adds id to the set, returns true if the id is added, false if the id is already present
+			* Adds component id to the set
+			* @return	true if the id is added, false if the id is already present
 			*/
 			bool addComponent(ComponentId id) {
 				ComponentType ct = static_cast<ComponentType>(id.typeId);
 				componentMask.set(ct);
 
-				auto r = components.emplace(id);
-				//components.emplace(ct, id);
+				if (std::find(components.begin(), components.end(), id) != components.end()) {
+					components.push_back(id);
+					return true;
+				}
 
-				return r.second;
+				return false;
 			}
 
 			/**
-			* Removes id from the set, returns true if component was removed, false if not present
+			* Removes id from the set
+			* @return	true if component was removed, false if not present
 			*/
 			bool removeComponent(ComponentId id) {
 				ComponentType ct = static_cast<ComponentType>(id.typeId);
-				auto r = components.erase(id);
-
-				// implementation for multimap
-				/*if (hasComponent(ct)) {
-					auto keyRange = components.equal_range(ct);
-					int keysMatched = std::distance(keyRange.first, keyRange.second);
-
-					// need to test, does this delete only keys with matching id value?
-					std::remove_if(keyRange.first, keyRange.second, [id, &keysMatched](const std::pair<ComponentType, ComponentId>& it){
-					bool match = (it.second == id);
-					if (match) { --keysMatched; } // decrement number matched if removed
-					return match;
-					});
-
-					// if all matched keys were removed, unset component type in the mask
-					if (keysMatched == 0) {
-					componentMask.set(ct, false);
+				bool hasAnotherMatchingComponentType = false;
+				bool removed = false;
+				
+				for (int c = 0; c < components.size(); ++c) {
+					// remove by swapping with the last element and then pop_back
+					if (components[c] == id) {
+						if (c != components.size() - 1) {
+							components[c] = components[components.size() - 1];
+						}
+						components.pop_back();
+						removed = true;
 					}
+					else if (components[c].typeId == ct) {
+						hasAnotherMatchingComponentType = true;
+					}
+				}
 
-					return true;
-					}*/
-				return (r > 0);
+				// if no more components of this type, clear it in the mask
+				if (removed && !hasAnotherMatchingComponentType) {
+					componentMask.set(ct, false);
+				}
+				
+				return removed;
 			}
 
 			/**
-			* Removes all components of a type, returns true if at least one component was removed
+			* Removes all components of a type
+			* @return true if at least one component was removed
 			*/
 			bool removeComponentsOfType(ComponentType ct) {
 				if (hasComponent(ct)) {
+					std::remove_if(components.begin(), components.end(), [ct](ComponentId id){
+						return (id.typeId == ct);
+					});
 					componentMask.set(ct, false);
 
-					auto lower = components.lower_bound({{{ 0, 0, ct, 0 }}});
-					auto upper = components.upper_bound({{{ 0xFFFFFFFF, 0xFFFF, ct, 0 }}});
-					components.erase(lower, upper);
-					//auto it = components.
-					//components.erase(ct);
-
-					// remove from componentstore
 					return true;
 				}
 				return false;
 			}
 
+			/**
+			* Uses the component mask to quickly see if a component type exists in this entity
+			* @return	true if the component type exists at least once, false if not
+			*/
 			inline bool hasComponent(ComponentType ct) const {
 				return componentMask[ct];
 			}
+			
 
-			Entity::~Entity() {
+			// Variables
+
+			ComponentMask				componentMask;
+			std::vector<ComponentId>	components;
+
+			// Functions
+
+			explicit Entity() {
 				components.reserve(RESERVE_ENTITY_COMPONENTS);
 			}
 
-		private:
-			ComponentMask	componentMask;
-			ComponentSet	components;
-			//ComponentMap	components;
-
-			// component mask could also be stored in array in the entitystore for indexed searches,
-			// OR should entitystore keep an array of indexes for each component type, which would be
-			// an O(1) lookup vs O(N) with the mask, but at the cost of slightly more expensive
-			// addComponent and removeComponent functions, since they now have to also "register" or
-			// "unregister" in these master index arrays
-
-			// Entity should have relationships to other entities through components
-
-			// Entity is a messaging (event) hub, both sending and handling events, allowing for direct
-			// dispatch, broadcast, observer, pub/sub, and event bubbling up and down
+			#ifdef GRIFFIN_TOOLS_BUILD
+			~Entity();
+			#endif
 		};
 
 
@@ -115,63 +116,116 @@ namespace griffin {
 			// Typedefs
 			typedef griffin::handle_map<Entity> EntityMap;
 			typedef boost::container::flat_multimap<ComponentMask, EntityId> ComponentMaskMap;
-			typedef std::vector<std::unique_ptr<ComponentStoreBase>> ComponentStoreMap;
+			typedef std::array<std::unique_ptr<ComponentStoreBase>, MAX_COMPONENTS> ComponentStoreMap;
 
 			// Functions
 
 			explicit EntityManager() :
-				m_entityStore(0, RESERVE_ENTITYMANAGER_ENTITIES)
-			{
-				m_componentStores.reserve(RESERVE_ENTITYMANAGER_COMPONENTSTORES);
-			}
+				m_entityStore(0, RESERVE_ENTITYMANAGER_ENTITIES),
+				m_componentStores{} // zero-init fills with nullptr
+			{}
+
+
+			// Entity Functions
 
 			/**
-			* Create a store for a specific type, without assuming that the type has a ::componentType
-			* member identiying the type id.
+			* Creates a new empty entity
+			* @return	entity id
+			*/
+			EntityId createEntity();
+
+			/**
+			* Adds a component to an existing entity
+			* @param entityId	entity to receive the new component
+			* @return	new ComponentId, or NullId_T if entityId is invalid
 			*/
 			template <typename T>
-			bool createComponentStore(uint16_t typeId, size_t reserve) {
-				// ensure vector is resized to fit up to componentType elements
-				if (componentStores.size() < typeId) {
-					componentStores.reserve(typeId);
-					componentStores.resize(typeId, nullptr);
+			ComponentId addComponentToEntity(T&& component, EntityId entityId) {
+				if (!m_entityStore.isValid(entityId)) {
+					return NullId_T;
 				}
-				// create store if it doesn't exist already
-				auto &store = componentStores[typeId];
-				if (!store()) {
-					store = std::make_unique<ComponentStore<T>>(typeId, reserve);
-					return true;
+				auto& entity = m_entityStore[entityId];
+
+				auto& store = getComponentStore<T>();
+				auto componentId = store.addComponent(std::forward<T>(component), entityId);
+
+				auto previousMask = entity.componentMask;
+				entity.addComponent(componentId);
+				auto newMask = entity.componentMask;
+
+				if (newMask != previousMask) {
+					// fix up the mask index with the new mask, remove the old entry with old mask
+					auto rng = m_componentIndex.equal_range(previousMask);
+					std::remove_if(rng.first, rng.second, [](ComponentMaskMap::value_type& val){
+						return (val.second == entityId);
+					});
+					// insert the new entry with new mask
+					m_componentIndex.insert({ newMask, entityId });
 				}
-				return false;
+
+				return componentId;
+			}
+
+
+			// Component Store Functions
+
+			/**
+			* Get a reference to component store for a specific type, assumed to be a component
+			* with ::componentType member. Useful for systems.
+			*/
+			template <typename T>
+			ComponentStore<T>& getComponentStore() {
+				return *m_componentStores[T::componentType];
 			}
 
 			/**
 			* Create a store for a specific type, assumed to be a component with ::componentType member
 			* which identifies the type id and becomes the index into the stores vector.
-			* @returns true if store was created, false if it already existed
+			* @return	true if store was created, false if it already existed
 			*/
 			template <typename T>
 			bool createComponentStore(size_t reserve) {
-				return createComponentStore(T::componentType, reserve);
+				assert(T::componentType < ComponentType::last_ComponentType_enum && "static component with dynamic id");
+
+				return createComponentStore<T>(T::componentType, reserve);
 			}
 
 			/**
 			* Create a store for script-based components
 			*/
-			uint16_t createScriptComponentStore() {
-				const int ComponentType_FirstDynamic = ComponentType::last_ComponentType_enum;
+			uint16_t createScriptComponentStore(size_t reserve) {
+				static int currentDynamicSlot = ComponentType::last_ComponentType_enum;
+				assert(currentDynamicSlot < MAX_COMPONENTS && "exceeded MAX_COMPONENTS");
 
+				struct LuaComponent {}; // TEMP
+				createComponentStore<LuaComponent>(currentDynamicSlot, reserve);
+
+				++currentDynamicSlot;
+				return currentDynamicSlot - 1;
+			}
+
+		private:
+
+			// Private Functions
+			
+			/**
+			* Create a store for a specific type, without assuming that the type has a ::componentType
+			* member identiying the type id.
+			*/
+			template <typename T>
+			void createComponentStore(uint16_t typeId, size_t reserve) {
+				assert(m_componentStores[currentDynamicSlot] == nullptr && "componentStore already exists");
+
+				m_componentStores[typeId] = std::make_unique<ComponentStore<T>>(typeId, (reserve > RESERVE_ENTITYMANAGER_COMPONENTS ? reserve : RESERVE_ENTITYMANAGER_COMPONENTS));
 			}
 
 
-			std::shared_ptr<Entity> createEntity(ComponentMask componentMask); // TEMP
-
-		private:
+			// Private Variables
+			
 			EntityMap			m_entityStore;		//<! Entity indexed by handle, stores relationship to components internally
 
-			ComponentMaskMap	m_componentIndex;	//<! flat_multimap of sorted ComponentMask keys for O(log n) entity search
+			ComponentMaskMap	m_componentIndex;	//<! index of sorted ComponentMask for O(log n) entity search by multiple component types
 			ComponentStoreMap	m_componentStores;	//<! ComponentStore indexed by componentType, stores component and parent entityId
-
 			
 		};
 
