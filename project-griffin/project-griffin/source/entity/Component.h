@@ -1,3 +1,7 @@
+/**
+* @file Component.h
+* @author Jeff Kiah
+*/
 #pragma once
 #ifndef GRIFFIN_COMPONENT_H_
 #define GRIFFIN_COMPONENT_H_

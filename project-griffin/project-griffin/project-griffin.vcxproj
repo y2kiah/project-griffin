@@ -54,6 +54,7 @@
     <ClCompile Include="source\resource\impl\ResourceLoader-inl.h" />
     <ClCompile Include="source\resource\impl\ResourceSource.cpp" />
     <ClCompile Include="source\scene\impl\Scene.cpp" />
+    <ClCompile Include="source\scene\impl\SceneGraph.cpp" />
     <ClCompile Include="source\script\impl\ScriptManager_LuaJIT.cpp" />
     <ClCompile Include="source\tools\impl\GriffinTools.cpp" />
     <ClCompile Include="source\utility\profile\impl\Profile.cpp" />
@@ -75,6 +76,7 @@
     <ClInclude Include="source\entity\ComponentStore.h" />
     <ClInclude Include="source\entity\Entity.h" />
     <ClInclude Include="source\entity\EntityManager.h" />
+    <ClInclude Include="source\entity\EntityTypedefs.h" />
     <ClInclude Include="source\entity\impl\ComponentStore-inl.h" />
     <ClInclude Include="source\render\Camera.h" />
     <ClInclude Include="source\render\font\FreeType.h" />
@@ -98,6 +100,7 @@
     <ClInclude Include="source\resource\ResourceLoader.h" />
     <ClInclude Include="source\resource\ResourceSource.h" />
     <ClInclude Include="source\scene\Scene.h" />
+    <ClInclude Include="source\scene\SceneGraph.h" />
     <ClInclude Include="source\script\ScriptManager_LuaJIT.h" />
     <ClInclude Include="source\test\Test.h" />
     <ClInclude Include="source\tools\GriffinTools.h" />

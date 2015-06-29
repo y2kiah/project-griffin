@@ -4,6 +4,7 @@
 */
 #include <SDL_log.h>
 #include "../EntityManager.h"
+#include "../components.h"
 
 using namespace griffin::entity;
 
@@ -22,11 +23,28 @@ bool EntityManager::removeComponentFromEntity(ComponentId componentId)
 	auto entityId = store->getEntityId(componentId);
 
 	bool removed = m_entityStore[entityId].removeComponent(componentId);
-	if (!removed) { return false; }
+	if (!removed) {
+		return false;
+	}
 
-	store->removeComponent(componentId);
+	// TODO remove from the component mask index
+	return store->removeComponent(componentId);
+}
 
-	return true;
+
+bool EntityManager::removeComponentsOfTypeFromEntity(ComponentType ct, EntityId entityId)
+{
+	if (!m_entityStore.isValid(entityId)) {
+		return false;
+	}
+
+	auto& entity = m_entityStore[entityId];
+	auto store = m_componentStores[ct].get();
+	
+	entity.removeComponentsOfType(ct);
+	
+	// TODO remove from the component mask index
+	// TODO remove from the component store
 }
 
 

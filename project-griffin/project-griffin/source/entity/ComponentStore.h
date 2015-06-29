@@ -4,13 +4,11 @@
 
 #include <utility/container/handle_map.h>
 #include <string>
+#include "EntityTypedefs.h"
+
 
 namespace griffin {
 	namespace entity {
-
-		typedef griffin::Id_T    ComponentId;
-		typedef griffin::IdSet_T ComponentIdSet;
-		typedef griffin::Id_T    EntityId;
 
 		inline std::ostream& operator<<(std::ostream& os, ComponentId id);
 
@@ -22,7 +20,7 @@ namespace griffin {
 		public:
 			virtual ~ComponentStoreBase() {}
 
-			virtual void removeComponent(ComponentId outerId) = 0;
+			virtual bool removeComponent(ComponentId outerId) = 0;
 			virtual EntityId getEntityId(ComponentId outerId) = 0;
 		};
 
@@ -87,8 +85,8 @@ namespace griffin {
 			/**
 			* remove the component identified by the provided outerId
 			*/
-			inline void removeComponent(ComponentId outerId) {
-				m_components.erase(outerId);
+			inline bool removeComponent(ComponentId outerId) {
+				return (m_components.erase(outerId) == 1);
 			}
 
 			/**

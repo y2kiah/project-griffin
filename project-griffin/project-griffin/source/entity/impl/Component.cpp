@@ -1,4 +1,5 @@
-#include <entity/components.h>
+#include "../components.h"
+#include "../ComponentStore.h"
 #include <vector>
 #include <tuple>
 #include <SDL_log.h>

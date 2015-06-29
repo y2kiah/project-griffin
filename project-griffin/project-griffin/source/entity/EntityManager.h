@@ -11,8 +11,8 @@
 #include <memory>
 #include <algorithm>
 #include <utility/memory_reserve.h>
+#include "ComponentStore.h"
 #include "Entity.h"
-#include "components.h"
 
 
 namespace griffin {
@@ -50,6 +50,8 @@ namespace griffin {
 
 			/**
 			* Get the ComponentIds that belong to an entity
+			* @return	const reference to the components vector, don't store it just use it
+			*	immediately and discard
 			*/
 			const std::vector<ComponentId>& getEntityComponents(EntityId entityId) const {
 				return m_entityStore[entityId].components;
@@ -58,6 +60,7 @@ namespace griffin {
 			/**
 			* Adds a component to an existing entity
 			* @param entityId	entity to receive the new component
+			* @tparam T	the component type, requires member T::componentType
 			* @return	new ComponentId, or NullId_T if entityId is invalid
 			*/
 			template <typename T>
@@ -94,12 +97,22 @@ namespace griffin {
 			}
 			
 			/**
-			*
+			* Removes a component from the entity's components vector, and unsets the bit in the
+			* ComponentMask if the removed component is the last of its type. The entity id is
+			* known from the component record. The EntityManager is not notified by this function,
+			* so this should only be used internally or if you REALLY know what you're doing.
+			* @param componentId	the component to be removed from its entity
+			* @return	true if the component was removed, false if it does not exist
 			*/
 			bool removeComponentFromEntity(ComponentId componentId);
 			
 			/**
-			*
+			* Removes all components of a type from from the entity's components vector, and unsets
+			* the corresponding bit in the ComponentMask.
+			* @param ct		the component type's enum value
+			* @param entityId	the entity to remove from
+			* @return	true if the component was removed, false if the entity doesn't exist or
+			*	nothing was removed
 			*/
 			bool removeComponentsOfTypeFromEntity(ComponentType ct, EntityId entityId);
 
@@ -109,6 +122,8 @@ namespace griffin {
 			/**
 			* Get a reference to component store for a specific type, assumed to be a component
 			* with ::componentType member. Useful for systems.
+			* @tparam T	the component type, requires member T::componentType
+			* @return	the ComponentStore for a given type
 			*/
 			template <typename T>
 			ComponentStore<T>& getComponentStore() {
@@ -118,6 +133,7 @@ namespace griffin {
 			/**
 			* Create a store for a specific type, assumed to be a component with ::componentType member
 			* which identifies the type id and becomes the index into the stores vector.
+			* @tparam T	the component type, requires member T::componentType
 			* @return	true if store was created, false if it already existed
 			*/
 			template <typename T>
@@ -129,6 +145,8 @@ namespace griffin {
 
 			/**
 			* Create a store for script-based components
+			* @return	Index id of the component store. Stores cannot be removed once created so
+			*	this index is stable for the lifetime of the EntityManager.
 			*/
 			uint16_t createScriptComponentStore(size_t reserve);
 
@@ -139,6 +157,7 @@ namespace griffin {
 			/**
 			* Create a store for a specific type, without assuming that the type has a ::componentType
 			* member identiying the type id.
+			* @tparam T	the component type, requires member T::componentType
 			*/
 			template <typename T>
 			void createComponentStore(uint16_t typeId, size_t reserve) {

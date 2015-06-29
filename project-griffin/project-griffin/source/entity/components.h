@@ -1,13 +1,15 @@
+/**
+* @file components.h
+* @author Jeff Kiah
+*/
 #pragma once
 #ifndef GRIFFIN_COMPONENTS_H_
 #define GRIFFIN_COMPONENTS_H_
 
+#include "EntityTypedefs.h"
 #include <vector>
 #include <bitset>
-#include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp>
 #include "Component.h"
-#include "ComponentStore.h"
 
 namespace griffin {
 	namespace entity {
