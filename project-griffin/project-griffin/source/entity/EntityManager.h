@@ -36,6 +36,13 @@ namespace griffin {
 			// Entity Functions
 
 			/**
+			* @return	true if entity id is valid
+			*/
+			bool entityIsValid(EntityId entityId) const {
+				return m_entityStore.isValid(entityId);
+			}
+
+			/**
 			* Creates a new empty entity
 			* @return	entity id
 			*/
@@ -45,10 +52,6 @@ namespace griffin {
 			* Get the ComponentIds that belong to an entity
 			*/
 			const std::vector<ComponentId>& getEntityComponents(EntityId entityId) const {
-				if (!m_entityStore.isValid(entityId)) {
-					throw std::runtime_error("entity not valid");
-				}
-
 				return m_entityStore[entityId].components;
 			}
 
@@ -155,6 +158,7 @@ namespace griffin {
 		};
 
 		typedef std::shared_ptr<EntityManager>	EntityManagerPtr;
+		typedef std::weak_ptr<EntityManager>	EntityManagerWeakPtr;
 
 	}
 }

@@ -117,9 +117,6 @@ namespace griffin {
 
 			auto entityPtr = make_shared<EntityManager>();
 
-			// inject entity dependencies into other system
-			scene::g_entityManager = entityPtr;
-
 			// add Lua APIs
 
 
@@ -132,7 +129,7 @@ namespace griffin {
 		{
 			using namespace scene;
 
-			auto scenePtr = make_shared<SceneManager>();
+			auto scenePtr = make_shared<SceneManager>(engine.entityManager);
 
 			engine.sceneManager = scenePtr;
 		}

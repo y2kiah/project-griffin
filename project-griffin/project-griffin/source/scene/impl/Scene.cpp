@@ -10,22 +10,10 @@
 namespace griffin {
 	namespace scene {
 
-		// Globals
-
-		weak_ptr<entity::EntityManager> g_entityManager;
-
-		EntityManager& getEntityManager() {
-			auto entityPtr = g_entityManager.lock();
-			if (!entityPtr) { throw std::runtime_error("no entity manager"); }
-			return *entityPtr.get();
-		}
-
-
 		// class SceneGraph
 
 		void SceneGraph::update()
 		{
-			auto& entityMgr = getEntityManager();
 			// get the SceneNode components
 			auto& nodeComponents = entityMgr.getComponentStore<SceneNode>().getComponents();
 			auto& nodeItems = nodeComponents.getItems();
@@ -66,7 +54,7 @@ namespace griffin {
 					}
 
 					// add all children to the traversal queue
-					ComponentId childId = node.firstChild;
+					auto childId = node.firstChild;
 					for (uint32_t c = 0; c < node.numChildren; ++c) {
 						assert(childId != NullId_T && "expected scene node is null, broken linked list or numChildren out of sync");
 						auto& child = nodeComponents[childId].component;
@@ -87,15 +75,13 @@ namespace griffin {
 		}
 
 
-		ComponentId SceneGraph::addToScene(EntityId entityId, const glm::dvec3& translationLocal,
-										   const glm::quat& rotationLocal, ComponentId parentNodeId)
+		SceneNodeId SceneGraph::addToScene(EntityId entityId, const glm::dvec3& translationLocal,
+										   const glm::quat& rotationLocal, SceneNodeId parentNodeId)
 		{
-			auto& entityMgr = getEntityManager();
-			// get the SceneNode components
 			auto& nodeComponents = entityMgr.getComponentStore<SceneNode>().getComponents();
 
 			// get the parent node where we're inserting this component
-			auto& parentNode = parentNodeId == NullId_T ? m_rootNode : nodeComponents[parentNodeId].component;
+			auto& parentNode = (parentNodeId == NullId_T) ? m_rootNode : nodeComponents[parentNodeId].component;
 
 			// add a SceneNode component to the entity
 			SceneNode node = {
@@ -113,7 +99,7 @@ namespace griffin {
 				m_sceneId													// scene
 			};
 
-			ComponentId nodeId = entityMgr.addComponentToEntity(std::move(node), entityId);
+			auto nodeId = entityMgr.addComponentToEntity(std::move(node), entityId);
 
 			// push new node to the front of parent't list
 			// set the prevSibling of the former first child
@@ -129,74 +115,178 @@ namespace griffin {
 		}
 
 
-		bool SceneGraph::removeFromScene(ComponentId sceneNodeId)
+		bool SceneGraph::removeFromScene(SceneNodeId sceneNodeId, bool cascade, std::vector<EntityId>* removedEntities)
 		{
 			assert(sceneNodeId.typeId == SceneNode::componentType && "component is the wrong type");
 			
-			auto& entityMgr = getEntityManager();
+			auto& nodeComponents = entityMgr.getComponentStore<SceneNode>().getComponents();
 
-			// remove from scene graph here
+			if (!nodeComponents.isValid(sceneNodeId)) {
+				return false;
+			}
 
+			// get the scene node and make sure it's part of this scene
+			auto& node = nodeComponents[sceneNodeId].component;
+			if (node.scene.value != m_sceneId.value) {
+				return false;
+			}
+			
+			// remove from scene graph
+			auto& parentNode = (node.parent == NullId_T) ? m_rootNode : nodeComponents[node.parent].component;
+
+			// if this was the firstChild, set the new one
+			if (node.prevSibling == NullId_T) {
+				parentNode.firstChild = node.nextSibling;
+				nodeComponents[parentNode.firstChild].component.prevSibling = NullId_T;
+			}
+			// fix the node's sibling linked list
+			else {
+				nodeComponents[node.prevSibling].component.nextSibling = node.nextSibling;
+			}
+
+			--parentNode.numChildren;
+
+			if (node.numChildren > 0) {
+				// remove all ancestors
+				if (cascade) {
+					// TODO
+				}
+				// don't cascade the delete, give the node's children to its parent
+				else {
+					moveAllSiblings(node.firstChild, node.parent);
+				}
+			}
+
+			// remove the component
 			bool removed = entityMgr.removeComponentFromEntity(sceneNodeId);
+
+			return removed;
 		}
 
 
-		bool SceneGraph::removeFromScene(EntityId entityId)
+		bool SceneGraph::removeEntityFromScene(EntityId entityId, bool cascade, std::vector<EntityId>* removedEntities)
 		{
-			auto& entityMgr = getEntityManager();
-
-			try {
-				auto& entityComponents = entityMgr.getEntityComponents(entityId);
-
-				auto& node = nodeComponents.getComponent(nodeId);
-				auto& parentNode = m_nodes.getComponent(node.parent);
-
-				// if this was the firstChild, set the new one
-				if (node.prevSibling == NullId_T) {
-					parentNode.firstChild = node.nextSibling;
-					m_nodes.getComponent(parentNode.firstChild).prevSibling = NullId_T;
-				}
-				// fix the node's sibling linked list
-				else {
-					m_nodes.getComponent(node.prevSibling).nextSibling = node.nextSibling;
-				}
-			
-				--parentNode.numChildren;
-
-				// gather the node's child tree ComponentIds breadth-first
-				// this gives us a list of components to remove, plus their parent entityIds
-				/*static vector<ComponentId> removeIds;
-				removeIds.clear();
-
-				auto gatherId = node.firstChild;
-				while (gatherId != NullId_T) {
-					auto& n = m_nodes[gatherId];
-					n.
-					removeIds.push_back
-				}*/
-			
-				// remove this node
-				m_nodes.removeComponent(nodeId);
-			}
-			catch (std::runtime_error ex) {
+			if (!entityMgr.entityIsValid(entityId)) {
 				return false;
 			}
+
+			auto& entityComponents = entityMgr.getEntityComponents(entityId);
+
+			bool removed = false;
+			for (auto &sceneNodeId : entityComponents) {
+				if (sceneNodeId.typeId == SceneNode::componentType) {
+					removed = removeFromScene(sceneNodeId, cascade, removedEntities);
+					if (removed) { break; }
+				}
+			}
+
+			return removed;
+		}
+
+
+		bool SceneGraph::moveNode(SceneNodeId sceneNodeId, SceneNodeId moveToParent)
+		{
+			auto& nodeComponents = entityMgr.getComponentStore<SceneNode>().getComponents();
+
+			if (!nodeComponents.isValid(sceneNodeId) || !nodeComponents.isValid(moveToParent)) {
+				return false;
+			}
+
+			auto& node = nodeComponents[sceneNodeId].component;
+			// check to make sure we're not trying to move into the current parent
+			if (node.parent == moveToParent) {
+				return false;
+			}
+
+			auto& currentParent = (node.parent == NullId_T) ? m_rootNode : nodeComponents[node.parent].component;
+			auto& newParent = (moveToParent == NullId_T) ? m_rootNode : nodeComponents[moveToParent].component;
+
+			// remove from current parrent
+			// if this was the firstChild, set the new one
+			if (node.prevSibling == NullId_T) {
+				currentParent.firstChild = node.nextSibling;
+				nodeComponents[currentParent.firstChild].component.prevSibling = NullId_T;
+			}
+			// fix the node's sibling linked list
+			else {
+				nodeComponents[node.prevSibling].component.nextSibling = node.nextSibling;
+			}
+
+			--currentParent.numChildren;
+
+			// move to new parent
+			node.parent = moveToParent;
+			node.nextSibling = newParent.firstChild;
+			node.prevSibling = NullId_T;
+			if (newParent.firstChild != NullId_T) {
+				nodeComponents[newParent.firstChild].component.prevSibling = sceneNodeId;
+			}
+			newParent.firstChild = sceneNodeId;
+			
+			++newParent.numChildren;
 
 			return true;
 		}
 
 
-		std::vector<EntityId> SceneGraph::removeTreeFromScene(EntityId entityId)
+		bool SceneGraph::moveAllSiblings(SceneNodeId siblingToMove, SceneNodeId moveToParent)
 		{
-			std::vector<EntityId> removedIds;
+			auto& nodeComponents = entityMgr.getComponentStore<SceneNode>().getComponents();
 
-			// TODO ...
+			if (!nodeComponents.isValid(siblingToMove) || !nodeComponents.isValid(moveToParent)) {
+				return false;
+			}
 
-			return removedIds;
+			auto& node = nodeComponents[siblingToMove].component;
+			// check to make sure we're not trying to move into the current parent
+			if (node.parent == moveToParent) {
+				return false;
+			}
+
+			auto& currentParent = (node.parent == NullId_T) ? m_rootNode : nodeComponents[node.parent].component;
+
+			bool allMoved = true;
+
+			// move each child to the new parent
+			auto childId = currentParent.firstChild;
+			while (childId != NullId_T) {
+				auto& child = nodeComponents[childId].component;
+				allMoved = allMoved && moveNode(childId, moveToParent);
+				childId = child.nextSibling;
+			}
+
+			assert(currentParent.numChildren == 0 && "numChildren > 0 but all siblings should have moved");
+
+			return allMoved;
 		}
 
 
-		SceneGraph::SceneGraph() :
+		SceneNodeId SceneGraph::getLastImmediateChild(SceneNodeId sceneNodeId)
+		{
+			auto& nodeComponents = entityMgr.getComponentStore<SceneNode>().getComponents();
+
+			if (!nodeComponents.isValid(sceneNodeId)) {
+				return NullId_T;
+			}
+
+			auto& node = nodeComponents[sceneNodeId].component;
+			auto childId = node.firstChild;
+			if (childId != NullId_T) {
+				for (;;) {
+					auto& child = nodeComponents[sceneNodeId].component;
+					if (child.nextSibling == NullId_T) {
+						break;
+					}
+					childId = child.nextSibling;
+				}
+			}
+
+			return childId;
+		}
+
+
+		SceneGraph::SceneGraph(EntityManager& _entityMgr) :
+			entityMgr{ _entityMgr },
 			m_sceneId{},
 			m_rootNode{}
 		{
@@ -204,7 +294,6 @@ namespace griffin {
 
 			m_rootNode.rotationLocal.w = 1.0f;
 			m_rootNode.orientationWorld.w = 1.0f;
-			
 		}
 		
 
@@ -217,8 +306,9 @@ namespace griffin {
 
 		// class SceneManager
 
-		SceneManager::SceneManager() :
-			m_scenes(0, RESERVE_SCENEMANAGER_SCENES)
+		SceneManager::SceneManager(const EntityManagerPtr& _entityMgrPtr) :
+			m_scenes(0, RESERVE_SCENEMANAGER_SCENES),
+			entityMgrPtr(entityMgrPtr)
 		{}
 
 		SceneManager::~SceneManager() {
