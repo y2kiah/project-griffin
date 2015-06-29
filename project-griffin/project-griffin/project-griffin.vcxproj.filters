@@ -238,6 +238,9 @@
     <ClCompile Include="source\scene\impl\Scene.cpp">
       <Filter>scene\impl</Filter>
     </ClCompile>
+    <ClCompile Include="source\entity\impl\EntityManager.cpp">
+      <Filter>entity\impl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\application\main.h">
@@ -714,6 +717,9 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="source\utility\container\intrusive_tree_helper.h">
       <Filter>utility\container</Filter>
+    </ClInclude>
+    <ClInclude Include="source\entity\EntityManager.h">
+      <Filter>entity</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

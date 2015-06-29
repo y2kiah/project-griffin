@@ -18,7 +18,13 @@ namespace griffin {
 		* @class ComponentStoreBase
 		* Exists only to allow storage of base class pointers in homogenous array
 		*/
-		class ComponentStoreBase {};
+		class ComponentStoreBase {
+		public:
+			virtual ~ComponentStoreBase() {}
+
+			virtual void removeComponent(ComponentId outerId) = 0;
+			virtual EntityId getEntityId(ComponentId outerId) = 0;
+		};
 
 		/**
 		* @class ComponentStore

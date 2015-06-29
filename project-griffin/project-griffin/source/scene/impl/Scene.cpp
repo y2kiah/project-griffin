@@ -1,7 +1,11 @@
+/**
+* @file Scene.cpp
+* @author Jeff Kiah
+*/
 #include "../Scene.h"
 #include <SDL_log.h>
-#include <entity/Entity.h>
 #include <utility/memory_reserve.h>
+#include <entity/EntityManager.h>
 
 namespace griffin {
 	namespace scene {
@@ -9,7 +13,7 @@ namespace griffin {
 		// Globals
 
 		weak_ptr<entity::EntityManager> g_entityManager;
-		
+
 		EntityManager& getEntityManager() {
 			auto entityPtr = g_entityManager.lock();
 			if (!entityPtr) { throw std::runtime_error("no entity manager"); }
@@ -116,7 +120,7 @@ namespace griffin {
 			if (parentNode.firstChild != NullId_T) {
 				nodeComponents[parentNode.firstChild].component.prevSibling = nodeId;
 			}
-			
+
 			// make the new node the first child of its parent
 			parentNode.firstChild = nodeId;
 			++parentNode.numChildren;
@@ -125,37 +129,58 @@ namespace griffin {
 		}
 
 
+		bool SceneGraph::removeFromScene(ComponentId sceneNodeId)
+		{
+			assert(sceneNodeId.typeId == SceneNode::componentType && "component is the wrong type");
+			
+			auto& entityMgr = getEntityManager();
+
+			// remove from scene graph here
+
+			bool removed = entityMgr.removeComponentFromEntity(sceneNodeId);
+		}
+
+
 		bool SceneGraph::removeFromScene(EntityId entityId)
 		{
-			//auto& node = m_nodes.getComponent(nodeId);
-			//auto& parentNode = m_nodes.getComponent(node.parent);
+			auto& entityMgr = getEntityManager();
 
-			//// if this was the firstChild, set the new one
-			//if (node.prevSibling == NullId_T) {
-			//	parentNode.firstChild = node.nextSibling;
-			//	m_nodes.getComponent(parentNode.firstChild).prevSibling = NullId_T;
-			//}
-			//// fix the node's sibling linked list
-			//else {
-			//	m_nodes.getComponent(node.prevSibling).nextSibling = node.nextSibling;
-			//}
-			//
-			//--parentNode.numChildren;
+			try {
+				auto& entityComponents = entityMgr.getEntityComponents(entityId);
 
-			// gather the node's child tree ComponentIds breadth-first
-			// this gives us a list of components to remove, plus their parent entityIds
-			/*static vector<ComponentId> removeIds;
-			removeIds.clear();
+				auto& node = nodeComponents.getComponent(nodeId);
+				auto& parentNode = m_nodes.getComponent(node.parent);
 
-			auto gatherId = node.firstChild;
-			while (gatherId != NullId_T) {
-				auto& n = m_nodes[gatherId];
-				n.
-				removeIds.push_back
-			}*/
+				// if this was the firstChild, set the new one
+				if (node.prevSibling == NullId_T) {
+					parentNode.firstChild = node.nextSibling;
+					m_nodes.getComponent(parentNode.firstChild).prevSibling = NullId_T;
+				}
+				// fix the node's sibling linked list
+				else {
+					m_nodes.getComponent(node.prevSibling).nextSibling = node.nextSibling;
+				}
 			
-			// remove this node
-			//m_nodes.removeComponent(nodeId);
+				--parentNode.numChildren;
+
+				// gather the node's child tree ComponentIds breadth-first
+				// this gives us a list of components to remove, plus their parent entityIds
+				/*static vector<ComponentId> removeIds;
+				removeIds.clear();
+
+				auto gatherId = node.firstChild;
+				while (gatherId != NullId_T) {
+					auto& n = m_nodes[gatherId];
+					n.
+					removeIds.push_back
+				}*/
+			
+				// remove this node
+				m_nodes.removeComponent(nodeId);
+			}
+			catch (std::runtime_error ex) {
+				return false;
+			}
 
 			return true;
 		}

@@ -8,7 +8,7 @@
 #include <core/InputSystem.h>
 #include <resource/ResourceLoader.h>
 #include <script/ScriptManager_LuaJIT.h>
-#include <entity/Entity.h>
+#include <entity/EntityManager.h>
 #include <render/Render.h>
 #include <scene/Scene.h>
 #include <tools/GriffinTools.h>

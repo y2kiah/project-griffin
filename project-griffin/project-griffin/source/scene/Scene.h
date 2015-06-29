@@ -54,31 +54,10 @@ namespace griffin {
 			(SceneId,		scene,				"id of the scene this belongs to")
 		)
 
-		// TODO: this should be an entity component
-		// TODO: optimize memory layout for cache
-		/*struct SceneNode {
-			uint8_t		positionDirty = 0;
-			uint8_t		orientationDirty = 0;
-
-			// transform vars
-			glm::dvec3	translationLocal;	//<! translation relative to parent
-			glm::quat	orientationLocal;	//<! local orientation quaternion relative to parent
-			
-			glm::dvec3	positionWorld;		//<! double-precision position in world space
-			glm::quat	orientationWorld;	//<! orientation in world space
-			
-			// support scale??
-
-			// intrusive linked list vars
-			uint32_t	numChildren = 0;
-			ComponentId	firstChild = NullId_T;	//<! index into array of nodes
-			ComponentId	nextSibling = NullId_T;
-			ComponentId	prevSibling = NullId_T;
-			ComponentId	parent = NullId_T;
-		};*/
-
-
-		// TODO: this should be a system using entity components
+		
+		/**
+		*
+		*/
 		class SceneGraph {
 		public:
 			explicit SceneGraph();
@@ -139,6 +118,9 @@ namespace griffin {
 		};
 
 
+		/**
+		*
+		*/
 		struct Scene {
 			SceneGraph	sceneGraph;
 			// contains Cameras???
@@ -147,6 +129,9 @@ namespace griffin {
 		};
 
 
+		/**
+		*
+		*/
 		class SceneManager {
 		public:
 			explicit SceneManager();
