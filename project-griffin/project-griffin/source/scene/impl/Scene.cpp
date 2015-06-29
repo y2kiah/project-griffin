@@ -29,17 +29,17 @@ namespace griffin {
 			// start traversal at the root node
 			m_bfsQueue.empty();
 			m_bfsQueue.push({
-				nodeComponents.getInnerIndex(m_rootNode),
+				&m_rootNode,
 				0, 0,
-				glm::dvec3{ 0.0, 0.0, 0.0 },
-				glm::angleAxis(0.0f, glm::vec3{ 0.0f, 1.0f, 0.0f })
+				{ 0.0, 0.0, 0.0 },
+				{ 0.0f, 0.0f, 0.0f, 1.0f }
 			});
 
 			// traverse the scene graph and calculate new world positions if needed
 			while (!m_bfsQueue.empty()) {
 				const auto& bfs = m_bfsQueue.front();
 
-				SceneNode& node = nodeItems[bfs.nodeIndex].component;
+				SceneNode& node = *bfs.sceneNode;
 
 				// recalc world position if this, or any ancestors have moved since last frame
 				bool positionDirty = node.positionDirty || bfs.ancestorPositionDirty;
@@ -63,19 +63,19 @@ namespace griffin {
 
 					// add all children to the traversal queue
 					ComponentId childId = node.firstChild;
-					do {
-						auto childInnerIndex = nodeComponents.getInnerIndex(childId);
-						auto& child = nodeItems[childInnerIndex];
+					for (uint32_t c = 0; c < node.numChildren; ++c) {
+						assert(childId != NullId_T && "expected scene node is null, broken linked list or numChildren out of sync");
+						auto& child = nodeComponents[childId].component;
 
 						m_bfsQueue.push({
-							childInnerIndex,
+							&child,
 							positionDirty, orientationDirty,
 							node.positionWorld,
 							node.orientationWorld
 						});
 
-						childId = child.component.nextSibling;
-					} while (childId != NullId_T);
+						childId = child.nextSibling;
+					}
 				}
 
 				m_bfsQueue.pop();
@@ -88,13 +88,10 @@ namespace griffin {
 		{
 			auto& entityMgr = getEntityManager();
 			// get the SceneNode components
-			auto& nodeItems = entityMgr.getComponentStore<SceneNode>().getComponents().getItems();
+			auto& nodeComponents = entityMgr.getComponentStore<SceneNode>().getComponents();
 
 			// get the parent node where we're inserting this component
-			if (parentNodeId == NullId_T) {
-				parentNodeId = m_rootNode;
-			}
-			auto& parentNode = nodeItems[parentNodeId].component;
+			auto& parentNode = parentNodeId == NullId_T ? m_rootNode : nodeComponents[parentNodeId].component;
 
 			// add a SceneNode component to the entity
 			SceneNode node = {
@@ -117,7 +114,7 @@ namespace griffin {
 			// push new node to the front of parent't list
 			// set the prevSibling of the former first child
 			if (parentNode.firstChild != NullId_T) {
-				nodeItems[parentNode.firstChild].component.prevSibling = nodeId;
+				nodeComponents[parentNode.firstChild].component.prevSibling = nodeId;
 			}
 			
 			// make the new node the first child of its parent
@@ -175,20 +172,14 @@ namespace griffin {
 
 
 		SceneGraph::SceneGraph() :
-			m_sceneId{}
+			m_sceneId{},
+			m_rootNode{}
 		{
 			m_bfsQueue.reserve(RESERVE_SCENEGRAPH_TRAVERSAL_QUEUE);
 
-			// add the root scene node
-			auto& entityMgr = getEntityManager();
+			m_rootNode.rotationLocal.w = 1.0f;
+			m_rootNode.orientationWorld.w = 1.0f;
 			
-			// TEMP, should be able to create entity without mask
-			auto entityId = entityMgr.createEntity();
-
-			m_rootNode = addToScene(entityId,
-									glm::dvec3{ 0.0, 0.0, 0.0 },
-									glm::angleAxis(0.0f, glm::vec3{ 0.0f, 1.0f, 0.0f }),
-									NullId_T);
 		}
 		
 

@@ -125,7 +125,7 @@ namespace griffin {
 
 		private:
 			struct BFSQueueItem {
-				uint32_t	nodeIndex;
+				SceneNode*	sceneNode;
 				uint8_t		ancestorPositionDirty;
 				uint8_t		ancestorOrientationDirty;
 				glm::dvec3	translationToWorld;
@@ -133,7 +133,7 @@ namespace griffin {
 			};
 
 			SceneId						m_sceneId;	//<! id of scene this graph belongs to
-			ComponentId					m_rootNode;	//<! root of the scene graph, always start traversal from here
+			SceneNode					m_rootNode;	//<! root of the scene graph, always start traversal from here
 
 			vector_queue<BFSQueueItem>	m_bfsQueue;	//<! queue for breadth-first-search traversal of scene graph
 		};
@@ -149,8 +149,6 @@ namespace griffin {
 
 		class SceneManager {
 		public:
-			//static S
-
 			explicit SceneManager();
 			~SceneManager();
 

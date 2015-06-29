@@ -115,7 +115,7 @@ namespace griffin {
 		public:
 			// Typedefs
 			typedef griffin::handle_map<Entity> EntityMap;
-			typedef boost::container::flat_multimap<ComponentMask, EntityId> ComponentMaskMap;
+			typedef boost::container::flat_multimap<uint64_t, EntityId> ComponentMaskMap;
 			typedef std::array<std::unique_ptr<ComponentStoreBase>, MAX_COMPONENTS> ComponentStoreMap;
 
 			// Functions
@@ -155,12 +155,18 @@ namespace griffin {
 
 				if (newMask != previousMask) {
 					// fix up the mask index with the new mask, remove the old entry with old mask
-					auto rng = m_componentIndex.equal_range(previousMask);
-					std::remove_if(rng.first, rng.second, [](ComponentMaskMap::value_type& val){
+					auto rng = m_componentIndex.equal_range(previousMask.to_ullong());
+					std::remove_if(rng.first, rng.second, [entityId](ComponentMaskMap::value_type& val){
 						return (val.second == entityId);
 					});
+					
 					// insert the new entry with new mask
-					m_componentIndex.insert({ newMask, entityId });
+					m_componentIndex.insert(ComponentMaskMap::value_type{ newMask.to_ullong(), entityId });
+
+					// we can convert the bitset<64> to a uint64_t and sort that, but if more
+					// components are needed later will need a bigger mask key as well
+					static_assert(sizeof(ComponentMask) <= sizeof(uint64_t),
+								  "ComponentMask contains more than 64 bits, need a new sort key for the ComponentMask");
 				}
 
 				return componentId;
@@ -175,7 +181,7 @@ namespace griffin {
 			*/
 			template <typename T>
 			ComponentStore<T>& getComponentStore() {
-				return *m_componentStores[T::componentType];
+				return *reinterpret_cast<ComponentStore<T>*>(m_componentStores[T::componentType].get());
 			}
 
 			/**

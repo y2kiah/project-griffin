@@ -146,8 +146,8 @@ namespace griffin {
 
 	/**
 	* Force a reset of the offset to 0, moving queued values from the end of the vector to the
-	* front. This function can be used to enforce a maximum size of the queue, but should only be
-	* used occasionally, as it incurs a potentially large memory move.
+	* front. This function can be used to enforce a maximum growth of the queue, but should only be
+	* used occasionally since it incurs a potentially large memory move.
 	*/
 	template <typename T>
 	inline void vector_queue<T>::reset_offset()
