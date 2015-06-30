@@ -10,6 +10,17 @@ using namespace griffin::scene;
 
 // class SceneManager
 
+SceneId SceneManager::createScene(const std::string& name)
+{
+	auto sceneId = m_scenes.insert({
+		SceneGraph(*entityMgrPtr),	// sceneGraph
+		EntityManager(),			// entityManager
+		name						// name
+	});
+	m_scenes[sceneId].sceneGraph.setSceneId(sceneId);
+	return sceneId;
+}
+
 SceneManager::SceneManager(const EntityManagerPtr& _entityMgrPtr) :
 	m_scenes(0, RESERVE_SCENEMANAGER_SCENES),
 	entityMgrPtr(entityMgrPtr)

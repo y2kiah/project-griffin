@@ -24,13 +24,11 @@ namespace griffin {
 		*
 		*/
 		struct Scene {
-			std::unique_ptr<SceneGraph>		sceneGraph;
-			std::unique_ptr<EntityManager>	entityManager;
+			SceneGraph		sceneGraph;
+			EntityManager	entityManager;
 			// contains Cameras???
 			// contains layer id for RenderEntry???
 			std::string	name;
-
-			explicit Scene(Scene&& s) {}
 		};
 
 
@@ -46,15 +44,7 @@ namespace griffin {
 
 			Scene& getScene(SceneId sceneId) { return m_scenes[sceneId]; }
 			
-			SceneId createScene(const std::string& name) {
-				auto sceneId = m_scenes.insert({
-					std::make_unique<SceneGraph>(*entityMgrPtr),	// sceneGraph
-					std::make_unique<EntityManager>(),				// entityManager
-					name											// name
-				});
-				m_scenes[sceneId].sceneGraph->setSceneId(sceneId);
-				return sceneId;
-			}
+			SceneId createScene(const std::string& name);
 
 			// Public Variables
 

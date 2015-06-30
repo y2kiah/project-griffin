@@ -23,7 +23,7 @@ namespace griffin {
 			// Typedefs
 			typedef griffin::handle_map<Entity> EntityMap;
 			typedef boost::container::flat_multimap<uint64_t, EntityId> ComponentMaskMap;
-			typedef std::array<std::unique_ptr<ComponentStoreBase>, MAX_COMPONENTS> ComponentStoreMap;
+			typedef std::array<std::shared_ptr<ComponentStoreBase>, MAX_COMPONENTS> ComponentStoreMap;
 
 			// Functions
 
@@ -31,7 +31,6 @@ namespace griffin {
 				m_entityStore(0, RESERVE_ENTITYMANAGER_ENTITIES),
 				m_componentStores{} // zero-init fills with nullptr
 			{}
-
 
 			// Entity Functions
 
