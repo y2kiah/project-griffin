@@ -143,7 +143,7 @@ bool SceneGraph::removeFromScene(SceneNodeId sceneNodeId, bool cascade, std::vec
 	if (node.numChildren > 0) {
 		// remove all ancestors
 		if (cascade) {
-			// TODO
+			//collectAncestors( // TODO
 		}
 		// don't cascade the delete, give the node's children to its parent
 		else {
@@ -255,7 +255,7 @@ bool SceneGraph::moveAllSiblings(SceneNodeId siblingToMove, SceneNodeId moveToPa
 }
 
 
-SceneNodeId SceneGraph::getLastImmediateChild(SceneNodeId sceneNodeId)
+SceneNodeId SceneGraph::getLastImmediateChild(SceneNodeId sceneNodeId) const
 {
 	auto& nodeComponents = entityMgr.getComponentStore<SceneNode>().getComponents();
 
@@ -276,6 +276,32 @@ SceneNodeId SceneGraph::getLastImmediateChild(SceneNodeId sceneNodeId)
 	}
 
 	return childId;
+}
+
+
+void SceneGraph::collectAncestors(SceneNodeId sceneNodeId, std::vector<SceneNodeId>& outAncestors) const
+{
+	auto& nodeComponents = entityMgr.getComponentStore<SceneNode>().getComponents();
+
+	vector_queue<SceneNodeId> bfsQueue;
+	auto& node = nodeComponents[sceneNodeId].component;
+	
+	bfsQueue.push(sceneNodeId);
+
+	while (!bfsQueue.empty()) {
+		SceneNodeId thisId = bfsQueue.front();
+
+		auto& node = nodeComponents[thisId].component;
+		auto childId = node.firstChild;
+		for (uint32_t c = 0; c < node.numChildren; ++c) {
+			auto& child = nodeComponents[childId].component;
+			outAncestors.push_back(childId);
+			bfsQueue.push(childId);
+			childId = child.nextSibling;
+		}
+
+		bfsQueue.pop();
+	}
 }
 
 

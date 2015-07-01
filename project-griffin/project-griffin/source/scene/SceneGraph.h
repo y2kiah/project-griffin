@@ -135,7 +135,12 @@ namespace griffin {
 			* @param sceneNodeId	the parent node of the last child to look for
 			* @return	scene node id of the last child, or NullId_T if there are no children
 			*/
-			SceneNodeId getLastImmediateChild(SceneNodeId sceneNodeId);
+			SceneNodeId getLastImmediateChild(SceneNodeId sceneNodeId) const;
+
+			/**
+			*
+			*/
+			void collectAncestors(SceneNodeId sceneNodeId, std::vector<SceneNodeId>& outAncestors) const;
 
 			/**
 			* Sets the sceneId of the scene owning this scene graph, stored in SceneNodes
