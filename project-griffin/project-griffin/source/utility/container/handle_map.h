@@ -41,6 +41,7 @@ namespace griffin {
 	typedef std::vector<Id_T> IdSet_T;
 	#define NullId_T	Id_T{}
 
+
 	/**
 	* @class handle_map
 	*	Stores objects using a dense inner array and sparse outer array scheme for good cache coherence

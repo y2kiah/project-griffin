@@ -117,7 +117,7 @@ SceneNodeId SceneGraph::addToScene(EntityId entityId, const glm::dvec3& translat
 bool SceneGraph::removeFromScene(SceneNodeId sceneNodeId, bool cascade, std::vector<EntityId>* removedEntities)
 {
 	assert(sceneNodeId.typeId == SceneNode::componentType && "component is the wrong type");
-			
+	
 	auto& nodeComponents = entityMgr.getComponentStore<SceneNode>().getComponents();
 
 	if (!nodeComponents.isValid(sceneNodeId)) {
@@ -143,7 +143,20 @@ bool SceneGraph::removeFromScene(SceneNodeId sceneNodeId, bool cascade, std::vec
 	if (node.numChildren > 0) {
 		// remove all ancestors
 		if (cascade) {
-			//collectAncestors( // TODO
+			m_handleBuffer.clear();
+			collectAncestors(sceneNodeId, m_handleBuffer);
+			if (removedEntities != nullptr) {
+				auto& rmvEnt = *removedEntities;
+				for (auto ancestorSceneNodeId : m_handleBuffer) {
+					rmvEnt.push_back(nodeComponents[ancestorSceneNodeId].entityId);
+					removeFromScene(ancestorSceneNodeId, false, nullptr);
+				}
+			}
+			else {
+				for (auto ancestorSceneNodeId : m_handleBuffer) {
+					removeFromScene(ancestorSceneNodeId, false, nullptr);
+				}
+			}
 		}
 		// don't cascade the delete, give the node's children to its parent
 		else {

@@ -29,6 +29,12 @@ namespace griffin {
 			// contains Cameras???
 			// contains layer id for RenderEntry???
 			std::string	name;
+
+			explicit Scene(const std::string& _name) :
+				entityManager{},
+				sceneGraph(entityManager),
+				name(_name)
+			{}
 		};
 
 

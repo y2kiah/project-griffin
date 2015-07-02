@@ -15,10 +15,10 @@ namespace griffin {
 
 	// struct Id_T comparison free functions
 
-	inline bool operator==(Id_T a, Id_T b) { return (a.value == b.value); }
-	inline bool operator!=(Id_T a, Id_T b) { return (a.value != b.value); }
-	inline bool operator< (Id_T a, Id_T b) { return (a.value < b.value); }
-	inline bool operator> (Id_T a, Id_T b) { return (a.value > b.value); }
+	inline bool operator==(const Id_T& a, const Id_T& b) { return (a.value == b.value); }
+	inline bool operator!=(const Id_T& a, const Id_T& b) { return (a.value != b.value); }
+	inline bool operator< (const Id_T& a, const Id_T& b) { return (a.value < b.value); }
+	inline bool operator> (const Id_T& a, const Id_T& b) { return (a.value > b.value); }
 
 	// class handle_map 
 
