@@ -20,7 +20,7 @@ namespace griffin {
 		* Outputs type and name of the field
 		*/
 		#define EACH_FIELD(r, data, i, tuple) \
-			PROP(tuple,0) PROP(tuple,1);
+			PROP(tuple,0) PROP(tuple,1)PROP(tuple,2);
 
 		
 		/**
@@ -45,8 +45,11 @@ namespace griffin {
 			struct name { \
 				static const ComponentType componentType = ComponentType::name##_T; \
 				FOR_EACH_I(EACH_FIELD, , __VA_ARGS__) \
-				REFLECT(name, __VA_ARGS__) \
-			};
+				\
+				struct Reflection; \
+			}; \
+			\
+			REFLECT(name::Reflection, name, __VA_ARGS__)
 
 		/**
 		* Simply declares the component struct

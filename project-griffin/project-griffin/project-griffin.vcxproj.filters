@@ -730,6 +730,9 @@
     <ClInclude Include="source\entity\EntityTypedefs.h">
       <Filter>entity</Filter>
     </ClInclude>
+    <ClInclude Include="source\entity\ComponentStoreSerialization.h">
+      <Filter>entity</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="vendor\glm\glm\gtc\constants.inl">

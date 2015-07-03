@@ -55,6 +55,7 @@ namespace griffin {
 	template <typename T>
 	class handle_map {
 	public:
+
 		/**
 		* @struct Meta_T
 		*/

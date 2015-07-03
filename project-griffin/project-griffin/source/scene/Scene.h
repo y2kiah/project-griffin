@@ -28,7 +28,7 @@ namespace griffin {
 			EntityManager	entityManager;
 			// contains Cameras???
 			// contains layer id for RenderEntry???
-			std::string	name;
+			std::string		name;
 
 			explicit Scene(const std::string& _name) :
 				entityManager{},
@@ -45,16 +45,12 @@ namespace griffin {
 		public:
 			// Public Functions
 
-			explicit SceneManager(const EntityManagerPtr& _entityMgrPtr);
+			explicit SceneManager();
 			~SceneManager();
 
 			Scene& getScene(SceneId sceneId) { return m_scenes[sceneId]; }
 			
 			SceneId createScene(const std::string& name);
-
-			// Public Variables
-
-			EntityManagerPtr entityMgrPtr;
 
 		private:
 			// Private Variables

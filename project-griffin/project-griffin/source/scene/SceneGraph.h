@@ -30,27 +30,29 @@ namespace griffin {
 		// Structs
 
 		/**
-		*
+		* SceneNode tracks the transform relative to a parent node and contains ids forming an
+		* intrusive hierarchical tree. The SceneGraph is traversed starting at the root to get the
+		* worldspace position of each node.
 		*/
 		COMPONENT(SceneNode,
-			(uint8_t,		positionDirty,		"position needs recalc"),
-			(uint8_t,		orientationDirty,	"orientation needs recalc"),
+			(uint8_t,		positionDirty,,		"position needs recalc"),
+			(uint8_t,		orientationDirty,,	"orientation needs recalc"),
 
 			// transform vars
-			(glm::dvec3,	translationLocal,	"translation relative to parent"),
-			(glm::quat,		rotationLocal,		"local rotation quaternion relative to parent"),
+			(glm::dvec3,	translationLocal,,	"translation relative to parent"),
+			(glm::quat,		rotationLocal,,		"local rotation quaternion relative to parent"),
 
-			(glm::dvec3,	positionWorld,		"double-precision position in world space"),
-			(glm::quat,		orientationWorld,	"orientation in world space"),
+			(glm::dvec3,	positionWorld,,		"double-precision position in world space"),
+			(glm::quat,		orientationWorld,,	"orientation in world space"),
 
 			// support scale??
 
 			// intrusive tree vars
-			(uint32_t,		numChildren,		"number of children contained"),
-			(SceneNodeId,	firstChild,			"first child node index"),
-			(SceneNodeId,	nextSibling,		"next sibling node index"),
-			(SceneNodeId,	prevSibling,		"previous sibling node index"),
-			(SceneNodeId,	parent,				"parent node index")
+			(uint32_t,		numChildren,,		"number of children contained"),
+			(SceneNodeId,	firstChild,,		"first child node index"),
+			(SceneNodeId,	nextSibling,,		"next sibling node index"),
+			(SceneNodeId,	prevSibling,,		"previous sibling node index"),
+			(SceneNodeId,	parent,,			"parent node index")
 		)
 
 		

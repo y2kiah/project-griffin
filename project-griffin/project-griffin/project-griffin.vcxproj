@@ -74,6 +74,7 @@
     <ClInclude Include="source\entity\ComponentFactory.h" />
     <ClInclude Include="source\entity\components.h" />
     <ClInclude Include="source\entity\ComponentStore.h" />
+    <ClInclude Include="source\entity\ComponentStoreSerialization.h" />
     <ClInclude Include="source\entity\Entity.h" />
     <ClInclude Include="source\entity\EntityManager.h" />
     <ClInclude Include="source\entity\EntityTypedefs.h" />

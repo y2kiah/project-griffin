@@ -28,33 +28,34 @@
 struct PropertyMetaData {
 	std::string name;			//<! variable's name
 	std::string description;	//<! description, useful for tools
-	size_t size;				//<! size of the variable
-
+	size_t size;				//<! total size of the variable
+	size_t elementSize;			//<! size of one element of an array (same as size if not array)
+	size_t numElements;			//<! number of elements in an array (1 if not array)
+	int offset;					//<! pointer to data member reinterpreted as an int
 	bool isArray;				//<! http://en.cppreference.com/w/cpp/types/is_array
 	bool isTriviallyCopyable;	//<! http://en.cppreference.com/w/cpp/types/is_trivially_copyable
-
 };
 
-#define NUM_PROPERTY_FIELDS 3
+#define NUM_PROPERTY_FIELDS 4
 #define PROP(tuple, i) \
 	BOOST_PP_TUPLE_ELEM(NUM_PROPERTY_FIELDS, i, tuple)
 
-#define EACH_TYPE(r, postfix, i, elem) \
-	(PROP(elem, 0)##postfix)
-
 #define EACH_ENUM(r, data, i, elem) \
-	(PROP(elem, 1))
+	(PROP(elem,1))
 
 #define EACH_NAME(r, prefix, i, elem) \
-	(prefix##PROP(elem, 1))
+	(prefix##PROP(elem,1))
 
-#define EACH_INIT(r, data, i, elem) \
+#define EACH_INIT(r, ClassType, i, elem) \
 	PropertyMetaData{ \
 		std::string{ BOOST_PP_STRINGIZE(PROP(elem, 1)) },	/* name */ \
-		std::string{ PROP(elem, 2) },						/* description */ \
-		sizeof(PROP(elem, 0)),								/* size */ \
-		std::is_array<PROP(elem, 0)>::value,				/* isArray */ \
-		std::is_trivially_copyable<PROP(elem, 0)>::value	/* isTriviallyCopyable */ \
+		std::string{ PROP(elem,3) },						/* description */ \
+		sizeof(PROP(elem,0)PROP(elem,2)),					/* size */ \
+		sizeof(PROP(elem,0)),								/* elementSize */ \
+		sizeof(PROP(elem,0)PROP(elem,2)) / sizeof(PROP(elem,0)),	/* numElements */ \
+		offsetof(ClassType,PROP(elem,1)),					/* offset */ \
+		std::is_array<PROP(elem,0)PROP(elem,2)>::value,		/* isArray */ \
+		std::is_trivially_copyable<PROP(elem,0)>::value		/* isTriviallyCopyable */ \
 	},
 
 #define FOR_EACH_I(macro, data, ...) \
@@ -67,32 +68,30 @@ struct PropertyMetaData {
 	BOOST_PP_TUPLE_REM_CTOR(SEQ_SIZE(__VA_ARGS__), BOOST_PP_SEQ_TO_TUPLE(FOR_EACH_I(macro, data, __VA_ARGS__)))
 
 
-#define REFLECT(ClassType, ...) \
-	struct Reflection { \
+#define REFLECT(ReflectionClassName, ClassType, ...) \
+	struct ReflectionClassName { \
 		MakeEnum(Field, uint8_t, \
 			FOR_EACH_I(EACH_ENUM, , __VA_ARGS__), \
 		) \
 		typedef std::array<PropertyMetaData, SEQ_SIZE(__VA_ARGS__)> PropertiesArray; \
-		typedef std::tuple<CSV(EACH_TYPE, , __VA_ARGS__)> ValuesTuple; \
-		typedef std::tuple<CSV(EACH_TYPE,&, __VA_ARGS__)> RefValuesTuple; \
 		\
 		inline static const std::string& getClassType() { \
 			static std::string sClassType = #ClassType; \
 			return sClassType; \
 		} \
 		\
-		static PropertiesArray& getProperties() { \
+		static const PropertiesArray& getProperties() { \
 			static PropertiesArray sPropertyMetaData = { \
-				FOR_EACH_I(EACH_INIT, , __VA_ARGS__) \
+				FOR_EACH_I(EACH_INIT, ClassType, __VA_ARGS__) \
 			}; \
 			return sPropertyMetaData; \
 		} \
 		\
-		inline static ClassType::Reflection::ValuesTuple copyAllValues(const ClassType &inst) { \
+		inline static auto copyAllValues(ClassType &inst) -> decltype(std::make_tuple(CSV(EACH_NAME,inst., __VA_ARGS__))) { \
 			return std::make_tuple(CSV(EACH_NAME, inst., __VA_ARGS__)); \
 		} \
 		\
-		inline static ClassType::Reflection::RefValuesTuple getAllValues(ClassType &inst) { \
+		inline static auto getAllValues(ClassType &inst) -> decltype(std::tie(CSV(EACH_NAME,inst., __VA_ARGS__))) { \
 			return std::tie(CSV(EACH_NAME, inst., __VA_ARGS__)); \
 		} \
 		\

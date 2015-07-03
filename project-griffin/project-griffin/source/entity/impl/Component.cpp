@@ -1,3 +1,4 @@
+#include "../ComponentStoreSerialization.h"
 #include "../components.h"
 #include "../ComponentStore.h"
 #include <vector>
@@ -113,12 +114,10 @@ void griffin::entity::test_reflection() {
 		SDL_Log("%s : %s\n", f.name.c_str(), f.description.c_str());
 	}
 	
-	auto& props = Person::Reflection::getProperties();
-	
-	int a = std::get<Person::Reflection::age>(vals);
+	int   a = std::get<Person::Reflection::age>(vals);
 	float b = std::get<Person::Reflection::speed>(vals);
-	auto& c = std::get<Person::Reflection::name>(vals);
-	SDL_Log("person values: %d, %f, %s\n", a, b, c.c_str());
+	char* c = std::get<Person::Reflection::name>(vals);
+	SDL_Log("person values: %d, %f, %s\n", a, b, c);
 	SDL_Log("age description: %s\n", personProps[Person::Reflection::FieldToEnum("age")].description.c_str());
 	std::get<Person::Reflection::age>(vals) = 30;
 	std::get<Person::Reflection::speed>(vals) = 4.0f;
@@ -154,11 +153,6 @@ void griffin::entity::test_reflection() {
 	oss << vals;
 	SDL_Log("\n\n%s\n\n", oss.str().c_str());
 
-//	std::ofstream ofs;
-//	ofs.open("test.txt", std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
-//	ofs.write(reinterpret_cast<const char*>(&s), sizeof(s));
-//	ofs.close();
-
 	// testing ComponentId comparisons
 	// we want the ComponentType portion to sort at a higher priority than the index or generation,
 	vector<ComponentId> sortIds = {
@@ -174,4 +168,22 @@ void griffin::entity::test_reflection() {
 	oss.clear();
 	oss << sortIds;
 	SDL_Log(oss.str().c_str());
+
+	// test ComponentStore serialization
+	std::ofstream ofs;
+	ofs.open("component_serialize.hex", std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
+	timer.start();
+	entity::serialize(ofs, personStore);
+	timer.stop();
+	SDL_Log("**********\nsave components to file\ntime = %f ms\ncounts = %lld\n\n", timer.millisPassed(), timer.countsPassed());
+	ofs.close();
+
+	/*std::ifstream ifs;
+	ifs.open("component_serialize.hex", std::ifstream::in | std::ofstream::binary);
+	timer.start();
+	entity::serialize(ifs, personStore);
+	timer.stop();
+	SDL_Log("**********\nsave components to file\ntime = %f ms\ncounts = %lld\n\n", timer.millisPassed(), timer.countsPassed());
+	ifs.close();*/
+
 }

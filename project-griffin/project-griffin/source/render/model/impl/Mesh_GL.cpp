@@ -4,8 +4,8 @@
 #include <utility>
 #include <cassert>
 #include <render/ShaderProgramLayouts_GL.h>
-//#include "utility/container/vector_queue.h"
-#include <queue>
+#include "utility/container/vector_queue.h"
+//#include <queue>
 
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -78,9 +78,9 @@ namespace griffin {
 				uint32_t  nodeIndex;
 				glm::mat4 toWorld;
 			};
-			// TODO: convert to vector_queue
-			std::queue<BFSQueueItem> bfsQueue; // lot of memory being created and destroyed every frame, should all be pre-calculated and stored for non-animated meshes?
-			//bfsQueue.reserve(m_meshScene.numNodes);
+			// TODO: lot of memory being created and destroyed every frame, should all be pre-calculated and stored for non-animated meshes?
+			vector_queue<BFSQueueItem> bfsQueue;
+			bfsQueue.reserve(m_meshScene.numNodes);
 
 			bfsQueue.push({ 0, modelToWorld }); // push root node to start traversal
 

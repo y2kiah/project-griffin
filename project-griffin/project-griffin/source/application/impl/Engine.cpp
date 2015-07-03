@@ -110,26 +110,12 @@ namespace griffin {
 		}
 
 		/**
-		* Build the entity-component system
-		*/
-		{
-			using namespace entity;
-
-			auto entityPtr = make_shared<EntityManager>();
-
-			// add Lua APIs
-
-
-			engine.entityManager = entityPtr;
-		}
-
-		/**
 		* Build the scene manager
 		*/
 		{
 			using namespace scene;
 
-			auto scenePtr = make_shared<SceneManager>(engine.entityManager);
+			auto scenePtr = make_shared<SceneManager>();
 
 			engine.sceneManager = scenePtr;
 		}

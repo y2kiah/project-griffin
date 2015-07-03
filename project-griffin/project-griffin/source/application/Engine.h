@@ -8,7 +8,6 @@
 #include <core/InputSystem.h>
 #include <resource/ResourceLoader.h>
 #include <script/ScriptManager_LuaJIT.h>
-#include <entity/EntityManager.h>
 #include <render/Render.h>
 #include <scene/Scene.h>
 #include <tools/GriffinTools.h>
@@ -20,7 +19,6 @@ namespace griffin {
 		script::ScriptManagerPtr		scriptManager	= nullptr;
 		core::InputSystemPtr			inputSystem		= nullptr;
 		resource::ResourceLoaderPtr		resourceLoader	= nullptr;
-		entity::EntityManagerPtr		entityManager	= nullptr;
 		render::RenderSystemPtr			renderSystem	= nullptr;
 		scene::SceneManagerPtr			sceneManager	= nullptr;
 

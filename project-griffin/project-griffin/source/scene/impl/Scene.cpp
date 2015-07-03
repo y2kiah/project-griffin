@@ -17,9 +17,8 @@ SceneId SceneManager::createScene(const std::string& name)
 	return sceneId;
 }
 
-SceneManager::SceneManager(const EntityManagerPtr& _entityMgrPtr) :
-	m_scenes(0, RESERVE_SCENEMANAGER_SCENES),
-	entityMgrPtr(entityMgrPtr)
+SceneManager::SceneManager() :
+	m_scenes(0, RESERVE_SCENEMANAGER_SCENES)
 {}
 
 SceneManager::~SceneManager() {
