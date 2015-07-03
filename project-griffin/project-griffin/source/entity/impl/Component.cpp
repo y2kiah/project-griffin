@@ -172,18 +172,22 @@ void griffin::entity::test_reflection() {
 	// test ComponentStore serialization
 	std::ofstream ofs;
 	ofs.open("component_serialize.hex", std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
+	ofs.exceptions(std::ofstream::failbit | std::ofstream::badbit);
 	timer.start();
-	entity::serialize(ofs, personStore);
+	serialize(ofs, personStore);
 	timer.stop();
-	SDL_Log("**********\nsave components to file\ntime = %f ms\ncounts = %lld\n\n", timer.millisPassed(), timer.countsPassed());
+	SDL_Log("**********\nsave components to file\ntime = %f ms\ncounts = %lld\n", timer.millisPassed(), timer.countsPassed());
 	ofs.close();
+	SDL_Log("personStore saved:\n%s\n\n", personStore.to_string().c_str());
 
-	/*std::ifstream ifs;
-	ifs.open("component_serialize.hex", std::ifstream::in | std::ofstream::binary);
+	ComponentStore<Person> personStoreReadTest(numTestComponents);
+	std::ifstream ifs;
+	ifs.open("component_serialize.hex", std::ifstream::in | std::ifstream::binary);
+	ifs.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 	timer.start();
-	entity::serialize(ifs, personStore);
+	deserialize(ifs, personStoreReadTest);
 	timer.stop();
-	SDL_Log("**********\nsave components to file\ntime = %f ms\ncounts = %lld\n\n", timer.millisPassed(), timer.countsPassed());
-	ifs.close();*/
-
+	SDL_Log("**********\nread components from file\ntime = %f ms\ncounts = %lld\n", timer.millisPassed(), timer.countsPassed());
+	ifs.close();
+	SDL_Log("personStore read:\n%s\n\n", personStoreReadTest.to_string().c_str());
 }

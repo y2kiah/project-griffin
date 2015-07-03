@@ -29,7 +29,7 @@ namespace griffin {
 		* is the reflection macro that adds a static Reflection class containing lots of goodies.
 		* Component declaration format:
 		*	COMPONENT(component_name,
-				(type, name, description),
+				(type, name, postfix, description),
 				...
 			)
 		*	where the enum must match the type, used for serialization, and the description is just
@@ -37,8 +37,9 @@ namespace griffin {
 		*	
 		* Example component declaration:
 		*	COMPONENT(Transform,
-		*		(glm::dvec3,	position,		"3D position coordinate"),
-		*		(glm::quat,		orientation,	"Orientation quaternion")
+		*		(glm::dvec3,	position,,		"3D position coordinate"),
+		*		(glm::quat,		orientation,,	"Orientation quaternion"),
+		*		(char,			name,[32],		"name of the transform node")
 		*	)
 		*/
 		#define COMPONENT(name, ...) \

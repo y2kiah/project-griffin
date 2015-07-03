@@ -55,6 +55,8 @@ namespace griffin {
 	template <typename T>
 	class handle_map {
 	public:
+		static void serialize(std::ostream&, const handle_map<T>&);
+		static void deserialize(std::istream&, handle_map<T>&);
 
 		/**
 		* @struct Meta_T
