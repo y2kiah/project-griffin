@@ -1,0 +1,9 @@
+[submodule "project-griffin/project-griffin/vendor/glm"]
+	path = project-griffin/project-griffin/vendor/glm
+	url = https://github.com/y2kiah/glm.git
+[submodule "project-griffin/project-griffin/vendor/cgilua"]
+	path = project-griffin/project-griffin/vendor/cgilua
+	url = https://github.com/keplerproject/cgilua.git
+[submodule "project-griffin/project-griffin/vendor/orbit"]
+	path = project-griffin/project-griffin/vendor/orbit
+	url = https://github.com/keplerproject/orbit.git
