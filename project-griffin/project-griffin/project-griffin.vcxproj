@@ -463,7 +463,7 @@
     <LibraryPath>$(ProjectDir)\vendor\SDL2\lib\x64\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir)\source\;$(ProjectDir)\vendor\glew-1.12.0\include\;$(ProjectDir)\vendor\SDL2-2.0.3\include\;$(ProjectDir)\vendor\soil\include\;$(ProjectDir)\vendor\glm\;$(ProjectDir)\vendor\boost_1_57_0\;$(ProjectDir)\vendor\assimp\include\;$(ProjectDir)\vendor\luajit-2.0\src\;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\source\;$(ProjectDir)\vendor\glew-1.12.0\include\;$(ProjectDir)\vendor\SDL2-2.0.3\include\;$(ProjectDir)\vendor\soil\include\;$(ProjectDir)\vendor\glm\;$(ProjectDir)\vendor\boost_1_57_0\;$(ProjectDir)\vendor\assimp\include\;$(ProjectDir)\vendor\luajit-2.0\src\;$(ProjectDir)\vendor\sparsehash\;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)\vendor\SDL2-2.0.3\lib\x64\;$(ProjectDir)\vendor\soil\lib\;$(ProjectDir)\vendor\glew-1.12.0\lib\Release\x64\;$(ProjectDir)\vendor\assimp\lib64\;$(ProjectDir)\vendor\luajit-2.0\src\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseCTP|x64'">

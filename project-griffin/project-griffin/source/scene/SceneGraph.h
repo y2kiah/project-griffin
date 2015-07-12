@@ -55,6 +55,21 @@ namespace griffin {
 			(SceneNodeId,	parent,,			"parent node index")
 		)
 
+		/**
+		* The MeshInstanceContainer is a component that goes along with the SceneNode to make an
+		* entity represent a unique instance of a mesh in the scene. The materialOverrides id is
+		* normally NullId_T, and the mesh materials are taken from the default "shared" materials
+		* list stored within the Mesh_GL object itself. When a specific instance wants to override
+		* any of the default materials, the override are added to the Scene's overrides map as an
+		* embedded linked list, and the id of the first override is stored in this component. The
+		* renderer must look here for any material overrides first for each submesh, and fall back
+		* to the default values for any submesh where an override is not present.
+		*/
+		COMPONENT(MeshInstanceContainer,
+			(Id_T,			meshInstance,,		"resource id of the mesh"),
+			(Id_T,			materialOverrides,,	"id of first material override")
+		)
+
 		
 		/**
 		*
@@ -140,7 +155,11 @@ namespace griffin {
 			SceneNodeId getLastImmediateChild(SceneNodeId sceneNodeId) const;
 
 			/**
-			*
+			* Starts at sceneNodeId and push all nodes in its ancestor tree into outAncestors. The
+			* caller is responsible for the vector outAncestors, it is not cleared before pushing
+			* the nodes.
+			* @param sceneNodeId	the parent node of the ancestors to collect
+			* @param outAncestors	vector to push_back the ancestor SceneNodeIds into
 			*/
 			void collectAncestors(SceneNodeId sceneNodeId, std::vector<SceneNodeId>& outAncestors) const;
 

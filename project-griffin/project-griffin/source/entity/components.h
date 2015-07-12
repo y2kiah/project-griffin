@@ -28,6 +28,7 @@ namespace griffin {
 		*/
 		COMPONENT_LIST(
 			SceneNode,
+			MeshInstanceContainer,
 			Person
 		)
 

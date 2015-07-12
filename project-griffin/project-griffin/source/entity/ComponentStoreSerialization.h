@@ -118,6 +118,37 @@ namespace griffin {
 	}
 
 
+	// griffin::entity Component types
+
+	/**
+	* This is only used when the component is not trivially copyable, and uses Reflection to
+	* serialize each property.
+	* @tparam Component		component type or type that has used the REFLECT macro to create a
+	*		Reflection class for itself
+	*/
+	template <typename Component>
+	void serialize_component(std::ostream& out, Component& obj) {
+		auto& props = Component::Reflection::getProperties();
+
+		for (int p = 0; p < props.size(); ++p) {
+			auto& prop = props[p];
+			const char* valueBytes = reinterpret_cast<const char*>(&obj + prop.offset);
+
+			if (prop.isTriviallyCopyable) {
+				out.write(valueBytes, prop.size);
+			}
+			else if (prop.isArray) {
+				for (int i = 0; i < prop.numElements; ++i) {
+					serialize(out, thisVal[i]);
+				}
+			}
+			else {
+				serialize(out, thisVal);
+			}
+		}
+	}
+
+
 	// griffin::entity::ComponentStore
 
 	/**
@@ -159,7 +190,7 @@ namespace griffin {
 	template <typename Component>
 	void serialize(std::ostream& out, const typename entity::ComponentStore<Component>::ComponentRecord& rec)
 	{
-		griffin::serialize(out, rec.component);
+		griffin::serialize_component(out, rec.component);
 		out.write(reinterpret_cast<const char*>(&rec.entityId.value), sizeof(rec.entityId.value));
 	}
 
@@ -175,34 +206,6 @@ namespace griffin {
 		in.read(reinterpret_cast<char*>(&rec.entityId.value), sizeof(rec.entityId.value));
 	}
 
-
-	// griffin::entity Component types
-
-	/**
-	* @tparam Component		component type or type that has used the REFLECT macro to create a
-	*		Reflection class for itself
-	*/
-	template <typename Component>
-	void serialize_component(std::ostream& out, Component& obj) {
-		auto& props = Component::Reflection::getProperties();
-
-		for (int p = 0; p < props.size(); ++p) {
-			auto& prop = props[p];
-			const char* valueBytes = reinterpret_cast<const char*>(&obj + prop.offset);
-
-			if (prop.isTriviallyCopyable) {
-				out.write(valueBytes, prop.size);
-			}
-			else if (prop.isArray) {
-				for (int i = 0; i < prop.numElements; ++i) {
-					//serialize(out, thisVal[i]);
-				}
-			}
-			else {
-				//serialize(out, thisVal);
-			}
-		}
-	}
 }
 
 #endif

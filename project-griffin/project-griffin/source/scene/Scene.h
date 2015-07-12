@@ -26,7 +26,9 @@ namespace griffin {
 		struct Scene {
 			SceneGraph		sceneGraph;
 			EntityManager	entityManager;
+			
 			// contains Cameras???
+			// contains Lua state?
 			// contains layer id for RenderEntry???
 			std::string		name;
 

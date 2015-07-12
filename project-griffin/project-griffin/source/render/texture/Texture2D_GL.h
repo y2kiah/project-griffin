@@ -21,6 +21,10 @@ namespace griffin {
 			*/
 			bool loadFromMemory(unsigned char* data, size_t size);
 
+			/**
+			* load an image from the m_tmpData pointer as a new OpenGL texture
+			* @param discard	true (default) to delete the memory after upload to GPU
+			*/
 			bool loadFromInternalMemory(bool discard = true);
 
 			/**

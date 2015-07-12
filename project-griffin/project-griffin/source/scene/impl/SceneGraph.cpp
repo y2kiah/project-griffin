@@ -324,6 +324,7 @@ SceneGraph::SceneGraph(EntityManager& _entityMgr) :
 	m_rootNode{}
 {
 	m_bfsQueue.reserve(RESERVE_SCENEGRAPH_TRAVERSAL_QUEUE);
+	m_handleBuffer.reserve(RESERVE_SCENEGRAPH_TRAVERSAL_QUEUE);
 
 	m_rootNode.rotationLocal.w = 1.0f;
 	m_rootNode.orientationWorld.w = 1.0f;
