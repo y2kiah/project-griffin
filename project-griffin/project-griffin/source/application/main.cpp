@@ -132,6 +132,13 @@ int main(int argc, char *argv[])
 }
 
 
+SDLApplication::SDLApplication()
+{
+	systemInfo.cpuCount = SDL_GetCPUCount();
+	systemInfo.systemRAM = SDL_GetSystemRAM();
+}
+
+
 void SDLApplication::initWindow(const char* appName)
 {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {

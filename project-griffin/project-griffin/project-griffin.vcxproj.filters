@@ -149,6 +149,9 @@
     <Filter Include="lua\extension\wsapi">
       <UniqueIdentifier>{74f91dd7-a25a-4406-99c8-0e8e88b677d2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="data">
+      <UniqueIdentifier>{31851743-d8ee-4029-9047-6b7203975961}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">

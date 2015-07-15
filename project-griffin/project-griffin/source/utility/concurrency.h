@@ -15,10 +15,12 @@
 #ifndef GRIFFIN_CONCURRENCY_H_
 #define GRIFFIN_CONCURRENCY_H_
 
+#include <array>
 #include <thread>
 #include <mutex>
 #include <future>
 #include <functional>
+#include <bitset>
 #include <utility/container/concurrent_queue.h>
 
 namespace griffin {
@@ -180,29 +182,115 @@ namespace griffin {
 	 * @endcode
 	 */
 
-/*
+
 	// The following classes may be built for cross platform compiling based on use of PPL
+#define MAX_WORKER_THREADS	8
+#define NUM_FIXED_THREADS	3
+#define NUM_TASK_QUEUES		NUM_FIXED_THREADS + 1	// one shared by all worker threads, plus one each for fixed thread affinity
+	enum ThreadAffinity : uint8_t {
+		Thread_Workers = 0,
+		Thread_OS_Input,
+		Thread_Update,
+		Thread_OpenGL_Render
+	};
 
 	class thread_pool {
 	public:
-		explicit thread_pool() {}
+		typedef std::array<std::thread, MAX_WORKER_THREADS> ThreadList;
+		typedef std::array<concurrent_queue<std::function<void()>>, NUM_TASK_QUEUES> TaskQueueList;
+
+		explicit thread_pool(int cpuCount) {
+			assert(m_busy.is_lock_free());
+
+			// start up one worker thread per core
+			m_numWorkerThreads = cpuCount > MAX_WORKER_THREADS ? MAX_WORKER_THREADS : cpuCount;
+			
+			auto threadProcess = [=]{
+				while (!m_done) { m_tasks[Thread_Workers].wait_pop()(); }
+			};
+
+			for (int i = 0; i < m_numWorkerThreads; ++i) {
+				m_threads[i] = std::thread{ threadProcess };
+			}
+		}
+		thread_pool(const thread_pool&) = delete; // can't copy a thread_pool
+
+		~thread_pool() {
+			for (int i = 0; i < m_numWorkerThreads; ++i) {
+				m_tasks[Thread_Workers].push([=]{ m_done = true; });
+			}
+
+			for (auto& t : m_threads) {
+				if (t.joinable()) { t.join(); }
+			}
+		}
+		
+		void push(ThreadAffinity affinity, std::function<void()>&& f) {
+			m_tasks[affinity].push(std::forward<std::function<void()>>(f));
+		}
+
+		// Implement FIFO scheduling, with a thread affinity system
+		//   If affinity is set the thread will prefer to execute that task and leave the
+		//   general task it skips to be executed by a worker thread. In that way, tasks which
+		//   specify affinity for a fixed thread will take priority. Affinity should only be used
+		//   when absolutely necessary (like for instance calls to OpenGL or other single-threaded
+		//   libraries are made).
+		// Each worker thread waits on a condition variable, when a task shows up notify_one is
+		//   called. Worker threads pull from the general task queue only.
+		// The Fixed threads are not owned by the thread-pool itself, but participate by taking the
+		//   tasks that specify affinity for them, and (optionally) share in executing general
+		//   tasks at some pre-determined point of their own loop.
+		// Only fixed threads can be specified for affinity. Fixed threads should use try_pop to
+		//   pull tasks from the queue, whereas worker threads should wait on the queue's condition
+		//   variable using wait_pop.
 
 	private:
-		vector<std::thread> m_threads;
+		ThreadList		m_threads;
+		TaskQueueList	m_tasks;
+		std::atomic<std::bitset<MAX_WORKER_THREADS>> m_busy = 0;
+		int8_t			m_numWorkerThreads = 0;
+		bool			m_done = false;
+		
 	};
 
 
 	template <typename F>
 	class task {
 	public:
+		static thread_pool& s_threadPool;
+
 		task(F&& f_) : f{ f_ } {}
+
+		/**
+		* Executes function pointer, functor or lambda on the worker thread where the task is
+		* internally serialized by the concurrent queue for thread safety.
+		* @tparam	F	function pointer, functor or lambda accepting one argument of type T
+		* @param	f	type F
+		* @returns std::future of type T
+		*/
+		template <typename F>
+		auto operator()(F f, ThreadAffinity threadAffinity = Thread_Workers) const -> std::future<decltype(f(t))> {
+			auto p = std::make_shared<std::promise<decltype(f(t))>>();
+			auto ret = p->get_future();
+
+			s_threadPool.push(threadAffinity, [=]{
+				try {
+					set_value(*p, f, t);
+				}
+				catch (...) {
+					p->set_exception(std::current_exception());
+				}
+			});
+
+			return ret;
+		}
 
 	private:
 		F f;
 
 	};
 
-
+	/*
 	template <typename T>
 	class task_group {
 	public:

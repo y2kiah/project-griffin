@@ -11,8 +11,8 @@
 #include <future>
 //#include <functional>
 //#include <boost/container/flat_map.hpp>
-//#include <unordered_map>
-#include <sparsehash/dense_hash_map>
+#include <unordered_map>
+//#include <sparsehash/dense_hash_map>
 #include <array>
 #include <utility/concurrency.h>
 #include <core/CoreSystem.h>
@@ -72,8 +72,8 @@ namespace griffin {
 			typedef std::array<ResourceCachePtr, CacheTypeCount>	ResourceCacheSet;
 			typedef std::vector<IResourceSourcePtr>					ResourceSourceSet;
 			//typedef boost::container::flat_map<std::wstring, Id_T>	ResourceNameIndex;
-			//typedef std::unordered_map<wstring, Id_T>				ResourceNameIndex;
-			typedef dense_hash_map<wstring, Id_T>					ResourceNameIndex;
+			typedef std::unordered_map<wstring, Id_T>				ResourceNameIndex;
+			//typedef dense_hash_map<wstring, Id_T>					ResourceNameIndex;
 			
 			struct Impl {
 				ResourceCacheSet	m_caches;

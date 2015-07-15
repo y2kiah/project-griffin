@@ -1,6 +1,6 @@
 #pragma once
-#ifndef MAIN_H_
-#define MAIN_H_
+#ifndef GRIFFIN_MAIN_H_
+#define GRIFFIN_MAIN_H_
 
 #include <vector>
 #include <memory>
@@ -24,13 +24,18 @@ struct WindowData {
 	shared_ptr<SDL_SysWMinfo>	wmInfo;			//<! system-dependent window information
 };
 
+struct SystemInfo {
+	uint8_t						cpuCount;		//<! number of logical CPU cores
+	uint32_t					systemRAM;		//<! amount of system RAM in MB
+};
+
 typedef vector<DisplayData>	DisplayDataList;
 typedef vector<WindowData>	WindowDataList;
 
 
 class SDLApplication {
 public:
-	explicit SDLApplication() {}
+	explicit SDLApplication();
 	~SDLApplication();
 
 	void initWindow(const char* appName);
@@ -41,9 +46,15 @@ public:
 		return windowData[0];
 	}
 
+	const SystemInfo& getSystemInfo() const
+	{
+		return systemInfo;
+	}
+
 private:
 	DisplayDataList	displayData;
 	WindowDataList	windowData;
+	SystemInfo		systemInfo;
 };
 
 #endif

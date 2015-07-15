@@ -95,8 +95,8 @@ namespace griffin {
 		* only if the provided predicate function evaluates to true.
 		* @tparam	UnaryPredicate	predicate must return bool and accept a single param of type T
 		* @param	outData	   memory location to move item into, only modified if true is returned
-		* @param	p_		   function pointer, lambda or functor of type UnaryPredicate
-		* @returns true if pop succeeds, false if queue is empty
+		* @param	p_		   function pointer, lambda or functor returning a bool
+		* @returns true if pop succeeds, false if queue is empty or predicate returns false
 		*/
 		template <class UnaryPredicate>
 		bool try_pop_if(T& outData, UnaryPredicate p_);
@@ -107,7 +107,7 @@ namespace griffin {
 		* @tparam	Cnt		Container that implements emplace_back, such as vector, list, deque.
 		* @tparam	UnaryPredicate	predicate must return bool and accept a single param of type T
 		* @param	outData	The popped items are emplaced into the provided container.
-		* @param	p_		function pointer, lambda or functor of type UnaryPredicate
+		* @param	p_		function pointer, lambda or functor returning a bool
 		* @returns number of items popped (and emplaced in outData)
 		*/
 		template <template <class T, class=std::allocator<T>> class Cnt, class UnaryPredicate>
