@@ -13,6 +13,7 @@
 #include <utility/profile/Profile.h>
 
 #include <application/Timer.h>
+#include <utility/concurrency.h>
 
 using namespace griffin::entity;
 
@@ -99,7 +100,42 @@ void profileTestComponents() {
 	SDL_Log("age=%d\n", age);
 }
 
+std::shared_ptr<griffin::thread_pool> griffin::task_base::s_threadPool = nullptr;
+
 void griffin::entity::test_reflection() {
+	// test concurrency system
+	griffin::task_base::s_threadPool = std::make_shared<griffin::thread_pool>(4);
+
+	griffin::task<int> tsk;
+	auto& fut1 = tsk.run([]{
+		std::this_thread::sleep_for(std::chrono::seconds(30));
+		SDL_Log("task 1 step 1");
+		return 1;
+	});
+	auto& fut2 = tsk.then([]{
+		SDL_Log("task 1 step 2");
+		return 2.0f;
+	});
+
+	griffin::task<void> tsk2;
+	tsk2.run([]{
+		SDL_Log("task 2 step 1");
+	})
+	.then([]{
+		SDL_Log("task 2 step 2");
+	})
+	.then([]{
+		SDL_Log("task 2 step 3 OpenGL");
+	}, ThreadAffinity::Thread_OpenGL_Render);
+
+	fut2.then([fut2]{
+		SDL_Log("task 1 step 3, see value %.1f", fut2.get());
+	})
+	.then([]{
+		SDL_Log("task 1 step 4");
+	});
+
+	// test component store
 	addTestComponents();
 	//profileTestComponents();
 

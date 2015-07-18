@@ -160,7 +160,7 @@ namespace griffin {
 			*/
 			template <typename T>
 			void createComponentStore(uint16_t typeId, size_t reserve) {
-				assert(m_componentStores[currentDynamicSlot] == nullptr && "componentStore already exists");
+				assert(m_componentStores[typeId] == nullptr && "componentStore already exists");
 
 				m_componentStores[typeId] = std::make_unique<ComponentStore<T>>(typeId, (reserve > RESERVE_ENTITYMANAGER_COMPONENTS ? reserve : RESERVE_ENTITYMANAGER_COMPONENTS));
 			}
