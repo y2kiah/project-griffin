@@ -1,6 +1,9 @@
+/**
+* @file Engine.cpp
+* @author Jeff Kiah
+*/
 #include <application/Engine.h>
 #include <SDL.h>
-
 
 using std::make_unique;
 using std::make_shared;
@@ -8,13 +11,24 @@ using std::move;
 
 namespace griffin {
 
+	ThreadPoolPtr task_base::s_threadPool = nullptr;
+
+
 	Engine make_engine(const SDLApplication& app)
 	{
 		Engine engine;
 
-		auto scriptPtr = make_shared<script::ScriptManager>();
-		auto inputPtr  = make_shared<core::InputSystem>();
-		auto loaderPtr = make_shared<resource::ResourceLoader>();
+		/**
+		* Create thread pool, one worker thread per logical core
+		*/
+		{
+			engine.threadPool = make_shared<thread_pool>(app.getSystemInfo().cpuCount);
+			task_base::s_threadPool = engine.threadPool;
+		}
+
+		auto scriptPtr  = make_shared<script::ScriptManager>();
+		auto inputPtr   = make_shared<core::InputSystem>();
+		auto loaderPtr  = make_shared<resource::ResourceLoader>();
 
 		/**
 		* Build the Lua scripting system

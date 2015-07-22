@@ -25,6 +25,8 @@
 
 namespace griffin {
 
+	using std::atomic;
+
 #define CONCURRENT_MAX_WORKER_THREADS	8
 #define CONCURRENT_NUM_FIXED_THREADS	3
 // one shared by all worker threads, plus one each for fixed thread affinity
@@ -37,6 +39,9 @@ namespace griffin {
 		Thread_OpenGL_Render
 	};
 
+	/**
+	*
+	*/
 	class thread_pool {
 	public:
 		typedef std::array<std::thread, CONCURRENT_MAX_WORKER_THREADS> ThreadList;
@@ -92,17 +97,21 @@ namespace griffin {
 		TaskQueueList	m_tasks;
 		//std::atomic<std::bitset<MAX_WORKER_THREADS>> m_busy = 0;
 		int8_t			m_numWorkerThreads = 0;
-		bool			m_done = false;
+		atomic<bool>	m_done = false;
 		
 	};
+
+	typedef std::shared_ptr<thread_pool> ThreadPoolPtr;
 
 
 	class task_base {
 	public:
-		static std::shared_ptr<thread_pool> s_threadPool;
+		static ThreadPoolPtr s_threadPool;	//<! declared in Engine.cpp
 	};
 
-
+	/**
+	*
+	*/
 	template <typename result_type>
 	class task : public task_base {
 	public:
@@ -147,13 +156,13 @@ namespace griffin {
 		* @param	func	type F
 		* @returns future_type
 		*/
-		template <typename F>
-		task<result_type>& run(F&& func) {
+		template <typename F, typename...Args>
+		task<result_type>& run(F&& func, Args...args) {
 			auto pImpl = _pImpl;
-			s_threadPool->run(_pImpl->threadAffinity, [pImpl, func]{
+			s_threadPool->run(_pImpl->threadAffinity, [pImpl, func, args...]{
 				auto& impl = *pImpl;
 				try {
-					set_value(impl.p, func);
+					set_value(impl.p, func, args...);
 				}
 				catch (...) {
 					impl.p.set_exception(std::current_exception());
@@ -217,14 +226,14 @@ namespace griffin {
 		/**
 		* Helpers for p.set_value() so the function above compiles for both void and non-void.
 		*/
-		template <typename TFut, typename F>
-		static void set_value(std::promise<TFut>& p, F& f) {
-			p.set_value(f());
+		template <typename TFut, typename F, typename...Args>
+		static void set_value(std::promise<TFut>& p, F& f, Args...args) {
+			p.set_value(f(args...));
 		}
 
-		template <typename F>
-		static void set_value(std::promise<void>& p, F& f) {
-			f();
+		template <typename F, typename...Args>
+		static void set_value(std::promise<void>& p, F& f, Args...args) {
+			f(args...);
 			p.set_value();
 		}
 	};
@@ -267,7 +276,7 @@ namespace griffin {
 	private:
 		vector<packaged_task<T>> m_tasks;
 	};
-*/
+	*/
 
 	/**
 	* @class concurrent
@@ -300,6 +309,15 @@ namespace griffin {
 		* @param	f	type F
 		* @returns std::future of type T
 		*/
+		/*template <typename F>
+		auto operator()(F f) const -> std::shared_future<decltype(f(t))> {
+			task<decltype(f(t))> currentTask(Thread_Workers);
+			auto ret = currentTask.get_future();
+
+			currentTask.run(f, t);
+
+			return ret;
+		}*/
 		template <typename F>
 		auto operator()(F f) const -> std::future<decltype(f(t))> {
 			auto p = std::make_shared<std::promise<decltype(f(t))>>();
