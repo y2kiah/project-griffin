@@ -103,7 +103,7 @@ void profileTestComponents() {
 void griffin::entity::test_reflection() {
 	// test concurrency system
 	griffin::task<int> tsk;
-	auto& fut1 = tsk.run([]{
+	tsk.run([]{
 		std::this_thread::sleep_for(std::chrono::seconds(30));
 		SDL_Log("task 1 step 1");
 		return 1;
@@ -116,8 +116,9 @@ void griffin::entity::test_reflection() {
 	griffin::task<void> tsk2;
 	tsk2.run([](std::shared_future<int> tsk1Fut, float f){
 		SDL_Log("task 2 step 1, see value %d, %.1f", tsk1Fut.get(), f);
-	}, fut1.get_future(), 3.0f) // to support non-lambda functions, this syntax can be used to pass a parameter instead of capturing it
+	}, tsk.get_future(), 3.0f) // to support non-lambda functions, this syntax can be used to pass a parameter instead of capturing it
 	.then([]{
+		std::this_thread::sleep_for(std::chrono::seconds(5));
 		SDL_Log("task 2 step 2");
 	})
 	.then([]{
@@ -131,6 +132,30 @@ void griffin::entity::test_reflection() {
 		SDL_Log("task 1 step 4");
 	});
 
+	griffin::task<int> tsk3;
+	tsk3.run([]{
+		SDL_Log("task 3");
+		return 3;
+	});
+
+/*	std::array<task<int>,2> whenAllTasks = { tsk, tsk3 };
+	auto fut3 = when_all(whenAllTasks.cbegin(), whenAllTasks.cend());
+	fut3.then([fut3]{
+		SDL_Log("when_all finished");
+		std::vector<int> newVec = fut3.get();
+		SDL_Log("  length of returned vector = %d", newVec.size());
+		//auto& vec = fut3.get();
+		//for (auto& v : vec) {
+		//	SDL_Log("  value %d", v);
+		//}
+	});
+	*/
+	/*when_all(tsk, tsk2, tsk3).then([]{
+		SDL_Log("when_all finished");
+	});
+	*/
+
+	//////////
 	// test component store
 	addTestComponents();
 	//profileTestComponents();

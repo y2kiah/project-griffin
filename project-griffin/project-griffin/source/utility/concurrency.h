@@ -112,11 +112,12 @@ namespace griffin {
 	/**
 	*
 	*/
-	template <typename result_type>
+	template <typename ResultType>
 	class task : public task_base {
 	public:
 		// Variables
 
+		typedef ResultType result_type;
 		typedef std::promise<result_type> promise_type;
 		typedef std::shared_future<result_type> future_type;
 
@@ -238,17 +239,41 @@ namespace griffin {
 		}
 	};
 
-	template<typename F, typename... Tasks>
-	task<void> when_all(F&& f, Tasks&...) {
+	/*template <typename Iterator,
+			  typename std::enable_if<!std::is_void<typename std::iterator_traits<Iterator>::value_type::result_type>::value>::type* = 0>
+	auto when_all(Iterator first, Iterator last) -> task<std::vector<typename std::iterator_traits<Iterator>::value_type::result_type>>
+	{
+		task<std::vector<typename std::iterator_traits<Iterator>::value_type::result_type>> tsk;
+
+		tsk.run([first, last]{
+			std::vector<typename std::iterator_traits<Iterator>::value_type::result_type> ret;
+			//ret.reserve();
+			
+			for (auto i = first; i != last; ++i) {
+				ret.push_back(i->get());
+			}
+
+			return ret;
+		});
+
+		return tsk;
+	}*/
+
+	/*template <typename...Tasks>
+	task<void> when_all(Tasks...tasks) {
 		task<void> ret;
-		ret.run([]{
-			return f();
+
+		ret.run([tasks...]{
+			
+			//for (int i = 0; i < sizeof...(Tasks); ++i) {
+			//}
 		});
 
 		return ret;
-	}
+	}*/
 
-	template<typename F, typename... Tasks>
+	/*
+	template <typename F, typename... Tasks>
 	task<void> when_any(F&& f, Tasks&...) {
 		task<void> ret;
 		ret.run([]{
@@ -257,6 +282,7 @@ namespace griffin {
 
 		return ret;
 	}
+	*/
 
 	/*
 	template <typename T>
