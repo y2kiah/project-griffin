@@ -152,6 +152,9 @@
     <Filter Include="data">
       <UniqueIdentifier>{31851743-d8ee-4029-9047-6b7203975961}</UniqueIdentifier>
     </Filter>
+    <Filter Include="lua\game">
+      <UniqueIdentifier>{b1e7231f-d1bf-41d5-86f8-dc4ddd20827e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">
@@ -245,6 +248,9 @@
       <Filter>entity\impl</Filter>
     </ClCompile>
     <ClCompile Include="source\scene\impl\SceneGraph.cpp">
+      <Filter>scene\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\scene\impl\SceneApi.cpp">
       <Filter>scene\impl</Filter>
     </ClCompile>
   </ItemGroup>
@@ -736,6 +742,9 @@
     <ClInclude Include="source\entity\ComponentStoreSerialization.h">
       <Filter>entity</Filter>
     </ClInclude>
+    <ClInclude Include="source\api\SceneApi.h">
+      <Filter>api</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="vendor\glm\glm\gtc\constants.inl">
@@ -1178,6 +1187,12 @@
     </None>
     <None Include="source\lua\extension\stable.lua">
       <Filter>lua\extension</Filter>
+    </None>
+    <None Include="source\lua\game\gameFSM.lua">
+      <Filter>lua\game</Filter>
+    </None>
+    <None Include="source\lua\Scene.lua">
+      <Filter>lua</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

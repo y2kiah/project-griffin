@@ -121,6 +121,11 @@ int main(int argc, char *argv[])
 				}
 			}
 			
+			// run tasks with Thread_OS_Input thread affinity
+			//   engine.taskPool.runTasksWithThreadAffinity(ThreadAffinity::Thread_OS_Input);
+			// run thread_pool deferred task check (when_any, when_all)
+			//   engine.taskPool.checkDeferredTasks();
+
 			platform::yieldThread();
 		}
 

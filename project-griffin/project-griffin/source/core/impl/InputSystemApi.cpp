@@ -4,16 +4,11 @@
 
 griffin::core::InputSystemPtr g_inputPtr = nullptr;
 
-namespace griffin {
-	namespace core {
-
-		void setInputSystemPtr(InputSystemPtr inputPtr)
-		{
-			g_inputPtr = inputPtr;
-		}
-
-	}
+void griffin::core::setInputSystemPtr(const InputSystemPtr& inputPtr)
+{
+	g_inputPtr = inputPtr;
 }
+
 
 #ifdef __cplusplus
 extern "C" {

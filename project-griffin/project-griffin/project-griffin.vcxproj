@@ -54,6 +54,7 @@
     <ClCompile Include="source\resource\impl\ResourceLoader-inl.h" />
     <ClCompile Include="source\resource\impl\ResourceSource.cpp" />
     <ClCompile Include="source\scene\impl\Scene.cpp" />
+    <ClCompile Include="source\scene\impl\SceneApi.cpp" />
     <ClCompile Include="source\scene\impl\SceneGraph.cpp" />
     <ClCompile Include="source\script\impl\ScriptManager_LuaJIT.cpp" />
     <ClCompile Include="source\tools\impl\GriffinTools.cpp" />
@@ -63,6 +64,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="source\api\GriffinToolsApi.h" />
     <ClInclude Include="source\api\InputSystemApi.h" />
+    <ClInclude Include="source\api\SceneApi.h" />
     <ClInclude Include="source\application\Engine.h" />
     <ClInclude Include="source\application\FixedTimestep.h" />
     <ClInclude Include="source\application\main.h" />
@@ -271,9 +273,11 @@
     <None Include="source\lua\extension\xavante\ruleshandler.lua" />
     <None Include="source\lua\extension\xavante\urlhandler.lua" />
     <None Include="source\lua\extension\xavante\vhostshandler.lua" />
+    <None Include="source\lua\game\gameFSM.lua" />
     <None Include="source\lua\initState.lua" />
     <None Include="source\lua\InputSystem.lua" />
     <None Include="source\lua\luaBuild.lua" />
+    <None Include="source\lua\Scene.lua" />
     <None Include="source\lua\tools\ToolsServer.lua" />
     <None Include="source\render\shaders\ads.glsl" />
     <None Include="source\render\shaders\atmosphere\atmosphere.glsl" />
