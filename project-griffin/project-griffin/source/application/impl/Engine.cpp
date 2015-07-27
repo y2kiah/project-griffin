@@ -136,6 +136,12 @@ namespace griffin {
 
 			auto scenePtr = make_shared<SceneManager>();
 
+			// inject dependencies to the Scene C API
+			setSceneManagerPtr(scenePtr);
+
+			// Scene.lua contains scene functions
+			scriptPtr->doFile(initLuaStateId, "scripts/Scene.lua"); // throws on error
+
 			engine.sceneManager = scenePtr;
 		}
 

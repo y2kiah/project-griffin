@@ -10,9 +10,9 @@ using namespace griffin::scene;
 
 // class SceneManager
 
-SceneId SceneManager::createScene(const std::string& name)
+SceneId SceneManager::createScene(const std::string& name, bool makeActive)
 {
-	auto sceneId = m_scenes.emplace(name);
+	auto sceneId = m_scenes.emplace(name, makeActive);
 	m_scenes[sceneId].sceneGraph.setSceneId(sceneId);
 	return sceneId;
 }

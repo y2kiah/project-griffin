@@ -41,7 +41,7 @@ namespace griffin {
 
 		// Function declarations
 
-		extern void setInputSystemPtr(InputSystemPtr inputPtr);
+		extern void setInputSystemPtr(const InputSystemPtr& inputPtr);
 
 
 		// Type declarations

@@ -17,8 +17,19 @@ namespace griffin {
 
 		using namespace griffin::entity;
 
-		typedef griffin::Id_T    SceneId;
+		// Forward declarations
+		class SceneManager;
 
+		// Typedefs/Enums
+
+		typedef griffin::Id_T    SceneId;
+		typedef std::shared_ptr<SceneManager> SceneManagerPtr;
+
+		// Function declarations
+
+		extern void setSceneManagerPtr(const SceneManagerPtr& sceneMgrPtr);
+
+		// Type declarations
 
 		/**
 		*
@@ -30,12 +41,14 @@ namespace griffin {
 			// contains Cameras???
 			// contains Lua state?
 			// contains layer id for RenderEntry???
+			bool			active = false;
 			std::string		name;
 
-			explicit Scene(const std::string& _name) :
+			explicit Scene(const std::string& _name, bool _active) :
 				entityManager{},
 				sceneGraph(entityManager),
-				name(_name)
+				name(_name),
+				active{ _active }
 			{}
 		};
 
@@ -52,7 +65,7 @@ namespace griffin {
 
 			Scene& getScene(SceneId sceneId) { return m_scenes[sceneId]; }
 			
-			SceneId createScene(const std::string& name);
+			SceneId createScene(const std::string& name, bool makeActive);
 
 		private:
 			// Private Variables
@@ -60,8 +73,6 @@ namespace griffin {
 			handle_map<Scene> m_scenes;
 		};
 
-
-		typedef std::shared_ptr<SceneManager> SceneManagerPtr;
 	}
 }
 
