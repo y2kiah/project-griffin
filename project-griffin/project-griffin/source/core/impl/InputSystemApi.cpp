@@ -17,7 +17,7 @@ extern "C" {
 	using namespace griffin;
 	using namespace griffin::core;
 
-	GRIFFIN_EXPORT
+	
 	uint64_t griffin_input_createContext(uint16_t optionsMask, uint8_t priority, const char name[32], bool makeActive)
 	{
 		auto& input = *g_inputPtr;
@@ -31,7 +31,6 @@ extern "C" {
 	}
 
 
-	GRIFFIN_EXPORT
 	bool griffin_input_setContextActive(uint64_t context, bool active)
 	{
 		auto& input = *g_inputPtr;
@@ -43,7 +42,6 @@ extern "C" {
 	}
 
 
-	GRIFFIN_EXPORT
 	uint64_t griffin_input_createInputMapping(const char name[32], uint64_t context)
 	{
 		assert(sizeof(griffin_InputMapping) == sizeof(InputMapping) && "InputMapping struct out of sync with API");
@@ -65,7 +63,6 @@ extern "C" {
 	}
 
 
-	GRIFFIN_EXPORT
 	griffin_InputMapping* griffin_input_getInputMapping(uint64_t mapping)
 	{
 		auto& input = *g_inputPtr;
@@ -77,7 +74,6 @@ extern "C" {
 	}
 
 
-	GRIFFIN_EXPORT
 	uint64_t griffin_input_registerCallback(int priority, Callback_T callbackFunc)
 	{
 		assert(sizeof(griffin_MappedAction) == sizeof(MappedAction) && "MappedAction struct out of sync with API");
@@ -106,7 +102,6 @@ extern "C" {
 	}
 
 
-	GRIFFIN_EXPORT
 	bool griffin_input_removeCallback(uint64_t callback)
 	{
 		Id_T callbackId;
@@ -114,9 +109,8 @@ extern "C" {
 
 		return g_inputPtr->unregisterCallback(callbackId);
 	}
+	
 
-
-	GRIFFIN_EXPORT
 	void griffin_input_setRelativeMouseMode(bool relative)
 	{
 		auto& input = *g_inputPtr;
@@ -130,7 +124,6 @@ extern "C" {
 	}
 
 
-	GRIFFIN_EXPORT
 	bool griffin_input_relativeMouseModeActive()
 	{
 		return g_inputPtr->relativeMouseModeActive();

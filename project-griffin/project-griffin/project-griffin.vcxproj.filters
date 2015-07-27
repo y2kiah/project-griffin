@@ -253,6 +253,9 @@
     <ClCompile Include="source\scene\impl\SceneApi.cpp">
       <Filter>scene\impl</Filter>
     </ClCompile>
+    <ClCompile Include="source\tools\impl\GriffinToolsApi.cpp">
+      <Filter>tools\impl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\application\main.h">

@@ -29,7 +29,10 @@ namespace griffin {
 		using griffin::core::CoreSystem;
 
 		/**
-		*
+		* ResourceLoader is a manager of shared resources used by the engine, and provides an
+		* asynchronous API for loading, injecting, and getting resources by handle. All functions
+		* that deal with ResourceHandle<T> are asynchronous. Some functions are synchronous and
+		* deal directly with resource Id_T values.
 		*/
 		class ResourceLoader : public CoreSystem {
 		public:
@@ -53,19 +56,45 @@ namespace griffin {
 			void executeCallbacks();
 
 			/**
-			*
+			* loads a resource from disk (or resource source) into cache, executing the builder
+			* callback which must return an object of the resource type T. The builder callback
+			* is executed on the loader thread, so do not include calls to OpenGL or other thread-
+			* specific resources.
 			*/
 			template <typename T, typename BuilderFunc>
-			ResourceHandle<T> load(const wstring &name, CacheType cache,
+			ResourceHandle<T> load(const wstring& name, CacheType cache_,
 								   BuilderFunc&& builder, CallbackFunc_T callback = nullptr);
 
 			/**
-			*
+			* Injects a resource already in memory into the resource cache, and returns a resource
+			* handle. This allows resources to be manually loaded and then incorporated into the
+			* resource cache to be managed and shared. You are also asked to give the resource a
+			* unique wstring name, so it can be requested by other areas of code that don't know
+			* its resource id. Throws an exception if the name already exists.
+			*/
+			template <typename T>
+			ResourceHandle<T> addResourceToCache(ResourcePtr resource, CacheType cache_/*, const wstring& name */);
+
+			/**
+			* Asynchronously gets a resource directly from the cache.
 			*/
 			template <typename T>
 			std::shared_future<ResourcePtr> getResource(const ResourceHandle<T>& h);
 
-			void registerCache(const ResourceCachePtr& cachePtr, CacheType cacheTypeId);
+			/**
+			* Blocking call, gets a resource directly from the cache.
+			*/
+			template <typename T>
+			ResourcePtr getResource(Id_T h, CacheType cache_);
+
+			/**
+			* Blocking call, register a cache with the loader. Done during engine init.
+			*/
+			void registerCache(const ResourceCachePtr& cachePtr, CacheType cache_);
+			
+			/**
+			* Blocking call, register a source with the loader. Done during engine init.
+			*/
 			void registerSource(const IResourceSourcePtr& sourcePtr);
 
 		private:

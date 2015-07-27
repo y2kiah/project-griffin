@@ -17,7 +17,7 @@ namespace griffin {
 		template <typename T, typename BuilderFunc>
 		ResourceHandle<T> ResourceLoader::load(
 			const wstring &name,
-			CacheType cache,
+			CacheType cache_,
 			BuilderFunc&& builder,
 			CallbackFunc_T callback)
 		{
@@ -63,7 +63,7 @@ namespace griffin {
 						size/*, impl.m_cache*/);
 
 				// add to the LRU cache, which also puts it at the front
-				auto id = impl.m_caches[cache]->addResource(resourcePtr);
+				auto id = impl.m_caches[cache_]->addResource(resourcePtr);
 				
 				// add handle to index
 				impl.m_nameToHandle[name] = id;
@@ -80,6 +80,23 @@ namespace griffin {
 			return h;
 		}
 
+
+		template <typename T>
+		ResourceHandle<T> ResourceLoader::addResourceToCache(ResourcePtr resource, CacheType cache_)
+		{
+			ResourceHandle<T> handle;
+
+			auto f = m_c([=](Impl& impl) {
+				auto& cache = *impl.m_caches[cache_].get();
+
+				return cache.addResource(resource);
+			});
+
+			handle.resourceId = f;
+			return handle;
+		}
+
+
 		template <typename T>
 		std::shared_future<ResourcePtr> ResourceLoader::getResource(const ResourceHandle<T>& h)
 		{
@@ -87,6 +104,7 @@ namespace griffin {
 
 			auto f = m_c([=](Impl& impl) {
 				auto& cache = *impl.m_caches[handle.typeId].get();
+
 				if (!cache.hasResource(handle)) {
 					throw std::runtime_error("resource not found by handle");
 				}
@@ -94,6 +112,22 @@ namespace griffin {
 			});
 
 			return f;
+		}
+
+
+		template <typename T>
+		ResourcePtr ResourceLoader::getResource(Id_T h, CacheType cache_)
+		{
+			auto f = m_c([=](Impl& impl) {
+				auto& cache = *impl.m_caches[cache_].get();
+
+				if (!cache.hasResource(h)) {
+					throw std::runtime_error("resource not found by handle");
+				}
+				return cache.getResource(h);
+			});
+
+			return f.get();
 		}
 
 	}

@@ -100,11 +100,11 @@ namespace griffin {
 			uint32_t numElements = fillIndexBuffer(scene, indexBuffer.get(), totalIndexBufferSize, numVertices, drawSets);
 			int sizeOfElement = totalIndexBufferSize / numElements;
 
-			VertexBuffer_GL vb;
-			vb.loadFromMemory(vertexBuffer.get(), totalVertexBufferSize);
+			VertexBuffer_GL vb(std::move(vertexBuffer), totalVertexBufferSize);
+			vb.loadFromInternalMemory(false); // don't discard the internal buffer so we can later serialize the mesh
 
-			IndexBuffer_GL ib;
-			ib.loadFromMemory(indexBuffer.get(), totalIndexBufferSize, sizeOfElement);
+			IndexBuffer_GL ib(std::move(indexBuffer), totalIndexBufferSize, IndexBuffer_GL::getSizeFlag(sizeOfElement));
+			ib.loadFromInternalMemory(false);
 
 			// fill materials
 			uint32_t materialsOffset = static_cast<uint32_t>(totalDrawSetsSize);

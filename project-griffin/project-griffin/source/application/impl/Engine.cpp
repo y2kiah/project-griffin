@@ -109,6 +109,9 @@ namespace griffin {
 
 			// inject loader dependencies into other system
 			render::g_resourceLoader = loaderPtr;
+			#ifdef GRIFFIN_TOOLS_BUILD
+			griffin::tools::setResourceLoaderPtr(loaderPtr);
+			#endif
 
 			// add Lua APIs
 

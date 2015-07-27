@@ -29,7 +29,7 @@ namespace griffin {
 
 	using std::atomic;
 
-#define CONCURRENT_MAX_WORKER_THREADS	8
+#define CONCURRENT_MAX_WORKER_THREADS	16
 #define CONCURRENT_NUM_FIXED_THREADS	3
 // one shared by all worker threads, plus one each for fixed thread affinity
 #define CONCURRENT_NUM_TASK_QUEUES		CONCURRENT_NUM_FIXED_THREADS + 1
@@ -42,14 +42,15 @@ namespace griffin {
 	};
 
 	/**
-	*
+	* TODO: seems to be a join bug when number of cpu cores is equal to CONCURRENT_MAX_WORKER_THREADS
 	*/
 	class thread_pool {
 	public:
 		typedef std::array<std::thread, CONCURRENT_MAX_WORKER_THREADS> ThreadList;
 		typedef std::array<concurrent_queue<std::function<void()>>, CONCURRENT_NUM_TASK_QUEUES> TaskQueueList;
 
-		explicit thread_pool(int cpuCount) {
+		explicit thread_pool(int cpuCount)
+		{
 			//assert(m_busy.is_lock_free());
 
 			// start up one worker thread per core
@@ -66,6 +67,7 @@ namespace griffin {
 				m_threads[i] = std::thread{ threadProcess };
 			}
 		}
+		
 		thread_pool(const thread_pool&) = delete; // can't copy a thread_pool
 
 		~thread_pool() {

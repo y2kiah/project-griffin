@@ -22,6 +22,15 @@ namespace griffin {
 			VertexBuffer_GL(const VertexBuffer_GL&) = delete;
 			~VertexBuffer_GL();
 
+			size_t getSize() const { return m_sizeBytes; }
+			unsigned char* data() const { return m_tmpData.get(); }
+
+			/**
+			* Sets the buffer and size for default-constructed buffers. Does not load to GL,
+			* call loadFromInternalMemory after this.
+			*/
+			inline void set(std::unique_ptr<unsigned char[]>&& data, size_t size);
+
 			bool loadFromMemory(const unsigned char* data, size_t size);
 
 			bool loadFromInternalMemory(bool discard = true);
@@ -43,6 +52,11 @@ namespace griffin {
 			m_sizeBytes{ size }
 		{}
 
+		inline void VertexBuffer_GL::set(std::unique_ptr<unsigned char[]>&& data, size_t size)
+		{
+			m_sizeBytes = size;
+			m_tmpData = std::move(data);
+		}
 	}
 }
 

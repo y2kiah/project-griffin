@@ -19,10 +19,10 @@ namespace griffin {
 			}
 		}
 
-		void ResourceLoader::registerCache(const ResourceCachePtr& cachePtr, CacheType cacheTypeId)
+		void ResourceLoader::registerCache(const ResourceCachePtr& cachePtr, CacheType cache_)
 		{
 			auto f = m_c([=](Impl& impl) {
-				impl.m_caches[cacheTypeId] = cachePtr;
+				impl.m_caches[cache_] = cachePtr;
 			});
 			f.wait();
 		}

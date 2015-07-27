@@ -97,19 +97,22 @@ namespace griffin {
 		*/
 		class Mesh_GL {
 		public:
-			// Constructors / destructor
+			// Constructors / Destructor
 			explicit Mesh_GL() {}
 
 			/**
 			* Constructor used by resource loading system. The modelData buffer contains the entire
-			* mesh data to be deserialized.
+			* mesh data to be deserialized. The createResourcesFromInternalMemory function must be
+			* called from the OpenGL thread after this constructor is used.
 			*/
 			explicit Mesh_GL(ByteBuffer data, size_t size);
 			
 			/**
 			* Constructor used by import routine. The modelData buffer has a different layout and
 			* is smaller compared to when the mesh is deserialized from disk. The internal pointers
-			* are still able to be hooked up, so it works just fine.
+			* are still able to be hooked up, so it works just fine. This constructor results in a
+			* fully loaded and usable mesh, including initing OpenGL resources. Call this from the
+			* OpenGL thread only.
 			*/
 			explicit Mesh_GL(size_t sizeBytes, uint16_t numDrawSets, uint16_t numMaterials,
 							 uint32_t drawSetsOffset, uint32_t materialsOffset, uint32_t meshSceneOffset,
@@ -121,6 +124,8 @@ namespace griffin {
 			~Mesh_GL();
 
 			// Functions
+
+			size_t getSize() const { return m_sizeBytes; }
 
 			/**
 			* Binds the vertex + index buffers, and enables vertex attrib pointers
@@ -171,24 +176,27 @@ namespace griffin {
 		private:
 
 			// Variables
+			uint32_t		m_sizeBytes = 0;			//<! contains the size of m_modelData in bytes
+
 			uint16_t		m_numDrawSets = 0;
 			uint16_t		m_numMaterials = 0;
 
-			uint32_t		m_drawSetsOffset = 0;	//<! offsets into m_modelData
+			uint32_t		m_drawSetsOffset = 0;		//<! offsets into m_modelData
 			uint32_t		m_materialsOffset = 0;
 			uint32_t		m_meshSceneOffset = 0;
+			uint32_t		m_vertexBufferOffset = 0;	//<! 0 when m_vertexBuffer contains internal data, > 0 when vertex data is part of m_modelData
+			uint32_t		m_indexBufferOffset = 0;	//<! 0 when m_indexBuffer contains internal data, > 0 when index data is part of m_modelData
 
 			DrawSet *		m_drawSets = nullptr;
 			Material_GL *	m_materials = nullptr;
+
 			MeshSceneGraph	m_meshScene;
 
 			VertexBuffer_GL	m_vertexBuffer;
 			IndexBuffer_GL	m_indexBuffer;
 
-			size_t			m_sizeBytes = 0;		//<! contains the size of m_modelData in bytes
-
-			ByteBuffer		m_modelData = nullptr;	//<! contains data for m_drawSets, m_materials, m_meshScene.sceneNodes,
-													//<! m_meshScene.childIndices, m_meshScene.meshIndices
+			ByteBuffer		m_modelData = nullptr;		//<! contains data for m_drawSets, m_materials, m_meshScene.sceneNodes,
+														//<! m_meshScene.childIndices, m_meshScene.meshIndices
 		};
 
 

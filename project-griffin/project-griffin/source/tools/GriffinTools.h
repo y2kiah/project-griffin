@@ -10,11 +10,24 @@
 
 
 namespace griffin {
+	// Forward declarations
+	namespace resource {
+		class ResourceLoader;
+		typedef std::shared_ptr<ResourceLoader>	ResourceLoaderPtr;
+		typedef std::weak_ptr<ResourceLoader>	ResourceLoaderWeakPtr;
+	}
+
 	namespace tools {
 		
 		using std::shared_ptr;
+		using std::weak_ptr;
 		using std::future;
 		using core::CoreSystem;
+
+		// Function declarations
+
+		extern void setResourceLoaderPtr(const resource::ResourceLoaderPtr& resourcePtr);
+
 
 		/**
 		*

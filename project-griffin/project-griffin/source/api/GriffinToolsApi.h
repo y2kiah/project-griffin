@@ -13,10 +13,16 @@ extern "C" {
 #define ffi
 #ifdef ffi
 
-	
+	// Functions
 
+	GRIFFIN_EXPORT
+	uint64_t griffin_tools_importMesh(const char* filename);
 
+	GRIFFIN_EXPORT
+	bool griffin_tools_saveMesh(uint64_t mesh, const char* filename);
 
+	GRIFFIN_EXPORT
+	uint64_t griffin_tools_convertMesh(const char* sourceFilename, const char* destFilename);
 
 #endif ffi
 #undef ffi

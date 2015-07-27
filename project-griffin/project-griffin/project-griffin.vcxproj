@@ -58,6 +58,7 @@
     <ClCompile Include="source\scene\impl\SceneGraph.cpp" />
     <ClCompile Include="source\script\impl\ScriptManager_LuaJIT.cpp" />
     <ClCompile Include="source\tools\impl\GriffinTools.cpp" />
+    <ClCompile Include="source\tools\impl\GriffinToolsApi.cpp" />
     <ClCompile Include="source\utility\profile\impl\Profile.cpp" />
   </ItemGroup>
   <ItemGroup>

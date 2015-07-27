@@ -17,7 +17,7 @@ extern "C" {
 	using namespace griffin;
 	using namespace griffin::scene;
 
-	GRIFFIN_EXPORT
+	
 	uint64_t griffin_scene_createScene(const char name[32], bool makeActive)
 	{
 		return g_sceneMgrPtr->createScene(name, makeActive).value;

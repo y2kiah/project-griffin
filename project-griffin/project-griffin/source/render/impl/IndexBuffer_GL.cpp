@@ -51,16 +51,7 @@ namespace griffin {
 
 			m_sizeBytes = size;
 
-			switch (sizeOfElement) {
-				case sizeof(uint8_t) :
-					m_flags = IndexBuffer_8bit;
-					break;
-				case sizeof(uint16_t) :
-					m_flags = IndexBuffer_16bit;
-					break;
-				default:
-					m_flags = IndexBuffer_32bit;
-			}
+			m_flags |= static_cast<uint8_t>(getSizeFlag(sizeOfElement));
 
 			return (m_glIndexBuffer != 0);
 		}
@@ -68,7 +59,7 @@ namespace griffin {
 
 		bool IndexBuffer_GL::loadFromInternalMemory(bool discard)
 		{
-			bool result = loadFromMemory(m_tmpData.get(), m_sizeBytes);
+			bool result = loadFromMemory(m_tmpData.get(), m_sizeBytes, getSizeOfElement(static_cast<IndexBufferFlags>(m_flags)));
 			if (discard) {
 				m_tmpData.reset();
 			}
