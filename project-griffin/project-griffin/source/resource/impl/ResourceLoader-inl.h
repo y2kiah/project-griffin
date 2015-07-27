@@ -27,7 +27,7 @@ namespace griffin {
 
 			// Can this safely capture name and callback by reference?
 			// Or do they need to be copied for the lambda to refer to them later?
-			auto f = m_c([=, this](Impl& impl) {
+			h.resourceId = m_c([=, this](Impl& impl) {
 				// check cache for resource first
 				auto indexIterator = impl.m_nameToHandle.find(name);
 				if (indexIterator != impl.m_nameToHandle.end()) {
@@ -77,12 +77,11 @@ namespace griffin {
 				return id;
 			});
 
-			h.resourceId = f.share();
 			return h;
 		}
 
 		template <typename T>
-		std::future<ResourcePtr> ResourceLoader::getResource(const ResourceHandle<T>& h)
+		std::shared_future<ResourcePtr> ResourceLoader::getResource(const ResourceHandle<T>& h)
 		{
 			Id_T handle = h.handle();
 

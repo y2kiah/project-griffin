@@ -63,7 +63,7 @@ namespace griffin {
 			*
 			*/
 			template <typename T>
-			std::future<ResourcePtr> getResource(const ResourceHandle<T>& h);
+			std::shared_future<ResourcePtr> getResource(const ResourceHandle<T>& h);
 
 			void registerCache(const ResourceCachePtr& cachePtr, CacheType cacheTypeId);
 			void registerSource(const IResourceSourcePtr& sourcePtr);

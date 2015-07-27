@@ -1,3 +1,7 @@
+/**
+* @file ModelImport_Assimp.h
+* @author Jeff Kiah
+*/
 #pragma once
 #ifdef GRIFFIN_TOOLS_BUILD
 #ifndef GRIFFIN_MODEL_IMPORT_ASSIMP_H_

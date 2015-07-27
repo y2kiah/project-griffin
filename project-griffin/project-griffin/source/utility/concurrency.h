@@ -23,6 +23,8 @@
 #include <bitset>
 #include <utility/container/concurrent_queue.h>
 
+#include <SDL_log.h>
+
 namespace griffin {
 
 	using std::atomic;
@@ -54,7 +56,10 @@ namespace griffin {
 			m_numWorkerThreads = cpuCount > CONCURRENT_MAX_WORKER_THREADS ? CONCURRENT_MAX_WORKER_THREADS : cpuCount;
 			
 			auto threadProcess = [=]{
-				while (!m_done) { m_tasks[Thread_Workers].wait_pop()(); }
+				while (!m_done) {
+					m_tasks[Thread_Workers].wait_pop()();
+				}
+				SDL_Log("exiting thread %llu", std::this_thread::get_id().hash());
 			};
 
 			for (int i = 0; i < m_numWorkerThreads; ++i) {
@@ -64,12 +69,20 @@ namespace griffin {
 		thread_pool(const thread_pool&) = delete; // can't copy a thread_pool
 
 		~thread_pool() {
+			SDL_Log("thread pool deleted");
+			m_done = true;
 			for (int i = 0; i < m_numWorkerThreads; ++i) {
-				m_tasks[Thread_Workers].push([=]{ m_done = true; });
+				SDL_Log("pushing done task");
+				m_tasks[Thread_Workers].push([=]{
+					m_done = true;
+				});
 			}
 
 			for (auto& t : m_threads) {
-				if (t.joinable()) { t.join(); }
+				if (t.joinable()) {
+					SDL_Log("joining thread %llu", t.get_id().hash());
+					t.join();
+				}
 			}
 		}
 		
@@ -115,16 +128,24 @@ namespace griffin {
 	template <typename ResultType>
 	class task : public task_base {
 	public:
-		// Variables
+		// Type Definitions
 
 		typedef ResultType result_type;
 		typedef std::promise<result_type> promise_type;
 		typedef std::shared_future<result_type> future_type;
+		enum Flags : uint8_t {
+			Task_None       = 0,
+			Task_Valid      = 1,	//<! task is valid if it is runnable and not default constructed, must have called run or created as a continuation
+			Task_Run_Called = 2		//<! run function called, or continuation run
+		};
+
+		// Variables
 
 		struct Impl {
-			promise_type   p;				//<! promise for result of task
-			future_type    result;			//<! future return value of the task
-			ThreadAffinity threadAffinity;	//<! thread affinity for scheduling the task
+			promise_type	p;				//<! promise for result of task
+			future_type		result;			//<! future return value of the task
+			ThreadAffinity	threadAffinity;	//<! thread affinity for scheduling the task
+			uint8_t			flags;			//<! contains flags for this task
 			std::function<void(ThreadAffinity)> fCont;	//<! continuation capture
 		};
 		std::shared_ptr<Impl> _pImpl;
@@ -136,6 +157,7 @@ namespace griffin {
 		{
 			_pImpl->result = _pImpl->p.get_future();
 			_pImpl->threadAffinity = threadAffinity_;
+			_pImpl->flags = Flags::Task_None;
 		}
 
 		task(task&& t) :
@@ -148,7 +170,21 @@ namespace griffin {
 			_pImpl(t._pImpl)
 		{}
 
-		// this function should be the constructor, run immediately
+		task<result_type>& operator=(task<result_type>&& t)
+		{
+			if (&t != this) {
+				_pImpl = t._pImpl;
+				t._pImpl.reset();
+			}
+			return *this;
+		}
+
+		task<result_type>& operator=(const task<result_type>& t)
+		{
+			_pImpl = t._pImpl;
+			return *this;
+		}
+
 
 		/**
 		* Executes function pointer, functor or lambda on the worker thread where the task is
@@ -158,7 +194,10 @@ namespace griffin {
 		* @returns future_type
 		*/
 		template <typename F, typename...Args>
-		task<result_type>& run(F&& func, Args...args) {
+		task<result_type>& run(F func, Args...args) {
+			assert(!run_called() && "run called twice, invalid usage");
+			_pImpl->flags |= Flags::Task_Valid | Flags::Task_Run_Called;
+
 			auto pImpl = _pImpl;
 			s_threadPool->run(_pImpl->threadAffinity, [pImpl, func, args...]{
 				auto& impl = *pImpl;
@@ -191,10 +230,23 @@ namespace griffin {
 		bool is_ready() const {
 			return _pImpl->result._Is_ready();
 		}
+
+		bool is_valid() const {
+			return (_pImpl->flags & Flags::Task_Valid) != 0;
+		}
+
+		bool run_called() const {
+			return (_pImpl->flags & Flags::Task_Run_Called) != 0;
+		}
+
+		bool has_continuation() const {
+			return !!_pImpl->fCont; // coerce compiler to run the bool operator
+		}
 		
 		template <typename Fc>
 		auto then(Fc fCont_, ThreadAffinity threadAffinity_ = Thread_Workers) -> task<decltype(fCont_())> {
 			task<decltype(fCont_())> continuation(threadAffinity_);
+			continuation._pImpl->flags |= Flags::Task_Valid;
 
 			auto& thisImpl = *_pImpl;
 			if (thisImpl.result._Is_ready()) {
@@ -204,7 +256,10 @@ namespace griffin {
 			else {
 				thisImpl.fCont = [continuation, fCont_](ThreadAffinity previousThreadAffinity) {
 					auto& impl = *continuation._pImpl;
+
 					if (impl.threadAffinity == previousThreadAffinity) {
+						impl.flags |= Flags::Task_Run_Called;
+
 						// run continuation immediately if it can run on the same thread
 						try {
 							set_value(impl.p, fCont_);
@@ -306,15 +361,67 @@ namespace griffin {
 
 	/**
 	* @class concurrent
-	* The concurrent class wraps any class T and accepts lambdas that take a reference to the contained
-	* object for performing operations (via member-function calls presumably) in a thread safe manner.
-	* Lambdas are queued in a concurrent_queue and run by a private worker thread. This is the non-
-	* blocking asychronous way to wrap a class for thread safety, and is highly composable with async
-	* patterns. Since each instance of this object creates its own thread, don't abuse this pattern by
-	* creating lots of these objects. This should wrap a high level class with few instances.
-	* See the backgrounder class example below for an illustration.
+	* The concurrent class wraps any class T and accepts lambdas that take a reference to the
+	* contained object for performing operations (via member-function calls presumably) in a thread
+	* safe manner. Lambdas are queued by chaining task continuations without occupying a thread
+	* while waiting. This is the non-blocking asychronous way to wrap a class for thread safety.
+	* This should wrap a high level class with few instances. See the backgrounder class example
+	* below for an illustration.
 	* @tparam	T	type of class or data wrapped for concurrency
 	*/
+	template <typename T>
+	class concurrent2 {
+	public:
+		concurrent2(T t_ = T{}) :
+			t(std::move(t_))
+		{}
+
+		/**
+		* Executes function pointer, functor or lambda on a worker thread (or thread specified by
+		* affinity where the task is internally serialized for thread safety by chaining task
+		* continuations, without blocking and without occupying a worker thread while waiting.
+		* @tparam	F	function pointer, functor or lambda accepting one argument of type T
+		* @param	f	type F
+		* @param	threadAffinity_	set thread to run the function
+		* @returns std::future of type T
+		*/
+		template <typename F>
+		auto operator()(F f, ThreadAffinity threadAffinity_ = Thread_Workers) const -> std::shared_future<decltype(f(t))>
+		{
+			std::unique_lock<mutex> lock(m_mutex);
+
+			if (!m_latestTask.is_valid()) {
+				// this runs on the first call
+				task<decltype(f(t))> newTask(threadAffinity_);
+
+				//newTask.run(f, t); // this not working, why? example shared_ptr ends up null in resource cache
+				newTask.run([f, this]{
+					return f(t);
+				});
+
+				m_latestTask = newTask.then([]{}, threadAffinity_);
+
+				return newTask.get_future();
+			}
+			else {
+				// this runs on subsequent calls
+				auto newTask = m_latestTask.then([f, this]{
+					return f(t); // it's legal to return void http://stackoverflow.com/questions/2249108/can-i-return-in-void-function
+				}, threadAffinity_);
+				
+				m_latestTask = newTask.then([]{}, threadAffinity_);
+
+				return newTask.get_future();
+			}
+		}
+
+	private:
+		mutable T			t;
+		mutable mutex		m_mutex;
+		mutable task<void>	m_latestTask;
+	};
+
+
 	template <typename T>
 	class concurrent {
 	public:
@@ -328,26 +435,9 @@ namespace griffin {
 			worker.join();
 		}
 
-		/**
-		* Executes function pointer, functor or lambda on the worker thread where the task is
-		* internally serialized by the concurrent queue for thread safety.
-		* @tparam	F	function pointer, functor or lambda accepting one argument of type T
-		* @param	f	type F
-		* @returns std::future of type T
-		*/
-		/*template <typename F>
-		auto operator()(F f) const -> std::shared_future<decltype(f(t))> {
-			task<decltype(f(t))> currentTask(Thread_Workers);
-			auto ret = currentTask.get_future();
-
-			currentTask.run(f, t);
-
-			return ret;
-		}*/
 		template <typename F>
-		auto operator()(F f) const -> std::future<decltype(f(t))> {
+		auto operator()(F f) const -> std::shared_future<decltype(f(t))> {
 			auto p = std::make_shared<std::promise<decltype(f(t))>>();
-			auto ret = p->get_future();
 
 			q.push([=]{
 				try {
@@ -358,7 +448,7 @@ namespace griffin {
 				}
 			});
 
-			return ret;
+			return p->get_future();
 		}
 
 	private:

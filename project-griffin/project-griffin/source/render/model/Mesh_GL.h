@@ -13,7 +13,8 @@
 
 namespace griffin {
 	namespace render {
-		
+		// Type Declarations
+
 		typedef std::unique_ptr<unsigned char[]> ByteBuffer;
 
 		enum VertexFlags : uint8_t {
@@ -68,38 +69,53 @@ namespace griffin {
 			uint32_t	childIndexOffset = 0;		//<! offset into array of child node indexes, numChildren elements belong to this node
 			uint32_t	numMeshes = 0;
 			uint32_t	meshIndexOffset = 0;		//<! offset into array of mesh instances, numMeshes elements belong to this node
-			std::string name;
+			// scene node string name is stored in the metadata buffer with the same index
 		};
 
+		#define GRIFFIN_MAX_MESHSCENENODE_NAME_SIZE		64
+
+		struct MeshSceneNodeMetaData {
+			char		name[GRIFFIN_MAX_MESHSCENENODE_NAME_SIZE];	//<! name of the scene graph node
+		};
 
 		struct MeshSceneGraph {
 			uint32_t	numNodes = 0;
 			uint32_t	numChildIndices = 0;
 			uint32_t	numMeshIndices = 0;
-			uint32_t	childIndicesOffset = 0;
-			uint32_t	meshIndicesOffset = 0;
-			MeshSceneNode * sceneNodes = nullptr;	//<! array of nodes starting with root, in breadth-first order
+			uint32_t	childIndicesOffset = 0;		//<! offset in bytes to start of childIndices array data
+			uint32_t	meshIndicesOffset = 0;		//<! offset in bytes to start of meshIndices array data
+			uint32_t	meshMetaDataOffset = 0;		//<! offset in bytes to start of sceneNodeMetaData array data
+			MeshSceneNode * sceneNodes = nullptr;	//<! array of nodes starting with root, in breadth-first order, offset is always 0 relative to start of MeshSceneGraph data
 			uint32_t *	childIndices = nullptr;		//<! combined array of child indices for scene nodes, each an index into sceneNodes array
 			uint32_t *	meshIndices = nullptr;		//<! combined array of mesh indices for scene nodes, each an index into m_drawSets array
+			MeshSceneNodeMetaData * sceneNodeMetaData = nullptr;	//<! metaData is indexed corresponding to sceneNodes
 		};
 
 
-		// Need to split loaded buffer into the drawset portion and the vb/ib portion so the latter
-		// can be deallocated after it's sent to the GPU. The drawset part will remain with this
-		// object. It won't work to have the resource loader give a single large buffer loaded from
-		// disk. The load routine needs to split the load into two allocations, one for the vb/ib
-		// and one for the drawsets.
-		
+		/**
+		*
+		*/
 		class Mesh_GL {
 		public:
 			// Constructors / destructor
 			explicit Mesh_GL() {}
+
+			/**
+			* Constructor used by resource loading system. The modelData buffer contains the entire
+			* mesh data to be deserialized.
+			*/
 			explicit Mesh_GL(ByteBuffer data, size_t size);
+			
+			/**
+			* Constructor used by import routine. The modelData buffer has a different layout and
+			* is smaller compared to when the mesh is deserialized from disk. The internal pointers
+			* are still able to be hooked up, so it works just fine.
+			*/
 			explicit Mesh_GL(size_t sizeBytes, uint16_t numDrawSets, uint16_t numMaterials,
-							 uint32_t materialsOffset, uint32_t meshSceneOffset,
-							 ByteBuffer modelData,
-							 MeshSceneGraph&& meshScene,
+							 uint32_t drawSetsOffset, uint32_t materialsOffset, uint32_t meshSceneOffset,
+							 ByteBuffer modelData, MeshSceneGraph&& meshScene,
 							 VertexBuffer_GL&& vb, IndexBuffer_GL&& ib);
+			
 			Mesh_GL(Mesh_GL&& other);
 			Mesh_GL(const Mesh_GL&) = delete;
 			~Mesh_GL();
@@ -135,19 +151,31 @@ namespace griffin {
 			void initializeVAO(int drawSetIndex) const;
 			void initializeVAOs() const;
 
-//			#ifdef GRIFFIN_TOOLS_BUILD
 			/**
-			* Import from another file format using assimp, used in TOOLS build only
+			* Serialization functions, to/from binary stream
 			*/
-//			bool loadWithAssimp(std::string filename);
-//			#endif
+			void serialize(std::ostream& out);
+			void deserialize(std::istream& in);
+
+			/**
+			* Sets properties and internal pointers based on data loaded into m_modelData buffer
+			*/
+			void loadFromInternalMemory();
+
+			/**
+			* Creates index/vertex buffers based on data loaded into m_modelData buffer. Call this
+			* from the OpenGL thread after calling loadFromInternalMemory.
+			*/
+			void createResourcesFromInternalMemory();
 
 		private:
+
 			// Variables
 			uint16_t		m_numDrawSets = 0;
 			uint16_t		m_numMaterials = 0;
 
-			uint32_t		m_materialsOffset = 0;	//<! offsets into m_modelData
+			uint32_t		m_drawSetsOffset = 0;	//<! offsets into m_modelData
+			uint32_t		m_materialsOffset = 0;
 			uint32_t		m_meshSceneOffset = 0;
 
 			DrawSet *		m_drawSets = nullptr;
@@ -157,7 +185,7 @@ namespace griffin {
 			VertexBuffer_GL	m_vertexBuffer;
 			IndexBuffer_GL	m_indexBuffer;
 
-			size_t			m_sizeBytes = 0;
+			size_t			m_sizeBytes = 0;		//<! contains the size of m_modelData in bytes
 
 			ByteBuffer		m_modelData = nullptr;	//<! contains data for m_drawSets, m_materials, m_meshScene.sceneNodes,
 													//<! m_meshScene.childIndices, m_meshScene.meshIndices
@@ -165,35 +193,6 @@ namespace griffin {
 
 
 		// Inline Functions
-
-		inline Mesh_GL::Mesh_GL(ByteBuffer data, size_t size) :
-			m_modelData(std::move(data)),
-			m_sizeBytes{ size }
-		{}
-
-
-		inline Mesh_GL::Mesh_GL(size_t sizeBytes, uint16_t numDrawSets, uint16_t numMaterials,
-								uint32_t materialsOffset, uint32_t meshSceneOffset,
-								ByteBuffer modelData,
-								MeshSceneGraph&& meshScene,
-								VertexBuffer_GL&& vb, IndexBuffer_GL&& ib) :
-			m_sizeBytes{ sizeBytes },
-			m_numDrawSets{ numDrawSets },
-			m_numMaterials{ numMaterials },
-			m_materialsOffset{ materialsOffset },
-			m_meshSceneOffset{ meshSceneOffset },
-			m_modelData(std::move(modelData)),
-			m_meshScene{ std::forward<MeshSceneGraph>(meshScene) },
-			m_vertexBuffer(std::forward<VertexBuffer_GL>(vb)),
-			m_indexBuffer(std::forward<IndexBuffer_GL>(ib))
-		{
-			// fix up the internal pointers into m_modelData
-			m_drawSets = reinterpret_cast<DrawSet*>(m_modelData.get());
-			m_materials = reinterpret_cast<Material_GL*>(m_modelData.get() + m_materialsOffset);
-
-			initializeVAOs();
-		}
-
 
 		inline void Mesh_GL::initializeVAOs() const
 		{

@@ -190,9 +190,6 @@
     <ClCompile Include="source\resource\impl\ResourceLoader-inl.h">
       <Filter>resource\impl</Filter>
     </ClCompile>
-    <ClCompile Include="source\render\model\impl\ModelImport_Assimp.cpp">
-      <Filter>render\model\impl</Filter>
-    </ClCompile>
     <ClCompile Include="source\render\impl\VertexBuffer_GL.cpp">
       <Filter>render\impl</Filter>
     </ClCompile>
@@ -246,6 +243,9 @@
     </ClCompile>
     <ClCompile Include="source\scene\impl\SceneGraph.cpp">
       <Filter>scene\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\model\impl\ModelImport_Assimp.cpp">
+      <Filter>render\model\impl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -642,9 +642,6 @@
     <ClInclude Include="source\render\texture\Texture2D_GL.h">
       <Filter>render\texture</Filter>
     </ClInclude>
-    <ClInclude Include="source\render\model\ModelImport_Assimp.h">
-      <Filter>render\model</Filter>
-    </ClInclude>
     <ClInclude Include="source\render\VertexBuffer_GL.h">
       <Filter>render</Filter>
     </ClInclude>
@@ -735,6 +732,9 @@
     </ClInclude>
     <ClInclude Include="source\entity\ComponentStoreSerialization.h">
       <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\model\ModelImport_Assimp.h">
+      <Filter>render\model</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

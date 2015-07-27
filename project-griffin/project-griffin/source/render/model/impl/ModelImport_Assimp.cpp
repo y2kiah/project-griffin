@@ -1,8 +1,12 @@
+/**
+* @file ModelImport_Assimp.cpp
+* @author Jeff Kiah
+*/
 #ifdef GRIFFIN_TOOLS_BUILD
 
 #pragma comment( lib, "assimp.lib" )
 
-#include "../ModelImport_Assimp.h"
+#include <render/model/ModelImport_Assimp.h>
 #include <gl/glew.h>
 
 #include <assimp/Importer.hpp>	// C++ importer interface
@@ -77,7 +81,8 @@ namespace griffin {
 			meshScene.numMeshIndices = std::get<2>(sceneTuple);
 
 			size_t totalSceneGraphSize = (meshScene.numNodes * sizeof(MeshSceneNode)) +
-										 ((meshScene.numChildIndices + meshScene.numMeshIndices) * sizeof(uint32_t));
+										 ((meshScene.numChildIndices + meshScene.numMeshIndices) * sizeof(uint32_t)) +
+										 (meshScene.numNodes * sizeof(MeshSceneNodeMetaData));
 
 			// create model data buffer
 			size_t modelDataSize = totalDrawSetsSize + totalMaterialsSize + totalSceneGraphSize;
@@ -110,15 +115,24 @@ namespace griffin {
 			uint32_t meshSceneOffset = static_cast<uint32_t>(totalDrawSetsSize + totalMaterialsSize);
 			meshScene.childIndicesOffset = (meshScene.numNodes * sizeof(MeshSceneNode));
 			meshScene.meshIndicesOffset  = meshScene.childIndicesOffset + (meshScene.numChildIndices * sizeof(uint32_t));
+			meshScene.meshMetaDataOffset = meshScene.meshIndicesOffset + (meshScene.numMeshIndices * sizeof(uint32_t));
 			meshScene.sceneNodes   = reinterpret_cast<MeshSceneNode*>(modelData.get() + meshSceneOffset);
 			meshScene.childIndices = reinterpret_cast<uint32_t*>(modelData.get() + meshSceneOffset + meshScene.childIndicesOffset);
 			meshScene.meshIndices  = reinterpret_cast<uint32_t*>(modelData.get() + meshSceneOffset + meshScene.meshIndicesOffset);
+			meshScene.sceneNodeMetaData = reinterpret_cast<MeshSceneNodeMetaData*>(modelData.get() + meshSceneOffset + meshScene.meshMetaDataOffset);
 			fillSceneGraph(scene, meshScene);
 
 			// build the mesh object
-			auto meshPtr = std::make_unique<Mesh_GL>(modelDataSize, numMeshes, numMaterials,
-													 materialsOffset, meshSceneOffset, std::move(modelData),
-													 std::move(meshScene), std::move(vb), std::move(ib));
+			auto meshPtr = std::make_unique<Mesh_GL>(modelDataSize,
+													 numMeshes,
+													 numMaterials,
+													 0, // drawSetsOffset, always 0 when using assimp import
+													 materialsOffset,
+													 meshSceneOffset,
+													 std::move(modelData),
+													 std::move(meshScene),
+													 std::move(vb),
+													 std::move(ib));
 			
 			// everything "assimp" is cleaned up by importer destructor
 			return meshPtr;
@@ -541,6 +555,7 @@ namespace griffin {
 
 				// copy node data
 				auto& thisNode = sceneGraph.sceneNodes[index];
+				auto& thisMetaData = sceneGraph.sceneNodeMetaData[index];
 
 				auto& t = assimpNode.mTransformation;
 				thisNode.transform = { t.a1, t.b1, t.c1, t.d1,
@@ -552,12 +567,14 @@ namespace griffin {
 				thisNode.childIndexOffset = childIndexOffset;
 				thisNode.meshIndexOffset = meshIndexOffset;
 				thisNode.parentIndex = parentIndex;
-				thisNode.name = assimpNode.mName.C_Str();
 
 				// populate mesh index array
 				for (unsigned int m = 0; m < thisNode.numMeshes; ++m) {
 					sceneGraph.meshIndices[meshIndexOffset + m] = assimpNode.mMeshes[m];
 				}
+
+				// copy metadata
+				strcpy_s(thisMetaData.name, GRIFFIN_MAX_MESHSCENENODE_NAME_SIZE - 1, assimpNode.mName.C_Str());
 
 				// advance the counters for the next node
 				childIndexOffset += assimpNode.mNumChildren;

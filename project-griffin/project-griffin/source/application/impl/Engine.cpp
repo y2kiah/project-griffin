@@ -95,8 +95,13 @@ namespace griffin {
 			using namespace resource;
 
 			// Build resource caches
-			auto materialsCachePtr = make_shared<ResourceCache>(Cache_Materials_T, 10, 1024 * 1024 /* 1 MB */);
+			//   Materials Cache
+			auto materialsCachePtr = make_shared<ResourceCache>(Cache_Materials_T, RESERVE_RESOURCECACHE_MATERIALS, 10 * 1024 * 1024 /* 10 MB */);
 			loaderPtr->registerCache(materialsCachePtr, (CacheType)materialsCachePtr->getItemTypeId());
+			
+			//   Scripts Cache
+			auto scriptsCachePtr = make_shared<ResourceCache>(Cache_Scripts_T, RESERVE_RESOURCECACHE_SCRIPTS, 1024 * 1024 /* 1 MB */);
+			loaderPtr->registerCache(scriptsCachePtr, (CacheType)scriptsCachePtr->getItemTypeId());
 
 			// Build resource sources
 			auto fileSystemSourcePtr = IResourceSourcePtr((IResourceSource*)(new FileSystemSource()));
