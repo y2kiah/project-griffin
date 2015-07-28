@@ -36,12 +36,14 @@ extern "C" {
 				throw std::runtime_error("no resource loader");
 			}
 
-			std::unique_ptr<Mesh_GL> mesh = importModelFile(filename);
-			if (mesh == nullptr) {
+			std::unique_ptr<Mesh_GL> meshPtr = importModelFile(filename);
+			if (meshPtr == nullptr) {
 				return 0;
 			}
 
-			ResourcePtr meshResPtr = std::make_shared<Resource_T>(std::move(mesh), mesh->getSize());
+			Mesh_GL* mesh = meshPtr.release();
+
+			ResourcePtr meshResPtr = std::make_shared<Resource_T>(std::move(*mesh), mesh->getSize());
 
 			auto res = loader->addResourceToCache<Mesh_GL>(meshResPtr, CacheType::Cache_Materials_T);
 			
@@ -67,10 +69,9 @@ extern "C" {
 
 			auto res = loader->getResource<Mesh_GL>(handle, CacheType::Cache_Materials_T);
 
-			std::string path = "data/models/" + std::string(filename);
-
 			std::ofstream ofs;
-			ofs.open(path.c_str(), std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
+			SDL_Log("saving mesh %llu to %s", mesh, filename);
+			ofs.open(filename, std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
 			ofs.exceptions(std::ofstream::failbit | std::ofstream::badbit);
 
 			res->getResource<Mesh_GL>().serialize(ofs);

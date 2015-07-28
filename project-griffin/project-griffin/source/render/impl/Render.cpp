@@ -23,7 +23,7 @@ namespace griffin {
 
 		// Forward Declarations
 
-		bool loadModelTemp(string);
+		ResourceHandle<Mesh_GL> loadMesh(wstring, CacheType);
 
 		// Global Variables
 
@@ -39,7 +39,7 @@ namespace griffin {
 		};
 		
 		// TEMP
-		std::unique_ptr<Mesh_GL> g_tempMesh = nullptr;
+		ResourcePtr g_tempMesh = nullptr;
 		std::unique_ptr<CameraPersp> camera = nullptr;
 
 
@@ -187,9 +187,10 @@ namespace griffin {
 				glUniform1f(inverseFrustumDistanceLoc, inverseCameraDistance);
 
 				// draw the test mesh
-				g_tempMesh->draw(modelMatLoc, modelViewMatLoc, mvpMatLoc, normalMatLoc,
-								 ambientLoc, diffuseLoc, specularLoc, shininessLoc,
-								 viewMat, viewProjMat); // temporarily passing in the modelMatLoc
+				auto& mesh = g_tempMesh->getResource<Mesh_GL>();
+				mesh.draw(modelMatLoc, modelViewMatLoc, mvpMatLoc, normalMatLoc,
+						  ambientLoc, diffuseLoc, specularLoc, shininessLoc,
+						  viewMat, viewProjMat); // temporarily passing in the modelMatLoc
 				
 				glDisable(GL_DEPTH_TEST);
 			}
@@ -266,10 +267,18 @@ namespace griffin {
 
 			//loadModelTemp("data/models/ship.dae");
 			//loadModelTemp("data/models/riggedFighter.dae");
-			loadModelTemp("data/models/landing platform.dae");
 			//loadModelTemp("data/models/quadcopter2.dae");
 			//loadModelTemp("data/models/cube.dae");
 			//loadModelTemp("data/models/untitled.blend");
+			auto mesh = loadMesh(L"models/landing_platform.gmd", CacheType::Cache_Materials_T);
+
+			using namespace resource;
+			auto loader = g_resourceLoader.lock();
+			if (!loader) {
+				throw std::runtime_error("no resource loader");
+			}
+			g_tempMesh = loader->getResource(mesh).get();
+			loader->executeCallbacks();
 
 			camera = std::make_unique<CameraPersp>(viewportWidth, viewportHeight, 60.0f, 0.1f, 100000.0f);
 		}
@@ -313,7 +322,7 @@ namespace griffin {
 		}
 
 
-		ResourceHandle<ShaderProgram_GL> loadShaderProgram(wstring programPath, resource::CacheType cache)
+		ResourceHandle<ShaderProgram_GL> loadShaderProgram(wstring programPath, CacheType cache)
 		{
 			using namespace resource;
 
@@ -340,13 +349,12 @@ namespace griffin {
 		}
 
 
-		bool loadModelTemp(string modelFilePath)
+		ResourceHandle<Mesh_GL> loadMesh(wstring modelFilePath, CacheType cache)
 		{
-			g_tempMesh = importModelFile(modelFilePath);
+			//g_tempMesh = importModelFile(modelFilePath);
+			//return (g_tempMesh != false);
 
-			return (g_tempMesh != false);
-
-			/*using namespace resource;
+			using namespace resource;
 
 			auto loader = g_resourceLoader.lock();
 
@@ -354,39 +362,16 @@ namespace griffin {
 				throw std::runtime_error("no resource loader");
 			}
 
-			auto modelResourceBuilder = [](DataPtr data, size_t size) {
+			auto meshResourceBuilder = [](DataPtr data, size_t size) {
 				return Mesh_GL(std::move(data), size);
 			};
 
-			auto vertexHandle = loader->load<Shader_GL>(vertexFilePath, Cache_Materials_T, shaderResourceBuilder,
-														[](const ResourcePtr& resourcePtr, Id_T handle, size_t size) {
-				Shader_GL& shader = resourcePtr->getResource<Shader_GL>();
-				auto ok = shader.compileShader(GL_VERTEX_SHADER);
-				if (!ok) {
-					throw std::runtime_error("vertex shader compilation failed");
-				}
-			});
+			auto meshResourceCallback = [](const ResourcePtr& resourcePtr, Id_T handle, size_t size) {
+				Mesh_GL& mesh = resourcePtr->getResource<Mesh_GL>();
+				mesh.createResourcesFromInternalMemory();
+			};
 
-			try {
-				auto vertexResource = loader->getResource(vertexHandle);
-				auto fragResource = loader->getResource(fragmentHandle);
-				loader->executeCallbacks(); // this runs the callback on this thread to compile the shaders
-
-				// create the program
-				g_tempShaderProgramPtr = std::make_shared<ShaderProgram_GL>(vertexResource.get()->getResource<Shader_GL>(),
-																			fragResource.get()->getResource<Shader_GL>());
-				bool ok = g_tempShaderProgramPtr->linkProgram();
-
-				if (ok) {
-					//auto programHandle = loader->addToCache<ShaderProgram_GL>(shaderProgramPtr, Cache_Materials_T);
-					return true;
-				}
-			}
-			catch (std::runtime_error& ex) {
-				SDL_Log(ex.what());
-			}
-
-			return false;*/
+			return loader->load<Mesh_GL>(modelFilePath, cache, meshResourceBuilder, meshResourceCallback);
 		}
 	}
 }
