@@ -1179,9 +1179,6 @@
     <None Include="scripts\tools\web\test.lp">
       <Filter>lua\tools\web</Filter>
     </None>
-    <None Include="scripts\tools\web\test.lua">
-      <Filter>lua\tools\web</Filter>
-    </None>
     <None Include="source\lua\extension\cgilua.lua">
       <Filter>lua\extension</Filter>
     </None>
@@ -1196,6 +1193,12 @@
     </None>
     <None Include="source\lua\Scene.lua">
       <Filter>lua</Filter>
+    </None>
+    <None Include="source\lua\tools\GriffinToolsApi.lua">
+      <Filter>lua\tools</Filter>
+    </None>
+    <None Include="scripts\tools\web\api.lua">
+      <Filter>lua\tools\web</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

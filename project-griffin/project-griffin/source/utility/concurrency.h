@@ -29,7 +29,7 @@ namespace griffin {
 
 	using std::atomic;
 
-#define CONCURRENT_MAX_WORKER_THREADS	16
+#define CONCURRENT_MAX_WORKER_THREADS	8
 #define CONCURRENT_NUM_FIXED_THREADS	3
 // one shared by all worker threads, plus one each for fixed thread affinity
 #define CONCURRENT_NUM_TASK_QUEUES		CONCURRENT_NUM_FIXED_THREADS + 1
@@ -42,7 +42,7 @@ namespace griffin {
 	};
 
 	/**
-	* TODO: seems to be a join bug when number of cpu cores is equal to CONCURRENT_MAX_WORKER_THREADS
+	* TODO: seems to be a join bug when CONCURRENT_MAX_WORKER_THREADS is 8 on work machine
 	*/
 	class thread_pool {
 	public:
@@ -72,6 +72,7 @@ namespace griffin {
 
 		~thread_pool() {
 			SDL_Log("thread pool deleted");
+			m_tasks[Thread_Workers].clear();
 			m_done = true;
 			for (int i = 0; i < m_numWorkerThreads; ++i) {
 				SDL_Log("pushing done task");
@@ -88,8 +89,16 @@ namespace griffin {
 			}
 		}
 		
-		void run(ThreadAffinity affinity, std::function<void()>&& f) {
-			m_tasks[affinity].push(std::forward<std::function<void()>>(f));
+		/**
+		* @returns true if thread_pool will run the task, false if thread_pool rejects the task
+		*		because its destructor has already been called (engine is exiting)
+		*/
+		bool run(ThreadAffinity affinity, std::function<void()>&& f) {
+			if (!m_done) {
+				m_tasks[affinity].push(std::forward<std::function<void()>>(f));
+				return true;
+			}
+			return false;
 		}
 
 		// Implement FIFO scheduling, with a thread affinity system
@@ -201,7 +210,7 @@ namespace griffin {
 			_pImpl->flags |= Flags::Task_Valid | Flags::Task_Run_Called;
 
 			auto pImpl = _pImpl;
-			s_threadPool->run(_pImpl->threadAffinity, [pImpl, func, args...]{
+			bool run = s_threadPool->run(_pImpl->threadAffinity, [pImpl, func, args...]{
 				auto& impl = *pImpl;
 				try {
 					set_value(impl.p, func, args...);
@@ -213,6 +222,11 @@ namespace griffin {
 				// otherwise it will queue up in the thread pool
 				if (impl.fCont) { impl.fCont(impl.threadAffinity); }
 			});
+
+			// if thread pool is exiting, 
+			if (!run) {
+				_pImpl->p.set_exception(std::make_exception_ptr(std::logic_error("task submitted after exit")));
+			}
 
 			return *this;
 		}

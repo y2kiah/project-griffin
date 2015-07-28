@@ -1,8 +1,6 @@
 package.path  = "./scripts/?.lua;./scripts/extension/?.lua;../../../scripts/?.lua;../../../scripts/extension/?.lua;./?.lua"
 package.cpath = "./scripts/?.dll;./scripts/?.so;./scripts/extension/?.dll;./scripts/extension/?.so;../../../scripts/?.dll;../../../scripts/?.so;../../../scripts/extension/?.dll;../../../scripts/extension/?.so"
 
-local ffi = require("ffi")
-
 local copas = require("copas")
 local socket = require("socket")
 
@@ -15,11 +13,6 @@ local orbithandler = require("orbit.ophandler")
 local wsx = require("wsapi.xavante")
 local sapi = require("wsapi.sapi")
 
-
-ffi.cdef[[
-#include "source/api/GriffinToolsApi.h"
-]]
-local C = ffi.C
 
 function initToolsServer()
 	local host = "*"

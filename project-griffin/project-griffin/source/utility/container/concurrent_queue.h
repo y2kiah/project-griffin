@@ -123,7 +123,12 @@ namespace griffin {
 		T wait_pop();
 
 		/**
-		* Thread-safe check of whether the queue is empty
+		* Concurrency-safe clear the queue
+		*/
+		void clear();
+
+		/**
+		* Concurrency-safe check of whether the queue is empty
 		* @returns whether the queue is empty: i.e. whether its size is zero
 		*/
 		bool empty() const;

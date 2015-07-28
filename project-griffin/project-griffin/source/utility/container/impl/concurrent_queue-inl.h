@@ -171,6 +171,14 @@ namespace griffin {
 
 
 	template <typename T>
+	void concurrent_queue<T>::clear()
+	{
+		std::lock_guard<mutex> lock(m_mutex);
+		m_queue.clear();
+	}
+
+
+	template <typename T>
 	inline bool concurrent_queue<T>::empty() const
 	{
 		std::lock_guard<mutex> lock(m_mutex);

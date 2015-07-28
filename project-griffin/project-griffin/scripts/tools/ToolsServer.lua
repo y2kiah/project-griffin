@@ -1,8 +1,6 @@
 package.path  = "./scripts/?.lua;./scripts/extension/?.lua;../../../scripts/?.lua;../../../scripts/extension/?.lua;./?.lua"
 package.cpath = "./scripts/?.dll;./scripts/?.so;./scripts/extension/?.dll;./scripts/extension/?.so;../../../scripts/?.dll;../../../scripts/?.so;../../../scripts/extension/?.dll;../../../scripts/extension/?.so"
 
-local ffi = require("ffi")
-
 local copas = require("copas")
 local socket = require("socket")
 
@@ -15,24 +13,6 @@ local orbithandler = require("orbit.ophandler")
 local wsx = require("wsapi.xavante")
 local sapi = require("wsapi.sapi")
 
-
-ffi.cdef[[
-
-
-	// Functions
-
-	
-	uint64_t griffin_tools_importMesh(const char* filename);
-
-	
-	bool griffin_tools_saveMesh(uint64_t mesh, const char* filename);
-
-	
-	uint64_t griffin_tools_convertMesh(const char* sourceFilename, const char* destFilename);
-
-
-]]
-local C = ffi.C
 
 function initToolsServer()
 	local host = "*"
