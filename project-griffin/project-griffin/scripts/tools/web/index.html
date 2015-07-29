@@ -3,8 +3,88 @@
 <head>
 	<meta charset="utf-8">
 	<title>GriffinTools-0.1.0</title>
+
+	<!-- TODO, download bootstrap, don't want CDN based dependencies -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+	
+	<script src="http://code.jquery.com/jquery-2.0.0.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 </head>
 <body>
-    
+	<div class="panel panel-default">
+		<div class="panel-heading">Mesh Tools</div>
+		<div class="panel-body">
+			<button id="importMeshBtn" type="button" class="btn btn-default">Import Mesh</button>
+			<button id="saveMeshBtn" type="button" class="btn btn-default">Save Mesh</button>
+			<button id="convertMeshBtn" type="button" class="btn btn-default">Convert Mesh</button>
+			
+			<label for="importedMeshId">Imported Mesh ID</label>
+			<input type="text" id="importedMeshId" value="">
+			
+			<label for="sourceFilename">Source Filename</label>
+			<input type="text" id="sourceFilename" value="models/landing platform.dae">
+			
+			<label for="destFilename">Dest Filename</label>
+			<input type="text" id="destFilename" value="models/landing_platform.gmd">
+		</div>
+	</div>
+
+	<script>
+		$(function () {
+			$("#importMeshBtn").click(function () {
+				var $this = $(this);
+				$this.prop("disabled", true);
+
+				$.getJSON("/api.lua?method=griffin_tools_importMesh",
+					{
+						filename: $("#sourceFilename").val()
+					},
+					function (data, textStatus) {
+						console.log(data);
+						$("#importedMeshId").val(data);
+					})
+				.always(function () {
+						$this.prop("disabled", false);
+					});
+			});
+
+			$("#saveMeshBtn").click(function () {
+				var $this = $(this);
+				$this.prop("disabled", true);
+
+				$.getJSON("/api.lua?method=griffin_tools_saveMesh",
+					{
+						mesh: $("#importedMeshId").val(),
+						filename: $("#destFilename").val()
+					},
+					function (data, textStatus) {
+						console.log(data);
+					})
+				.always(function () {
+						$this.prop("disabled", false);
+					});;
+			});
+
+			$("#convertMeshBtn").click(function () {
+				var $this = $(this);
+				$this.prop("disabled", true);
+
+				$.getJSON("/api.lua?method=griffin_tools_convertMesh",
+					{
+						sourceFilename: $("#sourceFilename").val(),
+						destFilename: $("#destFilename").val()
+					},
+					function (data, textStatus) {
+						console.log(data);
+						$("#importedMeshId").val(data);
+					})
+				.always(function () {
+					$this.prop("disabled", false);
+				});;
+			});
+
+		});
+	</script>
 </body>
 </html>
