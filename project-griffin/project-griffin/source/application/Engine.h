@@ -36,7 +36,7 @@ namespace griffin {
 	};
 
 	Engine make_engine(const SDLApplication& app);
-
+	void destroy_engine(Engine& engine);
 }
 
 #endif

@@ -53,6 +53,8 @@ int main(int argc, char *argv[])
 				/*SDL_Log("Update virtualTime=%lu: gameTime=%ld: deltaCounts=%ld: countsPerMs=%ld\n",
 						virtualTime, gameTime, deltaCounts, Timer::timerFreq() / 1000);*/
 
+				engine.threadPool->executeFixedThreadTasks(ThreadAffinity::Thread_Update);
+
 				// call all systems in priority order
 				for (auto& s : engine.systems) {
 					s->update(ui);
@@ -84,12 +86,15 @@ int main(int argc, char *argv[])
 						realTime, interpolation, std::this_thread::get_id().hash());*/
 
 				engine.resourceLoader->executeCallbacks();
+				engine.threadPool->executeFixedThreadTasks(ThreadAffinity::Thread_OpenGL_Render);
 
 				engine.renderSystem->renderFrame(interpolation);
 
 				SDL_GL_SwapWindow(app.getPrimaryWindow().window);
 				platform::yieldThread();
 			}
+
+			destroy_engine(engine); // delete the engine on the GL thread
 		};
 		
 		auto gameThread = std::async(std::launch::async, gameProcess);
@@ -122,7 +127,10 @@ int main(int argc, char *argv[])
 			}
 			
 			// run tasks with Thread_OS_Input thread affinity
-			//   engine.taskPool.runTasksWithThreadAffinity(ThreadAffinity::Thread_OS_Input);
+			if (engine.threadPool) {
+				engine.threadPool->executeFixedThreadTasks(ThreadAffinity::Thread_OS_Input);
+			}
+			
 			// run thread_pool deferred task check (when_any, when_all)
 			//   engine.taskPool.checkDeferredTasks();
 

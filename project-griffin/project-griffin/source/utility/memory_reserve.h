@@ -33,4 +33,7 @@
 // Scripting System
 #define RESERVE_LUA_STATES						10
 
+// Concurrency System
+#define RESERVE_CONCURRENCY_POP_TASK_LIST		32
+
 #endif

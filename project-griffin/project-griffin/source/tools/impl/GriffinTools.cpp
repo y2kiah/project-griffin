@@ -21,6 +21,8 @@ namespace griffin {
 		void GriffinToolsManager::init(const script::ScriptManagerPtr& scriptPtr)
 		{
 			m_toolsThread = std::async(std::launch::async, [this, scriptPtr]() {
+				
+
 				// build lua files (resolve #includes, copy to data script path)
 				scriptPtr->doFile(m_toolsLuaStateId, "scripts/luaBuild.lua");
 

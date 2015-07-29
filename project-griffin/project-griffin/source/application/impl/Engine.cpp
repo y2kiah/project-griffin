@@ -14,6 +14,9 @@ namespace griffin {
 	ThreadPoolPtr task_base::s_threadPool = nullptr;
 
 
+	/**
+	* Create and init the systems of the griffin engine, and do dependency injection
+	*/
 	Engine make_engine(const SDLApplication& app)
 	{
 		Engine engine;
@@ -110,7 +113,7 @@ namespace griffin {
 			// inject loader dependencies into other system
 			render::g_resourceLoader = loaderPtr;
 			#ifdef GRIFFIN_TOOLS_BUILD
-			griffin::tools::setResourceLoaderPtr(loaderPtr);
+			tools::setResourceLoaderPtr(loaderPtr);
 			#endif
 
 			// add Lua APIs
@@ -162,4 +165,21 @@ namespace griffin {
 		return move(engine);
 	}
 
+
+	/**
+	* Called to destroy the systems that should specifically be removed on the OpenGL thread
+	*/
+	void destroy_engine(Engine& engine)
+	{
+		// Destroy the tools system
+		#ifdef GRIFFIN_TOOLS_BUILD
+		engine.toolsManager.reset();
+		#endif
+
+		// Destroy the render system
+		engine.renderSystem.reset();
+
+		// Destroy the resource system
+		engine.resourceLoader.reset();
+	}
 }

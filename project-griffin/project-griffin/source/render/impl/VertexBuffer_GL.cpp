@@ -4,11 +4,11 @@
 namespace griffin {
 	namespace render {
 
-		VertexBuffer_GL::VertexBuffer_GL(VertexBuffer_GL&& other)
+		VertexBuffer_GL::VertexBuffer_GL(VertexBuffer_GL&& other) :
+			m_sizeBytes{ other.m_sizeBytes },
+			m_glVertexBuffer{ other.m_glVertexBuffer },
+			m_tmpData(std::move(other.m_tmpData))
 		{
-			m_sizeBytes = other.m_sizeBytes;
-			m_glVertexBuffer = other.m_glVertexBuffer;
-			m_tmpData = std::move(other.m_tmpData);
 			other.m_sizeBytes = 0;
 			other.m_glVertexBuffer = 0;
 			other.m_tmpData = nullptr;

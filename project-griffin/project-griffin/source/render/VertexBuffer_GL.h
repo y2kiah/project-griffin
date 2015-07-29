@@ -17,7 +17,7 @@ namespace griffin {
 		class VertexBuffer_GL {
 		public:
 			explicit VertexBuffer_GL() {}
-			explicit VertexBuffer_GL(std::unique_ptr<unsigned char[]> data, size_t size);
+			explicit VertexBuffer_GL(std::unique_ptr<unsigned char[]>&& data, size_t size);
 			VertexBuffer_GL(VertexBuffer_GL&& other);
 			VertexBuffer_GL(const VertexBuffer_GL&) = delete;
 			~VertexBuffer_GL();
@@ -47,7 +47,7 @@ namespace griffin {
 
 		// Inline Functions
 
-		inline VertexBuffer_GL::VertexBuffer_GL(std::unique_ptr<unsigned char[]> data, size_t size) :
+		inline VertexBuffer_GL::VertexBuffer_GL(std::unique_ptr<unsigned char[]>&& data, size_t size) :
 			m_tmpData(std::move(data)),
 			m_sizeBytes{ size }
 		{}

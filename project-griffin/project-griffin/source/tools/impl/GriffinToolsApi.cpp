@@ -7,6 +7,7 @@
 #include <resource/ResourceLoader.h>
 #include <render/model/Mesh_GL.h>
 #include <render/model/ModelImport_Assimp.h>
+#include <utility/concurrency.h>
 #include <SDL_log.h>
 #include <fstream>
 
@@ -36,18 +37,27 @@ extern "C" {
 				throw std::runtime_error("no resource loader");
 			}
 
-			std::unique_ptr<Mesh_GL> meshPtr = importModelFile(filename);
-			if (meshPtr == nullptr) {
-				return 0;
-			}
+			// run the import task on the OpenGL thread since it creates GL resources
+			task<uint64_t> tsk(ThreadAffinity::Thread_OpenGL_Render);
 
-			Mesh_GL* mesh = meshPtr.release();
+			tsk.run([loader, filename]{
+				std::unique_ptr<Mesh_GL> meshPtr = importModelFile(filename);
+				if (meshPtr == nullptr) {
+					return 0ULL;
+				}
 
-			ResourcePtr meshResPtr = std::make_shared<Resource_T>(std::move(*mesh), mesh->getSize());
+				Mesh_GL* mesh = meshPtr.release();
 
-			auto res = loader->addResourceToCache<Mesh_GL>(meshResPtr, CacheType::Cache_Materials_T);
-			
-			return res.resourceId.get().value;
+				ResourcePtr meshResPtr = std::make_shared<Resource_T>(std::move(*mesh), mesh->getSize());
+
+				// TODO: it makes no sense to load meshes into a "Materials" cache, pick another one
+				auto res = loader->addResourceToCache<Mesh_GL>(meshResPtr, CacheType::Cache_Materials_T);
+
+				return res.resourceId.get().value;
+
+			});
+
+			return tsk.get();
 		}
 		catch (std::exception ex) {
 			SDL_LogWarn(SDL_LOG_CATEGORY_ERROR, "griffin_tools_importMesh exception: %s", ex.what());
@@ -67,6 +77,7 @@ extern "C" {
 			Id_T handle;
 			handle.value = mesh;
 
+			// TODO: change cache to same as import function
 			auto res = loader->getResource<Mesh_GL>(handle, CacheType::Cache_Materials_T);
 
 			std::ofstream ofs;

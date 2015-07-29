@@ -22,6 +22,7 @@
 #include <functional>
 #include <bitset>
 #include <utility/container/concurrent_queue.h>
+#include <utility/memory_reserve.h>
 
 #include <SDL_log.h>
 
@@ -48,10 +49,16 @@ namespace griffin {
 	public:
 		typedef std::array<std::thread, CONCURRENT_MAX_WORKER_THREADS> ThreadList;
 		typedef std::array<concurrent_queue<std::function<void()>>, CONCURRENT_NUM_TASK_QUEUES> TaskQueueList;
+		typedef std::array<std::vector<std::function<void()>>, CONCURRENT_NUM_FIXED_THREADS> TaskPopList;
 
 		explicit thread_pool(int cpuCount)
 		{
 			//assert(m_busy.is_lock_free());
+
+			// reserve memory for fixed thread pop lists
+			for (auto& pt : m_popTasks) {
+				pt.reserve(RESERVE_CONCURRENCY_POP_TASK_LIST);
+			}
 
 			// start up one worker thread per core
 			m_numWorkerThreads = cpuCount > CONCURRENT_MAX_WORKER_THREADS ? CONCURRENT_MAX_WORKER_THREADS : cpuCount;
@@ -70,10 +77,16 @@ namespace griffin {
 		
 		thread_pool(const thread_pool&) = delete; // can't copy a thread_pool
 
+		/**
+		* Thread pool destructor clears the workers queue and joins all worker threads
+		*/
 		~thread_pool() {
 			SDL_Log("thread pool deleted");
+
 			m_tasks[Thread_Workers].clear();
 			m_done = true;
+			
+			// push a "done" task for each worker thread
 			for (int i = 0; i < m_numWorkerThreads; ++i) {
 				SDL_Log("pushing done task");
 				m_tasks[Thread_Workers].push([=]{
@@ -81,10 +94,18 @@ namespace griffin {
 				});
 			}
 
+			// join all worker threads
 			for (auto& t : m_threads) {
 				if (t.joinable()) {
 					SDL_Log("joining thread %llu", t.get_id().hash());
 					t.join();
+				}
+			}
+
+			// checked pop task lists for reserve capacity overflow
+			for (auto& pt : m_popTasks) {
+				if (pt.capacity() > RESERVE_CONCURRENCY_POP_TASK_LIST) {
+					SDL_Log("check RESERVE_CONCURRENCY_POP_TASK_LIST: original=%d, highest=%d", RESERVE_CONCURRENCY_POP_TASK_LIST, pt.capacity());
 				}
 			}
 		}
@@ -101,12 +122,31 @@ namespace griffin {
 			return false;
 		}
 
-		// Implement FIFO scheduling, with a thread affinity system
-		//   If affinity is set the thread will prefer to execute that task and leave the
-		//   general task it skips to be executed by a worker thread. In that way, tasks which
-		//   specify affinity for a fixed thread will take priority. Affinity should only be used
-		//   when absolutely necessary (like for instance calls to OpenGL or other single-threaded
-		//   libraries are made).
+		/**
+		* @threadAffinity_	which thread's tasks to run, corresponds with calling thread, value
+		*		cannot be ThreadAffinity::Thread_Workers
+		* @maxNumber	maximum number of tasks to run, 0 = unlimited
+		*/
+		void executeFixedThreadTasks(ThreadAffinity threadAffinity_, int maxNumber = 0)
+		{
+			assert(threadAffinity_ != ThreadAffinity::Thread_Workers && "can't run work thread tasks with this function");
+
+			auto& popTasks = m_popTasks[threadAffinity_ - 1];
+
+			m_tasks[threadAffinity_].try_pop_all(popTasks, maxNumber);
+			
+			for (auto& task : popTasks) {
+				task();
+			}
+
+			popTasks.clear();
+		}
+
+		// Implements FIFO scheduling, with a thread affinity system
+		//   If affinity is set a thread will execute that task first and leave the worker tasks
+		//   it skips to be executed by a worker thread. In that way, tasks that specify affinity
+		//   for a fixed thread will take priority. Affinity should only be used when absolutely
+		//   necessary (like for calls to OpenGL or other thread-specific libraries).
 		// Each worker thread waits on a condition variable, when a task shows up notify_one is
 		//   called. Worker threads pull from the general task queue only.
 		// The Fixed threads are not owned by the thread-pool itself, but participate by taking the
@@ -117,8 +157,9 @@ namespace griffin {
 		//   variable using wait_pop.
 
 	private:
-		ThreadList		m_threads;
-		TaskQueueList	m_tasks;
+		ThreadList		m_threads;		//<! worker threads owned by the thread_pool
+		TaskQueueList	m_tasks;		//<! concurrent_queues for pushing
+		TaskPopList		m_popTasks;		//<! vectors for popping tasks from the queue to be executed on fixed threads
 		//std::atomic<std::bitset<MAX_WORKER_THREADS>> m_busy = 0;
 		int8_t			m_numWorkerThreads = 0;
 		atomic<bool>	m_done = false;
@@ -355,25 +396,6 @@ namespace griffin {
 	}
 	*/
 
-	/*
-	template <typename T>
-	class task_group {
-	public:
-		// chaining methods
-		//  then - maybe this is a free function taking a packaged_task and returning a task_group?
-		//  when_all
-		//  when_any
-		
-		// start/stop methods
-		//  run
-		//  cancel
-		//  get
-		//  wait
-
-	private:
-		vector<packaged_task<T>> m_tasks;
-	};
-	*/
 
 	/**
 	* @class concurrent
