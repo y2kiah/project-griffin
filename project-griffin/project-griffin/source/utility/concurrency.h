@@ -30,7 +30,7 @@ namespace griffin {
 
 	using std::atomic;
 
-#define CONCURRENT_MAX_WORKER_THREADS	8
+#define CONCURRENT_MAX_WORKER_THREADS	16
 #define CONCURRENT_NUM_FIXED_THREADS	3
 // one shared by all worker threads, plus one each for fixed thread affinity
 #define CONCURRENT_NUM_TASK_QUEUES		CONCURRENT_NUM_FIXED_THREADS + 1

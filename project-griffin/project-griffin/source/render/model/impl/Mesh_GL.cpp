@@ -27,7 +27,7 @@ namespace griffin {
 
 		void Mesh_GL::drawMesh(int drawSetIndex) const
 		{
-			assert(drawSetIndex >= 0 && drawSetIndex < m_numDrawSets && "drawSetIndex out of range");
+			assert(drawSetIndex >= 0 && drawSetIndex < static_cast<int>(m_numDrawSets) && "drawSetIndex out of range");
 			bind(drawSetIndex);
 
 			GLenum indexType = m_indexBuffer.getIndexType();
@@ -111,7 +111,7 @@ namespace griffin {
 
 		void Mesh_GL::initializeVAO(int drawSetIndex) const
 		{
-			assert(drawSetIndex >= 0 && drawSetIndex < m_numDrawSets && "drawSetIndex out of range");
+			assert(drawSetIndex >= 0 && drawSetIndex < static_cast<int>(m_numDrawSets) && "drawSetIndex out of range");
 
 			auto& drawSet = m_drawSets[drawSetIndex];
 
@@ -197,7 +197,7 @@ namespace griffin {
 
 		void Mesh_GL::unbind(int drawSetIndex) const
 		{
-			assert(drawSetIndex >= 0 && drawSetIndex < m_numDrawSets && "drawSetIndex out of range");
+			assert(drawSetIndex >= 0 && drawSetIndex < static_cast<int>(m_numDrawSets) && "drawSetIndex out of range");
 
 			glBindVertexArray(0); // break the existing vertex array object binding
 
@@ -236,9 +236,12 @@ namespace griffin {
 		* Mesh_GL binary file header, contains all properties needed for serialization
 		*/
 		struct Mesh_GL_Header {
+			uint8_t		key[3];						//<! always {'g','m','d'}
+			uint8_t		version;					//<! file version, currently 1
 			uint32_t	bufferSize;
-			uint16_t	numDrawSets;
-			uint16_t	numMaterials;
+
+			uint32_t	numDrawSets;
+			uint32_t	numMaterials;
 			uint32_t	drawSetsOffset;
 			uint32_t	materialsOffset;
 			uint32_t	meshSceneOffset;
@@ -253,7 +256,12 @@ namespace griffin {
 			uint32_t	indexBufferSize;
 			uint32_t	indexBufferOffset;
 			uint8_t		indexBufferFlags;
+
+			uint8_t		_padding_end[3];			//<! pad for 8-byte alignment of following struct in buffer
 		};
+		static_assert(sizeof(Mesh_GL_Header) % 8 == 0, "Mesh_GL_Header size should be multiple of 8 for alignment of mesh buffer");
+		static_assert(std::is_trivially_copyable<Mesh_GL_Header>::value, "Mesh_GL_Header must be trivially copyable for serialization");
+
 
 		void Mesh_GL::serialize(std::ostream& out)
 		{
@@ -272,7 +280,9 @@ namespace griffin {
 				static_cast<uint32_t>(m_indexBuffer.getSize());
 				
 			// build the header containing sizes and offsets
-			Mesh_GL_Header header = {};
+			Mesh_GL_Header header = {}; // zero-init the header
+			header.key[0] = 'g'; header.key[1] = 'm'; header.key[2] = 'd';
+			header.version					= 1;
 			header.bufferSize				= bufferSize;
 			header.numDrawSets				= m_numDrawSets;
 			header.numMaterials				= m_numMaterials;
@@ -288,7 +298,7 @@ namespace griffin {
 			header.vertexBufferSize			= static_cast<uint32_t>(m_vertexBuffer.getSize());
 			header.vertexBufferOffset		= header.sceneMetaDataOffset + sceneMetaDataSize;
 			header.indexBufferSize			= static_cast<uint32_t>(m_indexBuffer.getSize());
-			header.indexBufferOffset		= header.vertexBufferOffset + header.indexBufferSize;
+			header.indexBufferOffset		= header.vertexBufferOffset + header.vertexBufferSize;
 			header.indexBufferFlags			= static_cast<uint8_t>(m_indexBuffer.getFlags());
 
 			// write header
@@ -352,6 +362,23 @@ namespace griffin {
 			// the header exists at the beginning of the modelData buffer
 			Mesh_GL_Header& header = *reinterpret_cast<Mesh_GL_Header*>(m_modelData.get());
 			uint32_t totalSize = sizeof(Mesh_GL_Header) + header.bufferSize;
+
+			// do some sanity checks
+			if (header.key[0] != 'g' || header.key[1] != 'm' || header.key[2] != 'd' || header.version != 1) {
+				throw std::logic_error("Unrecognized file format");
+			}
+			if (header.drawSetsOffset != sizeof(Mesh_GL_Header) ||
+				header.materialsOffset != header.drawSetsOffset + (header.numDrawSets * sizeof(DrawSet)) ||
+				header.meshSceneOffset != header.materialsOffset + (header.numMaterials * sizeof(Material_GL)) ||
+				//header.sceneChildIndicesOffset != header.meshSceneOffset + (header.sceneNumNodes * sizeof(MeshSceneNode)) ||
+				//header.sceneMeshIndicesOffset != header.sceneChildIndicesOffset + (header.sceneNumChildIndices * sizeof(uint32_t)) ||
+				//header.sceneMetaDataOffset != header.sceneMeshIndicesOffset + (header.sceneNumMeshIndices * sizeof(uint32_t)) ||
+				//header.vertexBufferOffset != header.sceneMetaDataOffset + (header.sceneNumNodes * sizeof(MeshSceneNodeMetaData)) ||
+				//header.indexBufferOffset != header.vertexBufferOffset + header.vertexBufferSize ||
+				totalSize != header.indexBufferOffset + header.indexBufferSize)
+			{
+				throw std::logic_error("File format deserialization error");
+			}
 
 			// copy properties from header to member vars
 			m_sizeBytes						= totalSize;
@@ -468,7 +495,7 @@ namespace griffin {
 
 		Mesh_GL::~Mesh_GL() {
 			// delete the VAO objects
-			for (auto ds = 0; ds < m_numDrawSets; ++ds) {
+			for (uint32_t ds = 0; ds < m_numDrawSets; ++ds) {
 				glDeleteVertexArrays(1, &m_drawSets[ds].glVAO);
 			}
 		}

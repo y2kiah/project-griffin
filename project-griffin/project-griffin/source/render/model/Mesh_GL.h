@@ -37,8 +37,6 @@ namespace griffin {
 		* predetermined and are enabled on an as-needed basis.
 		*/
 		struct DrawSet {
-			uint8_t		vertexFlags = 0;			//<! bits set from enum VertexFlags, checked against a material's requirements
-
 			uint32_t	vertexSize = 0;				//<! size / stride of the vertex
 			uint32_t	numElements = 0;			//<! for GL_TRIANGLES it's number of primitives * 3
 			uint32_t	indexBaseOffset = 0;		//<! base offset into the index buffer
@@ -47,6 +45,8 @@ namespace griffin {
 			uint32_t	vertexBaseOffset = 0;		//<! base offset into the vertex buffer
 			uint32_t	glPrimitiveType = 0;		//<! GL_TRIANGLES is the only mode currently supported
 			uint32_t	glVAO = 0;					//<! Vertex Array Object, created during Mesh_GL initialization
+
+			uint8_t		vertexFlags = 0;			//<! bits set from enum VertexFlags, checked against a material's requirements
 
 			// per-vertex offsets
 			// position is always at offset 0
@@ -58,8 +58,10 @@ namespace griffin {
 
 			uint8_t		numColorChannels = 0;		//<! how many 4-byte colors are there? Up to 8 supported.
 			uint8_t		numTexCoordChannels = 0;	//<! how many U, UV or UVW coordinate sets are there? Up to 8 supported.
-			uint8_t		numTexCoordComponents[8];	//<! indexed by channel, how many components in the channel?
+			uint8_t		numTexCoordComponents[GRIFFIN_MAX_MATERIAL_TEXTURES];	//<! indexed by channel, how many components in the channel?
 		};
+		static_assert(sizeof(DrawSet) % 4 == 0, "DrawSet size should be multiple of 4 for alignment of mesh buffer");
+		static_assert(std::is_trivially_copyable<DrawSet>::value, "DrawSet must be trivially copyable for serialization");
 
 
 		struct MeshSceneNode {
@@ -71,12 +73,17 @@ namespace griffin {
 			uint32_t	meshIndexOffset = 0;		//<! offset into array of mesh instances, numMeshes elements belong to this node
 			// scene node string name is stored in the metadata buffer with the same index
 		};
+		static_assert(sizeof(MeshSceneNode) % 4 == 0, "MeshSceneNode size should be multiple of 4 for alignment of mesh buffer");
+		//static_assert(std::is_trivially_copyable<MeshSceneNode>::value, "MeshSceneNode must be trivially copyable for serialization");
+
 
 		#define GRIFFIN_MAX_MESHSCENENODE_NAME_SIZE		64
 
 		struct MeshSceneNodeMetaData {
 			char		name[GRIFFIN_MAX_MESHSCENENODE_NAME_SIZE];	//<! name of the scene graph node
 		};
+		static_assert(sizeof(MeshSceneNodeMetaData) % 4 == 0, "MeshSceneNodeMetaData size should be multiple of 4 for alignment of mesh buffer");
+
 
 		struct MeshSceneGraph {
 			uint32_t	numNodes = 0;
@@ -178,8 +185,8 @@ namespace griffin {
 			// Variables
 			uint32_t		m_sizeBytes = 0;			//<! contains the size of m_modelData in bytes
 
-			uint16_t		m_numDrawSets = 0;
-			uint16_t		m_numMaterials = 0;
+			uint32_t		m_numDrawSets = 0;
+			uint32_t		m_numMaterials = 0;
 
 			uint32_t		m_drawSetsOffset = 0;		//<! offsets into m_modelData
 			uint32_t		m_materialsOffset = 0;
@@ -204,7 +211,7 @@ namespace griffin {
 
 		inline void Mesh_GL::initializeVAOs() const
 		{
-			for (auto ds = 0; ds < m_numDrawSets; ++ds) {
+			for (uint32_t ds = 0; ds < m_numDrawSets; ++ds) {
 				initializeVAO(ds);
 			}
 		}

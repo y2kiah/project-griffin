@@ -45,9 +45,9 @@ namespace griffin {
 			inline static int getSizeOfElement(IndexBufferFlags flags);
 
 		private:
+			size_t			m_sizeBytes = 0;
 			unsigned int	m_glIndexBuffer = 0; // <! gl index buffer id
 			uint8_t			m_flags = IndexBuffer_None;
-			size_t			m_sizeBytes = 0;
 			
 			std::unique_ptr<unsigned char[]> m_tmpData = nullptr;
 		};

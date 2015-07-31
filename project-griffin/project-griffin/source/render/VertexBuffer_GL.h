@@ -38,8 +38,8 @@ namespace griffin {
 			void bind() const;
 
 		private:
-			unsigned int m_glVertexBuffer = 0; // gl vertex buffer id
 			size_t       m_sizeBytes = 0;
+			unsigned int m_glVertexBuffer = 0; // gl vertex buffer id
 
 			std::unique_ptr<unsigned char[]> m_tmpData = nullptr;
 		};

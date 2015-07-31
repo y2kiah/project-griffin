@@ -158,6 +158,9 @@ namespace griffin {
 				drawSet.numTexCoordChannels = assimpMesh.GetNumUVChannels();
 				drawSet.numColorChannels = assimpMesh.GetNumColorChannels();
 
+				assert(drawSet.numTexCoordChannels <= GRIFFIN_MAX_MATERIAL_TEXTURES && "too many uv channels in sub mesh");
+				assert(drawSet.numColorChannels <= 8 && "too many vertex color channels in sub mesh");
+
 				if (assimpMesh.mPrimitiveTypes == aiPrimitiveType_TRIANGLE) {
 					drawSet.glPrimitiveType = GL_TRIANGLES;
 
@@ -432,7 +435,6 @@ namespace griffin {
 
 				aiGetMaterialFloat(assimpMat, AI_MATKEY_OPACITY, &mat.opacity);
 				aiGetMaterialFloat(assimpMat, AI_MATKEY_REFLECTIVITY, &mat.reflectivity);
-				aiGetMaterialFloat(assimpMat, AI_MATKEY_REFRACTI, &mat.refracti);
 				aiGetMaterialFloat(assimpMat, AI_MATKEY_SHININESS, &mat.shininess);
 
 				aiColor4D color;
@@ -448,15 +450,31 @@ namespace griffin {
 				aiGetMaterialColor(assimpMat, AI_MATKEY_COLOR_EMISSIVE, &color);
 				mat.emissiveColor = { color.r, color.g, color.b };
 
-				aiGetMaterialColor(assimpMat, AI_MATKEY_COLOR_REFLECTIVE, &color);
-				mat.reflectiveColor = { color.r, color.g, color.b };
 
-				aiGetMaterialColor(assimpMat, AI_MATKEY_COLOR_TRANSPARENT, &color);
-				mat.transparentColor = { color.r, color.g, color.b };
+				// TODO: set material flags and use the flags to determine ubershader key hash
+				// maybe need to combine vertex flags for the vertex shader, material flags for the vertex/fragment shader
+				// programs compiled on demand by the shader manager and maintained in lookup table
 
+				// store the shader hash key in the material
+				// how to handle LOD, e.g. turn off normal / displacement mapping with distance from camera
 
-				// TEMP, just set to default effect. This should be read from one of the material properties if possible
-				//mat.setEffect(L"data/shaders/Default.ifx", false);
+				// TODO: assimp defines texture stacks per texture type, and blend function between stack to come up with final color
+				// Should we support stack of diffuse? I can't see a reason to support stack for any other texture type, but diffuse
+				// might be useful for ambient occlusion and procedural effects like dirt and damage.
+
+				//Texture Loading pseudo-code from http://assimp.sourceforge.net/lib_html/materials.html
+				//Also see that page for example shader code to get color channel contributions
+
+				//	have only one uv channel?
+				//		assign channel 0 to all textures and break
+
+				//	for all textures
+				//		have uvwsrc for this texture?
+				//			assign channel specified in uvwsrc
+				//		else
+				//			assign channels in ascending order for all texture stacks, 
+				//				i.e. diffuse1 gets channel 1, opacity0 gets channel 0.
+
 
 				// for each texture type
 				uint32_t samplerIndex = 0;

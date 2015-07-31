@@ -187,11 +187,13 @@ namespace griffin {
 				glUniform1f(inverseFrustumDistanceLoc, inverseCameraDistance);
 
 				// draw the test mesh
-				auto& mesh = g_tempMesh->getResource<Mesh_GL>();
-				mesh.draw(modelMatLoc, modelViewMatLoc, mvpMatLoc, normalMatLoc,
-						  ambientLoc, diffuseLoc, specularLoc, shininessLoc,
-						  viewMat, viewProjMat); // temporarily passing in the modelMatLoc
-				
+				if (g_tempMesh) {
+					auto& mesh = g_tempMesh->getResource<Mesh_GL>();
+					mesh.draw(modelMatLoc, modelViewMatLoc, mvpMatLoc, normalMatLoc,
+							  ambientLoc, diffuseLoc, specularLoc, shininessLoc,
+							  viewMat, viewProjMat); // temporarily passing in the modelMatLoc
+				}
+
 				glDisable(GL_DEPTH_TEST);
 			}
 			m_gbuffer.stop();
@@ -270,15 +272,20 @@ namespace griffin {
 			//loadModelTemp("data/models/quadcopter2.dae");
 			//loadModelTemp("data/models/cube.dae");
 			//loadModelTemp("data/models/untitled.blend");
-			auto mesh = loadMesh(L"models/landing_platform.gmd", CacheType::Cache_Materials_T);
+			try {
+				auto mesh = loadMesh(L"models/landing_platform.gmd", CacheType::Cache_Materials_T);
 
-			using namespace resource;
-			auto loader = g_resourceLoader.lock();
-			if (!loader) {
-				throw std::runtime_error("no resource loader");
+				using namespace resource;
+				auto loader = g_resourceLoader.lock();
+				if (!loader) {
+					throw std::runtime_error("no resource loader");
+				}
+				g_tempMesh = loader->getResource(mesh).get();
+				loader->executeCallbacks();
 			}
-			g_tempMesh = loader->getResource(mesh).get();
-			loader->executeCallbacks();
+			catch (std::exception ex) {
+				SDL_Log("%s", ex.what());
+			}
 
 			camera = std::make_unique<CameraPersp>(viewportWidth, viewportHeight, 60.0f, 0.1f, 100000.0f);
 		}

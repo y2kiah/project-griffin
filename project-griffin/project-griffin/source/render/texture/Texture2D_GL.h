@@ -35,8 +35,8 @@ namespace griffin {
 			void bind(unsigned int textureSlot) const;
 
 		private:
-			unsigned int m_glTexture = 0;
 			size_t m_sizeBytes = 0;
+			unsigned int m_glTexture = 0;
 
 			std::unique_ptr<unsigned char[]> m_tmpData = nullptr;
 		};
