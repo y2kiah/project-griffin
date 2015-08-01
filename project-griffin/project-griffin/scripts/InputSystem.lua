@@ -72,12 +72,12 @@ ffi.cdef[[
 	//////////
 	typedef struct {
 		uint64_t					mappingId;
-		bool						handled;			//<! flag set to true when event has been handled by a callback
 		const griffin_InputMapping*	inputMapping;
 		float						x;
 		float						y;					//<! mouse clicks include normalized position here
 		int32_t						xRaw;
 		int32_t						yRaw;
+		bool						handled;			//<! flag set to true when event has been handled by a callback
 	} griffin_MappedAction;
 
 	//////////
@@ -85,13 +85,13 @@ ffi.cdef[[
 	//////////
 	typedef struct {
 		uint64_t					mappingId;
-		bool						handled;			//<! flag set to true when event has been handled by a callback
 		const griffin_InputMapping*	inputMapping;
 		double						totalMs;			//<! total millis the state has been active
 		int64_t						startCounts;		//<! clock counts when state began
 		int64_t						totalCounts;		//<! currentCounts - startCounts + countsPerTick
 		int32_t						startFrame;			//<! frame number when state began
 		int32_t						totalFrames;		//<! currentFrame - startFrame + 1
+		bool						handled;			//<! flag set to true when event has been handled by a callback
 	} griffin_MappedState;
 
 	//////////
@@ -99,7 +99,7 @@ ffi.cdef[[
 	//////////
 	typedef struct {
 		uint32_t					device;				//<! instanceID of the device that owns this axis, mouse is always 0 (x) and 1 (y)
-		uint8_t						axis;				//<! axis number on the device
+		uint32_t					axis;				//<! axis number on the device
 		float						posMapped;			//<! absolute position of axis mapped to curve
 		float						relMapped;			//<! relative motion of the axis since last frame mapped to curve
 		int32_t						posRaw;				//<! raw value from device, not normalized or mapped to curve, may be useful but use posMapped by default
@@ -112,9 +112,10 @@ ffi.cdef[[
 	//////////
 	typedef struct {
 		uint64_t					mappingId;
-		bool						handled;			//<! flag set to true when event has been handled by a callback
 		const griffin_InputMapping*	inputMapping;
 		const griffin_AxisMotion *	axisMotion;
+		bool						handled;			//<! flag set to true when event has been handled by a callback
+		uint8_t						_padding_end[4];
 	} griffin_MappedAxis;
 
 	//////////
@@ -125,7 +126,7 @@ ffi.cdef[[
 		int16_t						statesSize;
 		int16_t						axesSize;
 		int16_t						axisMotionSize;
-		int16_t						textInputLength;
+		int32_t						textInputLength;
 		griffin_MappedAction *		actions;			//<! Actions mapped to an active InputMapping for the frame
 		griffin_MappedState	*		states;				//<! States mapped to an active InputMapping for the frame
 		griffin_MappedAxis *		axes;				//<! Axes mapped to an active InputMapping for the frame
@@ -357,15 +358,8 @@ function initInputSystem()
 		end
 	end
 
-	-- make ingame context active
-	InputSystem:setContextActive("ingame")
-	InputSystem:setContextActive("playerfps")
-
-	-- add Lua callback for ingame context
-	InputSystem:addInputHandler(ingameInputHandler)
+	-- add lua callback for catchAll handler
 	InputSystem:addInputHandler(catchAllHandler, 999)
-
-	--InputSystem:setRelativeMouseMode(true)
 end
 
 
@@ -409,19 +403,7 @@ function frameInputHandler(frameMappedInput)
 end
 
 
--- handle ingame actions including Pause, Capture Mouse
-local ingameContext = nil
-local pauseMapping = nil
-local captureMouseMapping = nil
-
-function ingameInputHandler(frameInput)
-	InputSystem:handleInput("ingame", "Capture Mouse", frameInput.actions, function(context, mappedAction)
-		local relative = InputSystem:getRelativeMouseMode()
-		InputSystem:setRelativeMouseMode(not relative)
-		return true
-	end)
-end
-
+-- catchAll handler logs the actions that aren't handled by higher-priority handlers
 function catchAllHandler(frameInput)
 	for i,mc in pairs(frameInput.actions) do
 		for j,mi in pairs(mc) do

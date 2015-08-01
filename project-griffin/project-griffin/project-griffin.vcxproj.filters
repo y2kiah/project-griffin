@@ -32,12 +32,6 @@
     <Filter Include="utility\container">
       <UniqueIdentifier>{e9384396-db7f-47b8-8d6b-c91a574b3354}</UniqueIdentifier>
     </Filter>
-    <Filter Include="core">
-      <UniqueIdentifier>{6756af22-d6a9-4877-80fc-db29fd720c71}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="core\impl">
-      <UniqueIdentifier>{cdd967b2-70c3-4509-98b3-6dc6266d0c25}</UniqueIdentifier>
-    </Filter>
     <Filter Include="utility\container\impl">
       <UniqueIdentifier>{5814475b-c9b8-45d2-a3fd-16076e87b871}</UniqueIdentifier>
     </Filter>
@@ -155,6 +149,18 @@
     <Filter Include="lua\game">
       <UniqueIdentifier>{b1e7231f-d1bf-41d5-86f8-dc4ddd20827e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="input">
+      <UniqueIdentifier>{6756af22-d6a9-4877-80fc-db29fd720c71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="input\impl">
+      <UniqueIdentifier>{cdd967b2-70c3-4509-98b3-6dc6266d0c25}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="game">
+      <UniqueIdentifier>{6f151efc-6811-4585-9591-9d9b62e4ceef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="game\impl">
+      <UniqueIdentifier>{c7731a45-b9f2-4dfb-a4a4-6bf109f34717}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">
@@ -168,9 +174,6 @@
     </ClCompile>
     <ClCompile Include="source\application\impl\platform.cpp">
       <Filter>application\impl</Filter>
-    </ClCompile>
-    <ClCompile Include="source\core\impl\InputSystem.cpp">
-      <Filter>core\impl</Filter>
     </ClCompile>
     <ClCompile Include="source\render\font\FreeType.cpp">
       <Filter>render\font</Filter>
@@ -208,9 +211,6 @@
     <ClCompile Include="source\render\impl\Render.cpp">
       <Filter>render\impl</Filter>
     </ClCompile>
-    <ClCompile Include="source\render\impl\Camera.cpp">
-      <Filter>render\impl</Filter>
-    </ClCompile>
     <ClCompile Include="source\render\impl\ShaderProgram_GL.cpp">
       <Filter>render\impl</Filter>
     </ClCompile>
@@ -232,9 +232,6 @@
     <ClCompile Include="source\entity\impl\Entity.cpp">
       <Filter>entity\impl</Filter>
     </ClCompile>
-    <ClCompile Include="source\core\impl\InputSystemApi.cpp">
-      <Filter>core\impl</Filter>
-    </ClCompile>
     <ClCompile Include="source\application\impl\Engine.cpp">
       <Filter>application\impl</Filter>
     </ClCompile>
@@ -255,6 +252,18 @@
     </ClCompile>
     <ClCompile Include="source\tools\impl\GriffinToolsApi.cpp">
       <Filter>tools\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\input\impl\InputSystem.cpp">
+      <Filter>input\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\input\impl\InputSystemApi.cpp">
+      <Filter>input\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\impl\Game.cpp">
+      <Filter>game\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\scene\impl\Camera.cpp">
+      <Filter>scene\impl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -299,12 +308,6 @@
     </ClInclude>
     <ClInclude Include="source\application\FixedTimestep.h">
       <Filter>application</Filter>
-    </ClInclude>
-    <ClInclude Include="source\core\InputSystem.h">
-      <Filter>core</Filter>
-    </ClInclude>
-    <ClInclude Include="source\core\CoreSystem.h">
-      <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="source\utility\container\vector_queue.h">
       <Filter>utility\container</Filter>
@@ -666,9 +669,6 @@
     <ClInclude Include="source\render\model\Model_GL.h">
       <Filter>render\model</Filter>
     </ClInclude>
-    <ClInclude Include="source\render\Camera.h">
-      <Filter>render</Filter>
-    </ClInclude>
     <ClInclude Include="source\render\ShaderProgramLayouts_GL.h">
       <Filter>render</Filter>
     </ClInclude>
@@ -747,6 +747,24 @@
     </ClInclude>
     <ClInclude Include="source\api\SceneApi.h">
       <Filter>api</Filter>
+    </ClInclude>
+    <ClInclude Include="source\application\UpdateInfo.h">
+      <Filter>application</Filter>
+    </ClInclude>
+    <ClInclude Include="source\input\InputSystem.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\GameSystem.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\Game.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="source\application\applicationTypedefs.h">
+      <Filter>application</Filter>
+    </ClInclude>
+    <ClInclude Include="source\scene\Camera.h">
+      <Filter>scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1199,6 +1217,9 @@
     </None>
     <None Include="scripts\tools\web\api.lua">
       <Filter>lua\tools\web</Filter>
+    </None>
+    <None Include="source\lua\game\initGame.lua">
+      <Filter>lua\game</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

@@ -1,10 +1,10 @@
 #include <api/InputSystemApi.h>
-#include <core/InputSystem.h>
+#include <input/InputSystem.h>
 #include <SDL_log.h>
 
-griffin::core::InputSystemPtr g_inputPtr = nullptr;
+griffin::input::InputSystemPtr g_inputPtr = nullptr;
 
-void griffin::core::setInputSystemPtr(const InputSystemPtr& inputPtr)
+void griffin::input::setInputSystemPtr(const InputSystemPtr& inputPtr)
 {
 	g_inputPtr = inputPtr;
 }
@@ -15,7 +15,15 @@ extern "C" {
 #endif
 
 	using namespace griffin;
-	using namespace griffin::core;
+	using namespace griffin::input;
+
+	// do some sanity checks to make sure the API structs are the same size
+	// the layout must also match but that isn't checked here
+	static_assert(sizeof(griffin_InputMapping) == sizeof(InputMapping), "InputMapping size out of sync");
+	static_assert(sizeof(griffin_MappedAction) == sizeof(MappedAction), "MappedAction size out of sync");
+	static_assert(sizeof(griffin_MappedState)  == sizeof(MappedState),  "MappedState size out of sync");
+	static_assert(sizeof(griffin_AxisMotion)   == sizeof(AxisMotion),   "AxisMotion size out of sync");
+	static_assert(sizeof(griffin_MappedAxis)   == sizeof(MappedAxis),   "MappedAxis size out of sync");
 
 	
 	uint64_t griffin_input_createContext(uint16_t optionsMask, uint8_t priority, const char name[32], bool makeActive)
@@ -76,11 +84,6 @@ extern "C" {
 
 	uint64_t griffin_input_registerCallback(int priority, Callback_T callbackFunc)
 	{
-		assert(sizeof(griffin_MappedAction) == sizeof(MappedAction) && "MappedAction struct out of sync with API");
-		assert(sizeof(griffin_MappedState) == sizeof(MappedState) && "MappedState struct out of sync with API");
-		assert(sizeof(griffin_MappedAxis) == sizeof(MappedAxis) && "MappedAxis struct out of sync with API");
-		assert(sizeof(griffin_AxisMotion) == sizeof(AxisMotion) && "AxisMotion struct out of sync with API");
-		
 		auto& input = *g_inputPtr;
 
 		Id_T id = input.registerCallback(priority, [callbackFunc](FrameMappedInput& mappedInput) {
@@ -94,7 +97,7 @@ extern "C" {
 			mi.axisMotion = reinterpret_cast<griffin_AxisMotion*>(mappedInput.motion.data());
 			mi.axisMotionSize = static_cast<int16_t>(mappedInput.motion.size());
 			mi.textInput = mappedInput.textInput.c_str();
-			mi.textInputLength = static_cast<int16_t>(mappedInput.textInput.length());
+			mi.textInputLength = static_cast<int32_t>(mappedInput.textInput.length());
 
 			callbackFunc(&mi);
 		});

@@ -7,7 +7,7 @@
 #include <glm/gtx/euler_angles.hpp> // TEMP
 
 namespace griffin {
-	namespace render {
+	namespace scene {
 		using namespace glm;
 
 		mat4 alignZAxisWithTarget(vec3 targetDir, vec3 upDir);

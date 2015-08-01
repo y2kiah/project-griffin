@@ -24,11 +24,11 @@
 
 // Render System
 #define RESERVE_RENDER_QUEUE					500
-#define RESERVE_RENDER_CAMERAS					10
 
 // Scene System
 #define RESERVE_SCENEGRAPH_TRAVERSAL_QUEUE		100
 #define RESERVE_SCENEMANAGER_SCENES				3
+#define RESERVE_SCENE_CAMERAS					10
 
 // Scripting System
 #define RESERVE_LUA_STATES						10

@@ -23,6 +23,67 @@ extern "C" {
 		return g_sceneMgrPtr->createScene(name, makeActive).value;
 	}
 
+
+	uint64_t griffin_scene_createEmptySceneNode(uint64_t scene, uint64_t parentEntity)
+	{
+		SceneId sceneId;
+		sceneId.value = scene;
+		EntityId parentId;
+		parentId.value = parentEntity;
+
+		try {
+			auto& s = g_sceneMgrPtr->getScene(sceneId);
+			auto entityId = s.entityManager.createEntity();
+
+			auto sceneNodeId = s.sceneGraph.addToSceneEntity(entityId, {}, {}, parentId);
+			if (sceneNodeId != NullId_T) {
+				return entityId.value;
+			}
+		}
+		catch (std::exception ex) {
+			SDL_Log("griffin_scene_createEmptySceneNode: %s", ex.what());
+		}
+		return 0;
+	}
+
+	
+	uint64_t griffin_scene_createMeshInstance(uint64_t scene, uint64_t parentEntity, uint64_t mesh)
+	{
+		EntityId entityId{};
+		entityId.value = griffin_scene_createEmptySceneNode(scene, parentEntity);
+
+		if (entityId != NullId_T) {
+			try {
+				SceneId sceneId;
+				sceneId.value = scene;
+				auto& s = g_sceneMgrPtr->getScene(sceneId);
+
+				scene::MeshInstanceContainer mi{};
+				// TODO: request the meshId from resource system
+
+				s.entityManager.addComponentToEntity<scene::MeshInstanceContainer>(std::move(mi), entityId);
+
+				return entityId.value;
+			}
+			catch (std::exception ex) {
+				SDL_Log("griffin_scene_createMeshInstance: %s", ex.what());
+			}
+		}
+		return 0;
+	}
+
+	
+	uint64_t griffin_scene_createCamera(uint64_t scene, uint64_t parentEntity)
+	{
+		return 0;
+	}
+
+	
+	uint64_t griffin_scene_createLight(uint64_t scene, uint64_t parentEntity)
+	{
+		return 0;
+	}
+
 #ifdef __cplusplus
 }
 #endif

@@ -14,7 +14,7 @@ using glm::mat4;
 using glm::quat;
 
 namespace griffin {
-	namespace render {
+	namespace scene {
 
 		class Camera {
 		public:

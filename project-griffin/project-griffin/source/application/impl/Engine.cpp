@@ -3,6 +3,12 @@
 * @author Jeff Kiah
 */
 #include <application/Engine.h>
+#include <input/InputSystem.h>
+#include <resource/ResourceLoader.h>
+#include <script/ScriptManager_LuaJIT.h>
+#include <render/Render.h>
+#include <scene/Scene.h>
+#include <tools/GriffinTools.h>
 #include <SDL.h>
 
 using std::make_unique;
@@ -30,18 +36,17 @@ namespace griffin {
 		}
 
 		auto scriptPtr  = make_shared<script::ScriptManager>();
-		auto inputPtr   = make_shared<core::InputSystem>();
+		auto inputPtr   = make_shared<input::InputSystem>();
 		auto loaderPtr  = make_shared<resource::ResourceLoader>();
 
 		/**
 		* Build the Lua scripting system
 		*/
-		Id_T initLuaStateId{};
 		{
 			using namespace script;
 
 			// init.lua configures the startup settings
-			initLuaStateId = scriptPtr->createState("scripts/initState.lua"); // throws on error
+			engine.engineLuaState = scriptPtr->createState("scripts/initState.lua"); // throws on error
 
 			// add system API functions to Lua
 
@@ -56,9 +61,9 @@ namespace griffin {
 		{
 			using namespace tools;
 
-			Id_T toolsLuaStateId = scriptPtr->createState("scripts/initState.lua");
+			engine.toolsLuaState = scriptPtr->createState("scripts/initState.lua");
 
-			auto toolsPtr = make_shared<GriffinToolsManager>(toolsLuaStateId);
+			auto toolsPtr = make_shared<GriffinToolsManager>(engine.toolsLuaState);
 
 			// executes tools build scripts, and starts http server on a new thread
 			toolsPtr->init(scriptPtr);
@@ -71,7 +76,7 @@ namespace griffin {
 		* Build the input system
 		*/
 		{
-			using namespace core;
+			using namespace input;
 
 			// inject dependencies into the InputSystem
 			inputPtr->app = &app;
@@ -82,10 +87,10 @@ namespace griffin {
 			setInputSystemPtr(inputPtr);
 
 			// InputSystem.lua contains initInputSystem function
-			scriptPtr->doFile(initLuaStateId, "scripts/InputSystem.lua"); // throws on error
+			scriptPtr->doFile(engine.engineLuaState, "scripts/InputSystem.lua"); // throws on error
 
 			// invoke Lua function to init InputSystem
-			scriptPtr->callLuaGlobalFunction(initLuaStateId, "initInputSystem");
+			scriptPtr->callLuaGlobalFunction(engine.engineLuaState, "initInputSystem");
 
 			// move input system into application
 			engine.inputSystem = inputPtr;
@@ -146,23 +151,12 @@ namespace griffin {
 			setSceneManagerPtr(scenePtr);
 
 			// Scene.lua contains scene functions
-			scriptPtr->doFile(initLuaStateId, "scripts/Scene.lua"); // throws on error
+			scriptPtr->doFile(engine.engineLuaState, "scripts/Scene.lua"); // throws on error
 
 			engine.sceneManager = scenePtr;
 		}
 
-		/**
-		* Build the systems list for ordered updates
-		*/
-		{
-			// create vector in order of system update execution
-			engine.systems.push_back(engine.inputSystem.get());
-			//engine.systems.push_back(engine.resourceLoader.get());
-
-			engine.systems.push_back(engine.toolsManager.get());
-		}
-
-		return move(engine);
+		return engine;
 	}
 
 

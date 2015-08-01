@@ -48,6 +48,24 @@ namespace griffin {
 			EntityId createEntity();
 
 			/**
+			* @return	ComponentId of a component with a certain type. Returns the first component
+			*	in the list encountered. Use the getEntityComponents function if more than one
+			*	component of a type is expected.
+			*/
+			ComponentId getEntityComponentId(EntityId entityId, ComponentType ct) const {
+				if (m_entityStore.isValid(entityId)) {
+					auto& entity = m_entityStore[entityId];
+
+					for (auto cmp : entity.components) {
+						if (cmp.typeId == ct) {
+							return cmp;
+						}
+					}
+				}
+				return NullId_T;
+			}
+
+			/**
 			* Get the ComponentIds that belong to an entity
 			* @return	const reference to the components vector, don't store it just use it
 			*	immediately and discard

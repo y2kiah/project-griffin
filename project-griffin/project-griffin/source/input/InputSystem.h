@@ -5,12 +5,12 @@
 #ifndef GRIFFIN_INPUTSYSTEM_H_
 #define GRIFFIN_INPUTSYSTEM_H_
 
-#include <core/CoreSystem.h>
 #include <vector>
 #include <string>
 #include <bitset>
 #include <SDL_events.h>
 #include <memory>
+#include <application/UpdateInfo.h>
 #include <utility/container/concurrent_queue.h>
 #include <utility/enum.h>
 #include <utility/container/handle_map.h>
@@ -27,7 +27,7 @@ class SDLApplication;
 
 
 namespace griffin {
-	namespace core {
+	namespace input {
 
 		// Forward declarations
 
@@ -136,12 +136,12 @@ namespace griffin {
 		*/
 		struct MappedAction {
 			Id_T					mappingId;
-			bool					handled = false;	//<! flag set to true when event has been handled by a callback
 			const InputMapping *	inputMapping = nullptr;
 			float					x       = 0;
 			float					y       = 0;			//<! mouse clicks include normalized position here
 			int32_t					xRaw    = 0;
 			int32_t					yRaw    = 0;
+			bool					handled = false;		//<! flag set to true when event has been handled by a callback
 		};
 
 		/**
@@ -150,13 +150,13 @@ namespace griffin {
 		*/
 		struct MappedState {
 			Id_T					mappingId;
-			bool					handled     = false;	//<! flag set to true when event has been handled by a callback
 			const InputMapping *	inputMapping = nullptr;
 			double					totalMs     = 0;		//<! total millis the state has been active
 			int64_t					startCounts = 0;		//<! clock counts when state began
 			int64_t					totalCounts = 0;		//<! currentCounts - startCounts + countsPerTick
 			int32_t					startFrame  = 0;		//<! frame number when state began
 			int32_t					totalFrames = 0;		//<! currentFrame - startFrame + 1
+			bool					handled     = false;	//<! flag set to true when event has been handled by a callback
 		};
 
 		/**
@@ -165,7 +165,7 @@ namespace griffin {
 		*/
 		struct AxisMotion {
 			uint32_t				device;					//<! instanceID of the device that owns this axis, mouse is always 0 (x) and 1 (y)
-			uint8_t					axis;					//<! axis number on the device
+			uint32_t				axis;					//<! axis number on the device
 			float					posMapped = 0;			//<! absolute position of axis mapped to curve
 			float					relMapped = 0;			//<! relative motion of the axis since last frame mapped to curve
 			int32_t					posRaw = 0;				//<! raw value from device, not normalized or mapped to curve, may be useful but use posMapped by default
@@ -178,9 +178,10 @@ namespace griffin {
 		*/
 		struct MappedAxis {
 			Id_T					mappingId;
-			bool					handled = false;	//<! flag set to true when event has been handled by a callback
 			const InputMapping *	inputMapping = nullptr;
 			const AxisMotion *		axisMotion = nullptr;
+			bool					handled = false;		//<! flag set to true when event has been handled by a callback
+			uint8_t					_padding_end[4];
 		};
 
 		/**
@@ -201,9 +202,10 @@ namespace griffin {
 		* Input Event
 		*/
 		struct InputEvent {
-			InputEventType			eventType;
-			SDL_Event				evt;
 			int64_t					timeStampCounts;
+			SDL_Event				evt;
+			InputEventType			eventType;
+			uint8_t					_padding_end[7];
 		};
 
 		/**
@@ -211,15 +213,16 @@ namespace griffin {
 		*/
 		struct ActiveInputContext {
 			Id_T					contextId;
-			uint8_t					priority;
 			bool					active;
+			uint8_t					priority;
+			uint8_t					_padding_end[3];
 		};
 
 
 		/**
 		* Input System
 		*/
-		class InputSystem : public CoreSystem {
+		class InputSystem {
 		public:
 			// Static Variables
 
@@ -254,9 +257,9 @@ namespace griffin {
 			void initialize();
 
 			/**
-			* Executed on the update thread
+			* Executed in the update fixed timestep loop
 			*/
-			virtual void update(const UpdateInfo& ui) override;
+			void updateFrameTick(const UpdateInfo& ui);
 
 			/**
 			* Executed on the input/GUI thread
@@ -432,10 +435,10 @@ namespace griffin {
 			// Variables
 
 			bitset<InputContextOptionsCount> options = {};	//<! all input context options
-			//uint8_t		cursorIndex;					//<! lookup into input system's cursor table
-			vector<Id_T>	inputMappings = {};				//<! stores input mapping to actions, states, axes
 			Id_T			contextId;						//<! the id handle of this context
 			char			name[32];						//<! display name of the context
+			//uint32_t		cursorIndex;					//<! lookup into input system's cursor table
+			vector<Id_T>	inputMappings = {};				//<! stores input mapping to actions, states, axes
 		};
 
 	}

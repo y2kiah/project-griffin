@@ -5,8 +5,27 @@
 #include "../Scene.h"
 #include <SDL_log.h>
 #include <utility/memory_reserve.h>
+#include <scene/Camera.h>
 
 using namespace griffin::scene;
+
+// class Scene
+
+Scene::Scene(const std::string& _name, bool _active) :
+	entityManager{},
+	sceneGraph(entityManager),
+	name(_name),
+	active{ _active }
+{
+	cameras.reserve(RESERVE_SCENE_CAMERAS);
+}
+
+Scene::~Scene() {
+	if (cameras.capacity() > RESERVE_SCENE_CAMERAS) {
+		SDL_Log("check RESERVE_SCENE_CAMERAS: original=%d, highest=%d", RESERVE_SCENE_CAMERAS, cameras.capacity());
+	}
+}
+
 
 // class SceneManager
 

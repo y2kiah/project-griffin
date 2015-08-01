@@ -4,15 +4,18 @@
 #include <sstream>
 #include <gl/glew.h>
 //#include <gl/glcorearb.h>
-#include "main.h"
-#include "Timer.h"
 #include <SOIL.h>
-#include <entity/components.h>
-#include <render/Render.h>
-#include <utility/profile/Profile.h>
-#include "platform.h"
-#include "FixedTimestep.h"
+#include "main.h"
+#include <application/Timer.h>
+#include <application/platform.h>
+#include <application/UpdateInfo.h>
+#include <application/FixedTimestep.h>
 #include <application/Engine.h>
+#include <game/Game.h>
+#include <input/InputSystem.h>
+#include <render/Render.h>
+#include <resource/ResourceLoader.h>
+#include <utility/profile/Profile.h>
 
 #define PROGRAM_NAME "Project Griffin"
 
@@ -30,63 +33,73 @@ int main(int argc, char *argv[])
 		SDLApplication app;
 		app.initWindow(PROGRAM_NAME);
 		app.initOpenGL();
-		auto engine = make_engine(app);
 
-		entity::test_reflection(); // TEMP
+		auto engine = make_engine(app);
+		auto game = make_game(engine, app);
 
 		bool done = false;
-		int32_t frame = 0;
+		uint64_t frame = 0;
 
 		SDL_GL_MakeCurrent(nullptr, NULL); // make no gl context current on the input thread
 
-		// move this to Game class instead of having a lambda
+		/**
+		* Game Update-Render Thread, runs the main rendering frame loop and the inner
+		* fixed-timestep game update loop
+		*/
+		// move this a Game class instead of having a lambda??
 		auto gameProcess = [&](){
 			SDL_GL_MakeCurrent(app.getPrimaryWindow().window, app.getPrimaryWindow().glContext); // gl context made current on the main loop thread
 			Timer timer;
 			
-			FixedTimestep update(1000.0 / 30.0, Timer::countsPerMs(),
+			FixedTimestep update(1000.0f / 30.0f, Timer::countsPerMs(),
 				[&](const int64_t virtualTime, const int64_t gameTime, const int64_t deltaCounts,
-					const double deltaMs, const double gameSpeed)
+					const float deltaMs, const float gameSpeed)
 			{
-				core::CoreSystem::UpdateInfo ui = { virtualTime, gameTime, deltaCounts, deltaMs, gameSpeed, frame };
+				PROFILE_BLOCK("update loop", frame, ThreadAffinity::Thread_Update);
+
+				UpdateInfo ui = { virtualTime, gameTime, deltaCounts, deltaMs, gameSpeed, frame };
 
 				/*SDL_Log("Update virtualTime=%lu: gameTime=%ld: deltaCounts=%ld: countsPerMs=%ld\n",
 						virtualTime, gameTime, deltaCounts, Timer::timerFreq() / 1000);*/
 
 				engine.threadPool->executeFixedThreadTasks(ThreadAffinity::Thread_Update);
 
-				// call all systems in priority order
-				for (auto& s : engine.systems) {
-					s->update(ui);
-				}
+				
 				// if all systems operate on 1(+) frame-old-data, can all systems be run in parallel?
-				// should this simple vector become a task flow graph?
-				// example systems:
-				//	InputSystem
+				// should this list become a task flow graph?
+				
+				engine.inputSystem->updateFrameTick(ui);
 				//	ResourceLoader
 				//	AISystem
 				//	PhysicsSystem
 				//	CollisionSystem
 				//	ResourcePredictionSystem
 				//	etc.
+
+				// below currently does nothing
+				//#ifdef GRIFFIN_TOOLS_BUILD
+				//engine.toolsManager->updateFrameTick(ui);
+				//#endif
+
+				// call the Lua game update handler
 			});
 
 			int64_t realTime = timer.start();
 
 			for (frame = 0; !done; ++frame) {
-				PROFILE_BLOCK("main loop", frame, 2);
+				PROFILE_BLOCK("render loop", frame, ThreadAffinity::Thread_OpenGL_Render);
 
 				int64_t countsPassed = timer.queryCountsPassed();
 				realTime = timer.stopCounts();
 
-				double interpolation = update.tick(realTime, countsPassed, 1.0);
+				float interpolation = update.tick(realTime, countsPassed, 1.0);
 				
 				//SDL_Delay(1000);
 				/*SDL_Log("Render realTime=%lu: interpolation=%0.3f: threadIdHash=%lu\n",
 						realTime, interpolation, std::this_thread::get_id().hash());*/
+				engine.threadPool->executeFixedThreadTasks(ThreadAffinity::Thread_OpenGL_Render);
 
 				engine.resourceLoader->executeCallbacks();
-				engine.threadPool->executeFixedThreadTasks(ThreadAffinity::Thread_OpenGL_Render);
 
 				engine.renderSystem->renderFrame(interpolation);
 
@@ -94,13 +107,19 @@ int main(int argc, char *argv[])
 				platform::yieldThread();
 			}
 
+			destroy_game(game);
 			destroy_engine(engine); // delete the engine on the GL thread
 		};
 		
+		// This actually starts the update-render thread. OpenGL context is transferred to this
+		// thread after OpenGL is initialized on the OS thread. This thread joins in SDL_QUIT.
 		auto gameThread = std::async(std::launch::async, gameProcess);
 
+		/**
+		* OS-Input Thread, runs the platform message loop
+		*/
 		while (!done) {
-			PROFILE_BLOCK("input loop", frame, 1);
+			PROFILE_BLOCK("input loop", frame, ThreadAffinity::Thread_OS_Input);
 
 			SDL_Event event;
 			while (SDL_PollEvent(&event)) {

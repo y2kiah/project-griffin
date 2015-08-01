@@ -4,13 +4,15 @@
 
 #include <string>
 #include <memory>
+#include <glm/vec3.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <utility/memory_reserve.h>
 #include "VertexBuffer_GL.h"
 #include "RenderTarget_GL.h"
-#include <utility/memory_reserve.h>
 #include <resource/Resource.h>
 #include <render/texture/Texture2D_GL.h>
 #include <render/ShaderProgram_GL.h>
-#include <render/Camera.h>
+
 
 namespace griffin {
 	// Forward Declarations
@@ -118,7 +120,7 @@ namespace griffin {
 			*/
 			void init(int viewportWidth, int viewportHeight);
 
-			void renderFrame(double interpolation);
+			void renderFrame(float interpolation);
 
 			void drawFullscreenQuad(/*Viewport?*/) const;
 
@@ -160,24 +162,20 @@ namespace griffin {
 		*/
 		class RenderSystem {
 		public:
-			explicit RenderSystem() :
-				m_cameras(0, RESERVE_RENDER_CAMERAS)
-			{}
+			explicit RenderSystem() {}
 
 			~RenderSystem();
 
 			void init(int viewportWidth, int viewportHeight);
 
 			// needed?
-			void interpolateStates(double interpolation) {}
+			void interpolateStates(float interpolation) {}
 
-			void renderFrame(double interpolation) {
+			void renderFrame(float interpolation) {
 				m_renderer.renderFrame(interpolation);
 			}
 
 		private:
-			handle_map<unique_ptr<Camera>>  m_cameras;
-
 			RenderQueue         m_renderQueue;
 			DeferredRenderer_GL m_renderer;
 		};

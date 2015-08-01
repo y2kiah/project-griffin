@@ -43,11 +43,6 @@ namespace griffin {
 			});
 		}
 
-
-		void GriffinToolsManager::update(const UpdateInfo& ui)
-		{
-			
-		}
 	}
 }
 

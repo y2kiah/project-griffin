@@ -15,7 +15,6 @@
 //#include <sparsehash/dense_hash_map>
 #include <array>
 #include <utility/concurrency.h>
-#include <core/CoreSystem.h>
 #include "Resource.h"
 #include "ResourceCache.h"
 #include "ResourceSource.h"
@@ -26,7 +25,6 @@ namespace griffin {
 		using std::unique_ptr;
 		using std::shared_ptr;
 		using std::wstring;
-		using griffin::core::CoreSystem;
 
 		/**
 		* ResourceLoader is a manager of shared resources used by the engine, and provides an
@@ -34,7 +32,7 @@ namespace griffin {
 		* that deal with ResourceHandle<T> are asynchronous. Some functions are synchronous and
 		* deal directly with resource Id_T values.
 		*/
-		class ResourceLoader : public CoreSystem {
+		class ResourceLoader {
 		public:
 			/**
 			* Signature: resource shared_ptr, resource handle, resource size
@@ -45,11 +43,6 @@ namespace griffin {
 				m_c{}, m_callbacks{}
 			{}
 
-			/**
-			* update on the update thread calls queued callbacks
-			*/
-			virtual void update(const UpdateInfo& ui) override;
-			
 			/**
 			* executing on each frame currently, not tied to the update fixed timestep
 			*/

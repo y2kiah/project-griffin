@@ -100,17 +100,32 @@ SceneNodeId SceneGraph::addToScene(EntityId entityId, const glm::dvec3& translat
 
 	auto nodeId = entityMgr.addComponentToEntity(std::move(node), entityId);
 
-	// push new node to the front of parent't list
-	// set the prevSibling of the former first child
-	if (parentNode.firstChild != NullId_T) {
-		nodeComponents[parentNode.firstChild].component.prevSibling = nodeId;
+	if (nodeId != NullId_T) {
+		// push new node to the front of parent't list
+		// set the prevSibling of the former first child
+		if (parentNode.firstChild != NullId_T) {
+			nodeComponents[parentNode.firstChild].component.prevSibling = nodeId;
+		}
+
+		// make the new node the first child of its parent
+		parentNode.firstChild = nodeId;
+		++parentNode.numChildren;
 	}
 
-	// make the new node the first child of its parent
-	parentNode.firstChild = nodeId;
-	++parentNode.numChildren;
-
 	return nodeId;
+}
+
+
+SceneNodeId SceneGraph::addToSceneEntity(EntityId entityId, const glm::dvec3& translationLocal,
+										 const glm::quat& rotationLocal, EntityId parentNodeEntityId)
+{
+	SceneNodeId newSceneNodeId{};
+	SceneNodeId parentNodeId = entityMgr.getEntityComponentId(parentNodeEntityId, scene::SceneNode::componentType);
+	
+	if (parentNodeId != NullId_T) {
+		newSceneNodeId = addToScene(entityId, translationLocal, rotationLocal, parentNodeId);
+	}
+	return newSceneNodeId;
 }
 
 

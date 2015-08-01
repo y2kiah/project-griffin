@@ -23,8 +23,8 @@ namespace griffin {
 	 * @class FrameData
 	 */
 	struct FrameData {
-		int32_t m_frame;		//!< number of the frame being captured
-		int32_t m_invocations;	//!< invocations per frame (good indication of the "hotness" of the code block)
+		int64_t m_frame;		//!< number of the frame being captured
+		int64_t m_invocations;	//!< invocations per frame (good indication of the "hotness" of the code block)
 		int64_t m_counts;		//!< total counts within the frame
 	};
 
@@ -41,14 +41,14 @@ namespace griffin {
 		//~ProfileAggregate();
 		
 
-		void invoke(int64_t countsPassed, int32_t frame);
+		void invoke(int64_t countsPassed, int64_t frame);
 
 		void init(const char* name, const char* parentName, string path);
 
 		// Member Variables
 
-		int32_t	m_frames = 0;			//!< total frames that this code block has been run in
-		int32_t	m_invocations = 0;		//!< total invocations of the code block
+		int64_t	m_frames = 0;			//!< total frames that this code block has been run in
+		int64_t	m_invocations = 0;		//!< total invocations of the code block
 		bool	m_collectFrameData = false; //!< true to turn on frame data collection
 
 		int64_t	m_countsCumulative = 0;	//!< cumulative counts of all invocations
@@ -58,8 +58,8 @@ namespace griffin {
 		double	m_msDeviationSqCumulative = 0.0;	//!< cumulative of the squared deviation from the mean,
 													//!< used to calc std.dev.
 
-		int32_t	m_firstFrame = numeric_limits<uint32_t>::max(); //!< frame number of the first invocation
-		int32_t	m_lastFrame  = numeric_limits<uint32_t>::min(); //!< frame number of the last invocation
+		int64_t	m_firstFrame = numeric_limits<uint64_t>::max(); //!< frame number of the first invocation
+		int64_t	m_lastFrame  = numeric_limits<uint64_t>::min(); //!< frame number of the last invocation
 
 		const char*	m_name = nullptr;	//!< name of this profile block, same as the map key
 		const char*	m_parent = nullptr;	//!< name of the parent block, set on first invocation

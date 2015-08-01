@@ -1,3 +1,7 @@
+/**
+* @file Render.cpp
+* @author Jeff Kiah
+*/
 #include <vector>
 #include <fstream>
 #include <algorithm>
@@ -12,6 +16,10 @@
 #include <render/model/Mesh_GL.h>
 #include <render/model/ModelImport_Assimp.h>
 #include <render/RenderTarget_GL.h>
+
+// TEMP
+#include <scene/Camera.h>
+
 
 namespace griffin {
 	namespace render {
@@ -40,7 +48,7 @@ namespace griffin {
 		
 		// TEMP
 		ResourcePtr g_tempMesh = nullptr;
-		std::unique_ptr<CameraPersp> camera = nullptr;
+		std::unique_ptr<scene::CameraPersp> camera = nullptr;
 
 
 		// class RenderQueue
@@ -133,7 +141,7 @@ namespace griffin {
 
 		// class DeferredRenderer_GL
 
-		void DeferredRenderer_GL::renderFrame(double interpolation)
+		void DeferredRenderer_GL::renderFrame(float interpolation)
 		{
 			// Start g-buffer rendering
 			m_gbuffer.start();
@@ -287,14 +295,12 @@ namespace griffin {
 				SDL_Log("%s", ex.what());
 			}
 
-			camera = std::make_unique<CameraPersp>(viewportWidth, viewportHeight, 60.0f, 0.1f, 100000.0f);
+			camera = std::make_unique<scene::CameraPersp>(viewportWidth, viewportHeight, 60.0f, 0.1f, 100000.0f);
 		}
 
 		RenderSystem::~RenderSystem()
 		{
-			if (m_cameras.capacity() > RESERVE_RENDER_CAMERAS) {
-				SDL_Log("check RESERVE_RENDER_CAMERAS: original=%d, highest=%d", RESERVE_RENDER_CAMERAS, m_cameras.capacity());
-			}
+			
 		}
 
 

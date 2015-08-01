@@ -196,15 +196,8 @@ function initInputSystem()
 		end
 	end
 
-	-- make ingame context active
-	InputSystem:setContextActive("ingame")
-	InputSystem:setContextActive("playerfps")
-
-	-- add Lua callback for ingame context
-	InputSystem:addInputHandler(ingameInputHandler)
+	-- add lua callback for catchAll handler
 	InputSystem:addInputHandler(catchAllHandler, 999)
-
-	--InputSystem:setRelativeMouseMode(true)
 end
 
 
@@ -248,19 +241,7 @@ function frameInputHandler(frameMappedInput)
 end
 
 
--- handle ingame actions including Pause, Capture Mouse
-local ingameContext = nil
-local pauseMapping = nil
-local captureMouseMapping = nil
-
-function ingameInputHandler(frameInput)
-	InputSystem:handleInput("ingame", "Capture Mouse", frameInput.actions, function(context, mappedAction)
-		local relative = InputSystem:getRelativeMouseMode()
-		InputSystem:setRelativeMouseMode(not relative)
-		return true
-	end)
-end
-
+-- catchAll handler logs the actions that aren't handled by higher-priority handlers
 function catchAllHandler(frameInput)
 	for i,mc in pairs(frameInput.actions) do
 		for j,mi in pairs(mc) do

@@ -31,15 +31,15 @@
     <ClCompile Include="source\application\impl\platform.cpp" />
     <ClCompile Include="source\application\impl\Timer_win32.cpp" />
     <ClCompile Include="source\application\main.cpp" />
-    <ClCompile Include="source\core\impl\InputSystem.cpp" />
-    <ClCompile Include="source\core\impl\InputSystemApi.cpp" />
     <ClCompile Include="source\entity\impl\Component.cpp" />
     <ClCompile Include="source\entity\impl\Entity.cpp" />
     <ClCompile Include="source\entity\impl\EntityManager.cpp" />
+    <ClCompile Include="source\game\impl\Game.cpp" />
+    <ClCompile Include="source\input\impl\InputSystem.cpp" />
+    <ClCompile Include="source\input\impl\InputSystemApi.cpp" />
     <ClCompile Include="source\render\font\FreeType.cpp" />
     <ClCompile Include="source\render\geometry\impl\Cube.cpp" />
     <ClCompile Include="source\render\geometry\impl\Geometry.cpp" />
-    <ClCompile Include="source\render\impl\Camera.cpp" />
     <ClCompile Include="source\render\impl\IndexBuffer_GL.cpp" />
     <ClCompile Include="source\render\impl\Render.cpp" />
     <ClCompile Include="source\render\impl\RenderTarget_GL.cpp" />
@@ -53,6 +53,7 @@
     <ClCompile Include="source\resource\impl\ResourceLoader.cpp" />
     <ClCompile Include="source\resource\impl\ResourceLoader-inl.h" />
     <ClCompile Include="source\resource\impl\ResourceSource.cpp" />
+    <ClCompile Include="source\scene\impl\Camera.cpp" />
     <ClCompile Include="source\scene\impl\Scene.cpp" />
     <ClCompile Include="source\scene\impl\SceneApi.cpp" />
     <ClCompile Include="source\scene\impl\SceneGraph.cpp" />
@@ -70,9 +71,9 @@
     <ClInclude Include="source\application\FixedTimestep.h" />
     <ClInclude Include="source\application\main.h" />
     <ClInclude Include="source\application\platform.h" />
+    <ClInclude Include="source\application\applicationTypedefs.h" />
     <ClInclude Include="source\application\Timer.h" />
-    <ClInclude Include="source\core\CoreSystem.h" />
-    <ClInclude Include="source\core\InputSystem.h" />
+    <ClInclude Include="source\application\UpdateInfo.h" />
     <ClInclude Include="source\entity\Component.h" />
     <ClInclude Include="source\entity\ComponentFactory.h" />
     <ClInclude Include="source\entity\components.h" />
@@ -82,7 +83,9 @@
     <ClInclude Include="source\entity\EntityManager.h" />
     <ClInclude Include="source\entity\EntityTypedefs.h" />
     <ClInclude Include="source\entity\impl\ComponentStore-inl.h" />
-    <ClInclude Include="source\render\Camera.h" />
+    <ClInclude Include="source\game\Game.h" />
+    <ClInclude Include="source\game\GameSystem.h" />
+    <ClInclude Include="source\input\InputSystem.h" />
     <ClInclude Include="source\render\font\FreeType.h" />
     <ClInclude Include="source\render\geometry\Cube.h" />
     <ClInclude Include="source\render\geometry\Geometry.h" />
@@ -103,6 +106,7 @@
     <ClInclude Include="source\resource\ResourceCache.h" />
     <ClInclude Include="source\resource\ResourceLoader.h" />
     <ClInclude Include="source\resource\ResourceSource.h" />
+    <ClInclude Include="source\scene\Camera.h" />
     <ClInclude Include="source\scene\Scene.h" />
     <ClInclude Include="source\scene\SceneGraph.h" />
     <ClInclude Include="source\script\ScriptManager_LuaJIT.h" />
@@ -275,6 +279,7 @@
     <None Include="source\lua\extension\xavante\urlhandler.lua" />
     <None Include="source\lua\extension\xavante\vhostshandler.lua" />
     <None Include="source\lua\game\gameFSM.lua" />
+    <None Include="source\lua\game\initGame.lua" />
     <None Include="source\lua\initState.lua" />
     <None Include="source\lua\InputSystem.lua" />
     <None Include="source\lua\luaBuild.lua" />

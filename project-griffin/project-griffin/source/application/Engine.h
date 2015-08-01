@@ -10,28 +10,24 @@
 #include <vector>
 #include <utility/concurrency.h>
 #include <application/main.h>
-#include <core/InputSystem.h>
-#include <resource/ResourceLoader.h>
-#include <script/ScriptManager_LuaJIT.h>
-#include <render/Render.h>
-#include <scene/Scene.h>
-#include <tools/GriffinTools.h>
-
+#include <application/applicationTypedefs.h>
+#include <utility/container/handle_map.h>
 
 namespace griffin {
 
 	struct Engine {
 		ThreadPoolPtr					threadPool		= nullptr;
 		script::ScriptManagerPtr		scriptManager	= nullptr;
-		core::InputSystemPtr			inputSystem		= nullptr;
+		input::InputSystemPtr			inputSystem		= nullptr;
 		resource::ResourceLoaderPtr		resourceLoader	= nullptr;
 		render::RenderSystemPtr			renderSystem	= nullptr;
 		scene::SceneManagerPtr			sceneManager	= nullptr;
 
-		std::vector<core::CoreSystem*>	systems;
+		Id_T							engineLuaState	= NullId_T;
 
 		#ifdef GRIFFIN_TOOLS_BUILD
 		tools::GriffinToolsManagerPtr	toolsManager	= nullptr;
+		Id_T							toolsLuaState	= NullId_T;
 		#endif
 	};
 

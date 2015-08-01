@@ -4,10 +4,6 @@
 namespace griffin {
 	namespace resource {
 
-		void ResourceLoader::update(const UpdateInfo& ui)
-		{
-		}
-
 		void ResourceLoader::executeCallbacks()
 		{
 			std::vector<std::function<void()>> callbacks;

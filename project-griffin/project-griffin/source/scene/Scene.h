@@ -8,8 +8,10 @@
 #include <cstdint>
 #include <string>
 #include <memory>
+#include <vector>
 #include "SceneGraph.h"
 #include <entity/EntityManager.h>
+#include <utility/memory_reserve.h>
 
 
 namespace griffin {
@@ -17,14 +19,15 @@ namespace griffin {
 
 		using namespace griffin::entity;
 
-		// Forward declarations
+
 		class SceneManager;
+		class Camera;
 
-		// Typedefs/Enums
+		typedef griffin::Id_T							SceneId;
+		typedef std::shared_ptr<SceneManager>			SceneManagerPtr;
+		typedef std::vector<std::shared_ptr<Camera>>	CameraList;
 
-		typedef griffin::Id_T    SceneId;
-		typedef std::shared_ptr<SceneManager> SceneManagerPtr;
-
+		
 		// Function declarations
 
 		extern void setSceneManagerPtr(const SceneManagerPtr& sceneMgrPtr);
@@ -34,22 +37,26 @@ namespace griffin {
 		/**
 		*
 		*/
-		struct Scene {
+		class Scene {
+		public:
+			// Variables
+
 			SceneGraph		sceneGraph;
 			EntityManager	entityManager;
+			CameraList		cameras;
 			
-			// contains Cameras???
 			// contains Lua state?
 			// contains layer id for RenderEntry???
+
+			int32_t			activeRenderCamera = -1;
+
 			bool			active = false;
 			std::string		name;
 
-			explicit Scene(const std::string& _name, bool _active) :
-				entityManager{},
-				sceneGraph(entityManager),
-				name(_name),
-				active{ _active }
-			{}
+			// Functions
+
+			explicit Scene(const std::string& _name, bool _active);
+			~Scene();
 		};
 
 

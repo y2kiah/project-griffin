@@ -34,7 +34,7 @@ namespace griffin {
 		SDL_Log("ProfileAggregate destroyed on thread %lu\n", std::this_thread::get_id().hash());
 	}*/
 
-	void ProfileAggregate::invoke(int64_t countsPassed, int32_t frame) {
+	void ProfileAggregate::invoke(int64_t countsPassed, int64_t frame) {
 		++m_invocations;
 		m_countsCumulative += countsPassed;
 
@@ -46,7 +46,7 @@ namespace griffin {
 			++m_frames;
 
 			if (m_collectFrameData) {
-				m_frameData.push_back({frame, 1, countsPassed});
+				m_frameData.push_back({ frame, 1, countsPassed });
 			}
 
 			// update current frame data (another invocation)

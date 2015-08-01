@@ -67,7 +67,6 @@ namespace griffin {
 				while (!m_done) {
 					m_tasks[Thread_Workers].wait_pop()();
 				}
-				SDL_Log("exiting thread %llu", std::this_thread::get_id().hash());
 			};
 
 			for (int i = 0; i < m_numWorkerThreads; ++i) {

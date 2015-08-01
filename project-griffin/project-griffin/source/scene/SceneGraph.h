@@ -66,7 +66,7 @@ namespace griffin {
 		* to the default values for any submesh where an override is not present.
 		*/
 		COMPONENT(MeshInstanceContainer,
-			(Id_T,			meshInstance,,		"resource id of the mesh"),
+			(Id_T,			meshId,,			"resource id of the mesh"),
 			(Id_T,			materialOverrides,,	"id of first material override")
 		)
 
@@ -85,7 +85,7 @@ namespace griffin {
 			* Adds a SceneNode component to the entity and incorporate into the scene graph as a
 			* child of the parentNode. If component already exists in entity, the node is moved to
 			* the new parent and position.
-			* @param entityId	entity to which a SceneNode is added
+			* @param entityId	entity to which a SceneNode Component is added
 			* @param translationLocal	local position relative to the parent node
 			* @param rotationLocal	local rotation relative to the parent node
 			* @param parentNodeId	SceneNode component of parent node, NullId_T for the root node
@@ -93,6 +93,16 @@ namespace griffin {
 			*/
 			SceneNodeId addToScene(EntityId entityId, const glm::dvec3& translationLocal,
 								   const glm::quat& rotationLocal, SceneNodeId parentNodeId);
+
+			/**
+			* See documentation for addToScene. This function takes an EntityId for the parent node
+			* rather than a SceneNodeId (component id). Otherwise they are equivalent.
+			* @param parentNodeEntityId	EntityId of parent node, NullId_T for the root node.
+			* @return	ComponentId of the SceneNode added to the entity, NullId_T if the add fails
+			*	or if the parent entity is not part of the scene
+			*/
+			SceneNodeId addToSceneEntity(EntityId entityId, const glm::dvec3& translationLocal,
+										 const glm::quat& rotationLocal, EntityId parentNodeEntityId);
 
 			/**
 			* Removes the SceneNode component from the entity and also fixes up the scene graph.

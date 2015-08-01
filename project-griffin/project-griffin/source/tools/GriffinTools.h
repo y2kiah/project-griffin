@@ -6,7 +6,6 @@
 #include <memory>
 #include <future>
 #include <script/ScriptManager_LuaJIT.h>
-#include <core/CoreSystem.h>
 
 
 namespace griffin {
@@ -22,7 +21,6 @@ namespace griffin {
 		using std::shared_ptr;
 		using std::weak_ptr;
 		using std::future;
-		using core::CoreSystem;
 
 		// Function declarations
 
@@ -32,7 +30,7 @@ namespace griffin {
 		/**
 		*
 		*/
-		class GriffinToolsManager : public CoreSystem {
+		class GriffinToolsManager {
 		public:
 			explicit GriffinToolsManager(Id_T toolsLuaStateId) :
 				m_toolsLuaStateId(toolsLuaStateId)
@@ -40,11 +38,6 @@ namespace griffin {
 			~GriffinToolsManager();
 
 			void init(const script::ScriptManagerPtr& scriptPtr);
-			
-			/**
-			* Executed on the update thread
-			*/
-			virtual void update(const UpdateInfo& ui) override;
 
 		private:
 			Id_T			m_toolsLuaStateId;

@@ -1,10 +1,10 @@
-#include "../InputSystem.h"
+#include <input/InputSystem.h>
 #include <application/main.h>
 #include <application/Timer.h>
 #include <SDL_log.h>
 
 using namespace griffin;
-using namespace griffin::core;
+using namespace griffin::input;
 
 #define JOYSTICK_INVERSE_MAX_RAW	1.0f / 32768.0f
 
@@ -14,7 +14,7 @@ using namespace griffin::core;
 const SDLApplication* InputSystem::app = nullptr;
 
 
-void InputSystem::update(const UpdateInfo& ui)
+void InputSystem::updateFrameTick(const UpdateInfo& ui)
 {
 	// pop all events up to the game's virtual time, key events are kept in buffer for the frame
 	m_popEvents.clear();
@@ -91,7 +91,7 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 
 					// check for action mappings
 					if (mapping.type == Action_T) {
-						MappedAction ma;
+						MappedAction ma{};
 
 						if ((mapping.bindIn == Bind_Down_T && evt.evt.type == SDL_KEYDOWN) ||
 							(mapping.bindIn == Bind_Up_T   && evt.evt.type == SDL_KEYUP))
@@ -182,7 +182,7 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 
 						// found a new active state mapping with this event
 						if (matched && !stateActive) {
-							MappedState ms;
+							MappedState ms{};
 							ms.mappingId = mappingId;
 							ms.inputMapping = &mapping;
 							ms.startCounts = ui.gameTime;
@@ -323,7 +323,7 @@ void InputSystem::mapFrameMotion(const UpdateInfo& ui)
 						motion.relMapped *= (mapping.invert == 1 ? -1.0f : 1.0f);
 					}
 					
-					MappedAxis ma;
+					MappedAxis ma{};
 					ma.mappingId = mappingId;
 					ma.inputMapping = &mapping;
 					ma.axisMotion = &motion;
@@ -356,7 +356,7 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 				/*SDL_Log("key event=%d: state=%d: key=%d: repeat=%d: realTime=%lu\n",
 						event.type, event.key.state, event.key.keysym.scancode, event.key.repeat, timestamp);*/
 
-				m_eventsQueue.push({ Event_Keyboard_T, std::move(event), timestamp });
+				m_eventsQueue.push({ timestamp, std::move(event), Event_Keyboard_T, {} });
 			}
 			handled = true;
 			break;
@@ -366,7 +366,7 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 			/*SDL_Log("key event=%d: text=%s: length=%d: start=%d: windowID=%d: realTime=%lu\n",
 					event.type, event.edit.text, event.edit.length, event.edit.start, event.edit.windowID, timestamp);*/
 
-			m_eventsQueue.push({ Event_TextInput_T, std::move(event), timestamp });
+			m_eventsQueue.push({ timestamp, std::move(event), Event_TextInput_T, {} });
 
 			handled = true;
 			break;
@@ -375,7 +375,7 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 			/*SDL_Log("key event=%d: text=%s: windowID=%d: realTime=%lu\n",
 					event.type, event.text.text, event.text.windowID, timestamp);*/
 
-			m_eventsQueue.push({ Event_TextInput_T, std::move(event), timestamp });
+			m_eventsQueue.push({ timestamp, std::move(event), Event_TextInput_T, {} });
 
 			handled = true;
 			break;
@@ -385,7 +385,7 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 			/*SDL_Log("mouse motion event=%d: which=%d: state=%d: window=%d: x,y=%d,%d: xrel,yrel=%d,%d: realTime=%lu\n",
 					event.type, event.motion.which, event.motion.state, event.motion.windowID,
 					event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel, timestamp);*/
-			m_motionEventsQueue.push({ Event_Mouse_T, std::move(event), timestamp });
+			m_motionEventsQueue.push({ timestamp, std::move(event), Event_Mouse_T, {} });
 			handled = true;
 			break;
 		}
@@ -394,7 +394,7 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 					event.type, event.jaxis.which, event.jaxis.axis, event.jaxis.value, timestamp);*/
 		case SDL_JOYBALLMOTION:
 		case SDL_JOYHATMOTION: {
-			m_motionEventsQueue.push({ Event_Joystick_T, std::move(event), timestamp });
+			m_motionEventsQueue.push({ timestamp, std::move(event), Event_Joystick_T, {} });
 			handled = true;
 			break;
 		}
@@ -404,7 +404,7 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 					event.type, event.wheel.which, event.wheel.windowID,
 					event.wheel.x, event.wheel.y, timestamp);
 
-			m_eventsQueue.push({ Event_Mouse_T, std::move(event), timestamp });
+			m_eventsQueue.push({ timestamp, std::move(event), Event_Mouse_T, {} });
 			handled = true;
 			break;
 		}
@@ -414,7 +414,7 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 					event.type, event.button.which, event.button.button, event.button.state,
 					event.button.clicks, event.button.windowID, event.button.x, event.button.y, timestamp);
 
-			m_eventsQueue.push({ Event_Mouse_T, std::move(event), timestamp });
+			m_eventsQueue.push({ timestamp, std::move(event), Event_Mouse_T, {} });
 			handled = true;
 			break;
 		}
@@ -431,7 +431,7 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 			SDL_Log("joystick button event=%d: which=%d: button=%d: state=%d: realTime=%lu\n",
 					event.type, event.jbutton.which, event.jbutton.button, event.jbutton.state, timestamp);
 			
-			m_eventsQueue.push({ Event_Joystick_T, std::move(event), timestamp });
+			m_eventsQueue.push({ timestamp, std::move(event), Event_Joystick_T, {} });
 			handled = true;
 			break;
 		}
@@ -547,7 +547,7 @@ Id_T InputSystem::createContext(uint16_t optionsMask, uint8_t priority, bool mak
 	//return f;
 
 	auto contextId = m_inputContexts.emplace(optionsMask);
-	m_activeInputContexts.push_back({ contextId, priority, makeActive });
+	m_activeInputContexts.push_back({ contextId, makeActive, priority, {} });
 	std::stable_sort(m_activeInputContexts.begin(), m_activeInputContexts.end(),
 					[](const ActiveInputContext& i, const ActiveInputContext& j) {
 						return i.priority < j.priority;
