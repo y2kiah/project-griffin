@@ -28,18 +28,18 @@ ffi.cdef[[
 		MAPPING_CURVE_SCURVE = 1
 	};
 
-	//////////
-	// Input mappings map raw input events or position data to Actions, States or Ranges. These
-	// are high-level game input events obtained from configuration data through Lua.
-	//	Actions: Single-time events, not affected by key repeat, mapped to a single input event
-	//			 e.g. {keydown-G} or {keyup-G}.
-	//	States:  Binary on/off flag mapped to two input events e.g. {on:keydown-G, off:keyup-G}
-	//			 or {on:keydown-G, off:keydown-G}. The first example would be typical of WASD
-	//			 type movement state, the second example would behave like a toggle.
-	//	Axis:	 Uses position information of joysticks, throttles, rudder pedals, head
-	//			 tracking gear, even mouse movement if desired.
-	// Layout equivalent to InputMapping
-	//////////
+	/**
+	* Input mappings map raw input events or position data to Actions, States or Ranges. These
+	* are high-level game input events obtained from configuration data through Lua.
+	*	Actions: Single-time events, not affected by key repeat, mapped to a single input event
+	*			 e.g. {keydown-G} or {keyup-G}.
+	*	States:  Binary on/off flag mapped to two input events e.g. {on:keydown-G, off:keyup-G}
+	*			 or {on:keydown-G, off:keydown-G}. The first example would be typical of WASD
+	*			 type movement state, the second example would behave like a toggle.
+	*	Axis:	 Uses position information of joysticks, throttles, rudder pedals, head
+	*			 tracking gear, even mouse movement if desired.
+	* Layout equivalent to InputMapping
+	*/
 	typedef struct {
 		uint8_t						type;				//<! type of this mapping
 		uint8_t						bindIn;				//<! event to start the action or state
@@ -67,9 +67,9 @@ ffi.cdef[[
 		char						name[32];			//<! display name of the mapping
 	} griffin_InputMapping;
 
-	//////////
-	// Layout equivalent to MappedAction
-	//////////
+	/**
+	* Layout equivalent to MappedAction
+	*/
 	typedef struct {
 		uint64_t					mappingId;
 		const griffin_InputMapping*	inputMapping;
@@ -80,9 +80,9 @@ ffi.cdef[[
 		bool						handled;			//<! flag set to true when event has been handled by a callback
 	} griffin_MappedAction;
 
-	//////////
-	// Layout equivalent to MappedState
-	//////////
+	/**
+	* Layout equivalent to MappedState
+	*/
 	typedef struct {
 		uint64_t					mappingId;
 		const griffin_InputMapping*	inputMapping;
@@ -94,9 +94,9 @@ ffi.cdef[[
 		bool						handled;			//<! flag set to true when event has been handled by a callback
 	} griffin_MappedState;
 
-	//////////
-	// Layout equivalent to AxisMotion
-	//////////
+	/**
+	* Layout equivalent to AxisMotion
+	*/
 	typedef struct {
 		uint32_t					device;				//<! instanceID of the device that owns this axis, mouse is always 0 (x) and 1 (y)
 		uint32_t					axis;				//<! axis number on the device
@@ -107,9 +107,9 @@ ffi.cdef[[
 		const char *				deviceName;			//<! name of the device
 	} griffin_AxisMotion;
 
-	//////////
-	// Layout equivalent to MappedAxis
-	//////////
+	/**
+	* Layout equivalent to MappedAxis
+	*/
 	typedef struct {
 		uint64_t					mappingId;
 		const griffin_InputMapping*	inputMapping;
@@ -118,9 +118,9 @@ ffi.cdef[[
 		uint8_t						_padding_end[4];
 	} griffin_MappedAxis;
 
-	//////////
-	// No equivalent layout on the C++ side
-	//////////
+	/**
+	* No equivalent layout on the C++ side
+	*/
 	typedef struct {
 		int16_t						actionsSize;
 		int16_t						statesSize;
@@ -133,6 +133,7 @@ ffi.cdef[[
 		griffin_AxisMotion *		axisMotion;			//<! Holds accumulated motion for the mouse and joysticks
 		const wchar_t *				textInput;			//<! Text input buffer
 	} griffin_FrameMappedInput;
+
 
 	typedef void(*Callback_T)(griffin_FrameMappedInput*);
 

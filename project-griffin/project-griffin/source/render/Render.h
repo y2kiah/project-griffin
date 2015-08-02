@@ -73,6 +73,17 @@ namespace griffin {
 		};
 
 
+		struct FrameViewParameters {
+			glm::mat4	viewMat;
+			glm::mat4	projMat;
+			glm::mat4	viewProjMat;
+			float		nearClipPlane;
+			float		farClipPlane;
+			float		frustumDistance;		//<! = farClipPlane - nearClipPlane
+			float		inverseFrustumDistance;	//<! = 1.0f / frustumDistance
+		};
+
+
 		class RenderQueue {
 		public:
 			typedef struct { RenderQueueKey key; int entryIndex; } KeyType;
@@ -120,7 +131,7 @@ namespace griffin {
 			*/
 			void init(int viewportWidth, int viewportHeight);
 
-			void renderFrame(float interpolation);
+			void renderFrame(float interpolation, const FrameViewParameters& frameViewParams);
 
 			void drawFullscreenQuad(/*Viewport?*/) const;
 
@@ -171,13 +182,22 @@ namespace griffin {
 			// needed?
 			void interpolateStates(float interpolation) {}
 
+			/**
+			* Sets the camera matrices and clip planes. Needs to be called before first render and
+			* then any time the view parameters change, usually once per frame before rendering.
+			*/
+			void setFrameViewParams(FrameViewParameters&& frameViewParams) {
+				m_frameViewParams = std::forward<FrameViewParameters>(frameViewParams);
+			}
+
 			void renderFrame(float interpolation) {
-				m_renderer.renderFrame(interpolation);
+				m_renderer.renderFrame(interpolation, m_frameViewParams);
 			}
 
 		private:
-			RenderQueue         m_renderQueue;
-			DeferredRenderer_GL m_renderer;
+			FrameViewParameters	m_frameViewParams;
+			RenderQueue			m_renderQueue;
+			DeferredRenderer_GL	m_renderer;
 		};
 
 

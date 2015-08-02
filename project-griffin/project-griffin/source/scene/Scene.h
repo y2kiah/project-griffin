@@ -19,13 +19,13 @@ namespace griffin {
 
 		using namespace griffin::entity;
 
-
 		class SceneManager;
 		class Camera;
 
-		typedef griffin::Id_T							SceneId;
-		typedef std::shared_ptr<SceneManager>			SceneManagerPtr;
-		typedef std::vector<std::shared_ptr<Camera>>	CameraList;
+		typedef griffin::Id_T					SceneId;
+		typedef std::shared_ptr<SceneManager>	SceneManagerPtr;
+		typedef std::shared_ptr<Camera>			CameraPtr;
+		typedef std::vector<CameraPtr>			CameraList;
 
 		
 		// Function declarations
@@ -33,6 +33,20 @@ namespace griffin {
 		extern void setSceneManagerPtr(const SceneManagerPtr& sceneMgrPtr);
 
 		// Type declarations
+		enum CameraFlags : uint8_t {
+			Camera_Perspective	= 0,
+			Camera_Ortho		= 1
+		};
+
+		struct CameraParameters {
+			float		nearClipPlane;
+			float		farClipPlane;
+			uint32_t	viewportWidth;
+			uint32_t	viewportHeight;
+			float		verticalFieldOfViewDegrees;
+			uint8_t		cameraType;
+			uint8_t		_padding_end[3];
+		};
 
 		/**
 		*
@@ -49,11 +63,17 @@ namespace griffin {
 			// contains layer id for RenderEntry???
 
 			int32_t			activeRenderCamera = -1;
-
 			bool			active = false;
 			std::string		name;
 
 			// Functions
+
+			uint32_t createCamera(const CameraParameters& cameraParams, bool makeActive = false);
+			
+			void setActiveCamera(uint32_t cameraId) {
+				assert(cameraId >= 0 && cameraId < cameras.size() && "camera id out of range");
+				activeRenderCamera = cameraId;
+			}
 
 			explicit Scene(const std::string& _name, bool _active);
 			~Scene();

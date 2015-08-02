@@ -112,19 +112,37 @@ namespace griffin {
 		}
 
 
-		void ScriptManager::callLuaGlobalFunction(Id_T stateId, const char* func)
+		int ScriptManager::callLuaGlobalFunction(Id_T stateId, const char* func, bool throwOnError)
 		{
 			assert(m_states.isValid(stateId) && "invalid Lua state");
 
-			callLuaGlobalFunction(m_states[stateId], func);
+			return callLuaGlobalFunction(m_states[stateId], func, throwOnError);
 		}
 
 
-		void ScriptManager::callLuaGlobalFunction(lua_State* state, const char* func)
+		int ScriptManager::callLuaGlobalFunction(lua_State* state, const char* func, bool throwOnError)
 		{
 			lua_getglobal(state, func);
-			if (lua_pcall(state, 0, 0, 0) != 0) {
+			int e = lua_pcall(state, 0, 0, 0);
+			if (e == LUA_ERRRUN) {
+				SDL_Log("ScriptManager: Lua runtime error: %s", lua_tostring(state, -1));
+				if (throwOnError) {
+					throw std::runtime_error("ScriptManager: Lua runtime error: " + string{ lua_tostring(state, -1) });
+				}
 			}
+			else if (e == LUA_ERRMEM) {
+				SDL_Log("ScriptManager: Lua out of memory");
+				if (throwOnError) {
+					throw std::runtime_error("Lua out of memory");
+				}
+			}
+			else if (e == LUA_ERRERR) {
+				SDL_Log("ScriptManager: Lua error running error handler");
+				if (throwOnError) {
+					throw std::runtime_error("ScriptManager: Lua error handler: " + string{ lua_tostring(state, -1) });
+				}
+			}
+			return e;
 		}
 
 

@@ -70,6 +70,16 @@ namespace griffin {
 			(Id_T,			materialOverrides,,	"id of first material override")
 		)
 
+		/**
+		* The CameraInstanceContainer is a component that goes along with the SceneNode to make an
+		* entity represent a camera in the scene. The cameraId is obtained from the scene by
+		* calling createCamera.
+		*/
+		COMPONENT(CameraInstanceContainer,
+			(uint32_t,		cameraId,,			"camera id of the referenced camera"),
+			(char,			name,[32],			"name of the camera")
+		)
+
 		
 		/**
 		*

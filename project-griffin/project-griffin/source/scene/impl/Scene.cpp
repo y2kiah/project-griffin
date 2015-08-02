@@ -11,8 +11,36 @@ using namespace griffin::scene;
 
 // class Scene
 
+uint32_t Scene::createCamera(const CameraParameters& cameraParams, bool makeActive)
+{
+	CameraPtr camPtr = nullptr;
+
+	if (cameraParams.cameraType == Camera_Perspective) {
+		// add a perspective view camera
+		camPtr = std::make_shared<CameraPersp>(cameraParams.viewportWidth, cameraParams.viewportHeight,
+											   cameraParams.verticalFieldOfViewDegrees,
+											   cameraParams.nearClipPlane, cameraParams.farClipPlane);
+	}
+	else if (cameraParams.cameraType == Camera_Ortho) {
+		// add an orthographic view camera
+		camPtr = std::make_shared<CameraOrtho>(0.0f, static_cast<float>(cameraParams.viewportWidth),
+											   static_cast<float>(cameraParams.viewportHeight), 0.0f,
+											   cameraParams.nearClipPlane, cameraParams.farClipPlane);
+	}
+
+	cameras.push_back(camPtr);
+	uint32_t newCameraId = static_cast<uint32_t>(cameras.size());
+
+	if (makeActive) {
+		setActiveCamera(newCameraId);
+	}
+
+	return newCameraId;
+}
+
+
 Scene::Scene(const std::string& _name, bool _active) :
-	entityManager{},
+	entityManager(),
 	sceneGraph(entityManager),
 	name(_name),
 	active{ _active }

@@ -18,6 +18,7 @@
 namespace griffin {
 	namespace entity {
 
+
 		class EntityManager {
 		public:
 			// Typedefs
@@ -29,7 +30,7 @@ namespace griffin {
 
 			explicit EntityManager() :
 				m_entityStore(0, RESERVE_ENTITYMANAGER_ENTITIES),
-				m_componentStores{} // zero-init fills with nullptr
+				m_componentStores{} // zero-init fills with nullptr, component store created on first access
 			{}
 
 			// Entity Functions
@@ -144,6 +145,9 @@ namespace griffin {
 			*/
 			template <typename T>
 			ComponentStore<T>& getComponentStore() {
+				if (!m_componentStores[T::componentType]) {
+					createComponentStore<T>(RESERVE_ENTITYMANAGER_COMPONENTS);
+				}
 				return *reinterpret_cast<ComponentStore<T>*>(m_componentStores[T::componentType].get());
 			}
 
@@ -151,13 +155,12 @@ namespace griffin {
 			* Create a store for a specific type, assumed to be a component with ::componentType member
 			* which identifies the type id and becomes the index into the stores vector.
 			* @tparam T	the component type, requires member T::componentType
-			* @return	true if store was created, false if it already existed
 			*/
 			template <typename T>
-			bool createComponentStore(size_t reserve) {
+			void createComponentStore(size_t reserve) {
 				assert(T::componentType < ComponentType::last_ComponentType_enum && "static component with dynamic id");
 
-				return createComponentStore<T>(T::componentType, reserve);
+				createComponentStore<T>(T::componentType, reserve);
 			}
 
 			/**

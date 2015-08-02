@@ -7,18 +7,17 @@
 #include <algorithm>
 #include <GL/glew.h>
 //#include <gl/glcorearb.h>
-#include <glm/glm.hpp>
-#include "../Render.h"
+#include <glm/mat4x4.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <SDL_log.h>
-#include <resource/ResourceLoader.h>
-#include "../ShaderProgramLayouts_GL.h"
 
+#include <resource/ResourceLoader.h>
+#include <render/Render.h>
+#include <render/ShaderProgramLayouts_GL.h>
 #include <render/model/Mesh_GL.h>
 #include <render/model/ModelImport_Assimp.h>
 #include <render/RenderTarget_GL.h>
 
-// TEMP
-#include <scene/Camera.h>
 
 
 namespace griffin {
@@ -48,7 +47,6 @@ namespace griffin {
 		
 		// TEMP
 		ResourcePtr g_tempMesh = nullptr;
-		std::unique_ptr<scene::CameraPersp> camera = nullptr;
 
 
 		// class RenderQueue
@@ -141,7 +139,7 @@ namespace griffin {
 
 		// class DeferredRenderer_GL
 
-		void DeferredRenderer_GL::renderFrame(float interpolation)
+		void DeferredRenderer_GL::renderFrame(float interpolation, const FrameViewParameters& frameViewParams)
 		{
 			// Start g-buffer rendering
 			m_gbuffer.start();
@@ -155,13 +153,13 @@ namespace griffin {
 				//camera->setEyePoint({ 0.0f, 100.0f, 200.0f });
 				//camera->setEyePoint({ 10.0f, 0.0f, 90.0f });
 				//camera->setEyePoint({ 0.0f, 40.0f, -40.0f });
-				camera->setEyePoint({ 120.0f, 40.0f, 0.0f });
-				camera->lookAt({ 0.0f, 0.0f, 0.0f });
-				camera->setWorldUp({ 0.0f, 1.0f, 0.0f });
-				camera->calcMatrices();
-				mat4 viewMat(camera->getModelViewMatrix());
-				mat4 viewProjMat(camera->getProjectionMatrix() * viewMat);
-				float inverseCameraDistance = 1.0f / (camera->getFarClip() - camera->getNearClip());
+			//	camera->setEyePoint({ 120.0f, 40.0f, 0.0f });
+			//	camera->lookAt({ 0.0f, 0.0f, 0.0f });
+			//	camera->setWorldUp({ 0.0f, 1.0f, 0.0f });
+			//	camera->calcMatrices();
+			//	mat4 viewMat(camera->getModelViewMatrix());
+			//	mat4 viewProjMat(camera->getProjectionMatrix() * viewMat);
+			//	float inverseCameraDistance = 1.0f / (frameViewParams.farClipPlane - frameViewParams.nearClipPlane);
 
 				/*camera->setTranslationYawPitchRoll({ 10.0f, 10.0f, 10.0f }, glm::radians(315.0f), glm::radians(45.0f), 0);
 				//camera->lookAt({ 10.0f, 10.0f, 10.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f });
@@ -188,18 +186,18 @@ namespace griffin {
 				GLint specularLoc = glGetUniformLocation(programId, "materialKs");
 				GLint shininessLoc = glGetUniformLocation(programId, "materialShininess");
 
-				glUniformMatrix4fv(viewProjMatLoc, 1, GL_FALSE, &viewProjMat[0][0]);
+				glUniformMatrix4fv(viewProjMatLoc, 1, GL_FALSE, &frameViewParams.viewProjMat[0][0]);
 
-				glUniform1f(frustumNearLoc, camera->getNearClip());
-				glUniform1f(frustumFarLoc, camera->getFarClip());
-				glUniform1f(inverseFrustumDistanceLoc, inverseCameraDistance);
+				glUniform1f(frustumNearLoc, frameViewParams.nearClipPlane);
+				glUniform1f(frustumFarLoc, frameViewParams.farClipPlane);
+				glUniform1f(inverseFrustumDistanceLoc, frameViewParams.inverseFrustumDistance);
 
 				// draw the test mesh
 				if (g_tempMesh) {
 					auto& mesh = g_tempMesh->getResource<Mesh_GL>();
 					mesh.draw(modelMatLoc, modelViewMatLoc, mvpMatLoc, normalMatLoc,
 							  ambientLoc, diffuseLoc, specularLoc, shininessLoc,
-							  viewMat, viewProjMat); // temporarily passing in the modelMatLoc
+							  frameViewParams.viewMat, frameViewParams.viewProjMat); // temporarily passing in the modelMatLoc
 				}
 
 				glDisable(GL_DEPTH_TEST);
@@ -236,8 +234,8 @@ namespace griffin {
 				glUniform1i(normalMapLoc, 2);
 				glUniform1i(depthMapLoc, 3);
 				
-				glUniform1f(cameraNearLoc, camera->getNearClip());
-				glUniform1f(cameraFarLoc, camera->getFarClip());
+				glUniform1f(cameraNearLoc, frameViewParams.nearClipPlane);
+				glUniform1f(cameraFarLoc, frameViewParams.farClipPlane);
 
 				drawFullscreenQuad();
 			}
@@ -295,7 +293,17 @@ namespace griffin {
 				SDL_Log("%s", ex.what());
 			}
 
-			camera = std::make_unique<scene::CameraPersp>(viewportWidth, viewportHeight, 60.0f, 0.1f, 100000.0f);
+			// set up default view matrices in case a camera is not created
+			FrameViewParameters defaultView{};
+			defaultView.nearClipPlane = -1.0f;
+			defaultView.farClipPlane = 1.0f;
+			defaultView.frustumDistance = defaultView.farClipPlane - defaultView.nearClipPlane;
+			defaultView.inverseFrustumDistance = 1.0f / defaultView.frustumDistance;
+			defaultView.viewMat = glm::lookAt(glm::vec3{ 0, 0, 2.0f }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 0, 1.0f, 0 });
+			defaultView.projMat = glm::ortho(0.0f, static_cast<float>(viewportWidth), static_cast<float>(viewportHeight), 0.0f, -1.0f, 1.0f);
+			defaultView.viewProjMat = defaultView.projMat * defaultView.viewMat;
+
+			setFrameViewParams(std::move(defaultView));
 		}
 
 		RenderSystem::~RenderSystem()

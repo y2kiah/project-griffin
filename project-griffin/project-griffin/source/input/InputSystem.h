@@ -154,7 +154,7 @@ namespace griffin {
 			double					totalMs     = 0;		//<! total millis the state has been active
 			int64_t					startCounts = 0;		//<! clock counts when state began
 			int64_t					totalCounts = 0;		//<! currentCounts - startCounts + countsPerTick
-			int32_t					startFrame  = 0;		//<! frame number when state began
+			int64_t					startFrame  = 0;		//<! frame number when state began
 			int32_t					totalFrames = 0;		//<! currentFrame - startFrame + 1
 			bool					handled     = false;	//<! flag set to true when event has been handled by a callback
 		};

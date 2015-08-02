@@ -20,6 +20,9 @@ EntityId EntityManager::createEntity()
 bool EntityManager::removeComponentFromEntity(ComponentId componentId)
 {
 	auto store = m_componentStores[componentId.typeId].get();
+	if (store == nullptr) {
+		return false;
+	}
 	auto entityId = store->getEntityId(componentId);
 
 	bool removed = m_entityStore[entityId].removeComponent(componentId);
@@ -40,7 +43,10 @@ bool EntityManager::removeComponentsOfTypeFromEntity(ComponentType ct, EntityId 
 
 	auto& entity = m_entityStore[entityId];
 	auto store = m_componentStores[ct].get();
-	
+	if (store == nullptr) {
+		return false;
+	}
+
 	entity.removeComponentsOfType(ct);
 	
 	// TODO remove from the component mask index

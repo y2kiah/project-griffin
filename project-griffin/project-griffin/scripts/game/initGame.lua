@@ -2,12 +2,18 @@ local ffi = require("ffi")
 local C = ffi.C
 
 local gameScene = nil
-
+local devCamera = nil --TEMP, move to devcamera system later
 
 function initGame()
 	-- set up game scene
 	gameScene = C.griffin_scene_createScene("Game World", true)
-
+	
+	local devCameraParams = ffi.new("griffin_CameraParameters", {
+		0.1, 100000.0,				-- near/far clip
+		0, 0,						-- viewport
+		60.0, C.CAMERA_PERSPECTIVE	-- fov
+	})
+	devCamera = C.griffin_scene_createCamera(gameScene, 0, devCameraParams, "devcamera")
 
 	-- start up active game input contexts
 	InputSystem:setContextActive("ingame")

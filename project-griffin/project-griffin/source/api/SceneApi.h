@@ -16,7 +16,24 @@ extern "C" {
 // begin inclusion in lua FFI declaration
 #define ffi
 #ifdef ffi
-	//typedef void(*Callback_T)(griffin_FrameMappedInput*);
+
+	enum {
+		CAMERA_PERSPECTIVE	= 0,
+		CAMERA_ORTHO		= 1
+	};
+
+	/**
+	* Layout equivalent to CameraParameters
+	*/
+	typedef struct {
+		float		nearClipPlane;
+		float		farClipPlane;
+		uint32_t	viewportWidth;		//<! 0 to automatically use the main window viewport width
+		uint32_t	viewportHeight;		//<! 0 to automatically use the main window viewport height
+		float		verticalFieldOfViewDegrees;
+		uint8_t		cameraType;			//<! one of the CAMERA_ enum values
+		uint8_t		_padding_end[3];
+	} griffin_CameraParameters;
 
 	// Functions
 
@@ -46,7 +63,8 @@ extern "C" {
 	uint64_t griffin_scene_createMeshInstance(uint64_t scene, uint64_t parentEntity, uint64_t mesh);
 
 	GRIFFIN_EXPORT
-	uint64_t griffin_scene_createCamera(uint64_t scene, uint64_t parentEntity);
+	uint64_t griffin_scene_createCamera(uint64_t scene, uint64_t parentEntity,
+										griffin_CameraParameters* cameraParams, const char name[32]);
 
 	GRIFFIN_EXPORT
 	uint64_t griffin_scene_createLight(uint64_t scene, uint64_t parentEntity);

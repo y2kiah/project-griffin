@@ -120,11 +120,13 @@ SceneNodeId SceneGraph::addToSceneEntity(EntityId entityId, const glm::dvec3& tr
 										 const glm::quat& rotationLocal, EntityId parentNodeEntityId)
 {
 	SceneNodeId newSceneNodeId{};
-	SceneNodeId parentNodeId = entityMgr.getEntityComponentId(parentNodeEntityId, scene::SceneNode::componentType);
-	
-	if (parentNodeId != NullId_T) {
-		newSceneNodeId = addToScene(entityId, translationLocal, rotationLocal, parentNodeId);
+	SceneNodeId parentNodeId{};
+	if (parentNodeEntityId != NullId_T) {
+		parentNodeId = entityMgr.getEntityComponentId(parentNodeEntityId, scene::SceneNode::componentType);
 	}
+
+	newSceneNodeId = addToScene(entityId, translationLocal, rotationLocal, parentNodeId);
+	
 	return newSceneNodeId;
 }
 
