@@ -89,13 +89,6 @@ namespace griffin {
 		Id_T emplace(Params... args) { return insert(T{ args... }); }
 
 		/**
-		* template specialization for empty parameter list uses the empty brace initializer so POD
-		* types and primitives get zero-initialized
-		*/
-		template <>
-		Id_T emplace<>() { return insert(T{}); }
-
-		/**
 		* create n items with initialization args specified by Params, return vector of ids
 		* @param[in]	n		number of items to create
 		* @tparam		Params	initialization arguments passed to constructor of each item created

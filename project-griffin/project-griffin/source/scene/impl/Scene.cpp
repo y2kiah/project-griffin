@@ -6,6 +6,7 @@
 #include <SDL_log.h>
 #include <utility/memory_reserve.h>
 #include <scene/Camera.h>
+#include <entity/EntityManager.h>
 
 using namespace griffin::scene;
 
@@ -40,8 +41,8 @@ uint32_t Scene::createCamera(const CameraParameters& cameraParams, bool makeActi
 
 
 Scene::Scene(const std::string& _name, bool _active) :
-	entityManager(),
-	sceneGraph(entityManager),
+	entityManager(std::make_unique<EntityManager>()),
+	sceneGraph(std::make_unique<SceneGraph>(*entityManager)),
 	name(_name),
 	active{ _active }
 {
@@ -60,7 +61,7 @@ Scene::~Scene() {
 SceneId SceneManager::createScene(const std::string& name, bool makeActive)
 {
 	auto sceneId = m_scenes.emplace(name, makeActive);
-	m_scenes[sceneId].sceneGraph.setSceneId(sceneId);
+	m_scenes[sceneId].sceneGraph->setSceneId(sceneId);
 	return sceneId;
 }
 

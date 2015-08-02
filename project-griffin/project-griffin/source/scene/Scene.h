@@ -10,20 +10,22 @@
 #include <memory>
 #include <vector>
 #include "SceneGraph.h"
-#include <entity/EntityManager.h>
 #include <utility/memory_reserve.h>
 
 
 namespace griffin {
 	namespace scene {
 
-		using namespace griffin::entity;
+		//using namespace griffin::entity;
 
 		class SceneManager;
 		class Camera;
+		class entity::EntityManager;
 
 		typedef griffin::Id_T					SceneId;
 		typedef std::shared_ptr<SceneManager>	SceneManagerPtr;
+		typedef std::shared_ptr<EntityManager>	EntityManagerPtr;
+		typedef std::shared_ptr<SceneGraph>		SceneGraphPtr;
 		typedef std::shared_ptr<Camera>			CameraPtr;
 		typedef std::vector<CameraPtr>			CameraList;
 
@@ -55,16 +57,16 @@ namespace griffin {
 		public:
 			// Variables
 
-			SceneGraph		sceneGraph;
-			EntityManager	entityManager;
-			CameraList		cameras;
+			SceneGraphPtr		sceneGraph;
+			EntityManagerPtr	entityManager;
+			CameraList			cameras;
 			
 			// contains Lua state?
 			// contains layer id for RenderEntry???
 
-			int32_t			activeRenderCamera = -1;
-			bool			active = false;
-			std::string		name;
+			int32_t				activeRenderCamera = -1;
+			bool				active = false;
+			std::string			name;
 
 			// Functions
 

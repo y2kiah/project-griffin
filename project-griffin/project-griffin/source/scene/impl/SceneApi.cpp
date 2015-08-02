@@ -1,5 +1,6 @@
 #include <api/SceneApi.h>
 #include <scene/Scene.h>
+#include <entity/EntityManager.h>
 #include <SDL_log.h>
 
 griffin::scene::SceneManagerPtr g_sceneMgrPtr = nullptr;
@@ -37,9 +38,9 @@ extern "C" {
 
 		try {
 			auto& s = g_sceneMgrPtr->getScene(sceneId);
-			auto entityId = s.entityManager.createEntity();
+			auto entityId = s.entityManager->createEntity();
 
-			auto sceneNodeId = s.sceneGraph.addToSceneEntity(entityId, {}, {}, parentId);
+			auto sceneNodeId = s.sceneGraph->addToSceneEntity(entityId, {}, {}, parentId);
 			if (sceneNodeId != NullId_T) {
 				return entityId.value;
 			}
@@ -65,7 +66,7 @@ extern "C" {
 				scene::MeshInstanceContainer mi{};
 				// TODO: request the meshId from resource system
 
-				s.entityManager.addComponentToEntity<scene::MeshInstanceContainer>(std::move(mi), entityId);
+				s.entityManager->addComponentToEntity<scene::MeshInstanceContainer>(std::move(mi), entityId);
 
 				return entityId.value;
 			}
@@ -102,7 +103,7 @@ extern "C" {
 				ci.cameraId = s.createCamera(cp, false);
 				strcpy_s(ci.name, 32, name);
 				
-				s.entityManager.addComponentToEntity<scene::CameraInstanceContainer>(std::move(ci), entityId);
+				s.entityManager->addComponentToEntity<scene::CameraInstanceContainer>(std::move(ci), entityId);
 
 				return entityId.value;
 			}

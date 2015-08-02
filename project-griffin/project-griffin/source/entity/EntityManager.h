@@ -145,7 +145,7 @@ namespace griffin {
 			*/
 			template <typename T>
 			ComponentStore<T>& getComponentStore() {
-				if (!m_componentStores[T::componentType]) {
+				if (m_componentStores[T::componentType] != nullptr) {
 					createComponentStore<T>(RESERVE_ENTITYMANAGER_COMPONENTS);
 				}
 				return *reinterpret_cast<ComponentStore<T>*>(m_componentStores[T::componentType].get());
