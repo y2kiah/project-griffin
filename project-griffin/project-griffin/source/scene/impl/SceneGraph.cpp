@@ -336,13 +336,12 @@ void SceneGraph::collectAncestors(SceneNodeId sceneNodeId, std::vector<SceneNode
 
 
 SceneGraph::SceneGraph(EntityManager& _entityMgr) :
-	entityMgr{ _entityMgr },
-	m_sceneId{},
-	m_rootNode{}
+	entityMgr{ _entityMgr }
 {
 	m_bfsQueue.reserve(RESERVE_SCENEGRAPH_TRAVERSAL_QUEUE);
 	m_handleBuffer.reserve(RESERVE_SCENEGRAPH_TRAVERSAL_QUEUE);
 
+	memset(&m_rootNode, 0, sizeof(m_rootNode));
 	m_rootNode.rotationLocal.w = 1.0f;
 	m_rootNode.orientationWorld.w = 1.0f;
 }

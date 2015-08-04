@@ -3,8 +3,9 @@
 * @author Jeff Kiah
 */
 #include <SDL_log.h>
-#include "../EntityManager.h"
-#include "../components.h"
+#include <entity/components.h>
+#include <entity/EntityManager.h>
+
 
 using namespace griffin::entity;
 
@@ -51,6 +52,7 @@ bool EntityManager::removeComponentsOfTypeFromEntity(ComponentType ct, EntityId 
 	
 	// TODO remove from the component mask index
 	// TODO remove from the component store
+	return true;
 }
 
 

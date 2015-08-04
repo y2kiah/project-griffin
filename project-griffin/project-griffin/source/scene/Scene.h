@@ -57,8 +57,8 @@ namespace griffin {
 		public:
 			// Variables
 
-			SceneGraphPtr		sceneGraph;
 			EntityManagerPtr	entityManager;
+			SceneGraphPtr		sceneGraph;
 			CameraList			cameras;
 			
 			// contains Lua state?
@@ -95,6 +95,8 @@ namespace griffin {
 			Scene& getScene(SceneId sceneId) { return m_scenes[sceneId]; }
 			
 			SceneId createScene(const std::string& name, bool makeActive);
+
+			void updateActiveScenes();
 
 		private:
 			// Private Variables

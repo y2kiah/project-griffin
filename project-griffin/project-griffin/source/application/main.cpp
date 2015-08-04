@@ -64,24 +64,7 @@ int main(int argc, char *argv[])
 
 				engine.threadPool->executeFixedThreadTasks(ThreadAffinity::Thread_Update);
 
-				
-				// if all systems operate on 1(+) frame-old-data, can all systems be run in parallel?
-				// should this list become a task flow graph?
-				
-				engine.inputSystem->updateFrameTick(ui);
-				//	ResourceLoader
-				//	AISystem
-				//	PhysicsSystem
-				//	CollisionSystem
-				//	ResourcePredictionSystem
-				//	etc.
-
-				// below currently does nothing
-				//#ifdef GRIFFIN_TOOLS_BUILD
-				//engine.toolsManager->updateFrameTick(ui);
-				//#endif
-
-				// call the Lua game update handler
+				engineUpdateFrameTick(engine, ui);
 			});
 
 			int64_t realTime = timer.start();
@@ -97,11 +80,10 @@ int main(int argc, char *argv[])
 				//SDL_Delay(1000);
 				/*SDL_Log("Render realTime=%lu: interpolation=%0.3f: threadIdHash=%lu\n",
 						realTime, interpolation, std::this_thread::get_id().hash());*/
+				
 				engine.threadPool->executeFixedThreadTasks(ThreadAffinity::Thread_OpenGL_Render);
-
-				engine.resourceLoader->executeCallbacks();
-
-				engine.renderSystem->renderFrame(interpolation);
+				
+				engineRenderFrameTick(engine, interpolation);
 
 				SDL_GL_SwapWindow(app.getPrimaryWindow().window);
 				platform::yieldThread();

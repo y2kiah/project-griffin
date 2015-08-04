@@ -97,7 +97,7 @@ namespace griffin {
 
 			~RenderQueue();
 
-			void addRenderEntry(RenderQueueKey sortKey, RenderEntry&& entry);
+			void addRenderEntry(RenderQueueKey sortKey, RenderEntry entry);
 			
 			/**
 			* Sorts the keys, will be the traversal order for rendering
@@ -191,7 +191,11 @@ namespace griffin {
 			}
 
 			void renderFrame(float interpolation) {
+				m_renderQueue.sortRenderQueue();
+				
 				m_renderer.renderFrame(interpolation, m_frameViewParams);
+				
+				m_renderQueue.clearRenderEntries();
 			}
 
 		private:

@@ -24,7 +24,7 @@ namespace griffin {
 			// Typedefs
 			typedef griffin::handle_map<Entity> EntityMap;
 			typedef boost::container::flat_multimap<uint64_t, EntityId> ComponentMaskMap;
-			typedef std::array<std::shared_ptr<ComponentStoreBase>, MAX_COMPONENTS> ComponentStoreMap;
+			typedef std::shared_ptr<ComponentStoreBase> ComponentStoreBasePtr;
 
 			// Functions
 
@@ -145,7 +145,9 @@ namespace griffin {
 			*/
 			template <typename T>
 			ComponentStore<T>& getComponentStore() {
-				if (m_componentStores[T::componentType] != nullptr) {
+				static_assert(T::componentType >= 0 && T::componentType < MAX_COMPONENTS, "componentType out of range");
+
+				if (m_componentStores[T::componentType] == nullptr) {
 					createComponentStore<T>(RESERVE_ENTITYMANAGER_COMPONENTS);
 				}
 				return *reinterpret_cast<ComponentStore<T>*>(m_componentStores[T::componentType].get());
@@ -158,7 +160,7 @@ namespace griffin {
 			*/
 			template <typename T>
 			void createComponentStore(size_t reserve) {
-				assert(T::componentType < ComponentType::last_ComponentType_enum && "static component with dynamic id");
+				static_assert(T::componentType < ComponentType::last_ComponentType_enum, "static component with dynamic id");
 
 				createComponentStore<T>(T::componentType, reserve);
 			}
@@ -192,8 +194,9 @@ namespace griffin {
 			EntityMap			m_entityStore;		//<! Entity indexed by handle, stores relationship to components internally
 
 			ComponentMaskMap	m_componentIndex;	//<! index of sorted ComponentMask for O(log n) entity search by multiple component types
-			ComponentStoreMap	m_componentStores;	//<! ComponentStore indexed by componentType, stores component and parent entityId
-			
+			//ComponentStoreMap	m_componentStores;	//<! ComponentStore indexed by componentType, stores component and parent entityId
+			ComponentStoreBasePtr m_componentStores[MAX_COMPONENTS];
+
 		};
 
 		typedef std::shared_ptr<EntityManager>	EntityManagerPtr;

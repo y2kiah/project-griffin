@@ -19,6 +19,44 @@ namespace griffin {
 
 	ThreadPoolPtr task_base::s_threadPool = nullptr;
 
+	/**
+	*
+	*/
+	void engineUpdateFrameTick(Engine& engine, UpdateInfo& ui)
+	{
+		// if all systems operate on 1(+) frame-old-data, can all systems be run in parallel?
+		// should this list become a task flow graph?
+
+		engine.inputSystem->updateFrameTick(ui);
+
+		//	ResourceLoader
+		//	AISystem
+		//	PhysicsSystem
+		//	CollisionSystem
+		//	ResourcePredictionSystem
+		//	etc.
+
+		engine.sceneManager->updateActiveScenes();
+
+		// below currently does nothing
+		//#ifdef GRIFFIN_TOOLS_BUILD
+		//engine.toolsManager->updateFrameTick(ui);
+		//#endif
+
+		// call the Lua game update handler
+	}
+
+
+	/**
+	*
+	*/
+	void engineRenderFrameTick(Engine& engine, float interpolation)
+	{
+		engine.resourceLoader->executeCallbacks();
+
+		engine.renderSystem->renderFrame(interpolation);
+	}
+
 
 	/**
 	* Create and init the systems of the griffin engine, and do dependency injection

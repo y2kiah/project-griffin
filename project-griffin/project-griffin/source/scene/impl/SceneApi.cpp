@@ -100,7 +100,8 @@ extern "C" {
 				cp.cameraType		= inCp.cameraType;
 
 				scene::CameraInstanceContainer ci{};
-				ci.cameraId = s.createCamera(cp, false);
+				bool makeActive = (s.cameras.size() == 0); // if this the first camera in the scene, make it active
+				ci.cameraId = s.createCamera(cp, makeActive);
 				strcpy_s(ci.name, 32, name);
 				
 				s.entityManager->addComponentToEntity<scene::CameraInstanceContainer>(std::move(ci), entityId);

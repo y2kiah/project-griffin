@@ -51,9 +51,9 @@ namespace griffin {
 
 		// class RenderQueue
 
-		void RenderQueue::addRenderEntry(RenderQueueKey sortKey, RenderEntry&& entry)
+		void RenderQueue::addRenderEntry(RenderQueueKey sortKey, RenderEntry entry)
 		{
-			m_entries.push_back(std::forward<RenderEntry>(entry));
+			m_entries.push_back(std::move(entry));
 			m_keys.push_back({ sortKey, static_cast<int>(m_entries.size()) });
 		}
 

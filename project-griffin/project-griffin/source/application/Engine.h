@@ -10,6 +10,7 @@
 #include <vector>
 #include <utility/concurrency.h>
 #include <application/main.h>
+#include <application/UpdateInfo.h>
 #include <application/applicationTypedefs.h>
 #include <utility/container/handle_map.h>
 
@@ -30,6 +31,9 @@ namespace griffin {
 		Id_T							toolsLuaState	= NullId_T;
 		#endif
 	};
+
+	void engineUpdateFrameTick(Engine& engine, UpdateInfo& ui);
+	void engineRenderFrameTick(Engine& engine, float interpolation);
 
 	Engine make_engine(const SDLApplication& app);
 	void destroy_engine(Engine& engine);

@@ -15,7 +15,7 @@ bool Entity::addComponent(ComponentId id)
 	ComponentType ct = static_cast<ComponentType>(id.typeId);
 	componentMask.set(ct);
 
-	if (std::find(components.begin(), components.end(), id) != components.end()) {
+	if (std::find(components.begin(), components.end(), id) == components.end()) {
 		components.push_back(id);
 		return true;
 	}

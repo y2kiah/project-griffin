@@ -199,13 +199,13 @@ namespace griffin {
 				glm::quat	rotationToWorld;
 			};
 
-			SceneId						m_sceneId;	//<! id of scene this graph belongs to
-			SceneNode					m_rootNode;	//<! root of the scene graph, always start traversal from here
+			SceneId						m_sceneId = NullId_T;	//<! id of scene this graph belongs to
+			SceneNode					m_rootNode;				//<! root of the scene graph, always start traversal from here
 
-			vector_queue<BFSQueueItem>	m_bfsQueue;	//<! queue for breadth-first-search traversal of scene graph
-			vector<Id_T>				m_handleBuffer; //<! buffer used to collect SceneNodeIds and EntityIds in various member functions
+			vector_queue<BFSQueueItem>	m_bfsQueue;				//<! queue for breadth-first-search traversal of scene graph
+			vector<Id_T>				m_handleBuffer;			//<! buffer used to collect SceneNodeIds and EntityIds in various member functions
 
-			EntityManager&				entityMgr;	//<! reference to the entity manager, set in the constructor
+			EntityManager&				entityMgr;				//<! reference to the entity manager, set in the constructor
 		};
 
 	}
