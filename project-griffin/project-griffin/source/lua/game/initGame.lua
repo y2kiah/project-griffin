@@ -14,6 +14,7 @@ function initGame()
 		60.0, C.CAMERA_PERSPECTIVE	-- fov
 	})
 	devCamera = C.griffin_scene_createCamera(gameScene, 0, devCameraParams, "devcamera")
+	--C.griffin_scene_addComponent(gameScene, devCamera, C.MovementComponent, {})
 
 	-- start up active game input contexts
 	InputSystem:setContextActive("ingame")
@@ -32,7 +33,8 @@ end
 -- TODO: this will go into a GameSystem
 function devcameraInputHandler(frameInput)
 	InputSystem:handleInput("devcamera", "Move Forward", frameInput.states, function(context, mappedState)
-		
+		--C.griffin_scene_ devCamera
+
 		return true
 	end)
 
@@ -72,6 +74,13 @@ function devcameraInputHandler(frameInput)
 		return true
 	end)
 end
+
+
+function devcameraUpdate()
+	
+
+end
+
 
 
 -- handle ingame actions including Pause, Capture Mouse

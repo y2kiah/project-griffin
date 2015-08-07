@@ -34,14 +34,14 @@ void SceneGraph::update()
 		SceneNode& node = *bfs.sceneNode;
 
 		// recalc world position if this, or any ancestors have moved since last frame
-		bool positionDirty = node.positionDirty || bfs.ancestorPositionDirty;
+		bool positionDirty = (node.positionDirty == 1) || (bfs.ancestorPositionDirty == 1);
 		if (positionDirty) {
 			node.positionWorld = bfs.translationToWorld + node.translationLocal;
 			node.positionDirty = false;
 		}
 
 		// recalc world orientation if this, or any ancestors have rotated since last frame
-		bool orientationDirty = node.orientationDirty || bfs.ancestorOrientationDirty;
+		bool orientationDirty = (node.orientationDirty == 1) || (bfs.ancestorOrientationDirty == 1);
 		if (orientationDirty) {
 			node.orientationWorld = glm::normalize(bfs.rotationToWorld * node.rotationLocal);
 			node.orientationDirty = false;
@@ -85,17 +85,17 @@ SceneNodeId SceneGraph::addToScene(EntityId entityId, const glm::dvec3& translat
 
 	// add a SceneNode component to the entity
 	SceneNode node = {
-		0,															// positionDirty
-		0,															// orientationDirty
 		translationLocal,											// translationLocal
 		rotationLocal,												// rotationLocal
 		parentNode.positionWorld + translationLocal,				// positionWorld
 		glm::normalize(parentNode.orientationWorld * rotationLocal),// orientationWorld
-		0,															// numChildren
 		NullId_T,													// firstChild
 		parentNode.firstChild,										// nextSibling
 		NullId_T,													// prevSibling
-		parentNodeId												// parent
+		parentNodeId,												// parent
+		0,															// numChildren
+		0,															// positionDirty
+		0															// orientationDirty
 	};
 
 	auto nodeId = entityMgr.addComponentToEntity(std::move(node), entityId);

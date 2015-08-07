@@ -17,6 +17,14 @@ extern "C" {
 #define ffi
 #ifdef ffi
 
+	typedef struct {
+		double x, y, z;
+	} griffin_dvec3;
+	
+	typedef struct {
+		float x, y, z, w; }
+	griffin_quat;
+
 	enum {
 		CAMERA_PERSPECTIVE	= 0,
 		CAMERA_ORTHO		= 1
@@ -26,13 +34,13 @@ extern "C" {
 	* Layout equivalent to CameraParameters
 	*/
 	typedef struct {
-		float		nearClipPlane;
-		float		farClipPlane;
-		uint32_t	viewportWidth;		//<! 0 to automatically use the main window viewport width
-		uint32_t	viewportHeight;		//<! 0 to automatically use the main window viewport height
-		float		verticalFieldOfViewDegrees;
-		uint8_t		cameraType;			//<! one of the CAMERA_ enum values
-		uint8_t		_padding_end[3];
+		float			nearClipPlane;
+		float			farClipPlane;
+		uint32_t		viewportWidth;		//<! 0 to automatically use the main window viewport width
+		uint32_t		viewportHeight;		//<! 0 to automatically use the main window viewport height
+		float			verticalFieldOfViewDegrees;
+		uint8_t			cameraType;			//<! one of the CAMERA_ enum values
+		uint8_t			_padding_end[3];
 	} griffin_CameraParameters;
 
 	// Functions
@@ -69,6 +77,17 @@ extern "C" {
 	GRIFFIN_EXPORT
 	uint64_t griffin_scene_createLight(uint64_t scene, uint64_t parentEntity);
 
+	//GRIFFIN_EXPORT
+	//uint64_t griffin_scene_makeMovable(uint64_t scene, uint64_t entity);
+
+
+	// Position, Orientation, Translation, Rotation functions
+
+	GRIFFIN_EXPORT
+	void griffin_scene_setRelativePosition(uint64_t scene, uint64_t entity, griffin_dvec3* pos);
+
+	GRIFFIN_EXPORT
+	griffin_dvec3* griffin_scene_translate(uint64_t scene, uint64_t entity, griffin_dvec3* translation);
 
 #endif ffi
 #undef ffi

@@ -122,6 +122,55 @@ extern "C" {
 		return 0;
 	}
 
+
+	// Position, Orientation, Translation, Rotation functions
+
+	scene::SceneNode* getSceneNode(uint64_t scene, uint64_t entity)
+	{
+		SceneId sceneId;
+		sceneId.value = scene;
+		EntityId entityId;
+		entityId.value = entity;
+
+		try {
+			auto& s = g_sceneMgrPtr->getScene(sceneId);
+			auto sceneNodeId = s.entityManager->getEntityComponentId(entityId, scene::SceneNode::componentType);
+			if (sceneNodeId != NullId_T) {
+				auto& store = s.entityManager->getComponentStore<scene::SceneNode>();
+				return &store.getComponent(sceneNodeId);
+			}
+		}
+		catch (std::exception ex) {
+			SDL_Log("griffin_scene_getSceneNode: %s", ex.what());
+		}
+		return nullptr;
+	}
+
+
+	void griffin_scene_setRelativePosition(uint64_t scene, uint64_t entity, griffin_dvec3* pos)
+	{
+		auto sceneNode = getSceneNode(scene, entity);
+
+		if (sceneNode != nullptr) {
+			sceneNode->translationLocal = *reinterpret_cast<glm::dvec3*>(pos);
+			sceneNode->positionDirty = 1;
+		}
+	}
+
+
+	griffin_dvec3* griffin_scene_translate(uint64_t scene, uint64_t entity, griffin_dvec3* translation)
+	{
+		auto sceneNode = getSceneNode(scene, entity);
+
+		if (sceneNode != nullptr) {
+			auto& node = *sceneNode;
+			node.translationLocal += *reinterpret_cast<glm::dvec3*>(translation);
+			node.positionDirty = 1;
+			return reinterpret_cast<griffin_dvec3*>(&node.translationLocal);
+		}
+		return nullptr;
+	}
+
 #ifdef __cplusplus
 }
 #endif

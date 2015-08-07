@@ -30,6 +30,7 @@ namespace griffin {
 			SceneNode,
 			MeshInstanceContainer,
 			CameraInstanceContainer,
+			MovementComponent,
 			Person
 		)
 

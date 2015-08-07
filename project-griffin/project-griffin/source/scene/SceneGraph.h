@@ -35,9 +35,6 @@ namespace griffin {
 		* worldspace position of each node.
 		*/
 		COMPONENT(SceneNode,
-			(uint8_t,		positionDirty,,		"position needs recalc"),
-			(uint8_t,		orientationDirty,,	"orientation needs recalc"),
-
 			// transform vars
 			(glm::dvec3,	translationLocal,,	"translation relative to parent"),
 			(glm::quat,		rotationLocal,,		"local rotation quaternion relative to parent"),
@@ -48,11 +45,16 @@ namespace griffin {
 			// support scale??
 
 			// intrusive tree vars
-			(uint32_t,		numChildren,,		"number of children contained"),
 			(SceneNodeId,	firstChild,,		"first child node index"),
 			(SceneNodeId,	nextSibling,,		"next sibling node index"),
 			(SceneNodeId,	prevSibling,,		"previous sibling node index"),
-			(SceneNodeId,	parent,,			"parent node index")
+			(SceneNodeId,	parent,,			"parent node index"),
+			(uint32_t,		numChildren,,		"number of children contained"),
+
+			(uint8_t,		positionDirty,,		"position needs recalc"),
+			(uint8_t,		orientationDirty,,	"orientation needs recalc"),
+
+			(uint8_t,		_padding_end,[2],	"")
 		)
 
 		/**
@@ -80,6 +82,10 @@ namespace griffin {
 			(char,			name,[32],			"name of the camera")
 		)
 
+		COMPONENT(MovementComponent,
+			(glm::vec3,		velocity,,			"linear velocity"),
+			(glm::vec3,		angularVelocity,,	"angular velocity")
+		)
 		
 		/**
 		*

@@ -29,6 +29,8 @@ namespace griffin {
 
 		engine.inputSystem->updateFrameTick(ui);
 
+		// call the Lua game update handler
+
 		//	ResourceLoader
 		//	AISystem
 		//	PhysicsSystem
@@ -42,8 +44,6 @@ namespace griffin {
 		//#ifdef GRIFFIN_TOOLS_BUILD
 		//engine.toolsManager->updateFrameTick(ui);
 		//#endif
-
-		// call the Lua game update handler
 	}
 
 
