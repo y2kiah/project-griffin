@@ -9,6 +9,8 @@
 			{ "name": "Move Backward",	"bind": "down" },
 			{ "name": "Move Left",		"bind": "down" },
 			{ "name": "Move Right",		"bind": "down" },
+			{ "name": "Move Up",		"bind": "down" },
+			{ "name": "Move Down",		"bind": "down" },
 			{ "name": "High Speed",		"bind": "toggle" }
 		],
 		"axes": [

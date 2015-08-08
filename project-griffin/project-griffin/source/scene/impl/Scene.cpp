@@ -7,8 +7,18 @@
 #include <utility/memory_reserve.h>
 #include <scene/Camera.h>
 #include <entity/EntityManager.h>
+#include <render/Render.h>
+#include <glm/mat4x4.hpp>
 
 using namespace griffin::scene;
+
+griffin::render::RenderSystemWeakPtr g_renderPtr;
+
+void griffin::scene::setRenderSystemPtr(const griffin::render::RenderSystemWeakPtr& renderPtr)
+{
+	g_renderPtr = renderPtr;
+}
+
 
 // class Scene
 
@@ -29,6 +39,7 @@ uint32_t Scene::createCamera(const CameraParameters& cameraParams, bool makeActi
 											   cameraParams.nearClipPlane, cameraParams.farClipPlane);
 	}
 
+	camPtr->calcMatrices();
 	cameras.push_back(camPtr);
 	uint32_t newCameraId = static_cast<uint32_t>(cameras.size() - 1);
 
@@ -70,6 +81,50 @@ void SceneManager::updateActiveScenes()
 	for (auto& s : m_scenes.getItems()) {
 		if (s.active) {
 			s.sceneGraph->update();
+
+			// update position/orientation of active camera from the scene graph
+			//	only supports one active camera now, but the active cameras could be extended into a list to support several views
+			for (auto& camInstance : s.entityManager->getComponentStore<CameraInstanceContainer>().getComponents()) {
+				if (camInstance.component.cameraId == s.activeRenderCamera) {
+					auto& cam = *s.cameras[camInstance.component.cameraId];
+					SceneNodeId nodeId = s.entityManager->getEntityComponentId(camInstance.entityId, SceneNode::componentType);
+					auto& node = s.entityManager->getComponentStore<SceneNode>().getComponent(nodeId);
+
+					cam.setEyePoint(node.positionWorld);
+					cam.setOrientation(node.orientationWorld);
+					cam.calcModelView();
+
+					break;
+				}
+			}
+		}
+	}
+}
+
+void SceneManager::renderActiveScenes()
+{
+	auto& render = *g_renderPtr.lock();
+
+	for (auto& s : m_scenes.getItems()) {
+		if (s.active) {
+			// render all visible mesh instances
+
+			
+			// for each active camera, set the renderer viewport 
+			auto& cam = *s.cameras[s.activeRenderCamera];
+			
+			glm::mat4 viewProjMat(cam.getProjectionMatrix() * cam.getModelViewMatrix());
+			float frustumDistance = cam.getFarClip() - cam.getNearClip();
+
+			render.setViewportParameters(s.activeRenderCamera, render::ViewportParameters{
+				cam.getModelViewMatrix(),
+				cam.getProjectionMatrix(),
+				viewProjMat,
+				cam.getNearClip(),
+				cam.getFarClip(),
+				frustumDistance,
+				1.0f / frustumDistance
+			});
 		}
 	}
 }

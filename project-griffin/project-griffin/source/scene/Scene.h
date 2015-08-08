@@ -14,9 +14,12 @@
 
 
 namespace griffin {
-	namespace scene {
+	namespace render {
+		class RenderSystem;
+		typedef std::weak_ptr<RenderSystem> RenderSystemWeakPtr;
+	}
 
-		//using namespace griffin::entity;
+	namespace scene {
 
 		class SceneManager;
 		class Camera;
@@ -28,11 +31,12 @@ namespace griffin {
 		typedef std::shared_ptr<SceneGraph>		SceneGraphPtr;
 		typedef std::shared_ptr<Camera>			CameraPtr;
 		typedef std::vector<CameraPtr>			CameraList;
-
 		
 		// Function declarations
 
-		extern void setSceneManagerPtr(const SceneManagerPtr& sceneMgrPtr);
+		extern void setSceneManagerPtr(const SceneManagerPtr&);
+		extern void setRenderSystemPtr(const render::RenderSystemWeakPtr&);
+
 
 		// Type declarations
 		enum CameraFlags : uint8_t {
@@ -97,6 +101,7 @@ namespace griffin {
 			SceneId createScene(const std::string& name, bool makeActive);
 
 			void updateActiveScenes();
+			void renderActiveScenes();
 
 		private:
 			// Private Variables

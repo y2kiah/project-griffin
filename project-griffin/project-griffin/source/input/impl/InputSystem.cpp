@@ -343,6 +343,48 @@ void InputSystem::mapFrameMotion(const UpdateInfo& ui)
 	}
 }
 
+void InputSystem::handleInputAction(Id_T mappingId, FrameMappedInput& mappedInput,
+									std::function<bool(MappedAction&, InputContext&)> callback)
+{
+	InputMapping mapping = m_inputMappings[mappingId];
+	assert(mapping.type == Action_T && "wrong handler for mapping type");
+
+	for (auto& mi : mappedInput.actions) {
+		if (mi.mappingId == mappingId && !mi.handled) {
+			auto& context = m_inputContexts[mi.inputMapping->contextId];
+			mi.handled = callback(mi, context);
+		}
+	}
+}
+
+void InputSystem::handleInputState(Id_T mappingId, FrameMappedInput& mappedInput,
+								   std::function<bool(MappedState&, InputContext&)> callback)
+{
+	InputMapping mapping = m_inputMappings[mappingId];
+	assert(mapping.type == State_T && "wrong handler for mapping type");
+
+	for (auto& mi : mappedInput.states) {
+		if (mi.mappingId == mappingId && !mi.handled) {
+			auto& context = m_inputContexts[mi.inputMapping->contextId];
+			mi.handled = callback(mi, context);
+		}
+	}
+}
+
+void InputSystem::handleInputAxis(Id_T mappingId, FrameMappedInput& mappedInput,
+								  std::function<bool(MappedAxis&, InputContext&)> callback)
+{
+	InputMapping mapping = m_inputMappings[mappingId];
+	assert(mapping.type == Axis_T && "wrong handler for mapping type");
+
+	for (auto& mi : mappedInput.axes) {
+		if (mi.mappingId == mappingId && !mi.handled) {
+			auto& context = m_inputContexts[mi.inputMapping->contextId];
+			mi.handled = callback(mi, context);
+		}
+	}
+}
+
 
 bool InputSystem::handleEvent(const SDL_Event& event)
 {
@@ -516,17 +558,17 @@ void InputSystem::initialize() // should this be the constructor?
 }
 
 
-Id_T InputSystem::getInputMappingHandle(const string& name, Id_T contextId) const
+Id_T InputSystem::getInputMappingHandle(const char* name, Id_T contextId) const
 {
 	const auto& context = m_inputContexts[contextId];
 
 	for (Id_T m : context.inputMappings) {
 		const auto& mapping = m_inputMappings[m];
-		if (strncmp(name.c_str(), mapping.name, 32) == 0) {
+		if (strncmp(mapping.name, name, sizeof(mapping.name)) == 0) {
 			return mapping.mappingId;
 		}
 	}
-	return Id_T{};
+	return NullId_T;
 }
 
 
@@ -572,14 +614,14 @@ bool InputSystem::setContextActive(Id_T contextId, bool active)
 }
 
 
-Id_T InputSystem::getInputContextHandle(const string& name) const
+Id_T InputSystem::getInputContextHandle(const char* name) const
 {
 	for (const auto& i : m_inputContexts.getItems()) {
-		if (strncmp(name.c_str(), i.name, 32) == 0) {
+		if (strncmp(i.name, name, sizeof(i.name)) == 0) {
 			return i.contextId;
 		}
 	}
-	return Id_T{};
+	return NullId_T;
 }
 
 

@@ -276,12 +276,14 @@ namespace griffin {
 			{
 				return m_inputMappings.insert(std::forward<InputMapping>(i));
 			}
-			
+
 			/**
-			* Get an input mapping id from its name, systems use this at initialization and store
-			* the handle for subsequently matching frame input mappings
+			* Slow function to get an input mapping id from its name, systems use this at startup
+			* and store the handle for later use
+			* @name		mapping name found in config/inputcontexts.json
+			* @return	Id of the mapping, NullId_T if name not found within context
 			*/
-			Id_T getInputMappingHandle(const string& name, Id_T contextId) const;
+			Id_T getInputMappingHandle(const char* name, Id_T contextId) const;
 			
 			/**
 			* Get an input mapping from its handle, asserts that the handle is valid.
@@ -303,15 +305,17 @@ namespace griffin {
 			Id_T createContext(uint16_t optionsMask, uint8_t priority, bool makeActive = false);
 
 			/**
+			* Slow function to get an input context id from its name, systems use this at startup
+			* and store the handle for later use
+			* @name		context name found in config/inputcontexts.json
+			* @return	Id of the context, NullId_T if name not found
+			*/
+			Id_T getInputContextHandle(const char* name) const;
+
+			/**
 			* Set the InputContext, returns true on success
 			*/
 			bool setContextActive(Id_T contextId, bool active = true);
-
-			/**
-			* Get an input context id from its name, systems use this at initialization and store
-			* the handle for subsequently manipulating contexts
-			*/
-			Id_T getInputContextHandle(const string& name) const;
 
 			/**
 			* Get an input context from its handle, asserts that the handle is valid.
@@ -333,6 +337,25 @@ namespace griffin {
 			{
 				return (m_callbacks.erase(callbackId) == 1);
 			}
+
+
+			/**
+			* Convenience function for handling a single mapped action event
+			*/
+			void handleInputAction(Id_T mappingId, FrameMappedInput& mappedInput,
+								   std::function<bool(MappedAction&, InputContext&)> callback);
+
+			/**
+			* Convenience function for handling a single mapped state event
+			*/
+			void handleInputState(Id_T mappingId, FrameMappedInput& mappedInput,
+								  std::function<bool(MappedState&, InputContext&)> callback);
+
+			/**
+			* Convenience function for handling a single mapped axis event
+			*/
+			void handleInputAxis(Id_T mappingId, FrameMappedInput& mappedInput,
+								 std::function<bool(MappedAxis&, InputContext&)> callback);
 
 
 			// Input Modes

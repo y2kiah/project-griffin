@@ -8,8 +8,8 @@ ffi.cdef[[
 	} griffin_dvec3;
 	
 	typedef struct {
-		float x, y, z, w; }
-	griffin_quat;
+		float x, y, z, w;
+	} griffin_quat;
 
 	enum {
 		CAMERA_PERSPECTIVE	= 0,
@@ -34,8 +34,19 @@ ffi.cdef[[
 	
 	uint64_t griffin_scene_createScene(const char name[32], bool makeActive);
 
+	// Entity/Component functions
 
-	// Scene Node and Entity/Component APIs
+	
+	uint64_t griffin_scene_createComponentStore(uint64_t scene, uint16_t typeId, uint32_t componentSize, size_t reserve);
+
+	
+	void* griffin_scene_getComponentData(uint64_t scene, uint64_t component);
+
+	
+	uint64_t griffin_scene_addComponentToEntity(uint64_t scene, uint16_t typeId, uint64_t entity);
+
+
+	// Scene Node functions
 
 	/**
 	* Creates a new entity with a SceneNode component

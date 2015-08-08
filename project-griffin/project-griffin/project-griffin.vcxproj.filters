@@ -161,6 +161,9 @@
     <Filter Include="game\impl">
       <UniqueIdentifier>{c7731a45-b9f2-4dfb-a4a4-6bf109f34717}</UniqueIdentifier>
     </Filter>
+    <Filter Include="game\movement">
+      <UniqueIdentifier>{23750c11-f802-4a6d-b272-2dc41aa577a6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">

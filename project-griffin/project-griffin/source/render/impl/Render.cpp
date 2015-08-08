@@ -19,7 +19,6 @@
 #include <render/RenderTarget_GL.h>
 
 
-
 namespace griffin {
 	namespace render {
 
@@ -47,7 +46,7 @@ namespace griffin {
 		
 		// TEMP
 		ResourcePtr g_tempMesh = nullptr;
-
+		
 
 		// class RenderQueue
 
@@ -139,7 +138,7 @@ namespace griffin {
 
 		// class DeferredRenderer_GL
 
-		void DeferredRenderer_GL::renderFrame(float interpolation, const FrameViewParameters& frameViewParams)
+		void DeferredRenderer_GL::renderViewport(ViewportParameters& viewportParams)
 		{
 			// Start g-buffer rendering
 			m_gbuffer.start();
@@ -149,17 +148,6 @@ namespace griffin {
 				auto& program = m_mrtProgram.get()->getResource<ShaderProgram_GL>();
 				program.useProgram();
 				auto programId = program.getProgramId();
-
-				//camera->setEyePoint({ 0.0f, 100.0f, 200.0f });
-				//camera->setEyePoint({ 10.0f, 0.0f, 90.0f });
-				//camera->setEyePoint({ 0.0f, 40.0f, -40.0f });
-			//	camera->setEyePoint({ 120.0f, 40.0f, 0.0f });
-			//	camera->lookAt({ 0.0f, 0.0f, 0.0f });
-			//	camera->setWorldUp({ 0.0f, 1.0f, 0.0f });
-			//	camera->calcMatrices();
-			//	mat4 viewMat(camera->getModelViewMatrix());
-			//	mat4 viewProjMat(camera->getProjectionMatrix() * viewMat);
-			//	float inverseCameraDistance = 1.0f / (frameViewParams.farClipPlane - frameViewParams.nearClipPlane);
 
 				/*camera->setTranslationYawPitchRoll({ 10.0f, 10.0f, 10.0f }, glm::radians(315.0f), glm::radians(45.0f), 0);
 				//camera->lookAt({ 10.0f, 10.0f, 10.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f });
@@ -186,18 +174,18 @@ namespace griffin {
 				GLint specularLoc = glGetUniformLocation(programId, "materialKs");
 				GLint shininessLoc = glGetUniformLocation(programId, "materialShininess");
 
-				glUniformMatrix4fv(viewProjMatLoc, 1, GL_FALSE, &frameViewParams.viewProjMat[0][0]);
+				glUniformMatrix4fv(viewProjMatLoc, 1, GL_FALSE, &viewportParams.viewProjMat[0][0]);
 
-				glUniform1f(frustumNearLoc, frameViewParams.nearClipPlane);
-				glUniform1f(frustumFarLoc, frameViewParams.farClipPlane);
-				glUniform1f(inverseFrustumDistanceLoc, frameViewParams.inverseFrustumDistance);
+				glUniform1f(frustumNearLoc, viewportParams.nearClipPlane);
+				glUniform1f(frustumFarLoc, viewportParams.farClipPlane);
+				glUniform1f(inverseFrustumDistanceLoc, viewportParams.inverseFrustumDistance);
 
 				// draw the test mesh
 				if (g_tempMesh) {
 					auto& mesh = g_tempMesh->getResource<Mesh_GL>();
 					mesh.draw(modelMatLoc, modelViewMatLoc, mvpMatLoc, normalMatLoc,
 							  ambientLoc, diffuseLoc, specularLoc, shininessLoc,
-							  frameViewParams.viewMat, frameViewParams.viewProjMat); // temporarily passing in the modelMatLoc
+							  viewportParams.viewMat, viewportParams.viewProjMat); // temporarily passing in the modelMatLoc
 				}
 
 				glDisable(GL_DEPTH_TEST);
@@ -234,8 +222,8 @@ namespace griffin {
 				glUniform1i(normalMapLoc, 2);
 				glUniform1i(depthMapLoc, 3);
 				
-				glUniform1f(cameraNearLoc, frameViewParams.nearClipPlane);
-				glUniform1f(cameraFarLoc, frameViewParams.farClipPlane);
+				glUniform1f(cameraNearLoc, viewportParams.nearClipPlane);
+				glUniform1f(cameraFarLoc, viewportParams.farClipPlane);
 
 				drawFullscreenQuad();
 			}
@@ -271,7 +259,7 @@ namespace griffin {
 		// class RenderSystem
 
 		void RenderSystem::init(int viewportWidth, int viewportHeight) {
-			m_renderer.init(viewportWidth, viewportHeight);
+			m_deferredRenderer.init(viewportWidth, viewportHeight);
 
 			//loadModelTemp("data/models/ship.dae");
 			//loadModelTemp("data/models/riggedFighter.dae");
@@ -293,18 +281,40 @@ namespace griffin {
 				SDL_Log("%s", ex.what());
 			}
 
-			// set up default view matrices in case a camera is not created
-			FrameViewParameters defaultView{};
-			defaultView.nearClipPlane = -1.0f;
-			defaultView.farClipPlane = 1.0f;
+			// set up default viewport matrices
+			ViewportParameters defaultView{};
+			defaultView.nearClipPlane = 0.1f; //-1.0f;
+			defaultView.farClipPlane  = 100000.0f; //1.0f;
 			defaultView.frustumDistance = defaultView.farClipPlane - defaultView.nearClipPlane;
 			defaultView.inverseFrustumDistance = 1.0f / defaultView.frustumDistance;
-			defaultView.viewMat = glm::lookAt(glm::vec3{ 0, 0, 2.0f }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 0, 1.0f, 0 });
-			defaultView.projMat = glm::ortho(0.0f, static_cast<float>(viewportWidth), static_cast<float>(viewportHeight), 0.0f, -1.0f, 1.0f);
+			defaultView.viewMat = glm::lookAt(glm::vec3{ 120.0f, 40.0f, 0 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 0, 1.0f, 0 });
+								  //glm::lookAt(glm::vec3{ 0, 0, 2.0f }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 0, 1.0f, 0 });
+			defaultView.projMat = glm::perspective(glm::radians(60.0f),
+												   static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight),
+												   defaultView.nearClipPlane, defaultView.farClipPlane);
+												   //glm::ortho(0.0f, static_cast<float>(viewportWidth), static_cast<float>(viewportHeight), 0.0f, -1.0f, 1.0f);
 			defaultView.viewProjMat = defaultView.projMat * defaultView.viewMat;
 
-			setFrameViewParams(std::move(defaultView));
+			setViewportParameters(0, std::move(defaultView));
 		}
+
+
+		void RenderSystem::renderFrame(float interpolation)
+		{
+			for (int v = 0; v < MAX_VIEWPORTS; ++v) {
+				Viewport& viewport = m_viewports[v];
+				if (viewport.display) {
+					viewport.renderQueue.sortRenderQueue();
+
+					if (viewport.rendererType == RendererType_Deferred) {
+						m_deferredRenderer.renderViewport(viewport.params);
+					}
+
+					viewport.renderQueue.clearRenderEntries();
+				}
+			}
+		}
+
 
 		RenderSystem::~RenderSystem()
 		{

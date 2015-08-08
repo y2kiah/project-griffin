@@ -48,13 +48,9 @@ namespace griffin {
 			*/
 			int doFile(Id_T stateId, const string &initScriptfilename, bool throwOnError = true);
 
-			/*template <typename Ret, typename ... Params>
-			Ret callLuaGlobalFunction(const char* func, Params...) {
-				lua_getglobal(m_state, func);
+			void pushNumber(Id_T stateId, float v);
 
-				return 
-			}*/
-			int callLuaGlobalFunction(Id_T stateId, const char* func, bool throwOnError = true); // TEMP?
+			int callLuaGlobalFunction(Id_T stateId, const char* func, bool throwOnError = true);
 
 			void runUpdateScripts() const;
 			void runFrameScripts() const;
@@ -62,7 +58,7 @@ namespace griffin {
 		private:
 			int doString(lua_State* state, const string &scriptStr) const;
 			int doFile(lua_State* state, const string &filename, bool throwOnError = true);
-			int callLuaGlobalFunction(lua_State* state, const char* func, bool throwOnError = true); // TEMP?
+			int callLuaGlobalFunction(lua_State* state, const char* func, bool throwOnError = true);
 
 
 			// Variables

@@ -20,6 +20,7 @@ namespace griffin {
 		public:
 			virtual ~ComponentStoreBase() {}
 
+			virtual ComponentId addComponent(EntityId entityId) = 0;
 			virtual bool removeComponent(ComponentId outerId) = 0;
 			virtual EntityId getEntityId(ComponentId outerId) = 0;
 		};
@@ -83,9 +84,16 @@ namespace griffin {
 			}
 
 			/**
+			* add one zero-initialized component into the store, return ComponentId
+			*/
+			virtual inline ComponentId addComponent(EntityId entityId) override {
+				return m_components.insert({ T{}, entityId });
+			}
+
+			/**
 			* remove the component identified by the provided outerId
 			*/
-			inline bool removeComponent(ComponentId outerId) {
+			virtual inline bool removeComponent(ComponentId outerId) override {
 				return (m_components.erase(outerId) == 1);
 			}
 

@@ -14,6 +14,7 @@
 #include "ComponentStore.h"
 #include "Entity.h"
 
+#pragma warning(disable: 4351) // "new behavior" warning for zero-init {}
 
 namespace griffin {
 	namespace entity {
@@ -30,7 +31,8 @@ namespace griffin {
 
 			explicit EntityManager() :
 				m_entityStore(0, RESERVE_ENTITYMANAGER_ENTITIES),
-				m_componentStores{} // zero-init fills with nullptr, component store created on first access
+				m_componentStores{}, // zero-init fills with nullptr, component store created on first access
+				m_scriptComponentStoreSizes{}
 			{}
 
 			// Entity Functions
@@ -165,12 +167,28 @@ namespace griffin {
 				createComponentStore<T>(T::componentType, reserve);
 			}
 
+
+			// Script-based component functions
+
 			/**
 			* Create a store for script-based components
+			* @typeId	zero-based unique id for the script component type
+			* @componentSize	size in bytes of the component struct
+			* @reserve	how many components to reserve memory for upfront
 			* @return	Index id of the component store. Stores cannot be removed once created so
-			*	this index is stable for the lifetime of the EntityManager.
+			*	this index is stable for the lifetime of the EntityManager. The number returned is
+			*	equal to one above the highest fixed entity plus typeId.
 			*/
-			uint16_t createScriptComponentStore(size_t reserve);
+			uint16_t createScriptComponentStore(uint16_t typeId, uint32_t componentSize, size_t reserve);
+
+			ComponentId addScriptComponentToEntity(uint16_t typeId, EntityId entityId);
+			
+			inline uint16_t getScriptComponentSize(uint16_t typeId) {
+				assert(typeId < MAX_COMPONENTS - ComponentType::last_ComponentType_enum && "typeId out of range");
+				return m_scriptComponentStoreSizes[typeId];
+			}
+			
+			void* getScriptComponentData(ComponentId componentId);
 
 		private:
 
@@ -196,6 +214,8 @@ namespace griffin {
 			ComponentMaskMap	m_componentIndex;	//<! index of sorted ComponentMask for O(log n) entity search by multiple component types
 			//ComponentStoreMap	m_componentStores;	//<! ComponentStore indexed by componentType, stores component and parent entityId
 			ComponentStoreBasePtr m_componentStores[MAX_COMPONENTS];
+
+			uint32_t			m_scriptComponentStoreSizes[MAX_COMPONENTS - ComponentType::last_ComponentType_enum]; //<! one size per script component type
 
 		};
 

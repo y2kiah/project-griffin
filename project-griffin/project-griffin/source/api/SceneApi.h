@@ -9,6 +9,18 @@
 #include <utility/export.h>
 #include <cstdint>
 
+#include <utility/container/handle_map.h>
+
+
+namespace griffin {
+	namespace scene { struct CameraParameters; }
+
+	Id_T createEmptySceneNode(Id_T sceneId, Id_T parentEntityId);
+
+	Id_T createCamera(Id_T sceneId, Id_T parentEntityId,
+					  scene::CameraParameters& cameraParams, const char name[32]);
+}
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -22,8 +34,8 @@ extern "C" {
 	} griffin_dvec3;
 	
 	typedef struct {
-		float x, y, z, w; }
-	griffin_quat;
+		float x, y, z, w;
+	} griffin_quat;
 
 	enum {
 		CAMERA_PERSPECTIVE	= 0,
@@ -48,8 +60,19 @@ extern "C" {
 	GRIFFIN_EXPORT
 	uint64_t griffin_scene_createScene(const char name[32], bool makeActive);
 
+	// Entity/Component functions
 
-	// Scene Node and Entity/Component APIs
+	GRIFFIN_EXPORT
+	uint64_t griffin_scene_createComponentStore(uint64_t scene, uint16_t typeId, uint32_t componentSize, size_t reserve);
+
+	GRIFFIN_EXPORT
+	void* griffin_scene_getComponentData(uint64_t scene, uint64_t component);
+
+	GRIFFIN_EXPORT
+	uint64_t griffin_scene_addComponentToEntity(uint64_t scene, uint16_t typeId, uint64_t entity);
+
+
+	// Scene Node functions
 
 	/**
 	* Creates a new entity with a SceneNode component

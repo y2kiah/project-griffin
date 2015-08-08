@@ -12,6 +12,8 @@
 		{ "context": "devcamera",	"name": "Move Backward",	"device": 0,	"keycode": 115 },
 		{ "context": "devcamera",	"name": "Move Left",		"device": 0,	"keycode": 97 },
 		{ "context": "devcamera",	"name": "Move Right",		"device": 0,	"keycode": 100 },
+		{ "context": "devcamera",	"name": "Move Up",			"device": 0,	"keycode": 120 },
+		{ "context": "devcamera",	"name": "Move Down",		"device": 0,	"keycode": 122 },
 		{ "context": "devcamera",	"name": "High Speed",		"device": 0,	"keycode": 1073742049 },
 		{ "context": "playerfps",	"name": "Move Forward",		"device": 0,	"keycode": 119 },
 		{ "context": "playerfps",	"name": "Move Back",		"device": 0,	"keycode": 115 },

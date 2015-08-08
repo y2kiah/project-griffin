@@ -39,6 +39,7 @@ namespace griffin {
 		//	etc.
 
 		engine.sceneManager->updateActiveScenes();
+		engine.sceneManager->renderActiveScenes();
 
 		// below currently does nothing
 		//#ifdef GRIFFIN_TOOLS_BUILD
@@ -185,8 +186,9 @@ namespace griffin {
 
 			auto scenePtr = make_shared<SceneManager>();
 
-			// inject dependencies to the Scene C API
-			setSceneManagerPtr(scenePtr);
+			// inject dependencies
+			setRenderSystemPtr(engine.renderSystem);
+			setSceneManagerPtr(scenePtr); // to the Scene C API
 
 			// Scene.lua contains scene functions
 			scriptPtr->doFile(engine.engineLuaState, "scripts/Scene.lua"); // throws on error

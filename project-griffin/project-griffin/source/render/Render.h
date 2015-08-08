@@ -31,34 +31,45 @@ namespace griffin {
 		// Variables
 		extern weak_ptr<resource::ResourceLoader> g_resourceLoader;
 
-		// Structs
+		// Types
+
+		enum RendererType {
+			RendererType_Deferred = 0,
+			RendererType_Forward  = 1
+		};
 
 		/**
 		* @struct RenderQueueKey
-		* @var	depth		depth value converted to 16 bit integer
+		* @var	frontToBackDepth	depth value converted to 32 bit integer
 		* @var	material	internal material feature bits, determines shader
 		* @var	instanced	0=no, 1=yes mesh is instanced
 		* @var	translucencyType	0=opaque, 1=back-to-front translucent, 2=additive, 3=subtractive
-		* @var	viewportLayer	0=skybox, 1=scene geometry, etc.
-		* @var	viewport	viewport index to render
-		* @var	fullscreenLayer	0=light pre-pass, 1=scene, 2=post filter, 3=HUD, 4=UI
+		* @var	sceneLayer	0=skybox, 1=scene geometry, etc.
+		* @var	fullscreenLayer	0=light pre-pass, 1=game scene, 2=post filter, 3=HUD, 4=UI
 		* @var	value		unioned with the above four vars, used for sorting
 		*/
 		struct RenderQueueKey {
 			union {
-				struct OpaqueKey {
-					uint32_t frontToBackDepth;
-					uint16_t material;
+				struct AllKeys {			// AllKeys set for both opaque and translucent
+					uint32_t _all_pad1;
+					uint16_t _all_pad2;
 
 					uint16_t instanced        : 1;
 					uint16_t translucencyType : 2;
-					uint16_t viewportLayer    : 4;
-					uint16_t viewport         : 5;
+					uint16_t sceneLayer       : 4;
 					uint16_t fullscreenLayer  : 4;
+					uint16_t _reserved        : 5;
 				};
-				struct TranslucentKey {
+				struct OpaqueKey {			// OpaqueKey 48 bits split between material and depth
+					uint32_t frontToBackDepth;
+					uint16_t material;
+
+					uint16_t _opaque_pad;
+				};
+				struct TransparentKey {		// TransparentKey 48 bits for depth alone
 					uint64_t backToFrontDepth : 48;
-					uint64_t translucentPad   : 16;
+					
+					uint64_t _translucent_pad : 16;
 				};
 				uint64_t value;
 			};
@@ -72,18 +83,7 @@ namespace griffin {
 			// render flags?
 		};
 
-
-		struct FrameViewParameters {
-			glm::mat4	viewMat;
-			glm::mat4	projMat;
-			glm::mat4	viewProjMat;
-			float		nearClipPlane;
-			float		farClipPlane;
-			float		frustumDistance;		//<! = farClipPlane - nearClipPlane
-			float		inverseFrustumDistance;	//<! = 1.0f / frustumDistance
-		};
-
-
+		
 		class RenderQueue {
 		public:
 			typedef struct { RenderQueueKey key; int entryIndex; } KeyType;
@@ -118,6 +118,27 @@ namespace griffin {
 		};
 
 
+		#define MAX_VIEWPORTS	32
+
+		struct ViewportParameters {
+			glm::mat4	viewMat;
+			glm::mat4	projMat;
+			glm::mat4	viewProjMat;
+			float		nearClipPlane;
+			float		farClipPlane;
+			float		frustumDistance;		//<! = farClipPlane - nearClipPlane
+			float		inverseFrustumDistance;	//<! = 1.0f / frustumDistance
+		};
+
+
+		struct Viewport {
+			ViewportParameters	params;
+			RenderQueue			renderQueue;
+			bool				display = false;
+			RendererType		rendererType = RendererType_Deferred;
+		};
+
+
 		class DeferredRenderer_GL {
 		public:
 			explicit DeferredRenderer_GL() :
@@ -131,7 +152,7 @@ namespace griffin {
 			*/
 			void init(int viewportWidth, int viewportHeight);
 
-			void renderFrame(float interpolation, const FrameViewParameters& frameViewParams);
+			void renderViewport(ViewportParameters& viewportParams);
 
 			void drawFullscreenQuad(/*Viewport?*/) const;
 
@@ -173,6 +194,8 @@ namespace griffin {
 		*/
 		class RenderSystem {
 		public:
+			typedef std::vector<Viewport>	ViewportList;
+
 			explicit RenderSystem() {}
 
 			~RenderSystem();
@@ -183,29 +206,27 @@ namespace griffin {
 			void interpolateStates(float interpolation) {}
 
 			/**
-			* Sets the camera matrices and clip planes. Needs to be called before first render and
-			* then any time the view parameters change, usually once per frame before rendering.
+			* Sets the camera matrices and clip planes. Needs to be set for each viewport rendered
+			* and any time the view parameters change, usually once per frame.
 			*/
-			void setFrameViewParams(FrameViewParameters&& frameViewParams) {
-				m_frameViewParams = std::forward<FrameViewParameters>(frameViewParams);
+			void setViewportParameters(uint8_t viewport, ViewportParameters&& viewportParams)
+			{
+				assert(viewport < MAX_VIEWPORTS && "viewport out of range");
+				
+				m_viewports[viewport].params = std::forward<ViewportParameters>(viewportParams);
+				m_viewports[viewport].display = true;
 			}
 
-			void renderFrame(float interpolation) {
-				m_renderQueue.sortRenderQueue();
-				
-				m_renderer.renderFrame(interpolation, m_frameViewParams);
-				
-				m_renderQueue.clearRenderEntries();
-			}
+			void renderFrame(float interpolation);
 
 		private:
-			FrameViewParameters	m_frameViewParams;
-			RenderQueue			m_renderQueue;
-			DeferredRenderer_GL	m_renderer;
+			Viewport			m_viewports[MAX_VIEWPORTS];
+			DeferredRenderer_GL	m_deferredRenderer;
 		};
 
 
 		typedef shared_ptr<RenderSystem> RenderSystemPtr;
+		typedef weak_ptr<RenderSystem>   RenderSystemWeakPtr;
 	}
 }
 

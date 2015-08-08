@@ -5,10 +5,49 @@
 
 griffin::scene::SceneManagerPtr g_sceneMgrPtr = nullptr;
 
-void griffin::scene::setSceneManagerPtr(const SceneManagerPtr& sceneMgrPtr)
+void griffin::scene::setSceneManagerPtr(const griffin::scene::SceneManagerPtr& sceneMgrPtr)
 {
 	g_sceneMgrPtr = sceneMgrPtr;
 }
+
+namespace griffin {
+
+	Id_T createEmptySceneNode(Id_T sceneId, Id_T parentEntityId)
+	{
+		auto& s = g_sceneMgrPtr->getScene(sceneId);
+		auto entityId = s.entityManager->createEntity();
+
+		auto sceneNodeId = s.sceneGraph->addToSceneEntity(entityId, {}, {}, parentEntityId);
+		if (sceneNodeId != NullId_T) {
+			return entityId;
+		}
+		return NullId_T;
+	}
+
+
+	Id_T createCamera(Id_T sceneId, Id_T parentEntityId,
+					  scene::CameraParameters& cameraParams, const char name[32])
+	{
+		auto entityId = createEmptySceneNode(sceneId, parentEntityId);
+
+		if (entityId != NullId_T) {
+			auto& s = g_sceneMgrPtr->getScene(sceneId);
+
+			scene::CameraInstanceContainer ci{};
+			bool makePrimary = (s.cameras.size() == 0); // if this the first camera in the scene, make it primary
+			ci.cameraId = s.createCamera(cameraParams, makePrimary);
+			strcpy_s(ci.name, 32, name);
+
+			auto camNodeId = s.entityManager->addComponentToEntity(std::move(ci), entityId);
+			if (camNodeId != NullId_T) {
+				return entityId;
+			}
+		}
+
+		return NullId_T;
+	}
+}
+
 
 
 #ifdef __cplusplus
@@ -28,6 +67,45 @@ extern "C" {
 		return g_sceneMgrPtr->createScene(name, makeActive).value;
 	}
 
+
+	// Entity/Component functions
+
+	uint64_t griffin_scene_createComponentStore(uint64_t scene, uint16_t typeId,
+												uint32_t componentSize, size_t reserve)
+	{
+		SceneId sceneId;
+		sceneId.value = scene;
+
+		auto& s = g_sceneMgrPtr->getScene(sceneId);
+		return s.entityManager->createScriptComponentStore(typeId, componentSize, reserve);
+	}
+
+
+	void* griffin_scene_getComponentData(uint64_t scene, uint64_t component)
+	{
+		SceneId sceneId;
+		sceneId.value = scene;
+		ComponentId cmpId;
+		cmpId.value = component;
+
+		auto& s = g_sceneMgrPtr->getScene(sceneId);
+		return s.entityManager->getScriptComponentData(cmpId);
+	}
+
+
+	uint64_t griffin_scene_addComponentToEntity(uint64_t scene, uint16_t typeId, uint64_t entity)
+	{
+		SceneId sceneId;
+		sceneId.value = scene;
+		EntityId entityId;
+		entityId.value = entity;
+
+		auto& s = g_sceneMgrPtr->getScene(sceneId);
+		return s.entityManager->addScriptComponentToEntity(typeId, entityId).value;
+	}
+
+
+	// Scene Node functions
 
 	uint64_t griffin_scene_createEmptySceneNode(uint64_t scene, uint64_t parentEntity)
 	{
@@ -79,7 +157,8 @@ extern "C" {
 
 	
 	uint64_t griffin_scene_createCamera(uint64_t scene, uint64_t parentEntity,
-										griffin_CameraParameters* cameraParams, const char name[32])
+										griffin_CameraParameters* cameraParams,
+										const char name[32])
 	{
 		EntityId entityId{};
 		entityId.value = griffin_scene_createEmptySceneNode(scene, parentEntity);
@@ -100,8 +179,8 @@ extern "C" {
 				cp.cameraType		= inCp.cameraType;
 
 				scene::CameraInstanceContainer ci{};
-				bool makeActive = (s.cameras.size() == 0); // if this the first camera in the scene, make it active
-				ci.cameraId = s.createCamera(cp, makeActive);
+				bool makePrimary = (s.cameras.size() == 0); // if this the first camera in the scene, make it primary
+				ci.cameraId = s.createCamera(cp, makePrimary);
 				strcpy_s(ci.name, 32, name);
 				
 				s.entityManager->addComponentToEntity<scene::CameraInstanceContainer>(std::move(ci), entityId);
