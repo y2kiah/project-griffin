@@ -21,9 +21,9 @@ namespace griffin {
 	};
 
 	struct DevCameraMovementComponent {
-		float	moveForward;
-		float	moveSide;
-		float	moveVertical;
+		int		moveForward;
+		int		moveSide;
+		int		moveVertical;
 		bool	highSpeed;
 	};
 
@@ -117,32 +117,32 @@ namespace griffin {
 				auto devCamMove = (DevCameraMovementComponent*)scene.entityManager->getScriptComponentData(game.devCameraSystem.devCameraMovementId);
 
 				engine.inputSystem->handleInputState(game.devCameraSystem.forward, mi, [devCamMove](MappedState& ms, InputContext& c){
-					devCamMove->moveForward += 1.0f;
+					devCamMove->moveForward = glm::max(devCamMove->moveForward + 1, 1);
 					return true;
 				});
 
 				engine.inputSystem->handleInputState(game.devCameraSystem.back, mi, [devCamMove](MappedState& ms, InputContext& c){
-					devCamMove->moveForward -= 1.0f;
+					devCamMove->moveForward = glm::min(devCamMove->moveForward - 1, -1);
 					return true;
 				});
 
 				engine.inputSystem->handleInputState(game.devCameraSystem.left, mi, [devCamMove](MappedState& ms, InputContext& c){
-					devCamMove->moveSide -= 1.0f;
+					devCamMove->moveSide = glm::min(devCamMove->moveSide - 1, -1);
 					return true;
 				});
 
 				engine.inputSystem->handleInputState(game.devCameraSystem.right, mi, [devCamMove](MappedState& ms, InputContext& c){
-					devCamMove->moveSide += 1.0f;
+					devCamMove->moveSide = glm::max(devCamMove->moveSide + 1, 1);
 					return true;
 				});
 
 				engine.inputSystem->handleInputState(game.devCameraSystem.up, mi, [devCamMove](MappedState& ms, InputContext& c){
-					devCamMove->moveVertical += 1.0f;
+					devCamMove->moveVertical = glm::max(devCamMove->moveVertical + 1, 1);
 					return true;
 				});
 
 				engine.inputSystem->handleInputState(game.devCameraSystem.down, mi, [devCamMove](MappedState& ms, InputContext& c){
-					devCamMove->moveVertical -= 1.0f;
+					devCamMove->moveVertical = glm::min(devCamMove->moveVertical - 1, -1);
 					return true;
 				});
 
@@ -165,6 +165,26 @@ namespace griffin {
 					return true;
 				});
 
+				// move the camera's scene node, TEMP, move this to the update loop so we get delta t
+				if (devCamMove->moveForward != 0 || devCamMove->moveSide != 0 || devCamMove->moveVertical != 0) {
+					auto sceneNodeId = scene.entityManager->getEntityComponentId(game.devCameraSystem.devCameraId, scene::SceneNode::componentType);
+					auto& node = scene.entityManager->getComponentStore<scene::SceneNode>().getComponent(sceneNodeId);
+					
+					float speed = 0.1f;
+
+					glm::vec3 velocity(devCamMove->moveSide, devCamMove->moveVertical, devCamMove->moveForward);
+					velocity = glm::normalize(velocity) * speed;
+
+					//velocity *= // incorporate delta t and highSpeed flag
+
+					// get camera forward,up,right direction and use that to translate dotted with velocity
+
+					node.translationLocal += velocity;
+					node.positionDirty = 1;
+
+					devCamMove->moveForward = devCamMove->moveSide = devCamMove->moveVertical = 0;
+					devCamMove->highSpeed = false;
+				}
 			});
 		}
 
