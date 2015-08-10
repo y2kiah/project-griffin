@@ -6,40 +6,24 @@
 #ifndef GRIFFIN_GAME_H_
 #define GRIFFIN_GAME_H_
 
-#include "GameSystem.h"
-#include <utility/container/handle_map.h>
 #include <memory>
-//#include <scene/Camera.h>
+#include <application/UpdateInfo.h>
 
-
-#define MAX_GAME_COMPONENTS		32
 
 // Forward Declarations
 class SDLApplication;
 
 namespace griffin {
 	struct Engine;
+	struct Game;
 
-	struct Game {
-		Id_T		sceneId;
+	typedef std::shared_ptr<Game>	GamePtr;
 
-		struct {
-			Id_T	devCameraId;													//<! entity id of the dev camera
-			Id_T	devCameraMovementId;											//<! dev camera movement component id
-
-			Id_T	devCameraInputContextId;										//<! input context handle for the devcamera
-			Id_T	forward, back, left, right, up, down, highSpeed, lookX, lookY;	//<! mapping handles for the inputs
-
-		} devCameraSystem;
-		
-
-		uint16_t	gameComponentStoreIds[MAX_GAME_COMPONENTS];
-	};
-
-	typedef std::unique_ptr<Game>	GamePtr;
+	void gameUpdateFrameTick(Game* pGame, Engine& engine, UpdateInfo& ui);
+	void gameRenderFrameTick(Game* pGame, Engine& engine, float interpolation);
 
 	GamePtr make_game(const Engine& engine, const SDLApplication& app);
-	void destroy_game(GamePtr& gamePtr);
+	void destroy_game(const GamePtr& gamePtr);
 
 }
 

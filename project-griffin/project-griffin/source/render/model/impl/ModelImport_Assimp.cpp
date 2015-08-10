@@ -25,6 +25,8 @@
 #include <render/material/Material_GL.h>
 #include <glm/vec4.hpp>
 
+#include <SDL_log.h>
+
 using namespace Assimp;
 using std::string;
 using std::wstring;
@@ -467,7 +469,6 @@ namespace griffin {
 
 				//	have only one uv channel?
 				//		assign channel 0 to all textures and break
-
 				//	for all textures
 				//		have uvwsrc for this texture?
 				//			assign channel specified in uvwsrc
@@ -475,23 +476,88 @@ namespace griffin {
 				//			assign channels in ascending order for all texture stacks, 
 				//				i.e. diffuse1 gets channel 1, opacity0 gets channel 0.
 
-
 				// for each texture type
 				uint32_t samplerIndex = 0;
 				for (uint32_t tt = 0; tt < AI_TEXTURE_TYPE_MAX; ++tt) {
+					// only support certain channels
+					if (tt == aiTextureType_LIGHTMAP || tt == aiTextureType_DISPLACEMENT || tt == aiTextureType_UNKNOWN) {
+						continue;
+					}
+
+					auto texType = MaterialTexture_None;
+					switch (tt) {
+						case aiTextureType_DIFFUSE:    texType = MaterialTexture_Diffuse; break;
+						case aiTextureType_SPECULAR:   texType = MaterialTexture_Specular; break;
+						case aiTextureType_AMBIENT:    texType = MaterialTexture_Ambient; break;
+						case aiTextureType_EMISSIVE:   texType = MaterialTexture_Emissive; break;
+						case aiTextureType_NORMALS:    texType = MaterialTexture_Normals; break;
+						case aiTextureType_HEIGHT:     texType = MaterialTexture_Height; break;
+						case aiTextureType_SHININESS:  texType = MaterialTexture_Shininess; break;
+						case aiTextureType_REFLECTION: texType = MaterialTexture_Reflection; break;
+						case aiTextureType_OPACITY:    texType = MaterialTexture_Opacity; break;
+					}
+
 					// for each texture of a type
 					for (uint32_t i = 0; i < assimpMat->GetTextureCount((aiTextureType)tt); ++i) {
+						// check for maximum samplers per material
+						if (samplerIndex == GRIFFIN_MAX_MATERIAL_TEXTURES) {
+							SDL_Log("Warning: more than %d textures in material, unsupported %u", GRIFFIN_MAX_MATERIAL_TEXTURES, tt);
+							break;
+						}
+						// only support texture stack for diffuse channel
+						if ((tt == aiTextureType_DIFFUSE && i > 3) || (tt != aiTextureType_DIFFUSE && i > 0)) {
+							SDL_Log("Warning: trying to assign stack of texture type %u, index %u, unsupported", tt, i);
+							break;
+						}
+
+						// find the UVW channel index for this texture
+						int uvChannel = 0; // assign 0 if only one uv channel is preset in the mesh
+						for (uint32_t mesh = 0; mesh < scene.mNumMeshes; ++mesh) {
+							// find first mesh using this material, and with more than one UV channel
+							if (scene.mMeshes[mesh]->mMaterialIndex == m &&
+								scene.mMeshes[mesh]->GetNumUVChannels() > 1)
+							{
+								uvChannel = i; // default uv channel to the stack index
+								assimpMat->Get(AI_MATKEY_UVWSRC(tt, i), uvChannel); // if the UVWSRC property exists, it will be filled
+								break;
+							}
+						}
+						mat.textures[samplerIndex].uvChannelIndex = static_cast<uint8_t>(uvChannel);
+						
+						// texture mapping mode (wrap, clamp, decal, mirror)
+						aiTextureMapMode mappingModeU = aiTextureMapMode_Wrap;
+						aiTextureMapMode mappingModeV = aiTextureMapMode_Wrap;
+						assimpMat->Get(AI_MATKEY_MAPPINGMODE_U(tt, i), mappingModeU);
+						assimpMat->Get(AI_MATKEY_MAPPINGMODE_V(tt, i), mappingModeU);
+						mat.textures[samplerIndex].textureMappingModeU = (mappingModeU == aiTextureMapMode_Clamp ? MaterialTextureMappingMode_Clamp :
+																		  (mappingModeU == aiTextureMapMode_Decal ? MaterialTextureMappingMode_Decal :
+																		   (mappingModeU == aiTextureMapMode_Mirror ? MaterialTextureMappingMode_Mirror :
+																		    MaterialTextureMappingMode_Wrap)));
+						mat.textures[samplerIndex].textureMappingModeV = (mappingModeV == aiTextureMapMode_Clamp ? MaterialTextureMappingMode_Clamp :
+																		  (mappingModeV == aiTextureMapMode_Decal ? MaterialTextureMappingMode_Decal :
+																		   (mappingModeV == aiTextureMapMode_Mirror ? MaterialTextureMappingMode_Mirror :
+																		    MaterialTextureMappingMode_Wrap)));
+
+						// not supporting aiTextureFlags, aiTextureMapping, aiTextureOp
+
+						// get texture filename
 						aiString path;
 						assimpMat->GetTexture((aiTextureType)tt, i, &path); // get the name, ignore other attributes for now
 
-						// convert from ascii to wide character set, may need to also add a prefix for resource location
-						string aPath(path.data);
-						wstring wPath;
-						wPath.assign(aPath.begin(), aPath.end());
+						if (path.length <= GRIFFIN_MAX_MATERIAL_TEXTURE_NAME_SIZE) {
+							strcpy_s(mat.textures[samplerIndex].name, GRIFFIN_MAX_MATERIAL_TEXTURE_NAME_SIZE, path.C_Str());
+						}
+						else {
+							SDL_Log("Warning: texture name length %d too long, \"%s\"", static_cast<int>(path.length), path.C_Str());
+							break;
+						}
 
-						// do synchronous loading since this is a utility function
+						// do synchronous loading of texture since this is a utility function
 						// if needed could also build the texture here and inject into cache, then pass assumeCached=true
-						//mat.addTexture(wPath, samplerIndex, false);
+
+						// everything converted successfully, set the texture type away from None
+						mat.textures[samplerIndex].textureType = texType;
+						++mat.numTextures;
 
 						++samplerIndex;
 					}

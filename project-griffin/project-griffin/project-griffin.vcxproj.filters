@@ -161,7 +161,7 @@
     <Filter Include="game\impl">
       <UniqueIdentifier>{c7731a45-b9f2-4dfb-a4a4-6bf109f34717}</UniqueIdentifier>
     </Filter>
-    <Filter Include="game\movement">
+    <Filter Include="game\devCamera">
       <UniqueIdentifier>{23750c11-f802-4a6d-b272-2dc41aa577a6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -267,6 +267,9 @@
     </ClCompile>
     <ClCompile Include="source\scene\impl\Camera.cpp">
       <Filter>scene\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\devCamera\DevCameraSystem.cpp">
+      <Filter>game\devCamera</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -757,9 +760,6 @@
     <ClInclude Include="source\input\InputSystem.h">
       <Filter>input</Filter>
     </ClInclude>
-    <ClInclude Include="source\game\GameSystem.h">
-      <Filter>game</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\Game.h">
       <Filter>game</Filter>
     </ClInclude>
@@ -768,6 +768,12 @@
     </ClInclude>
     <ClInclude Include="source\scene\Camera.h">
       <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\devCamera\DevCameraSystem.h">
+      <Filter>game\devCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\impl\GameImpl.h">
+      <Filter>game\impl</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

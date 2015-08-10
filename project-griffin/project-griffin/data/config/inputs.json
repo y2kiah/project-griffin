@@ -2,6 +2,7 @@
 	"actions": [
 		{ "context": "ingame",		"name": "Exit",				"device": 0,	"keycode": 27 },
 		{ "context": "ingame",		"name": "Capture Mouse",	"device": 0,	"keycode": 1073742050 },
+		{ "context": "devcamera",	"name": "Toggle",			"device": 0,	"keycode": 99,			"modifier": 64 },
 		{ "context": "playerfps",	"name": "Jump",				"device": 0,	"keycode": 32 },
 		{ "context": "playerfps",	"name": "Use",				"device": 0,	"keycode": 102 },
 		{ "context": "playerfps",	"name": "Reload",			"device": 0,	"keycode": 114 }
@@ -14,7 +15,9 @@
 		{ "context": "devcamera",	"name": "Move Right",		"device": 0,	"keycode": 100 },
 		{ "context": "devcamera",	"name": "Move Up",			"device": 0,	"keycode": 120 },
 		{ "context": "devcamera",	"name": "Move Down",		"device": 0,	"keycode": 122 },
-		{ "context": "devcamera",	"name": "High Speed",		"device": 0,	"keycode": 1073742049 },
+		{ "context": "devcamera",	"name": "Roll Left",		"device": 0,	"keycode": 113 },
+		{ "context": "devcamera",	"name": "Roll Right",		"device": 0,	"keycode": 101 },
+		{ "context": "devcamera",	"name": "Speed",			"device": 0,	"keycode": 1073742049 },
 		{ "context": "playerfps",	"name": "Move Forward",		"device": 0,	"keycode": 119 },
 		{ "context": "playerfps",	"name": "Move Back",		"device": 0,	"keycode": 115 },
 		{ "context": "playerfps",	"name": "Move Left",		"device": 0,	"keycode": 97 },
@@ -27,9 +30,9 @@
 		{ "context": "playerfps",	"name": "Prone (Hold)",		"device": 0,	"keycode": 118,			"modifier": 64 }
 	],
 	"axes": [
-		{ "context": "devcamera",	"name": "Mouse Look X",		"device": 0,	"axis": 0,		"sensitivity": 1.0 },
-		{ "context": "devcamera",	"name": "Mouse Look Y",		"device": 0,	"axis": 1,		"sensitivity": 1.0 },
-		{ "context": "playerfps",	"name": "Mouse Look X",		"device": 0,	"axis": 0,		"sensitivity": 1.0 },
-		{ "context": "playerfps",	"name": "Mouse Look Y",		"device": 0,	"axis": 1,		"sensitivity": 1.0 }
+		{ "context": "devcamera",	"name": "Mouse Look X",		"device": 0,	"axis": 0,		"sensitivity": 15.0 },
+		{ "context": "devcamera",	"name": "Mouse Look Y",		"device": 0,	"axis": 1,		"sensitivity": 10.0 },
+		{ "context": "playerfps",	"name": "Mouse Look X",		"device": 0,	"axis": 0,		"sensitivity": 15.0 },
+		{ "context": "playerfps",	"name": "Mouse Look Y",		"device": 0,	"axis": 1,		"sensitivity": 10.0 }
 	]
 }

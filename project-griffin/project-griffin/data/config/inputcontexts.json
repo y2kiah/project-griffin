@@ -3,7 +3,9 @@
 		"name": "Dev Camera Controls",
 		"priority": 1,
 		"visible": false,
-		"actions": [],
+		"actions": [
+			{ "name": "Toggle",			"bind": "down" }
+		],
 		"states": [
 			{ "name": "Move Forward",	"bind": "down" },
 			{ "name": "Move Backward",	"bind": "down" },
@@ -11,7 +13,9 @@
 			{ "name": "Move Right",		"bind": "down" },
 			{ "name": "Move Up",		"bind": "down" },
 			{ "name": "Move Down",		"bind": "down" },
-			{ "name": "High Speed",		"bind": "toggle" }
+			{ "name": "Roll Left",		"bind": "down" },
+			{ "name": "Roll Right",		"bind": "down" },
+			{ "name": "Speed",			"bind": "down" }
 		],
 		"axes": [
 			{ "name": "Mouse Look X",	"relativeMotion": true },

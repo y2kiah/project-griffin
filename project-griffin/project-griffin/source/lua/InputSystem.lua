@@ -129,7 +129,7 @@ function initInputSystem()
 	end
 
 	-- register the Lua callback for the input system, all Lua handlers are dispatched from this callback
-	local callbackHandle = C.griffin_input_registerCallback(0, frameInputHandler)
+	local callbackHandle = C.griffin_input_registerCallback(1000, frameInputHandler)
 
 	-- build global InputSystem class
 	-- variables
@@ -245,17 +245,24 @@ end
 function catchAllHandler(frameInput)
 	for i,mc in pairs(frameInput.actions) do
 		for j,mi in pairs(mc) do
-			print("action " .. ffi.string(mi.inputMapping.name) .. " handled")
+			if not mi.handled then
+				print("action " .. ffi.string(mi.inputMapping.name) .. " handled")
+			end
 		end
 	end
 	for i,mc in pairs(frameInput.states) do
 		for j,mi in pairs(mc) do
-			print("state " .. ffi.string(mi.inputMapping.name) .. " handled active")
+			if not mi.handled then
+				print("state " .. ffi.string(mi.inputMapping.name) .. " handled active")
+				print(mi.handled)
+			end
 		end
 	end
 	for i,mc in pairs(frameInput.axes) do
 		for j,mi in pairs(mc) do
-			print("axis " .. ffi.string(mi.inputMapping.name) .. " handled motion, relRaw=" .. mi.axisMotion.relRaw .. ", relMapped=" .. mi.axisMotion.relMapped)
+			if not mi.handled then
+				print("axis " .. ffi.string(mi.inputMapping.name) .. " handled motion, relRaw=" .. mi.axisMotion.relRaw .. ", relMapped=" .. mi.axisMotion.relMapped)
+			end
 		end
 	end
 end

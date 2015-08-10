@@ -112,7 +112,7 @@ namespace griffin {
 			uint32_t				device = 0;				//<! instanceID of the device, comes through event "which"
 			// keyboard, mouse button, joystick button, mouse wheel events
 			uint32_t				keycode = 0;			//<! keyboard virtual key code, mouse or joystick button
-			uint16_t				modifier = 0;			//<! keyboard modifier, SDL_Keymod, defaults to 0 (KMOD_NONE)
+			uint16_t				modifier = 0;			//<! keyboard modifier, SDL_Keymod, defaults to 0 (KMOD_NONE), for actions only
 			uint8_t					mouseWheel = 0;			//<! 0=false, 1=true is a mouse wheel binding
 			uint8_t					clicks = 1;				//<! number of mouse clicks for binding (2==double-click)
 			// mouse motion, joystick motion, joystick hat motion, ball motion events
@@ -241,6 +241,7 @@ namespace griffin {
 				m_popEvents.reserve(RESERVE_INPUTSYSTEM_POPQUEUE);
 				m_popMotionEvents.reserve(RESERVE_INPUTSYSTEM_MOTIONPOPQUEUE);
 				m_activeInputContexts.reserve(RESERVE_INPUTSYSTEM_CONTEXTS);
+				m_callbackPriorityList.reserve(RESERVE_INPUTSYSTEM_CALLBACKS);
 				// FrameMappedInput reserves
 				m_frameMappedInput.actions.reserve(RESERVE_INPUTSYSTEM_POPQUEUE);
 				m_frameMappedInput.states.reserve(RESERVE_INPUTSYSTEM_POPQUEUE);
@@ -328,15 +329,9 @@ namespace griffin {
 
 			typedef std::function<void(FrameMappedInput&)> CallbackFunc_T;
 			
-			Id_T registerCallback(int priority, CallbackFunc_T func)
-			{
-				return m_callbacks.insert(std::move(func));
-			}
+			Id_T registerCallback(int priority, CallbackFunc_T func);
 
-			bool unregisterCallback(Id_T callbackId)
-			{
-				return (m_callbacks.erase(callbackId) == 1);
-			}
+			bool unregisterCallback(Id_T callbackId);
 
 
 			/**
@@ -385,6 +380,12 @@ namespace griffin {
 
 			// Private Variables
 
+			struct CallbackPriority {
+				Id_T						callbackId;
+				int							priority;
+				uint8_t						_padding_end[4];
+			};
+
 			concurrent_queue<InputEvent>	m_eventsQueue;			//<! push on input thread, pop on update thread
 			concurrent_queue<InputEvent>	m_motionEventsQueue;
 			vector<InputEvent>				m_popEvents;			//<! pop events from the concurrent_queues into these buffers
@@ -394,7 +395,8 @@ namespace griffin {
 			handle_map<InputMapping>		m_inputMappings;		//<! collection of input mappings (actions,states,axes)
 			handle_map<InputContext>		m_inputContexts;		//<! collection of input contexts
 			vector<ActiveInputContext>		m_activeInputContexts;	//<! active input contexts sorted by priority ascending
-			handle_map<CallbackFunc_T>		m_callbacks;
+			handle_map<CallbackFunc_T>		m_callbacks;			//<! map storing all registered callbacks
+			vector<CallbackPriority>		m_callbackPriorityList;	//<! callback order sorted by priority
 			FrameMappedInput				m_frameMappedInput;		//<! per-frame mapped input buffer
 
 			//	ThreadSafeState() : m_inputContexts(0, RESERVE_INPUT_CONTEXTS) {}

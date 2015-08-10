@@ -94,18 +94,18 @@ function devcameraInputHandler(frameInput)
 	end)
 
 	InputSystem:handleInput("devcamera", "Mouse Look X", frameInput.axes, function(context, mappedAxis)
-		print("devcamera axis " .. ffi.string(mappedAxis.inputMapping.name) ..
+		--[[print("devcamera axis " .. ffi.string(mappedAxis.inputMapping.name) ..
 				" handled motion, relRaw=" .. mappedAxis.axisMotion.relRaw ..
 				", relMapped=" .. mappedAxis.axisMotion.relMapped)
-		
+		]]
 		return true
 	end)
 
 	InputSystem:handleInput("devcamera", "Mouse Look Y", frameInput.axes, function(context, mappedAxis)
-		print("devcamera axis " .. ffi.string(mappedAxis.inputMapping.name) ..
+		--[[print("devcamera axis " .. ffi.string(mappedAxis.inputMapping.name) ..
 				" handled motion, relRaw=" .. mappedAxis.axisMotion.relRaw ..
 				", relMapped=" .. mappedAxis.axisMotion.relMapped)
-		
+		]]
 		return true
 	end)
 end

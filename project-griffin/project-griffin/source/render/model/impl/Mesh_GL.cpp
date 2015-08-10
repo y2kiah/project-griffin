@@ -4,13 +4,13 @@
 */
 #include <render/model/Mesh_GL.h>
 #include <gl/glew.h>
-
 #include <utility>
 #include <cassert>
 #include <render/ShaderProgramLayouts_GL.h>
-#include "utility/container/vector_queue.h"
-//#include <queue>
-
+#include <render/Render.h>
+#include <render/texture/Texture2D_GL.h>
+#include <resource/ResourceLoader.h>
+#include <utility/container/vector_queue.h>
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -45,6 +45,7 @@ namespace griffin {
 
 		void Mesh_GL::draw(int modelMatLoc, int modelViewMatLoc, int mvpMatLoc, int normalMatLoc,
 						   int ambientLoc, int diffuseLoc, int specularLoc, int shininessLoc,
+						   int diffuseMapLoc,
 						   const glm::mat4& viewMat, const glm::mat4& viewProjMat/*All TEMP*/) const
 		{
 			glm::mat4 modelToWorld;
@@ -90,6 +91,20 @@ namespace griffin {
 					glUniform3fv(diffuseLoc, 1, &mat.diffuseColor[0]);
 					glUniform3fv(specularLoc, 1, &mat.specularColor[0]);
 					glUniform1f(shininessLoc, mat.shininess);
+					
+					// renderer should do this as part of the render key sort/render, not the mesh
+					// TEMP, assuming one texture
+					if (mat.numTextures > 0) {
+						// should NOT use this method to get the resource, it serializes to the worker thread
+						// this part of the render is a time-critical section, should have the resourcePtr directly by now
+						// consider storing resourcePtr's within the mesh
+						auto& texPtr = g_resourceLoader.lock()->getResource<Texture2D_GL>(mat.textures[0].textureResourceHandle, CacheType::Cache_Materials_T);
+						if (texPtr) {
+							auto& tex = texPtr->getResource<Texture2D_GL>();
+							tex.bind(GL_TEXTURE4);
+							glUniform1i(diffuseMapLoc, 4);
+						}
+					}
 
 					drawMesh(drawSet);
 				}
@@ -232,12 +247,14 @@ namespace griffin {
 
 		// Serialization Functions
 
+		#define GRIFFIN_MESH_SERIALIZATION_CURRENT_VERSION	2
+
 		/**
 		* Mesh_GL binary file header, contains all properties needed for serialization
 		*/
 		struct Mesh_GL_Header {
 			uint8_t		key[3];						//<! always {'g','m','d'}
-			uint8_t		version;					//<! file version, currently 1
+			uint8_t		version;					//<! file version
 			uint32_t	bufferSize;
 
 			uint32_t	numDrawSets;
@@ -282,7 +299,7 @@ namespace griffin {
 			// build the header containing sizes and offsets
 			Mesh_GL_Header header = {}; // zero-init the header
 			header.key[0] = 'g'; header.key[1] = 'm'; header.key[2] = 'd';
-			header.version					= 1;
+			header.version					= GRIFFIN_MESH_SERIALIZATION_CURRENT_VERSION;
 			header.bufferSize				= bufferSize;
 			header.numDrawSets				= m_numDrawSets;
 			header.numMaterials				= m_numMaterials;
@@ -364,17 +381,19 @@ namespace griffin {
 			uint32_t totalSize = sizeof(Mesh_GL_Header) + header.bufferSize;
 
 			// do some sanity checks
-			if (header.key[0] != 'g' || header.key[1] != 'm' || header.key[2] != 'd' || header.version != 1) {
+			if (header.key[0] != 'g' || header.key[1] != 'm' || header.key[2] != 'd' ||
+				header.version != GRIFFIN_MESH_SERIALIZATION_CURRENT_VERSION)
+			{
 				throw std::logic_error("Unrecognized file format");
 			}
 			if (header.drawSetsOffset != sizeof(Mesh_GL_Header) ||
 				header.materialsOffset != header.drawSetsOffset + (header.numDrawSets * sizeof(DrawSet)) ||
 				header.meshSceneOffset != header.materialsOffset + (header.numMaterials * sizeof(Material_GL)) ||
-				//header.sceneChildIndicesOffset != header.meshSceneOffset + (header.sceneNumNodes * sizeof(MeshSceneNode)) ||
-				//header.sceneMeshIndicesOffset != header.sceneChildIndicesOffset + (header.sceneNumChildIndices * sizeof(uint32_t)) ||
-				//header.sceneMetaDataOffset != header.sceneMeshIndicesOffset + (header.sceneNumMeshIndices * sizeof(uint32_t)) ||
-				//header.vertexBufferOffset != header.sceneMetaDataOffset + (header.sceneNumNodes * sizeof(MeshSceneNodeMetaData)) ||
-				//header.indexBufferOffset != header.vertexBufferOffset + header.vertexBufferSize ||
+				header.sceneChildIndicesOffset != header.meshSceneOffset + (header.sceneNumNodes * sizeof(MeshSceneNode)) ||
+				header.sceneMeshIndicesOffset != header.sceneChildIndicesOffset + (header.sceneNumChildIndices * sizeof(uint32_t)) ||
+				header.sceneMetaDataOffset != header.sceneMeshIndicesOffset + (header.sceneNumMeshIndices * sizeof(uint32_t)) ||
+				header.vertexBufferOffset != header.sceneMetaDataOffset + (header.sceneNumNodes * sizeof(MeshSceneNodeMetaData)) ||
+				header.indexBufferOffset != header.vertexBufferOffset + header.vertexBufferSize ||
 				totalSize != header.indexBufferOffset + header.indexBufferSize)
 			{
 				throw std::logic_error("File format deserialization error");
@@ -410,7 +429,7 @@ namespace griffin {
 		}
 
 		
-		void Mesh_GL::createResourcesFromInternalMemory()
+		void Mesh_GL::createResourcesFromInternalMemory(const std::wstring& filePath)
 		{
 			// This function is called by the deserialization / resource loading routines, not by
 			// the assimp import. The size/flags of the buffers are set in loadFromInternalMemory.
@@ -425,6 +444,29 @@ namespace griffin {
 			initializeVAOs();
 
 			// materials
+			for (uint32_t m = 0; m < m_numMaterials; ++m) {
+				auto& mat = m_materials[m];
+				for (uint32_t t = 0; t < mat.numTextures; ++t) {
+					auto& tex = mat.textures[t];
+					if (tex.textureType != MaterialTexture_None) {
+						// convert from ascii to wide character set
+						string aName(tex.name);
+						wstring wName;
+						wName.assign(aName.begin(), aName.end());
+						
+						// prefix texture path with the path to the model being loaded
+						wName = filePath.substr(0, filePath.find_last_of(L'/')) + L'/' + wName;
+						SDL_Log("trying to load %s", aName.assign(wName.begin(),wName.end()).c_str());
+
+						auto resHandle = render::loadTexture(wName, resource::CacheType::Cache_Materials_T);
+						// TEMP, blocking call, need to make this async, use task system
+						// BUT, the continuation must update this handle, assuming "this" pointer is captured by reference,
+						// the material may move in memory, since the resource system is free to move it, potential bug
+						// use the resource id to look up by handle to get its current memory location from the task
+						tex.textureResourceHandle = resHandle.handle();
+					}
+				}
+			}
 		}
 
 

@@ -13,6 +13,10 @@
 
 namespace griffin {
 	namespace render {
+		
+		#define GRIFFIN_MAX_MESHSCENENODE_NAME_SIZE		64
+		
+
 		// Type Declarations
 
 		typedef std::unique_ptr<unsigned char[]> ByteBuffer;
@@ -76,8 +80,6 @@ namespace griffin {
 		static_assert(sizeof(MeshSceneNode) % 4 == 0, "MeshSceneNode size should be multiple of 4 for alignment of mesh buffer");
 		//static_assert(std::is_trivially_copyable<MeshSceneNode>::value, "MeshSceneNode must be trivially copyable for serialization");
 
-
-		#define GRIFFIN_MAX_MESHSCENENODE_NAME_SIZE		64
 
 		struct MeshSceneNodeMetaData {
 			char		name[GRIFFIN_MAX_MESHSCENENODE_NAME_SIZE];	//<! name of the scene graph node
@@ -155,6 +157,7 @@ namespace griffin {
 			*/
 			void draw(int modelMatLoc, int modelViewMatLoc, int mvpMatLoc, int normalMatLoc,
 					  int ambientLoc, int diffuseLoc, int specularLoc, int shininessLoc,
+					  int diffuseMapLoc,
 					  const glm::mat4& viewMat, const glm::mat4& viewProjMat/*All TEMP*/) const;
 
 			/**
@@ -178,7 +181,7 @@ namespace griffin {
 			* Creates index/vertex buffers based on data loaded into m_modelData buffer. Call this
 			* from the OpenGL thread after calling loadFromInternalMemory.
 			*/
-			void createResourcesFromInternalMemory();
+			void createResourcesFromInternalMemory(const std::wstring& filePath);
 
 		private:
 

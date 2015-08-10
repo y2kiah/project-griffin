@@ -54,16 +54,16 @@ void InputSystem::updateFrameTick(const UpdateInfo& ui)
 	mapFrameMotion(ui);
 
 	// TEMP output mapped inputs
-	for (const auto& s : m_frameMappedInput.states) {
+	/*for (const auto& s : m_frameMappedInput.states) {
 		SDL_Log("state \"%s\" active", s.inputMapping->name);
 	}
 	for (const auto& a : m_frameMappedInput.actions) {
 		SDL_Log("action \"%s\" triggered", a.inputMapping->name);
-	}
+	}*/
 
-	// invoke all callbacks, passing this frame's mapped input
-	// TODO: needs to be done in priority order
-	for (auto& cb : m_callbacks.getItems()) {
+	// invoke all callbacks in priority order, passing this frame's mapped input
+	for (auto& cp : m_callbackPriorityList) {
+		auto& cb = m_callbacks[cp.callbackId];
 		cb(m_frameMappedInput);
 	}
 }
@@ -144,8 +144,11 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 								(mapping.bindIn == Bind_Up_T   && evt.evt.type == SDL_KEYUP) &&
 								(mapping.bindIn != mapping.bindOut || !evt.evt.key.repeat)) // prevent repeat key events from changing toggle states
 							{
-								matched = (evt.evt.key.keysym.sym == mapping.keycode &&
-										   evt.evt.key.keysym.mod == mapping.modifier);
+								matched = (evt.evt.key.keysym.sym == mapping.keycode/* &&
+										   evt.evt.key.keysym.mod == mapping.modifier*/);
+								// TODO: states cannot use modifiers currently, make sure this is ok
+								// might want to support modifiers but check whether modifier "matters" or not - if there is a matching key mapping
+								// with the modifier, then it matters, otherwise it doesn't
 							}
 							else if ((mapping.bindIn == Bind_Down_T && evt.evt.type == SDL_MOUSEBUTTONDOWN) ||
 									 (mapping.bindIn == Bind_Up_T   && evt.evt.type == SDL_MOUSEBUTTONUP))
@@ -163,9 +166,10 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 							if ((mapping.bindOut == Bind_Down_T && evt.evt.type == SDL_KEYDOWN) ||
 								(mapping.bindOut == Bind_Up_T   && evt.evt.type == SDL_KEYUP))
 							{
-								matched = (evt.evt.key.keysym.sym == mapping.keycode &&
-										   evt.evt.key.keysym.mod == mapping.modifier);
+								matched = (evt.evt.key.keysym.sym == mapping.keycode/* &&
+										   evt.evt.key.keysym.mod == mapping.modifier*/);
 								// TODO: maybe need to look for sym and mod keys separately here and make state inactive for either one
+								// if the modifier OR the key is lifted in either order, the state should be deactivated
 							}
 							else if ((mapping.bindOut == Bind_Down_T && evt.evt.type == SDL_MOUSEBUTTONDOWN) ||
 									 (mapping.bindOut == Bind_Up_T   && evt.evt.type == SDL_MOUSEBUTTONUP))
@@ -341,6 +345,31 @@ void InputSystem::mapFrameMotion(const UpdateInfo& ui)
 			}
 		}
 	}
+}
+
+Id_T InputSystem::registerCallback(int priority, CallbackFunc_T func)
+{
+	Id_T cbId = m_callbacks.insert(std::move(func));
+	
+	m_callbackPriorityList.push_back({ cbId, priority });
+	// TODO: should I do insertion sort instead?
+	std::stable_sort(m_callbackPriorityList.begin(), m_callbackPriorityList.end(),
+		[](const CallbackPriority& a, const CallbackPriority& b){
+			return (a.priority < b.priority);
+		});
+	
+	return cbId;
+}
+
+bool InputSystem::unregisterCallback(Id_T callbackId)
+{
+	for (int c = 0; c < m_callbackPriorityList.size(); ++c) {
+		if (m_callbackPriorityList[c].callbackId == callbackId) {
+			m_callbackPriorityList.erase(m_callbackPriorityList.begin() + c);
+			break;
+		}
+	}
+	return (m_callbacks.erase(callbackId) == 1);
 }
 
 void InputSystem::handleInputAction(Id_T mappingId, FrameMappedInput& mappedInput,

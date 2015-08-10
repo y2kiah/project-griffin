@@ -91,6 +91,9 @@ namespace griffin {
 			virtual void	calcInverseModelView();
 			virtual void	calcProjection() = 0;
 
+			const vec3&	getRightVector() const { return mU; }
+			const vec3&	getUpVector() const	{ return mV; }
+
 		protected:
 			vec3	mEyePoint;
 			vec3	mViewDirection;

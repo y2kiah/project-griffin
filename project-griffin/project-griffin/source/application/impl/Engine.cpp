@@ -9,6 +9,7 @@
 #include <render/Render.h>
 #include <scene/Scene.h>
 #include <tools/GriffinTools.h>
+#include <game/Game.h>
 #include <SDL.h>
 
 using std::make_unique;
@@ -22,14 +23,14 @@ namespace griffin {
 	/**
 	*
 	*/
-	void engineUpdateFrameTick(Engine& engine, UpdateInfo& ui)
+	void engineUpdateFrameTick(Engine& engine, Game* pGame, UpdateInfo& ui)
 	{
 		// if all systems operate on 1(+) frame-old-data, can all systems be run in parallel?
 		// should this list become a task flow graph?
 
 		engine.inputSystem->updateFrameTick(ui);
 
-		// call the Lua game update handler
+		gameUpdateFrameTick(pGame, engine, ui);
 
 		//	ResourceLoader
 		//	AISystem
@@ -51,9 +52,11 @@ namespace griffin {
 	/**
 	*
 	*/
-	void engineRenderFrameTick(Engine& engine, float interpolation)
+	void engineRenderFrameTick(Engine& engine, Game* pGame, float interpolation)
 	{
 		engine.resourceLoader->executeCallbacks();
+
+		gameRenderFrameTick(pGame, engine, interpolation);
 
 		engine.renderSystem->renderFrame(interpolation);
 	}

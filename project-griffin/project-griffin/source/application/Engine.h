@@ -15,6 +15,7 @@
 #include <utility/container/handle_map.h>
 
 namespace griffin {
+	struct Game;
 
 	struct Engine {
 		ThreadPoolPtr					threadPool		= nullptr;
@@ -32,8 +33,8 @@ namespace griffin {
 		#endif
 	};
 
-	void engineUpdateFrameTick(Engine& engine, UpdateInfo& ui);
-	void engineRenderFrameTick(Engine& engine, float interpolation);
+	void engineUpdateFrameTick(Engine& engine, Game* pGgame, UpdateInfo& ui);
+	void engineRenderFrameTick(Engine& engine, Game* pGame, float interpolation);
 
 	Engine make_engine(const SDLApplication& app);
 	void destroy_engine(Engine& engine);

@@ -27,7 +27,7 @@
 	out float linearDepth;
 	
 	//out vec4 color;
-	//out vec2 uv;
+	out vec2 uv;
 
 	// Functions
 
@@ -41,7 +41,7 @@
 		
 
 		//color = vertexColor;
-		//uv = vertexUV;
+		uv = vertexUV;
 		//z = log(z / zn) / log(zf / zn); // logarithmic z
 
 		gl_Position = modelViewProjection * vec4(vertexPosition_modelspace, 1.0);
@@ -61,7 +61,7 @@
 	uniform LightInfo light;*/
 	const vec3 lightLa = { 0.6, 0.7, 0.8 };
 	//const vec3 lightLa = { 0.1, 0.2, 0.3 };
-	const vec3 lightLd = { 1.0, 0.6, 0.3 };
+	const vec3 lightLd = { 0.8, 0.6, 0.3 };
 	const vec3 lightLs = lightLd;
 
 	/*struct MaterialInfo {
@@ -83,11 +83,11 @@
 
 	vec3 materialKa = materialKd; // temp
 
-	const vec4 lightPosition = { 80.0, 0.0, 0.0, 1.0 }; // temp
-	float lightDistanceSquared = 20000.0; // falloff distance of light squared, temp
+	const vec4 lightPosition = { 0.0, 0.0, 0.0, 1.0 }; // temp
+	float lightDistanceSquared = 5000.0; // falloff distance of light squared, temp
 
 	//uniform vec3 diffuseColor;
-	//uniform sampler2D diffuse;
+	uniform sampler2D diffuseMap;	// 0
 
 	// Input Variables
 
@@ -96,7 +96,7 @@
 	in float linearDepth;
 
 	//in vec4 color;
-	//in vec2 uv;
+	in vec2 uv;
 	
 	// Output Variables
 
@@ -186,10 +186,11 @@
 		vec3 lightDir = normalize(vec3(positionToLight));
 
 		// temp spotlight stuff
-		vec4 spotlightDirection = { -1.0, 0.0, -1.0, 0.0 };
-		float spotlightCutoff = 0.98;
-		float spotlightEdgeFalloff = (1.0 - spotlightCutoff) * 0.2;
+		vec4 spotlightDirection = { 0.0, 0.0, -1.0, 0.0 };
+		float spotlightCutoff = 0.96;
+		float spotlightEdgeFalloff = (1.0 - spotlightCutoff) * 0.4;
 		vec3 sd = normalize(vec3(-spotlightDirection));
+		float spotlightPower = 1.5; // does this make sense?? used to clamp the distance falloff
 		/////
 
 		float lambertian = 0.0;
@@ -198,7 +199,7 @@
 		float lightAngle = max(dot(sd,lightDir), 0.0);
 		if (lightAngle > spotlightCutoff) {
 			float angleFalloff = smoothstep(spotlightCutoff, spotlightCutoff + spotlightEdgeFalloff, lightAngle);
-			float distanceFalloff = (lightDistanceSquared / dot(positionToLight, positionToLight));
+			float distanceFalloff = clamp((lightDistanceSquared / dot(positionToLight, positionToLight)), 0.0, spotlightPower);
 
 			vec3 normal = normalize(normalViewspace);
 			lambertian = max(dot(lightDir,normal), 0.0) * angleFalloff * distanceFalloff;
@@ -219,9 +220,15 @@
 
 		vec3 ambient = lightLa * materialKa;
 		vec3 emissive = materialKe;
-		vec3 diffuse = lightLd * materialKd * lambertian;
+		
+		vec3 diffuse = lightLd * materialKd * lambertian; // uses material color
+		//vec3 diffuse = lightLd * texture(diffuseMap, uv).rgb * lambertian; // uses diffuseMap color
 
 		return ambient + emissive + diffuse + specular;
+	}
+
+	float luma(vec3 color) {
+		return dot(color, vec3(0.299, 0.587, 0.114));
 	}
 
 	void main() {
@@ -233,7 +240,7 @@
 		vec3 lightIntensity = blinnPhongSpotlight(positionViewspace, normalViewspace);
 
 		//outColor = (texture(diffuse, uv).rgb * color.rgb);
-		albedoDisplacement = vec4(lightIntensity, 1.0);
+		albedoDisplacement = vec4(lightIntensity, luma(lightIntensity));
 		eyeSpacePosition = positionViewspace.xyz;
 		normalReflectance = vec4(normalViewspace.xyz, 0.0);// vec4((normalViewspace + 1.0) * 0.5, 0.0);
 		gl_FragDepth = linearDepth;

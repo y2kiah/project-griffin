@@ -51,20 +51,20 @@ int main(int argc, char *argv[])
 			SDL_GL_MakeCurrent(app.getPrimaryWindow().window, app.getPrimaryWindow().glContext); // gl context made current on the main loop thread
 			Timer timer;
 			
-			FixedTimestep update(1000.0f / 30.0f, Timer::countsPerMs(),
+			FixedTimestep update(1000.0f / 60.0f, Timer::countsPerMs(),
 				[&](const int64_t virtualTime, const int64_t gameTime, const int64_t deltaCounts,
-					const float deltaMs, const float gameSpeed)
+					const float deltaMs, const float deltaT, const float gameSpeed)
 			{
 				PROFILE_BLOCK("update loop", frame, ThreadAffinity::Thread_Update);
 
-				UpdateInfo ui = { virtualTime, gameTime, deltaCounts, deltaMs, gameSpeed, frame };
+				UpdateInfo ui = { virtualTime, gameTime, deltaCounts, frame, deltaMs, deltaT, gameSpeed };
 
 				/*SDL_Log("Update virtualTime=%lu: gameTime=%ld: deltaCounts=%ld: countsPerMs=%ld\n",
 						virtualTime, gameTime, deltaCounts, Timer::timerFreq() / 1000);*/
 
 				engine.threadPool->executeFixedThreadTasks(ThreadAffinity::Thread_Update);
 
-				engineUpdateFrameTick(engine, ui);
+				engineUpdateFrameTick(engine, game.get(), ui);
 			});
 
 			int64_t realTime = timer.start();
@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
 				
 				engine.threadPool->executeFixedThreadTasks(ThreadAffinity::Thread_OpenGL_Render);
 				
-				engineRenderFrameTick(engine, interpolation);
+				engineRenderFrameTick(engine, game.get(), interpolation);
 
 				SDL_GL_SwapWindow(app.getPrimaryWindow().window);
 				platform::yieldThread();

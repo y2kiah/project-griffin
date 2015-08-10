@@ -11,7 +11,7 @@ namespace griffin {
 	class FixedTimestep {
 	public:
 		using UpdateFuncType = std::function<void(const int64_t, const int64_t, const int64_t,
-												  const float, const float)>;
+												  const float, const float, const float)>;
 
 		explicit FixedTimestep(float deltaMs,
 							   int64_t countsPerMs,
@@ -26,7 +26,7 @@ namespace griffin {
 			m_accumulator += static_cast<int64_t>(countsPassed * gameSpeed);
 
 			while (m_accumulator >= m_deltaCounts) {
-				update(m_virtualTime, m_gameTime, m_deltaCounts, m_deltaMs, gameSpeed);
+				update(m_virtualTime, m_gameTime, m_deltaCounts, m_deltaMs, m_deltaMs / 1000.0f, gameSpeed);
 
 				m_gameTime += m_deltaCounts;
 				m_virtualTime += m_deltaCounts;

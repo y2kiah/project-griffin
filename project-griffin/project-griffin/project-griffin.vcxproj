@@ -34,6 +34,7 @@
     <ClCompile Include="source\entity\impl\Component.cpp" />
     <ClCompile Include="source\entity\impl\Entity.cpp" />
     <ClCompile Include="source\entity\impl\EntityManager.cpp" />
+    <ClCompile Include="source\game\devCamera\DevCameraSystem.cpp" />
     <ClCompile Include="source\game\impl\Game.cpp" />
     <ClCompile Include="source\input\impl\InputSystem.cpp" />
     <ClCompile Include="source\input\impl\InputSystemApi.cpp" />
@@ -83,8 +84,9 @@
     <ClInclude Include="source\entity\EntityManager.h" />
     <ClInclude Include="source\entity\EntityTypedefs.h" />
     <ClInclude Include="source\entity\impl\ComponentStore-inl.h" />
+    <ClInclude Include="source\game\devCamera\DevCameraSystem.h" />
     <ClInclude Include="source\game\Game.h" />
-    <ClInclude Include="source\game\GameSystem.h" />
+    <ClInclude Include="source\game\impl\GameImpl.h" />
     <ClInclude Include="source\input\InputSystem.h" />
     <ClInclude Include="source\render\font\FreeType.h" />
     <ClInclude Include="source\render\geometry\Cube.h" />

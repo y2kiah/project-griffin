@@ -3,32 +3,35 @@
 #define GRIFFIN_MATERIAL_GL_H_
 
 #include <glm/vec3.hpp>
-#include <resource/Resource.h>
-#include <render/texture/Texture2D_GL.h>
+#include <utility/container/handle_map.h>
+
+#pragma warning(disable: 4351)	// "new behavior" warning
 
 namespace griffin {
 	namespace render {
-		using resource::ResourceHandle;
 
-		#define GRIFFIN_MAX_MATERIAL_TEXTURES	8
+		#define GRIFFIN_MAX_MATERIAL_TEXTURES			12
+		#define GRIFFIN_MAX_MATERIAL_TEXTURE_NAME_SIZE	64
 
 		enum MaterialTextureType : uint16_t {
-			MaterialTexture_Diffuse      = 0,
-			MaterialTexture_Specular     = 1,
-			MaterialTexture_Ambient      = 2,
-			MaterialTexture_Emissive     = 3,
-			MaterialTexture_Normals      = 4,
-			MaterialTexture_Height       = 5,
-			MaterialTexture_Shininess    = 6,
-			MaterialTexture_Opacity      = 7
+			MaterialTexture_None         = 0,
+			MaterialTexture_Diffuse      = 1,
+			MaterialTexture_Specular     = 2,
+			MaterialTexture_Ambient      = 3,
+			MaterialTexture_Emissive     = 4,
+			MaterialTexture_Normals      = 5,
+			MaterialTexture_Height       = 6,
+			MaterialTexture_Shininess    = 7,
+			MaterialTexture_Reflection   = 8,
+			MaterialTexture_Opacity      = 9
 		};
 
-		struct MaterialTexture {
-			Id_T				textureResourceHandle = NullId_T;
-			MaterialTextureType	textureType = MaterialTexture_Diffuse;
-			uint8_t				uvChannelIndex = 0;
-			
-			uint8_t				_padding_end = 0;
+		enum MaterialTextureMappingMode : uint8_t {
+			MaterialTextureMappingMode_None   = 0,
+			MaterialTextureMappingMode_Wrap   = 1,
+			MaterialTextureMappingMode_Clamp  = 2,
+			MaterialTextureMappingMode_Decal  = 3,
+			MaterialTextureMappingMode_Mirror = 4
 		};
 
 		enum MaterialFlags : uint16_t {
@@ -43,24 +46,36 @@ namespace griffin {
 			Material_VertexColors        = 1 << 7
 		};
 
+
+		struct MaterialTexture {
+			Id_T						textureResourceHandle = NullId_T;
+			MaterialTextureType			textureType = MaterialTexture_None;
+			uint8_t						uvChannelIndex = 0;
+			MaterialTextureMappingMode	textureMappingModeU = MaterialTextureMappingMode_None;
+			MaterialTextureMappingMode	textureMappingModeV = MaterialTextureMappingMode_None;
+			uint8_t						_padding_0[3] = {};
+			char						name[GRIFFIN_MAX_MATERIAL_TEXTURE_NAME_SIZE] = {};
+		};
+
+
 		class Material_GL {
 		public:
-			glm::vec3 diffuseColor = {};
-			glm::vec3 ambientColor = {};
-			glm::vec3 specularColor = {};
-			glm::vec3 emissiveColor = {};
-			
-			float     opacity = 1.0f;
-			float     reflectivity = 0;
-			float     shininess = 0;
-			float     metallic = 0;
-
-			Id_T      shaderResourceHandle = NullId_T;
-
-			//std::vector<ResourceHandle<Texture2D_GL>> textures; // maybe need sparse array for simpler binding to shaders?
+			glm::vec3	diffuseColor = {};
+			glm::vec3	ambientColor = {};
+			glm::vec3	specularColor = {};
+			glm::vec3	emissiveColor = {};
+			// 48
+			float		opacity = 1.0f;		
+			float		reflectivity = 0;
+			float		shininess = 0;
+			float		metallic = 0;
+			// 64
+			Id_T		shaderResourceHandle = NullId_T;
+			uint32_t	shaderKey = 0;		//<! shader key combines vertex and material flags, shader manager stores ubershader by key
+			uint32_t	numTextures = 0;	// don't need the full 32 bits only one, the rest is padding, get bytes from here if needed
+			// 80
 			MaterialTexture textures[GRIFFIN_MAX_MATERIAL_TEXTURES];
-
-			uint32_t  shaderKey = 0;	//<! shader key combines vertex and material flags, shader manager stores ubershader by key
+			// 272
 
 			// Functions
 

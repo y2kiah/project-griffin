@@ -2851,22 +2851,22 @@
     </library_effects>
     <library_images>
         <image id="ID7">
-            <init_from>Spitfire/texture0.jpg</init_from>
+            <init_from>texture0.dds</init_from>
         </image>
         <image id="ID92">
-            <init_from>Spitfire/texture1.jpg</init_from>
+            <init_from>texture1.dds</init_from>
         </image>
         <image id="ID121">
-            <init_from>Spitfire/texture2.jpg</init_from>
+            <init_from>texture2.dds</init_from>
         </image>
         <image id="ID142">
-            <init_from>Spitfire/texture3.jpg</init_from>
+            <init_from>texture3.dds</init_from>
         </image>
         <image id="ID285">
-            <init_from>Spitfire/texture4.jpg</init_from>
+            <init_from>texture4.dds</init_from>
         </image>
         <image id="ID330">
-            <init_from>Spitfire/texture5.jpg</init_from>
+            <init_from>texture5.dds</init_from>
         </image>
     </library_images>
     <scene>

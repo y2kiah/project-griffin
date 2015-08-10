@@ -174,6 +174,8 @@ namespace griffin {
 				GLint specularLoc = glGetUniformLocation(programId, "materialKs");
 				GLint shininessLoc = glGetUniformLocation(programId, "materialShininess");
 
+				GLint diffuseMapLoc = glGetUniformLocation(programId, "diffuseMap");
+
 				glUniformMatrix4fv(viewProjMatLoc, 1, GL_FALSE, &viewportParams.viewProjMat[0][0]);
 
 				glUniform1f(frustumNearLoc, viewportParams.nearClipPlane);
@@ -185,6 +187,7 @@ namespace griffin {
 					auto& mesh = g_tempMesh->getResource<Mesh_GL>();
 					mesh.draw(modelMatLoc, modelViewMatLoc, mvpMatLoc, normalMatLoc,
 							  ambientLoc, diffuseLoc, specularLoc, shininessLoc,
+							  diffuseMapLoc,
 							  viewportParams.viewMat, viewportParams.viewProjMat); // temporarily passing in the modelMatLoc
 				}
 
@@ -239,7 +242,8 @@ namespace griffin {
 				fxaa.useProgram();
 				auto fxaaId = fxaa.getProgramId();
 
-				m_colorBuffer.bind(RenderTarget_GL::Albedo_Displacement, GL_TEXTURE0);
+				m_colorBuffer.bind(RenderTarget_GL::Albedo_Displacement, GL_TEXTURE0);	// when SSAO on
+				//m_gbuffer.bind(RenderTarget_GL::Albedo_Displacement, GL_TEXTURE0);		// when SSAO off, alpha channel must contain luma
 				GLint colorMapLoc = glGetUniformLocation(fxaaId, "colorMap");
 				glUniform1i(colorMapLoc, 0);
 
@@ -397,9 +401,9 @@ namespace griffin {
 				return Mesh_GL(std::move(data), size);
 			};
 
-			auto meshResourceCallback = [](const ResourcePtr& resourcePtr, Id_T handle, size_t size) {
+			auto meshResourceCallback = [modelFilePath](const ResourcePtr& resourcePtr, Id_T handle, size_t size) {
 				Mesh_GL& mesh = resourcePtr->getResource<Mesh_GL>();
-				mesh.createResourcesFromInternalMemory();
+				mesh.createResourcesFromInternalMemory(modelFilePath);
 			};
 
 			return loader->load<Mesh_GL>(modelFilePath, cache, meshResourceBuilder, meshResourceCallback);
