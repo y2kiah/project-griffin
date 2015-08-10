@@ -51,7 +51,7 @@ extern "C" {
 				ResourcePtr meshResPtr = std::make_shared<Resource_T>(std::move(*mesh), mesh->getSize());
 
 				// TODO: it makes no sense to load meshes into a "Materials" cache, pick another one
-				auto res = loader->addResourceToCache<Mesh_GL>(meshResPtr, CacheType::Cache_Materials_T);
+				auto res = loader->addResourceToCache<Mesh_GL>(meshResPtr, CacheType::Cache_Models_T);
 
 				return res.resourceId.get().value;
 
@@ -78,7 +78,7 @@ extern "C" {
 			handle.value = mesh;
 
 			// TODO: change cache to same as import function
-			auto res = loader->getResource<Mesh_GL>(handle, CacheType::Cache_Materials_T);
+			auto res = loader->getResource<Mesh_GL>(handle, CacheType::Cache_Models_T);
 
 			std::ofstream ofs;
 			SDL_Log("saving mesh %llu to %s", mesh, filename);

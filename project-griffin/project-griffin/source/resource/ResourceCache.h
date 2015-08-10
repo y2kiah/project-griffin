@@ -21,6 +21,7 @@ namespace griffin {
 
 		MakeEnum(CacheType, uint16_t,
 				 (Cache_Materials)
+				 (Cache_Models)
 				 (Cache_Scripts)
 				 , _T);
 

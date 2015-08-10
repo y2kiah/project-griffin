@@ -97,7 +97,7 @@
 	float lightDistanceSquared = 5000.0; // falloff distance of light squared, temp
 
 	//uniform vec3 diffuseColor;
-	uniform sampler2D diffuseMap;	// 0
+	uniform sampler2D diffuseMap;	// 4
 
 	// Input Variables
 
@@ -231,10 +231,10 @@
 		vec3 ambient = lightLa * materialKa;
 		vec3 emissive = materialKe;
 		
-		vec3 diffuse = lightLd * materialKd * lambertian; // uses material color
-		//vec3 diffuse = lightLd * texture(diffuseMap, uv).rgb * lambertian; // uses diffuseMap color
+		//vec3 diffuse = lightLd * materialKd * lambertian; // uses material color
+		vec3 diffuse = lightLd * texture(diffuseMap, uv).rgb * lambertian; // uses diffuseMap color
 
-		return ambient + emissive + diffuse + specular;
+		return texture(diffuseMap, uv).rgb;//ambient + emissive + diffuse + specular;
 	}
 
 	float luma(vec3 color) {

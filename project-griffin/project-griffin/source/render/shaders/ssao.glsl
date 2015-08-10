@@ -93,7 +93,7 @@ uniform float rad = 0.000006; //0.006;
 
 		// output the result
 		float ao = 1.0-totStrength*bl*invSamples;
-		outColor.rgb = texture(colorMap,uv).rgb;// * ao; // TEMP ao not incorporated
+		outColor.rgb = texture(colorMap,uv).rgb * ao; // TEMP ao not incorporated
 		outColor.a = luma(outColor.rgb);
 		//outColor = vec4(ao,ao,ao,0.0);
 		//outColor = vec4(currentPixelDepth,currentPixelDepth,currentPixelDepth,0.0);
