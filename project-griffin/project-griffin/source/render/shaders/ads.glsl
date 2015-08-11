@@ -224,7 +224,7 @@
 		//vec3 diffuse = lightLd * materialKd * lambertian; // uses material color
 		vec3 diffuse = lightLd * texture(diffuseMap, uv).rgb * lambertian; // uses diffuseMap color
 
-		return texture(diffuseMap, uv).rgb;//ambient + emissive + diffuse + specular;
+		return diffuse;//ambient + emissive + diffuse + specular;
 	}
 
 	float luma(vec3 color) {

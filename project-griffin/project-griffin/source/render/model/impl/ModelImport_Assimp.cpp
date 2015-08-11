@@ -42,7 +42,7 @@ namespace griffin {
 		uint32_t fillVertexBuffer(const aiScene&, unsigned char*, size_t);
 		uint32_t getTotalIndexBufferSize(const aiScene&, DrawSet*, size_t);
 		uint32_t fillIndexBuffer(const aiScene&, unsigned char*, size_t, size_t, DrawSet*);
-		void     fillMaterials(const aiScene&, Material_GL*, size_t);
+		void     fillMaterials(const aiScene&, Material_GL*, size_t, DrawSet*);
 		std::tuple<uint32_t, uint32_t, uint32_t> getSceneArraySizes(const aiScene&);
 		void     fillSceneGraph(const aiScene&, MeshSceneGraph&);
 
@@ -111,7 +111,7 @@ namespace griffin {
 			// fill materials
 			uint32_t materialsOffset = static_cast<uint32_t>(totalDrawSetsSize);
 			Material_GL* materials = reinterpret_cast<Material_GL*>(modelData.get() + materialsOffset);
-			fillMaterials(scene, materials, numMaterials);
+			fillMaterials(scene, materials, numMaterials, drawSets);
 
 			// fill scene graph
 			uint32_t meshSceneOffset = static_cast<uint32_t>(totalDrawSetsSize + totalMaterialsSize);
@@ -425,7 +425,7 @@ namespace griffin {
 		* fill materials buffer
 		*/
 		void fillMaterials(const aiScene& scene, Material_GL* materials,
-						   size_t numMaterials)
+						   size_t numMaterials, DrawSet* drawSets)
 		{
 			for (uint32_t m = 0; m < numMaterials; ++m) {
 				auto assimpMat = scene.mMaterials[m];
@@ -512,15 +512,10 @@ namespace griffin {
 
 						// find the UVW channel index for this texture
 						int uvChannel = 0; // assign 0 if only one uv channel is preset in the mesh
-						for (uint32_t mesh = 0; mesh < scene.mNumMeshes; ++mesh) {
-							// find first mesh using this material, and with more than one UV channel
-							if (scene.mMeshes[mesh]->mMaterialIndex == m &&
-								scene.mMeshes[mesh]->GetNumUVChannels() > 1)
-							{
-								uvChannel = i; // default uv channel to the stack index
-								assimpMat->Get(AI_MATKEY_UVWSRC(tt, i), uvChannel); // if the UVWSRC property exists, it will be filled
-								break;
-							}
+						if (drawSets[m].numTexCoordChannels > 1) {
+							uvChannel = i; // default uv channel to the stack index
+							assimpMat->Get(AI_MATKEY_UVWSRC(tt, i), uvChannel); // if the UVWSRC property exists, it will be filled
+							break;
 						}
 						mat.textures[samplerIndex].uvChannelIndex = static_cast<uint8_t>(uvChannel);
 						
