@@ -124,10 +124,6 @@ namespace griffin {
 			glm::mat4	viewMat;
 			glm::mat4	projMat;
 			glm::mat4	viewProjMat;
-			uint32_t	left;
-			uint32_t	top;
-			uint32_t	width;
-			uint32_t	height;
 			float		nearClipPlane;
 			float		farClipPlane;
 			float		frustumDistance;		//<! = farClipPlane - nearClipPlane
@@ -136,6 +132,10 @@ namespace griffin {
 
 
 		struct Viewport {
+			uint32_t			left;
+			uint32_t			top;
+			uint32_t			width;
+			uint32_t			height;
 			ViewportParameters	params;
 			RenderQueue			renderQueue;
 			bool				display = false;

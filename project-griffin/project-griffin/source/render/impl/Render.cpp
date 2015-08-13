@@ -273,10 +273,6 @@ namespace griffin {
 
 			// set up default viewport matrices
 			ViewportParameters defaultView{};
-			defaultView.left = 0;
-			defaultView.top = 0;
-			defaultView.width = viewportWidth;
-			defaultView.height = viewportHeight;
 			defaultView.nearClipPlane = 0.1f; //-1.0f;
 			defaultView.farClipPlane  = 100000.0f; //1.0f;
 			defaultView.frustumDistance = defaultView.farClipPlane - defaultView.nearClipPlane;
@@ -289,6 +285,10 @@ namespace griffin {
 												   //glm::ortho(0.0f, static_cast<float>(viewportWidth), static_cast<float>(viewportHeight), 0.0f, -1.0f, 1.0f);
 			defaultView.viewProjMat = defaultView.projMat * defaultView.viewMat;
 
+			m_viewports[0].left = 0;
+			m_viewports[0].top = 0;
+			m_viewports[0].width = viewportWidth;
+			m_viewports[0].height = viewportHeight;
 			setViewportParameters(0, std::move(defaultView));
 
 			// TEMP create some test resources
@@ -298,8 +298,8 @@ namespace griffin {
 			//loadModelTemp("data/models/cube.dae");
 			//loadModelTemp("data/models/untitled.blend");
 			try {
-				//auto mesh = loadMesh(L"models/Spitfire/spitfire.gmd", CacheType::Cache_Models_T);
-				auto mesh = loadMesh(L"models/landing_platform.gmd", CacheType::Cache_Models_T);
+				auto mesh = loadMesh(L"models/Spitfire/spitfire.gmd", CacheType::Cache_Models_T);
+				//auto mesh = loadMesh(L"models/landing_platform.gmd", CacheType::Cache_Models_T);
 
 				using namespace resource;
 				auto loader = g_resourceLoader.lock();

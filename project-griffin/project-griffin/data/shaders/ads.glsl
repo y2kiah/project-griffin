@@ -28,6 +28,7 @@
 	layout(location = VertexLayout_Position) in vec3 vertexPosition_modelspace;
 	layout(location = VertexLayout_Normal) in vec3 vertexNormal;
 	layout(location = VertexLayout_Colors) in vec4 vertexColor;
+	layout(location = VertexLayout_Tangent) in vec3 vertexTangent;
 	layout(location = VertexLayout_TextureCoords) in vec2 vertexUV;
 
 	// Output Variables
@@ -38,6 +39,7 @@
 	
 	//out vec4 color;
 	out vec2 uv;
+	out vec3 tangent;
 
 	// Functions
 
@@ -52,6 +54,7 @@
 
 		//color = vertexColor;
 		uv = vertexUV;
+		tangent = vertexTangent;
 		//z = log(z / zn) / log(zf / zn); // logarithmic z
 
 		gl_Position = modelViewProjection * vec4(vertexPosition_modelspace, 1.0);
@@ -107,7 +110,8 @@
 
 	//in vec4 color;
 	in vec2 uv;
-	
+	in vec3 tangent;
+
 	// Output Variables
 
 	layout(location = 0) out vec4 albedoDisplacement;
@@ -234,9 +238,10 @@
 		vec3 diffuse = lightLd * materialKd * lambertian; // uses material color
 		//vec3 diffuse = lightLd * texture(diffuseMap, uv).rgb * lambertian; // uses diffuseMap color
 
-		return ambient + emissive + diffuse + specular;
+		//return ambient + emissive + diffuse + specular;
 		//return diffuse;
-		//return vec3(uv.x, uv.y, 0.0);
+		return vec3(uv.x, uv.y, uv.x);
+		//return tangent;
 		//return normalViewspace;
 	}
 
