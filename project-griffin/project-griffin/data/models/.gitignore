@@ -1,0 +1,9 @@
+# Textures
+*.jpg
+*.dds
+*.png
+*.bmp
+
+# Models
+*.gmd
+*.x

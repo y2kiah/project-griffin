@@ -85,7 +85,7 @@ extern "C" {
 			ofs.open(filename, std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
 			ofs.exceptions(std::ofstream::failbit | std::ofstream::badbit);
 
-			res->getResource<Mesh_GL>().serialize(ofs);
+			res->serialize(ofs);
 
 			ofs.close();
 

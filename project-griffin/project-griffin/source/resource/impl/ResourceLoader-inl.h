@@ -116,7 +116,7 @@ namespace griffin {
 
 
 		template <typename T>
-		ResourcePtr ResourceLoader::getResource(Id_T h, CacheType cache_)
+		T* ResourceLoader::getResource(Id_T h, CacheType cache_)
 		{
 			auto f = m_c([=](Impl& impl) {
 				auto& cache = *impl.m_caches[cache_].get();
@@ -127,7 +127,10 @@ namespace griffin {
 				return cache.getResource(h);
 			});
 
-			return f.get();
+			if (f.get().get() == nullptr) {
+				return nullptr;
+			}
+			return static_cast<T*>(&f.get()->getResource<T>());
 		}
 
 	}

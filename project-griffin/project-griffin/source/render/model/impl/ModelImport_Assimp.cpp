@@ -159,6 +159,7 @@ namespace griffin {
 				drawSet.vertexBaseOffset = accumulatedVertexBufferSize;
 				drawSet.numTexCoordChannels = assimpMesh.GetNumUVChannels();
 				drawSet.numColorChannels = assimpMesh.GetNumColorChannels();
+				drawSet.materialIndex = assimpMesh.mMaterialIndex;
 
 				assert(drawSet.numTexCoordChannels <= GRIFFIN_MAX_MATERIAL_TEXTURES && "too many uv channels in sub mesh");
 				assert(drawSet.numColorChannels <= 8 && "too many vertex color channels in sub mesh");
@@ -265,7 +266,7 @@ namespace griffin {
 							if (assimpMesh.HasTextureCoords(c)) {
 								auto uvSize = sizeof(float) * assimpMesh.mNumUVComponents[c];
 								memcpy_s(p_vb, bufferSize - (p_vb - buffer),
-										 &assimpMesh.mTextureCoords[c], uvSize);
+										 &assimpMesh.mTextureCoords[c][v], uvSize);
 								p_vb += uvSize;
 							}
 						}
@@ -273,7 +274,7 @@ namespace griffin {
 							if (assimpMesh.HasVertexColors(c)) {
 								auto colorSize = sizeof(float) * 4;
 								memcpy_s(p_vb, bufferSize - (p_vb - buffer),
-										 &assimpMesh.mColors[c], colorSize);
+										 &assimpMesh.mColors[c][v], colorSize);
 								p_vb += colorSize;
 							}
 						}
@@ -512,10 +513,14 @@ namespace griffin {
 
 						// find the UVW channel index for this texture
 						int uvChannel = 0; // assign 0 if only one uv channel is preset in the mesh
-						if (drawSets[m].numTexCoordChannels > 1) {
-							uvChannel = i; // default uv channel to the stack index
-							assimpMat->Get(AI_MATKEY_UVWSRC(tt, i), uvChannel); // if the UVWSRC property exists, it will be filled
-							break;
+						for (uint32_t mesh = 0; mesh < scene.mNumMeshes; ++mesh) {
+							if (scene.mMeshes[mesh]->mMaterialIndex == m) {
+								if (scene.mMeshes[mesh]->GetNumUVChannels() > 1) {
+									uvChannel = i; // default uv channel to the stack index
+									assimpMat->Get(AI_MATKEY_UVWSRC(tt, i), uvChannel); // if the UVWSRC property exists, it will be filled
+								}
+								break;
+							}
 						}
 						mat.textures[samplerIndex].uvChannelIndex = static_cast<uint8_t>(uvChannel);
 						

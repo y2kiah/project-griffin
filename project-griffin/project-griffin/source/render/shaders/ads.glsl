@@ -197,6 +197,10 @@
 		float spotlightPower = 1.5; // does this make sense?? used to clamp the distance falloff
 		/////
 
+		// temp texture stuff
+		vec3 surfaceColor = texture(diffuseMap, uv).rgb;
+		/////
+
 		float lambertian = 0.0;
 		vec3 specular = vec3(0.0);
 
@@ -215,23 +219,23 @@
 				float specAngle = max(dot(halfDir, normal), 0.0);
 
 				// determines the specular highlight color with a "metallic" property
-				// specular highlight of plastics is light combined with surface, metalic is mostly surface
-				vec3 specColor = mix(lightLs * materialKs, materialKs, materialMetallic);
+				// specular highlight of plastics is light * specular reflectivity, metallic is mostly surface * specular reflectivity
+				vec3 specColor = mix(lightLs * materialKs,
+									 materialKs * surfaceColor,
+									 materialMetallic);
 
 				specular = specColor * pow(specAngle, materialShininess * 4.0) * angleFalloff * distanceFalloff;
 			}
 		}
 
-		vec3 ambient = lightLa * materialKa;
+		vec3 ambient = lightLa * surfaceColor * materialKa;
 		vec3 emissive = materialKe;
-		
-		vec3 diffuse = lightLd * materialKd * lambertian; // uses material color
-		//vec3 diffuse = lightLd * texture(diffuseMap, uv).rgb * lambertian; // uses diffuseMap color
 
-		//return ambient + emissive + diffuse + specular;
-		//return diffuse;
-		return vec3(uv.x, uv.y, uv.x);
-		//return tangent;
+		vec3 diffuse = lightLd * surfaceColor * materialKd * lambertian;
+
+		return ambient + emissive + diffuse + specular;
+		//return texture(diffuseMap, uv).rgb;
+		//return vec3(uv.x, uv.y, 0.0);
 		//return normalViewspace;
 	}
 

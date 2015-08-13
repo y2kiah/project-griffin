@@ -69,16 +69,18 @@ namespace griffin {
 			ResourceHandle<T> addResourceToCache(ResourcePtr resource, CacheType cache_/*, const wstring& name */);
 
 			/**
-			* Asynchronously gets a resource directly from the cache.
+			* Asynchronously gets a ResourcePtr by handle.
 			*/
 			template <typename T>
 			std::shared_future<ResourcePtr> getResource(const ResourceHandle<T>& h);
 
 			/**
-			* Blocking call, gets a resource directly from the cache.
+			* Blocking call, gets a resource directly from the cache. Try to store the ResourcePtr
+			* instead of calling this a lot, due to the performance penalty of this call.
+			* @return	pointer to resource or nullptr if resource not found
 			*/
 			template <typename T>
-			ResourcePtr getResource(Id_T h, CacheType cache_);
+			T* getResource(Id_T h, CacheType cache_);
 
 			/**
 			* Blocking call, register a cache with the loader. Done during engine init.

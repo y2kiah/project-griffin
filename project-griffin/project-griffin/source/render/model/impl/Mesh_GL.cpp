@@ -84,9 +84,10 @@ namespace griffin {
 
 				// draw this node's meshes
 				for (uint32_t m = 0; m < node.numMeshes; ++m) {
-					uint32_t drawSet = m_meshScene.meshIndices[node.meshIndexOffset + m];
+					uint32_t ds = m_meshScene.meshIndices[node.meshIndexOffset + m];
+					auto& drawSet = m_drawSets[ds];
+					Material_GL& mat = m_materials[drawSet.materialIndex];
 
-					Material_GL& mat = m_materials[drawSet];
 					glUniform3fv(ambientLoc, 1, &mat.ambientColor[0]);
 					glUniform3fv(diffuseLoc, 1, &mat.diffuseColor[0]);
 					glUniform3fv(specularLoc, 1, &mat.specularColor[0]);
@@ -98,15 +99,14 @@ namespace griffin {
 						// should NOT use this method to get the resource, it serializes to the worker thread
 						// this part of the render is a time-critical section, should have the resourcePtr directly by now
 						// consider storing resourcePtr's within the mesh
-						auto& texPtr = g_resourceLoader.lock()->getResource<Texture2D_GL>(mat.textures[0].textureResourceHandle, CacheType::Cache_Materials_T);
-						if (texPtr) {
-							auto& tex = texPtr->getResource<Texture2D_GL>();
-							tex.bind(GL_TEXTURE4);
+						auto tex = g_resourceLoader.lock()->getResource<Texture2D_GL>(mat.textures[0].textureResourceHandle, CacheType::Cache_Materials_T);
+						if (tex) {
+							tex->bind(GL_TEXTURE4);
 							glUniform1i(diffuseMapLoc, 4);
 						}
 					}
 
-					drawMesh(drawSet);
+					drawMesh(ds);
 				}
 
 				// push children to traverse
@@ -464,6 +464,10 @@ namespace griffin {
 						// the material may move in memory, since the resource system is free to move it, potential bug
 						// use the resource id to look up by handle to get its current memory location from the task
 						tex.textureResourceHandle = resHandle.handle();
+						auto pTex = render::g_resourceLoader.lock()->getResource<Texture2D_GL>(tex.textureResourceHandle, resource::CacheType::Cache_Materials_T);
+						pTex->bind(GL_TEXTURE0);
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 					}
 				}
 			}

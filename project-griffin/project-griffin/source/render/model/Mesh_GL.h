@@ -49,6 +49,7 @@ namespace griffin {
 			uint32_t	vertexBaseOffset = 0;		//<! base offset into the vertex buffer
 			uint32_t	glPrimitiveType = 0;		//<! GL_TRIANGLES is the only mode currently supported
 			uint32_t	glVAO = 0;					//<! Vertex Array Object, created during Mesh_GL initialization
+			uint32_t	materialIndex = 0;			//<! index into the mesh's materials array
 
 			uint8_t		vertexFlags = 0;			//<! bits set from enum VertexFlags, checked against a material's requirements
 
