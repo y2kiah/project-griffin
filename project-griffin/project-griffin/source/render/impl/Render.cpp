@@ -49,7 +49,6 @@ namespace griffin {
 
 		// TEMP
 		ResourcePtr		g_tempMesh = nullptr;
-		ResourcePtr		g_tex = nullptr;
 
 
 		// class RenderQueue
@@ -121,10 +120,6 @@ namespace griffin {
 			m_fxaaProgram = loader->getResource(fxaa).get();
 
 			m_normalsTexture = loader->getResource(nrml).get();
-
-			// TEMP
-			auto tex = loadTexture(L"models/Spitfire/texture0.dds");
-			g_tex = loader->getResource(tex).get();
 		}
 
 
@@ -298,8 +293,8 @@ namespace griffin {
 			//loadModelTemp("data/models/cube.dae");
 			//loadModelTemp("data/models/untitled.blend");
 			try {
-				auto mesh = loadMesh(L"models/Spitfire/spitfire.gmd", CacheType::Cache_Models_T);
-				//auto mesh = loadMesh(L"models/landing_platform.gmd", CacheType::Cache_Models_T);
+				//auto mesh = loadMesh(L"models/Spitfire/spitfire.gmd", CacheType::Cache_Models_T);
+				auto mesh = loadMesh(L"models/landing_platform.gmd", CacheType::Cache_Models_T);
 
 				using namespace resource;
 				auto loader = g_resourceLoader.lock();
