@@ -158,8 +158,6 @@ namespace griffin {
 
 			void renderViewport(ViewportParameters& viewportParams);
 
-			void drawFullscreenQuad(/*Viewport?*/) const;
-
 		private:
 			RenderTarget_GL		m_gbuffer;							//<! g-buffer for deferred rendering
 

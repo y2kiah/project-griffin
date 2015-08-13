@@ -49,7 +49,8 @@ namespace griffin {
 
 		// TEMP
 		ResourcePtr		g_tempMesh = nullptr;
-		
+		ResourcePtr		g_tex = nullptr;
+
 
 		// class RenderQueue
 
@@ -120,6 +121,10 @@ namespace griffin {
 			m_fxaaProgram = loader->getResource(fxaa).get();
 
 			m_normalsTexture = loader->getResource(nrml).get();
+
+			// TEMP
+			auto tex = loadTexture(L"models/Spitfire/texture0.dds");
+			g_tex = loader->getResource(tex).get();
 		}
 
 
@@ -234,6 +239,11 @@ namespace griffin {
 				GLint colorMapLoc = glGetUniformLocation(fxaaId, "colorMap");
 				glUniform1i(colorMapLoc, 0);
 
+				// TEMP show texture
+//				auto& tex = g_tex->getResource<Texture2D_GL>();
+//				tex.bind(GL_TEXTURE0);
+				// TEMP
+
 				drawFullscreenQuad();
 			}
 			// End post-processing
@@ -247,9 +257,6 @@ namespace griffin {
 		// class RenderSystem
 
 		void RenderSystem::init(int viewportWidth, int viewportHeight) {
-			// set viewport for render helpers
-			setViewportDimensions(0, 0, viewportWidth, viewportHeight);
-			
 			// build fullscreen quad vertex buffer
 			g_fullScreenQuad.loadFromMemory(reinterpret_cast<const unsigned char*>(g_fullScreenQuadBufferData),
 											sizeof(g_fullScreenQuadBufferData));
@@ -291,7 +298,8 @@ namespace griffin {
 			//loadModelTemp("data/models/cube.dae");
 			//loadModelTemp("data/models/untitled.blend");
 			try {
-				auto mesh = loadMesh(L"models/palmtree/palmtree.gmd", CacheType::Cache_Models_T);
+				//auto mesh = loadMesh(L"models/Spitfire/spitfire.gmd", CacheType::Cache_Models_T);
+				auto mesh = loadMesh(L"models/landing_platform.gmd", CacheType::Cache_Models_T);
 
 				using namespace resource;
 				auto loader = g_resourceLoader.lock();
@@ -427,10 +435,6 @@ namespace griffin {
 		void drawPixelPerfectQuad(float leftPx, float topPx, uint32_t widthPx, uint32_t heightPx)
 		{
 
-		}
-
-		void drawPixelPerfectQuad(float left, float top, uint32_t widthPx, uint32_t heightPx)
-		{
 		}
 
 		void drawScaledQuad(float left, float top, float width, float height)

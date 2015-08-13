@@ -221,10 +221,13 @@
 		vec3 ambient = lightLa * materialKa;
 		vec3 emissive = materialKe;
 		
-		//vec3 diffuse = lightLd * materialKd * lambertian; // uses material color
-		vec3 diffuse = lightLd * texture(diffuseMap, uv).rgb * lambertian; // uses diffuseMap color
+		vec3 diffuse = lightLd * materialKd * lambertian; // uses material color
+		//vec3 diffuse = lightLd * texture(diffuseMap, uv).rgb * lambertian; // uses diffuseMap color
 
-		return diffuse;//ambient + emissive + diffuse + specular;
+		return ambient + emissive + diffuse + specular;
+		//return diffuse;
+		//return vec3(uv.x, uv.y, 0.0);
+		//return normalViewspace;
 	}
 
 	float luma(vec3 color) {
