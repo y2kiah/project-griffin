@@ -13,6 +13,7 @@
 
 #include <resource/ResourceLoader.h>
 #include <render/Render.h>
+#include <render/RenderHelpers.h>
 #include <render/ShaderProgramLayouts_GL.h>
 #include <render/model/Mesh_GL.h>
 #include <render/model/ModelImport_Assimp.h>
@@ -43,9 +44,11 @@ namespace griffin {
 			 1.0f, -1.0f, 0.0f,
 			 1.0f,  1.0f, 0.0f
 		};
-		
+		uint32_t		g_glQuadVAO = 0;	//<! Vertex Array Object for fullScreenQuad
+		VertexBuffer_GL	g_fullScreenQuad;
+
 		// TEMP
-		ResourcePtr g_tempMesh = nullptr;
+		ResourcePtr		g_tempMesh = nullptr;
 		
 
 		// class RenderQueue
@@ -94,17 +97,6 @@ namespace griffin {
 			m_colorBuffer.bind(RenderTarget_GL::Albedo_Displacement, GL_TEXTURE0);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // fxaa sampler requires bilinear filtering
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			
-			// build fullscreen quad vertex buffer
-			m_fullScreenQuad.loadFromMemory(reinterpret_cast<const unsigned char*>(g_fullScreenQuadBufferData),
-											sizeof(g_fullScreenQuadBufferData));
-
-			// build VAO for fullscreen quad
-			glGenVertexArrays(1, &m_glQuadVAO);
-			glBindVertexArray(m_glQuadVAO);
-			m_fullScreenQuad.bind();
-			glEnableVertexAttribArray(VertexLayout_Position);
-			glVertexAttribPointer(VertexLayout_Position, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
 			// load shader programs for deferred rendering
 			// hold a shared_ptr to these shader programs so they never fall out of cache
@@ -130,11 +122,6 @@ namespace griffin {
 			m_normalsTexture = loader->getResource(nrml).get();
 		}
 
-		void DeferredRenderer_GL::drawFullscreenQuad(/*Viewport*/) const
-		{
-			glBindVertexArray(m_glQuadVAO);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-		}
 
 		// class DeferredRenderer_GL
 
@@ -254,39 +241,35 @@ namespace griffin {
 
 		DeferredRenderer_GL::~DeferredRenderer_GL()
 		{
-			if (m_glQuadVAO != 0) {
-				glDeleteVertexArrays(1, &m_glQuadVAO);
-			}
 		}
 
 
 		// class RenderSystem
 
 		void RenderSystem::init(int viewportWidth, int viewportHeight) {
+			// set viewport for render helpers
+			setViewportDimensions(0, 0, viewportWidth, viewportHeight);
+			
+			// build fullscreen quad vertex buffer
+			g_fullScreenQuad.loadFromMemory(reinterpret_cast<const unsigned char*>(g_fullScreenQuadBufferData),
+											sizeof(g_fullScreenQuadBufferData));
+
+			// build VAO for fullscreen quad
+			glGenVertexArrays(1, &g_glQuadVAO);
+			glBindVertexArray(g_glQuadVAO);
+			g_fullScreenQuad.bind();
+			glEnableVertexAttribArray(VertexLayout_Position);
+			glVertexAttribPointer(VertexLayout_Position, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+			// init the renderers
 			m_deferredRenderer.init(viewportWidth, viewportHeight);
-
-			//loadModelTemp("data/models/ship.dae");
-			//loadModelTemp("data/models/riggedFighter.dae");
-			//loadModelTemp("data/models/quadcopter2.dae");
-			//loadModelTemp("data/models/cube.dae");
-			//loadModelTemp("data/models/untitled.blend");
-			try {
-				auto mesh = loadMesh(L"models/Spitfire/spitfire.gmd", CacheType::Cache_Models_T);
-
-				using namespace resource;
-				auto loader = g_resourceLoader.lock();
-				if (!loader) {
-					throw std::runtime_error("no resource loader");
-				}
-				g_tempMesh = loader->getResource(mesh).get();
-				loader->executeCallbacks();
-			}
-			catch (std::exception ex) {
-				SDL_Log("%s", ex.what());
-			}
 
 			// set up default viewport matrices
 			ViewportParameters defaultView{};
+			defaultView.left = 0;
+			defaultView.top = 0;
+			defaultView.width = viewportWidth;
+			defaultView.height = viewportHeight;
 			defaultView.nearClipPlane = 0.1f; //-1.0f;
 			defaultView.farClipPlane  = 100000.0f; //1.0f;
 			defaultView.frustumDistance = defaultView.farClipPlane - defaultView.nearClipPlane;
@@ -300,6 +283,27 @@ namespace griffin {
 			defaultView.viewProjMat = defaultView.projMat * defaultView.viewMat;
 
 			setViewportParameters(0, std::move(defaultView));
+
+			// TEMP create some test resources
+			//loadModelTemp("data/models/ship.dae");
+			//loadModelTemp("data/models/riggedFighter.dae");
+			//loadModelTemp("data/models/quadcopter2.dae");
+			//loadModelTemp("data/models/cube.dae");
+			//loadModelTemp("data/models/untitled.blend");
+			try {
+				auto mesh = loadMesh(L"models/palmtree/palmtree.gmd", CacheType::Cache_Models_T);
+
+				using namespace resource;
+				auto loader = g_resourceLoader.lock();
+				if (!loader) {
+					throw std::runtime_error("no resource loader");
+				}
+				g_tempMesh = loader->getResource(mesh).get();
+				loader->executeCallbacks();
+			}
+			catch (std::exception ex) {
+				SDL_Log("%s", ex.what());
+			}
 		}
 
 
@@ -322,7 +326,9 @@ namespace griffin {
 
 		RenderSystem::~RenderSystem()
 		{
-			
+			if (g_glQuadVAO != 0) {
+				glDeleteVertexArrays(1, &g_glQuadVAO);
+			}
 		}
 
 
@@ -407,6 +413,28 @@ namespace griffin {
 			};
 
 			return loader->load<Mesh_GL>(modelFilePath, cache, meshResourceBuilder, meshResourceCallback);
+		}
+
+
+		// Free Functions, RenderHelpers.h
+
+		void drawFullscreenQuad()
+		{
+			glBindVertexArray(g_glQuadVAO);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+		}
+		
+		void drawPixelPerfectQuad(float leftPx, float topPx, uint32_t widthPx, uint32_t heightPx)
+		{
+
+		}
+
+		void drawPixelPerfectQuad(float left, float top, uint32_t widthPx, uint32_t heightPx)
+		{
+		}
+
+		void drawScaledQuad(float left, float top, float width, float height)
+		{
 		}
 	}
 }

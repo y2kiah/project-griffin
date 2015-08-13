@@ -97,6 +97,7 @@
     <ClInclude Include="source\render\model\ModelImport_Assimp.h" />
     <ClInclude Include="source\render\model\Model_GL.h" />
     <ClInclude Include="source\render\Render.h" />
+    <ClInclude Include="source\render\RenderHelpers.h" />
     <ClInclude Include="source\render\RenderTarget_GL.h" />
     <ClInclude Include="source\render\ShaderProgramLayouts_GL.h" />
     <ClInclude Include="source\render\ShaderProgram_GL.h" />

@@ -124,6 +124,10 @@ namespace griffin {
 			glm::mat4	viewMat;
 			glm::mat4	projMat;
 			glm::mat4	viewProjMat;
+			uint32_t	left;
+			uint32_t	top;
+			uint32_t	width;
+			uint32_t	height;
 			float		nearClipPlane;
 			float		farClipPlane;
 			float		frustumDistance;		//<! = farClipPlane - nearClipPlane
@@ -158,9 +162,6 @@ namespace griffin {
 
 		private:
 			RenderTarget_GL		m_gbuffer;							//<! g-buffer for deferred rendering
-			
-			uint32_t			m_glQuadVAO = 0;					//<! Vertex Array Object for fullScreenQuad
-			VertexBuffer_GL		m_fullScreenQuad;
 
 			ResourcePtr			m_mrtProgram = nullptr;				//<! multiple render target geometry pass, renders the g-buffer
 			ResourcePtr			m_fullScreenQuadProgram = nullptr;	//<! fullscreen quad program for deferred lighting and post-processing

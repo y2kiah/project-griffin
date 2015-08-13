@@ -775,6 +775,9 @@
     <ClInclude Include="source\game\impl\GameImpl.h">
       <Filter>game\impl</Filter>
     </ClInclude>
+    <ClInclude Include="source\render\RenderHelpers.h">
+      <Filter>render</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="vendor\glm\glm\gtc\constants.inl">
