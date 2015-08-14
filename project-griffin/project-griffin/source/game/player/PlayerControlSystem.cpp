@@ -12,23 +12,39 @@
 
 void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& engine, const UpdateInfo& ui)
 {
+	using namespace glm;
+
 	Game& game = *pGame;
 	auto& scene = engine.sceneManager->getScene(game.sceneId);
 
 	auto sceneNodeId = scene.entityManager->getEntityComponentId(playerId, scene::SceneNode::componentType);
 	auto& node = scene.entityManager->getComponentStore<scene::SceneNode>().getComponent(sceneNodeId);
 
+	// TODO: this all probably works for (0,1,0) worldup vector, but worldup changes with position on planet, need to make this work everywhere
+	// if based on local coordinate system, maybe all I need to to is parent the player with a worldup aligned parent node, then localY up is
+	// still relatively correct for the fps camera controls??
+
 	// Mouse look
 	if (pitchRaw != 0 || yawRaw != 0) {
 		const float lookRate = 2.0f  * static_cast<float>(M_PI);
 
-		float yawAngle = yawMapped * lookRate * ui.deltaT;
-		float pitchAngle = pitchMapped * lookRate * ui.deltaT;
+		float yawAngle = -yawMapped * lookRate * ui.deltaT;
+		float pitchAngle = -pitchMapped * lookRate * ui.deltaT;
+		
+		// constrain pitch to +89/-90 degrees
+		const float deg179 = radians(179.0f);
+		float currentPitch = pitch(node.rotationLocal); // get pitch in parent node's space
+		if (currentPitch + pitchAngle < 0) {
+			pitchAngle = -currentPitch;
+		}
+		else if (currentPitch + pitchAngle >= deg179) {
+			pitchAngle = deg179 - currentPitch;
+		}
 
-		glm::vec4 angles(0.0f, -pitchAngle, -yawAngle, 0.0f);
-
-		node.rotationLocal = glm::quat(angles.xyz) * node.rotationLocal;
-		glm::normalize(node.rotationLocal);
+		node.rotationLocal = normalize(
+								angleAxis(yawAngle, vec3(0, 0, 1.0f))
+								* node.rotationLocal
+								* angleAxis(pitchAngle, vec3(1.0f, 0, 0)));
 		node.orientationDirty = 1;
 	}
 
@@ -38,22 +54,22 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& en
 		auto& camInst = scene.entityManager->getComponentStore<scene::CameraInstanceContainer>().getComponent(camInstId);
 		auto& cam = *scene.cameras[camInst.cameraId];
 
-		float speedTarget = 10.0f; // in ft. per second
+		float speedTarget = 12.0f; // jog speed, in ft/s
 		if (speedToggle == SpeedFlag_Sprint) {
-			speedTarget = 20.0f;
+			speedTarget = 29.0f;
 		}
 		else if (speedToggle == SpeedFlag_Walk) {
 			speedTarget = 5.0f;
 		}
 
-		glm::vec3 forwardDir = glm::normalize(glm::vec3(cam.getViewDirection().x, 0.0f, cam.getViewDirection().z));
-		glm::vec3 right = glm::cross(forwardDir, cam.getWorldUp());
+		vec3 forwardDir = normalize(vec3(cam.getViewDirection().x, cam.getViewDirection().y, 0));
+		vec3 right = cross(forwardDir, cam.getWorldUp());
 		
-		glm::vec3 velocity = forwardDir * static_cast<float>(moveForward);
+		vec3 velocity = forwardDir * static_cast<float>(moveForward);
 		velocity += right * static_cast<float>(moveSide);
 
 		// TODO: we want to smoothly accelerate to the speedTarget from a separate speed
-		velocity = glm::normalize(velocity) * speedTarget * ui.deltaT;
+		velocity = normalize(velocity) * speedTarget * ui.deltaT;
 
 		node.translationLocal += velocity;
 		node.positionDirty = 1;
@@ -79,13 +95,13 @@ void griffin::game::PlayerControlSystem::init(Game* pGame, const Engine& engine,
 		60.0f, Camera_Perspective
 	}, "player");
 
-	// look at the origin
+	// set up camera position and orientation
 	auto camNode = scene.entityManager->getEntityComponentId(playerId, scene::SceneNode::componentType);
 	auto& node = scene.entityManager->getComponentStore<scene::SceneNode>().getComponent(camNode);
 
 	auto camInst = scene.entityManager->getEntityComponentId(playerId, scene::CameraInstanceContainer::componentType);
 	auto& cam = scene.entityManager->getComponentStore<scene::CameraInstanceContainer>().getComponent(camInst);
-	scene.cameras[cam.cameraId]->lookAt(glm::vec3{ 1.0f, 6.0f, 0 }, glm::vec3{ 0, 6.0f, 0 }, glm::vec3{ 0, 1.0f, 0 });
+	scene.cameras[cam.cameraId]->lookAt(vec3{ 0, 0, 6.0f }, vec3{ 1.0f, 0, 6.0f }, vec3{ 0, 0, 1.0f });
 
 	// set scene node location and orientation to the camera's
 	node.translationLocal = scene.cameras[cam.cameraId]->getEyePoint();
@@ -99,18 +115,18 @@ void griffin::game::PlayerControlSystem::init(Game* pGame, const Engine& engine,
 		playerfpsInputContextId = ctx;
 
 		forwardId = engine.inputSystem->getInputMappingHandle("Move Forward", ctx);
-		backId = engine.inputSystem->getInputMappingHandle("Move Backward", ctx);
-		leftId = engine.inputSystem->getInputMappingHandle("Move Left", ctx);
-		rightId = engine.inputSystem->getInputMappingHandle("Move Right", ctx);
-		sprintId = engine.inputSystem->getInputMappingHandle("Sprint", ctx);
-		walkId = engine.inputSystem->getInputMappingHandle("Walk", ctx);
-		lookXId = engine.inputSystem->getInputMappingHandle("Mouse Look X", ctx);
-		lookYId = engine.inputSystem->getInputMappingHandle("Mouse Look Y", ctx);
+		backId    = engine.inputSystem->getInputMappingHandle("Move Backward", ctx);
+		leftId    = engine.inputSystem->getInputMappingHandle("Move Left", ctx);
+		rightId   = engine.inputSystem->getInputMappingHandle("Move Right", ctx);
+		sprintId  = engine.inputSystem->getInputMappingHandle("Sprint", ctx);
+		walkId    = engine.inputSystem->getInputMappingHandle("Walk", ctx);
+		lookXId   = engine.inputSystem->getInputMappingHandle("Mouse Look X", ctx);
+		lookYId   = engine.inputSystem->getInputMappingHandle("Mouse Look Y", ctx);
 
-		assert(forwardId != NullId_T && backId != NullId_T &&
-			   leftId != NullId_T && rightId != NullId_T &&
-			   sprintId != NullId_T && walkId != NullId_T &&
-			   lookXId != NullId_T && lookYId != NullId_T &&
+		assert(forwardId != NullId_T && backId  != NullId_T &&
+			   leftId    != NullId_T && rightId != NullId_T &&
+			   sprintId  != NullId_T && walkId  != NullId_T &&
+			   lookXId   != NullId_T && lookYId != NullId_T &&
 			   "playerfps input mappings changed");
 	}
 

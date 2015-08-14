@@ -12,6 +12,8 @@
 
 void griffin::game::DevCameraSystem::updateFrameTick(Game* pGame, Engine& engine, const UpdateInfo& ui)
 {
+	using namespace glm;
+
 	// check if there's any input to handle
 	if (moveForward == 0 && moveSide == 0 && moveVertical == 0 &&
 		roll == 0 && pitchRaw == 0 && yawRaw == 0)
@@ -27,18 +29,17 @@ void griffin::game::DevCameraSystem::updateFrameTick(Game* pGame, Engine& engine
 
 	// Mouse look
 	if (pitchRaw != 0 || yawRaw != 0 || roll != 0) {
-		const float rollRate = 0.25f * static_cast<float>(M_PI);
-		const float lookRate = 2.0f  * static_cast<float>(M_PI);
+		const float rollRate = 0.25f * pi<float>();
+		const float lookRate = 2.0f  * pi<float>();
 
 		float yawAngle = yawMapped * lookRate * ui.deltaT;
 		float pitchAngle = pitchMapped * lookRate * ui.deltaT;
 		float rollAngle = roll * rollRate * ui.deltaT;
 
-		glm::vec4 angles(-pitchAngle, -yawAngle, -rollAngle, 0.0f);
-		angles = angles * glm::inverse(node.orientationWorld); // transform angles into viewspace
+		vec3 angles(-pitchAngle, -yawAngle, -rollAngle);
+		angles = angles * inverse(node.orientationWorld); // transform angles into viewspace
 
-		node.rotationLocal = glm::quat(angles.xyz) * node.rotationLocal;
-		glm::normalize(node.rotationLocal);
+		node.rotationLocal = normalize(quat(angles) * node.rotationLocal);
 		node.orientationDirty = 1;
 	}
 
@@ -50,15 +51,15 @@ void griffin::game::DevCameraSystem::updateFrameTick(Game* pGame, Engine& engine
 		
 		const float speed = 10.0f; // in ft. per second
 
-		glm::vec3 viewDir = cam.getViewDirection();
-		glm::vec3 right = cam.getRightVector();//glm::cross(cam.getViewDirection(), cam.getWorldUp());
-		glm::vec3 up = cam.getUpVector();//glm::cross(viewDir, right);
+		vec3 viewDir = cam.getViewDirection();
+		vec3 right = cam.getRightVector();//cross(cam.getViewDirection(), cam.getWorldUp());
+		vec3 up = cam.getUpVector();//cross(viewDir, right);
 
-		glm::vec3 velocity = viewDir * static_cast<float>(moveForward);
+		vec3 velocity = viewDir * static_cast<float>(moveForward);
 		velocity += right * static_cast<float>(moveSide);
 		velocity += up * static_cast<float>(moveVertical);
 
-		velocity = glm::normalize(velocity) * speed * (!speedToggle ? 3.0f : 1.0f) * ui.deltaT;
+		velocity = normalize(velocity) * speed * (!speedToggle ? 3.0f : 1.0f) * ui.deltaT;
 
 		node.translationLocal += velocity;
 		node.positionDirty = 1;
@@ -105,7 +106,7 @@ void griffin::game::DevCameraSystem::init(Game* pGame, const Engine& engine, con
 
 	auto camInst = scene.entityManager->getEntityComponentId(devCameraId, scene::CameraInstanceContainer::componentType);
 	auto& cam = scene.entityManager->getComponentStore<scene::CameraInstanceContainer>().getComponent(camInst);
-	scene.cameras[cam.cameraId]->lookAt(glm::vec3{ 120.0f, 40.0f, 0 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 0, 1.0f, 0 });
+	scene.cameras[cam.cameraId]->lookAt(vec3{ 120.0f, 0, 40.0f }, vec3{ 0, 0, 0 }, vec3{ 0, 0, 1.0f });
 
 	// set scene node location and orientation to the camera's
 	node.translationLocal = scene.cameras[cam.cameraId]->getEyePoint();

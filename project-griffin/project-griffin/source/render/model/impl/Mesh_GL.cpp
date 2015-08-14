@@ -49,9 +49,11 @@ namespace griffin {
 						   const glm::mat4& viewMat, const glm::mat4& viewProjMat/*All TEMP*/) const
 		{
 			glm::mat4 modelToWorld;
+			
 			// temp
-			modelToWorld = glm::rotate(modelToWorld, glm::radians(0.0f), glm::vec3(0, 1.0f, 0));
-			modelToWorld = glm::translate(modelToWorld, glm::vec3(0.0f, 0.0f, 50.0f));
+			modelToWorld = glm::rotate(glm::translate(modelToWorld, glm::vec3(0.0f, -50.0f, 0.0f)),
+									   glm::radians(90.0f),
+									   glm::vec3(1.0f, 0, 0));
 			modelToWorld = glm::scale(modelToWorld, glm::vec3(Meters_to_Feet));
 
 			glm::mat4 modelView(viewMat * modelToWorld);

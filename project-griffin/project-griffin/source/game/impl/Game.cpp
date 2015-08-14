@@ -28,6 +28,8 @@ namespace griffin {
 		// if all systems operate on 1(+) frame-old-data, can all systems be run in parallel?
 		// should this list become a task flow graph?
 
+		game.player.updateFrameTick(pGame, engine, ui);
+
 		game.devCamera.updateFrameTick(pGame, engine, ui);
 	}
 
@@ -72,8 +74,8 @@ namespace griffin {
 		}
 
 		// startup active input contexts
-		//engine.inputSystem->setContextActive(game.devCamera.devCameraInputContextId);
 		engine.inputSystem->setContextActive(game.player.playerfpsInputContextId);
+		//engine.inputSystem->setContextActive(game.devCamera.devCameraInputContextId);
 
 		return gamePtr;
 	}
