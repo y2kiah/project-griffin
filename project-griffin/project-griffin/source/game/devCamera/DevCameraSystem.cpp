@@ -1,7 +1,6 @@
 #include "DevCameraSystem.h"
 #include <scene/Scene.h>
 #include <entity/EntityManager.h>
-#include <script/ScriptManager_LuaJIT.h>
 #include <input/InputSystem.h>
 #include <game/impl/GameImpl.h>
 #include <glm/vec3.hpp>

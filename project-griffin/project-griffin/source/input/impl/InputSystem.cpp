@@ -569,6 +569,9 @@ void InputSystem::initialize() // should this be the constructor?
 				
 				m_frameMappedInput.motion.push_back(std::move(m));
 			}
+			
+			char guid[33] = {};
+			SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joy), guid, sizeof(guid));
 
 			SDL_Log("Opened Joystick %d", j);
 			SDL_Log("  Name: %s", SDL_JoystickNameForIndex(j));
@@ -576,6 +579,9 @@ void InputSystem::initialize() // should this be the constructor?
 			SDL_Log("  Number of Buttons: %d", SDL_JoystickNumButtons(joy));
 			SDL_Log("  Number of Hats: %d", SDL_JoystickNumHats(joy));
 			SDL_Log("  Number of Balls: %d", SDL_JoystickNumBalls(joy));
+			SDL_Log("  Instance ID: %d", SDL_JoystickInstanceID(joy));
+			SDL_Log("  GUID: %s", guid);
+			
 		} else {
 			SDL_Log("Couldn't open Joystick %d", j);
 		}

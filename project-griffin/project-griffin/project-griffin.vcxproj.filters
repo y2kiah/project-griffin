@@ -164,6 +164,9 @@
     <Filter Include="game\devCamera">
       <UniqueIdentifier>{23750c11-f802-4a6d-b272-2dc41aa577a6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="game\player">
+      <UniqueIdentifier>{c18303bc-98e5-45a6-a6b7-b748d97eb2cb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">
@@ -270,6 +273,9 @@
     </ClCompile>
     <ClCompile Include="source\game\devCamera\DevCameraSystem.cpp">
       <Filter>game\devCamera</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\player\PlayerControlSystem.cpp">
+      <Filter>game\player</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -777,6 +783,9 @@
     </ClInclude>
     <ClInclude Include="source\render\RenderHelpers.h">
       <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\player\PlayerControlSystem.h">
+      <Filter>game\player</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -65,13 +65,15 @@ namespace griffin {
 			game.sceneId = engine.sceneManager->createScene("Game World", true);
 			auto& scene = engine.sceneManager->getScene(game.sceneId);
 
+			game.player.init(gamePtr.get(), engine, app);
 			game.devCamera.init(gamePtr.get(), engine, app);
 			
 			// ...
 		}
 
 		// startup active input contexts
-		engine.inputSystem->setContextActive(game.devCamera.devCameraInputContextId);
+		//engine.inputSystem->setContextActive(game.devCamera.devCameraInputContextId);
+		engine.inputSystem->setContextActive(game.player.playerfpsInputContextId);
 
 		return gamePtr;
 	}

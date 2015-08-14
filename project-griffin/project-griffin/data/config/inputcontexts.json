@@ -28,21 +28,15 @@
 		"visible": true,
 		"eatsMouseInput": true,
 		"actions": [
-			{ "name": "Jump",			"bind": "down" },
-			{ "name": "Use",			"bind": "down" },
-			{ "name": "Reload",			"bind": "down" }
+			{ "name": "Use",			"bind": "down" }
 		],
 		"states": [
 			{ "name": "Move Forward",	"bind": "down" },
-			{ "name": "Move Back",		"bind": "down" },
+			{ "name": "Move Backward",	"bind": "down" },
 			{ "name": "Move Left",		"bind": "down" },
 			{ "name": "Move Right",		"bind": "down" },
-			{ "name": "Run/Walk",		"bind": "down" },
-			{ "name": "Run/Walk (Hold)","bind": "toggle" },
-			{ "name": "Crouch",			"bind": "down" },
-			{ "name": "Crouch (Hold)",	"bind": "toggle" },
-			{ "name": "Prone",			"bind": "down" },
-			{ "name": "Prone (Hold)",	"bind": "toggle" }
+			{ "name": "Sprint",			"bind": "down" },
+			{ "name": "Walk",			"bind": "down" }
 		],
 		"axes": [
 			{ "name": "Mouse Look X",	"relativeMotion": true },

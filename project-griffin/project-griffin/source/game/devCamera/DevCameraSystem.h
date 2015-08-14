@@ -25,9 +25,9 @@ namespace griffin {
 			bool	speedToggle;
 
 			Id_T	devCameraId;							//<! entity id of the dev camera
-			Id_T	devCameraMovementId;					//<! dev camera movement component id
+			Id_T	devCameraMovementId;					//<! TEMP dev camera movement component id
 
-			Id_T	devCameraInputContextId;				//<! input context handle for the devcamera
+			Id_T	devCameraInputContextId;				//<! handle for the devcamera input context
 			Id_T	toggleId;								//<! input to turn devcamera on/off
 			Id_T	forwardId, backId, leftId, rightId;		//<! mapping handles for the inputs
 			Id_T	rollLeftId, rollRightId, upId, downId;

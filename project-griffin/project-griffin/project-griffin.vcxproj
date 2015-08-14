@@ -36,6 +36,7 @@
     <ClCompile Include="source\entity\impl\EntityManager.cpp" />
     <ClCompile Include="source\game\devCamera\DevCameraSystem.cpp" />
     <ClCompile Include="source\game\impl\Game.cpp" />
+    <ClCompile Include="source\game\player\PlayerControlSystem.cpp" />
     <ClCompile Include="source\input\impl\InputSystem.cpp" />
     <ClCompile Include="source\input\impl\InputSystemApi.cpp" />
     <ClCompile Include="source\render\font\FreeType.cpp" />
@@ -87,6 +88,7 @@
     <ClInclude Include="source\game\devCamera\DevCameraSystem.h" />
     <ClInclude Include="source\game\Game.h" />
     <ClInclude Include="source\game\impl\GameImpl.h" />
+    <ClInclude Include="source\game\player\PlayerControlSystem.h" />
     <ClInclude Include="source\input\InputSystem.h" />
     <ClInclude Include="source\render\font\FreeType.h" />
     <ClInclude Include="source\render\geometry\Cube.h" />

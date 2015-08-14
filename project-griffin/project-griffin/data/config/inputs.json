@@ -19,15 +19,11 @@
 		{ "context": "devcamera",	"name": "Roll Right",		"device": 0,	"keycode": 101 },
 		{ "context": "devcamera",	"name": "Speed",			"device": 0,	"keycode": 1073742049 },
 		{ "context": "playerfps",	"name": "Move Forward",		"device": 0,	"keycode": 119 },
-		{ "context": "playerfps",	"name": "Move Back",		"device": 0,	"keycode": 115 },
+		{ "context": "playerfps",	"name": "Move Backward",	"device": 0,	"keycode": 115 },
 		{ "context": "playerfps",	"name": "Move Left",		"device": 0,	"keycode": 97 },
 		{ "context": "playerfps",	"name": "Move Right",		"device": 0,	"keycode": 100 },
-		{ "context": "playerfps",	"name": "Run/Walk",			"device": 0,	"keycode": 1073742049 },
-		{ "context": "playerfps",	"name": "Run/Walk (Hold)",	"device": 0,	"keycode": 1073742049,	"modifier": 64 },
-		{ "context": "playerfps",	"name": "Crouch",			"device": 0,	"keycode": 99 },
-		{ "context": "playerfps",	"name": "Crouch (Hold)",	"device": 0,	"keycode": 99,			"modifier": 64 },
-		{ "context": "playerfps",	"name": "Prone",			"device": 0,	"keycode": 118 },
-		{ "context": "playerfps",	"name": "Prone (Hold)",		"device": 0,	"keycode": 118,			"modifier": 64 }
+		{ "context": "playerfps",	"name": "Sprint",			"device": 0,	"keycode": 1073742049 },
+		{ "context": "playerfps",	"name": "Walk",				"device": 0,	"keycode": 1073742048 }
 	],
 	"axes": [
 		{ "context": "devcamera",	"name": "Mouse Look X",		"device": 0,	"axis": 0,		"sensitivity": 15.0 },
