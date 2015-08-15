@@ -4,7 +4,7 @@
 #include <sstream>
 #include <gl/glew.h>
 //#include <gl/glcorearb.h>
-#include <SOIL.h>
+//#include <SOIL.h>
 #include "main.h"
 #include <application/Timer.h>
 #include <application/platform.h>
@@ -257,7 +257,7 @@ void SDLApplication::initOpenGL()
 	SDL_Log("OpenGL Extensions: %s\n", glExtensions.c_str());
 
 	// give the extensions string to the SOIL library
-	SOIL_set_gl_extensions_string(glExtensions.c_str());
+	//SOIL_set_gl_extensions_string(glExtensions.c_str());
 
 	// This makes our buffer swap syncronized with the monitor's vertical refresh
 	SDL_GL_SetSwapInterval(1);

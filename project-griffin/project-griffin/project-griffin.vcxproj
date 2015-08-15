@@ -50,7 +50,7 @@
     <ClCompile Include="source\render\model\impl\Mesh_GL.cpp" />
     <ClCompile Include="source\render\model\impl\ModelImport_Assimp.cpp" />
     <ClCompile Include="source\render\texture\impl\Texture2D_GL.cpp" />
-    <ClCompile Include="source\render\texture\nv_dds.cpp" />
+    <ClCompile Include="source\render\texture\dds.cpp" />
     <ClCompile Include="source\resource\impl\ResourceCache.cpp" />
     <ClCompile Include="source\resource\impl\ResourceLoader.cpp" />
     <ClCompile Include="source\resource\impl\ResourceLoader-inl.h" />
@@ -104,7 +104,6 @@
     <ClInclude Include="source\render\ShaderProgramLayouts_GL.h" />
     <ClInclude Include="source\render\ShaderProgram_GL.h" />
     <ClInclude Include="source\render\texture\dds.h" />
-    <ClInclude Include="source\render\texture\nv_dds.h" />
     <ClInclude Include="source\render\texture\Texture2D_GL.h" />
     <ClInclude Include="source\render\VertexBuffer_GL.h" />
     <ClInclude Include="source\resource\Resource.h" />
@@ -511,7 +510,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;SOIL_d.lib;glew32sd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;glew32sd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib</IgnoreSpecificDefaultLibraries>
       <EmbedManagedResourceFile>
@@ -570,7 +569,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;SOIL.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib</IgnoreSpecificDefaultLibraries>
       <Profile>false</Profile>
@@ -604,7 +603,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;SOIL.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib</IgnoreSpecificDefaultLibraries>
       <Profile>false</Profile>

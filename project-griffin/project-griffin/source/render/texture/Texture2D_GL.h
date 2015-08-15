@@ -3,7 +3,6 @@
 #define GRIFFIN_TEXTURE2D_GL_H_
 
 #include <memory>
-#include <string>
 
 namespace griffin {
 	namespace render {
@@ -30,11 +29,13 @@ namespace griffin {
 			/**
 			* load an image file directly as a new OpenGL texture
 			*/
-			bool loadFromFile(const std::string &name);
+			bool loadFromFile(const char *filename);
 
 			void bind(unsigned int textureSlot) const;
 
 		private:
+			void setFilteringMode(bool mipmaps);
+
 			size_t m_sizeBytes = 0;
 			unsigned int m_glTexture = 0;
 

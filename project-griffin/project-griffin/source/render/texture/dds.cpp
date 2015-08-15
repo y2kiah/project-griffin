@@ -1,8 +1,4 @@
-//
-// Copyright (C) 2002-2003 NVIDIA 
-// 
-// File: nv_dds.cpp
-//
+// Reference: nv_dds.cpp
 // Description:
 // 
 // Loads DDS images (DXTC1, DXTC3, DXTC5, RGB (888, 888X), and RGBA (8888) are
@@ -25,29 +21,11 @@
 // Mipmapped volume textures and DXTC compressed volume textures are supported.
 //
 //
-// Update: 6/11/2002
-//
-// Added some convenience functions to handle uploading textures to OpenGL. The
-// following functions have been added:
-//
-//     bool upload_texture1D();
-//     bool upload_texture2D(int imageIndex = 0, GLenum target = GL_TEXTURE_2D);
-//     bool upload_textureRectangle();
-//     bool upload_texture3D();
-//     bool upload_textureCubemap();
-//
-// See function implementation below for instructions/comments on using each
-// function.
-//
-// The open function has also been updated to take an optional second parameter
-// specifying whether the image should be flipped on load. This defaults to 
-// true.
-//
 // Sample usage
 //
 // Loading a compressed texture:
 //
-// CDDSImage image;
+// DDSImage image;
 // GLuint texobj;
 //
 // image.load("compressed.dds");
@@ -56,20 +34,20 @@
 // glEnable(GL_TEXTURE_2D);
 // glBindTexture(GL_TEXTURE_2D, texobj);
 //
-// glCompressedTexImage2DARB(GL_TEXTURE_2D, 0, image.get_format(), 
+// glCompressedTexImage2D(GL_TEXTURE_2D, 0, image.get_format(), 
 //     image.get_width(), image.get_height(), 0, image.get_size(), 
 //     image);
 //
 // for (int i = 0; i < image.get_num_mipmaps(); i++)
 // {
-//     glCompressedTexImage2DARB(GL_TEXTURE_2D, i+1, image.get_format(), 
+//     glCompressedTexImage2D(GL_TEXTURE_2D, i+1, image.get_format(), 
 //         image.get_mipmap(i).get_width(), image.get_mipmap(i).get_height(), 0, 
 //         image.get_mipmap(i).get_size(), image.get_mipmap(i));
 // } 
 // 
 // Loading an uncompressed texture:
 //
-// CDDSImage image;
+// DDSImage image;
 // GLuint texobj;
 //
 // image.load("uncompressed.dds");
@@ -91,19 +69,19 @@
 // 
 // Loading an uncompressed cubemap texture:
 //
-// CDDSImage image;
+// DDSImage image;
 // GLuint texobj;
 // GLenum target;
 // 
 // image.load("cubemap.dds");
 // 
 // glGenTextures(1, &texobj);
-// glEnable(GL_TEXTURE_CUBE_MAP_ARB);
-// glBindTexture(GL_TEXTURE_CUBE_MAP_ARB, texobj);
+// glEnable(GL_TEXTURE_CUBE_MAP);
+// glBindTexture(GL_TEXTURE_CUBE_MAP, texobj);
 // 
 // for (int n = 0; n < 6; n++)
 // {
-//     target = GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB+n;
+//     target = GL_TEXTURE_CUBE_MAP_POSITIVE_X+n;
 // 
 //     glTexImage2D(target, 0, image.get_components(), image[n].get_width(), 
 //         image[n].get_height(), 0, image.get_format(), GL_UNSIGNED_BYTE, 
@@ -121,7 +99,7 @@
 // 
 // Loading a volume texture:
 //
-// CDDSImage image;
+// DDSImage image;
 // GLuint texobj;
 // 
 // image.load("volume.dds");
@@ -143,67 +121,27 @@
 //         image[0].get_mipmap(i).get_depth(), 0, image.get_format(), 
 //         GL_UNSIGNED_BYTE, image[0].get_mipmap(i));
 // }
-/*
-#if defined(_WIN32)
-#  include <windows.h>
-#  define GET_EXT_POINTER(name, type) \
-      name = (type)wglGetProcAddress(#name)
 
-#elif defined(LINUX)
-#  include <GL/glx.h>
-
-extern "C" void(*glXGetProcAddressARB(const GLubyte *procName))(void);
-//extern "C" void (*glXGetProcAddress(const GLubyte *procName))( void );
-
-
-//#if defined(Bits64_)
-//# define useGetProcAddress ::glXGetProcAddress
-//#else
-#   define useGetProcAddress ::glXGetProcAddressARB
-//#endif
-
-#  define GET_EXT_POINTER(name, type) \
-      name = (type)useGetProcAddress((const GLubyte*)#name)
-
-#else // MACOS
-#if !OSMac_X86_64_
-#   include <AGL/agl.h>
-#endif
-#   define GET_EXT_POINTER(glname, gltype) 
-#   include <GL/glext.h>
-#endif
-*/
-
-#if defined(_WIN32) || defined(LINUX)
+#include "dds.h"
 //#include <GL/gl.h>
 //#include <GL/glext.h>
 #include <GL/glew.h>
-// TODO: get rid of any need for this macro, glew should handle this
-#define GET_EXT_POINTER(name, type)
-#endif
 
 #include <cstdio>
 #include <cstring>
 #include <cassert>
-#include "nv_dds.h"
+#include <memory>
 
-using namespace std;
-using namespace nv_dds;
 
-// static function pointers for uploading 3D textures and compressed 1D, 2D
-// and 3D textures.
-#if defined(_WIN32) || defined(LINUX)
-PFNGLTEXIMAGE3DEXTPROC CDDSImage::glTexImage3D = NULL;
-PFNGLCOMPRESSEDTEXIMAGE1DARBPROC CDDSImage::glCompressedTexImage1DARB = NULL;
-PFNGLCOMPRESSEDTEXIMAGE2DARBPROC CDDSImage::glCompressedTexImage2DARB = NULL;
-PFNGLCOMPRESSEDTEXIMAGE3DARBPROC CDDSImage::glCompressedTexImage3DARB = NULL;
-#endif
+using namespace griffin;
+using namespace griffin::render;
 
-// CDDSImage public functions
+
+// DDSImage public functions
 
 // default constructor
-CDDSImage::CDDSImage()
-	: format(0),
+DDSImage::DDSImage() :
+	format(0),
 	components(0),
 	compressed(false),
 	cubemap(false),
@@ -212,68 +150,42 @@ CDDSImage::CDDSImage()
 {
 }
 
-CDDSImage::~CDDSImage()
+DDSImage::~DDSImage()
 {
 }
 
-// loads DDS image
-//
-// filename - fully qualified name of DDS image
-// flipImage - specifies whether image is flipped on load, default is true
-bool CDDSImage::load(string filename, bool flipImage)
+bool DDSImage::loadFromMemory(unsigned char* data, bool flipImage)
 {
-	DDS_HEADER ddsh;
-	char filecode[4];
-	FILE *fp;
-	int width, height, depth;
-	int (CDDSImage::*sizefunc)(int, int);
+	int (DDSImage::*sizefunc)(int, int);
 
 	// clear any previously loaded images
 	clear();
 
-	// open file
-	auto ok = fopen_s(&fp, filename.data(), "rb");
-	if (ok != 0) {
-		return false;
-	}
+	unsigned char* dp = data;
 
 	// read in file marker, make sure its a DDS file
-	fread(filecode, 1, 4, fp);
-	if (strncmp(filecode, "DDS ", 4) != 0)
-	{
-		fclose(fp);
+	if (strncmp((char*)dp, "DDS ", 4) != 0) {
 		return false;
 	}
+	dp += 4;
 
 	// read in DDS header
-	fread(&ddsh, sizeof(ddsh), 1, fp);
-
-	swap_endian(&ddsh.dwSize);
-	swap_endian(&ddsh.dwFlags);
-	swap_endian(&ddsh.dwHeight);
-	swap_endian(&ddsh.dwWidth);
-	swap_endian(&ddsh.dwPitchOrLinearSize);
-	swap_endian(&ddsh.dwMipMapCount);
-	swap_endian(&ddsh.ddspf.dwSize);
-	swap_endian(&ddsh.ddspf.dwFlags);
-	swap_endian(&ddsh.ddspf.dwFourCC);
-	swap_endian(&ddsh.ddspf.dwRGBBitCount);
-	swap_endian(&ddsh.dwCaps1);
-	swap_endian(&ddsh.dwCaps2);
+	DDSHeader& ddsh = *(DDSHeader*)dp;
+	dp += sizeof(DDSHeader);
 
 	// check if image is a cubempa
-	if (ddsh.dwCaps2 & DDS_CUBEMAP)
+	if (ddsh.dwCaps2 & DDS_CUBEMAP) {
 		cubemap = true;
+	}
 
 	// check if image is a volume texture
-	if ((ddsh.dwCaps2 & DDS_VOLUME) && (ddsh.dwDepth > 0))
+	if ((ddsh.dwCaps2 & DDS_VOLUME) && (ddsh.dwDepth > 0)) {
 		volume = true;
+	}
 
 	// figure out what the image format is
-	if (ddsh.ddspf.dwFlags & DDS_FOURCC)
-	{
-		switch (ddsh.ddspf.dwFourCC)
-		{
+	if (ddsh.ddspf.dwFlags & DDS_FOURCC) {
+		switch (ddsh.ddspf.dwFourCC) {
 			case FOURCC_DXT1:
 				format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
 				components = 3;
@@ -290,60 +202,57 @@ bool CDDSImage::load(string filename, bool flipImage)
 				compressed = true;
 				break;
 			default:
-				fclose(fp);
 				return false;
 		}
-	} else if (ddsh.ddspf.dwFlags == DDS_RGBA && ddsh.ddspf.dwRGBBitCount == 32)
-	{
-		format = GL_BGRA_EXT;
+	}
+	else if (ddsh.ddspf.dwFlags == DDS_RGBA && ddsh.ddspf.dwRGBBitCount == 32) {
+		format = GL_BGRA;
 		compressed = false;
 		components = 4;
-	} else if (ddsh.ddspf.dwFlags == DDS_RGB  && ddsh.ddspf.dwRGBBitCount == 32)
-	{
-		format = GL_BGRA_EXT;
+	}
+	else if (ddsh.ddspf.dwFlags == DDS_RGB  && ddsh.ddspf.dwRGBBitCount == 32) {
+		format = GL_BGRA;
 		compressed = false;
 		components = 4;
-	} else if (ddsh.ddspf.dwFlags == DDS_RGB  && ddsh.ddspf.dwRGBBitCount == 24)
-	{
-		format = GL_BGR_EXT;
+	}
+	else if (ddsh.ddspf.dwFlags == DDS_RGB  && ddsh.ddspf.dwRGBBitCount == 24) {
+		format = GL_BGR;
 		compressed = false;
 		components = 3;
-	} else if (ddsh.ddspf.dwRGBBitCount == 8)
-	{
+	}
+	else if (ddsh.ddspf.dwRGBBitCount == 8) {
 		format = GL_LUMINANCE;
 		compressed = false;
 		components = 1;
-	} else
-	{
-		fclose(fp);
+	}
+	else {
 		return false;
 	}
 
 	// store primary surface width/height/depth
-	width = ddsh.dwWidth;
-	height = ddsh.dwHeight;
-	depth = clamp_size(ddsh.dwDepth);   // set to 1 if 0
+	int width = ddsh.dwWidth;
+	int height = ddsh.dwHeight;
+	int depth = clamp_size(ddsh.dwDepth);   // set to 1 if 0
 
-	// use correct size calculation function depending on whether image is 
-	// compressed
-	sizefunc = (compressed ? &CDDSImage::size_dxtc : &CDDSImage::size_rgb);
+	// use correct size calculation function depending on whether image is compressed
+	sizefunc = (compressed ? &DDSImage::size_dxtc : &DDSImage::size_rgb);
 
 	// load all surfaces for the image (6 surfaces for cubemaps)
-	for (int n = 0; n < (cubemap ? 6 : 1); n++)
-	{
-		int size;
-
+	int numSurfaces = (cubemap ? 6 : 1);
+	for (int n = 0; n < numSurfaces; ++n) {
 		// calculate surface size
-		size = (this->*sizefunc)(width, height)*depth;
+		int size = (this->*sizefunc)(width, height)*depth;
 
 		// load surface
-		CTexture img(width, height, depth, size);
-		fread(img, 1, img.size, fp);
+		DDSTexture img(width, height, depth, size);
+		memcpy_s(img, size, dp, size);
+		dp += size;
 
 		align_memory(&img);
 
-		if (!cubemap && flipImage)
-			flip(img, img.width, img.height, img.depth, img.size);
+		if (!cubemap && flipImage) {
+			flip(img, width, height, depth, size);
+		}
 
 		int w = clamp_size(width >> 1);
 		int h = clamp_size(height >> 1);
@@ -352,24 +261,22 @@ bool CDDSImage::load(string filename, bool flipImage)
 		// store number of mipmaps
 		int numMipmaps = ddsh.dwMipMapCount;
 
-		// number of mipmaps in file includes main surface so decrease count 
-		// by one
-		if (numMipmaps != 0)
-			numMipmaps--;
+		// number of mipmaps in file includes main surface so decrease count by one
+		if (numMipmaps != 0) {
+			--numMipmaps;
+		}
 
 		// load all mipmaps for current surface
-		for (int i = 0; i < numMipmaps && (w || h); i++)
-		{
+		for (int i = 0; i < numMipmaps && (w || h); ++i) {
 			// calculate mipmap size
 			size = (this->*sizefunc)(w, h)*d;
 
-			CSurface mipmap(w, h, d, size);
-			fread(mipmap, 1, mipmap.size, fp);
+			DDSSurface mipmap(w, h, d, size);
+			memcpy_s(mipmap, size, dp, size);
+			dp += size;
 
-			if (!cubemap && flipImage)
-			{
-				flip(mipmap, mipmap.width, mipmap.height, mipmap.depth,
-					 mipmap.size);
+			if (!cubemap && flipImage) {
+				flip(mipmap, w, h, d, size);
 			}
 
 			img.mipmaps.push_back(mipmap);
@@ -384,23 +291,41 @@ bool CDDSImage::load(string filename, bool flipImage)
 	}
 
 	// swap cubemaps on y axis (since image is flipped in OGL)
-	if (cubemap && flipImage)
-	{
-		CTexture tmp;
+	if (cubemap && flipImage) {
+		DDSTexture tmp;
 		tmp = images[3];
 		images[3] = images[2];
 		images[2] = tmp;
 	}
 
-	fclose(fp);
-
 	valid = true;
-
 	return true;
 }
 
+// loads DDS image
+//
+// filename - fully qualified name of DDS image
+// flipImage - specifies whether image is flipped on load, default is true
+bool DDSImage::load(const char* filename, bool flipImage)
+{
+	FILE* fp = nullptr;
+	if (fopen_s(&fp, filename, "rb")) {
+		// read in file
+		fseek(fp, 0, SEEK_END);
+		
+		long size = ftell(fp);
+		std::unique_ptr<unsigned char[]> dataPtr;
+		
+		fread(dataPtr.get(), 1, size, fp);
+		fclose(fp);
+
+		return loadFromMemory(dataPtr.get(), flipImage);
+	}
+	return false;
+}
+
 // free image memory
-void CDDSImage::clear()
+void DDSImage::clear()
 {
 	components = 0;
 	format = 0;
@@ -414,17 +339,16 @@ void CDDSImage::clear()
 
 // returns individual texture when multiple textures are loaded (as is the case
 // with volume textures and cubemaps)
-CTexture &CDDSImage::operator[](int index)
+DDSTexture &DDSImage::operator[](int index)
 {
 	// make sure an image has been loaded
-	assert(valid);
-	assert(index < (int)images.size());
+	assert(valid && index < (int)images.size());
 
 	return images[index];
 }
 
 // returns pointer to main image
-CDDSImage::operator char*()
+DDSImage::operator char*()
 {
 	assert(valid);
 
@@ -432,55 +356,19 @@ CDDSImage::operator char*()
 }
 
 // uploads a compressed/uncompressed 1D texture
-bool CDDSImage::upload_texture1D()
+bool DDSImage::upload_texture1D()
 {
-	assert(valid);
-	assert(images[0].height == 1);
-	assert(images[0].width > 0);
-	assert(images[0]);
+	assert(valid && images[0] && images[0].height == 1 && images[0].width > 0);
 
-	if (compressed)
-	{
-#if defined(_WIN32) || defined(LINUX)
-		// get function pointer if needed
-		if (glCompressedTexImage1DARB == NULL)
-		{
-			GET_EXT_POINTER(glCompressedTexImage1DARB,
-							PFNGLCOMPRESSEDTEXIMAGE1DARBPROC);
-		}
-
-		if (glCompressedTexImage1DARB == NULL)
-			return false;
-
-		glCompressedTexImage1DARB(GL_TEXTURE_1D, 0, format,
-								  images[0].width, 0, images[0].size,
-								  images[0]);
-
-		// load all mipmaps
-		unsigned int numMipMaps = (unsigned int)images[0].mipmaps.size();
-		if (numMipMaps)
-		{
-			for (unsigned int i = 0; i < numMipMaps; i++)
-			{
-				glCompressedTexImage1DARB(GL_TEXTURE_1D, i + 1, format,
-										  images[0].mipmaps[i].width, 0,
-										  images[0].mipmaps[i].size,
-										  images[0].mipmaps[i]);
-			}
-			glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_BASE_LEVEL, 0);
-			glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAX_LEVEL, numMipMaps);
-		}
-#else
+	if (compressed) {
 		glCompressedTexImage1D(GL_TEXTURE_1D, 0, format,
 							   images[0].width, 0, images[0].size,
 							   images[0]);
 
 		// load all mipmaps
 		unsigned int numMipMaps = (unsigned int)images[0].mipmaps.size();
-		if (numMipMaps)
-		{
-			for (unsigned int i = 0; i < numMipMaps; i++)
-			{
+		if (numMipMaps) {
+			for (unsigned int i = 0; i < numMipMaps; ++i) {
 				glCompressedTexImage1D(GL_TEXTURE_1D, i + 1, format,
 									   images[0].mipmaps[i].width, 0,
 									   images[0].mipmaps[i].size,
@@ -489,18 +377,15 @@ bool CDDSImage::upload_texture1D()
 			glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_BASE_LEVEL, 0);
 			glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAX_LEVEL, numMipMaps);
 		}
-#endif
-	} else
-	{
+	}
+	else {
 		glTexImage1D(GL_TEXTURE_1D, 0, format, images[0].width, 0,
 					 format, GL_UNSIGNED_BYTE, images[0]);
 
 		// load all mipmaps
 		unsigned int numMipMaps = (unsigned int)images[0].mipmaps.size();
-		if (numMipMaps)
-		{
-			for (unsigned int i = 0; i < numMipMaps; i++)
-			{
+		if (numMipMaps) {
+			for (unsigned int i = 0; i < numMipMaps; ++i) {
 				glTexImage1D(GL_TEXTURE_1D, i + 1, components,
 							 images[0].mipmaps[i].width, 0, format,
 							 GL_UNSIGNED_BYTE, images[0].mipmaps[i]);
@@ -524,61 +409,21 @@ bool CDDSImage::upload_texture1D()
 //              the 2D texture such as a specific face of a cubemap
 //
 //              default: GL_TEXTURE_2D
-bool CDDSImage::upload_texture2D(int imageIndex, GLenum target)
+bool DDSImage::upload_texture2D(int imageIndex, GLenum target)
 {
-	assert(valid);
-	assert(imageIndex >= 0);
-	assert(imageIndex < (int)images.size());
-	assert(images[imageIndex].height > 0);
-	assert(images[imageIndex].width > 0);
-	assert(images[imageIndex]);
-	assert(target == GL_TEXTURE_2D ||
-		   (target >= GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB &&
-		   target <= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_ARB));
+	assert(valid && imageIndex >= 0 && imageIndex < (int)images.size());
+	assert(images[imageIndex] && images[imageIndex].height > 0 && images[imageIndex].width > 0);
+	assert(target == GL_TEXTURE_2D || (target >= GL_TEXTURE_CUBE_MAP_POSITIVE_X && target <= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z));
 
-	if (compressed)
-	{
-#if defined(_WIN32) || defined(LINUX)
-		// load function pointer if needed
-		if (glCompressedTexImage2DARB == NULL)
-		{
-			GET_EXT_POINTER(glCompressedTexImage2DARB,
-							PFNGLCOMPRESSEDTEXIMAGE2DARBPROC);
-		}
-
-		if (glCompressedTexImage2DARB == NULL)
-			return false;
-
-		glCompressedTexImage2DARB(target, 0, format,
-								  images[imageIndex].width, images[imageIndex].height, 0,
-								  images[imageIndex].size, images[imageIndex]);
-
-		// load all mipmaps
-		unsigned int numMipMaps = (unsigned int)images[imageIndex].mipmaps.size();
-		if (numMipMaps)
-		{
-			for (unsigned int i = 0; i < numMipMaps; i++)
-			{
-				glCompressedTexImage2DARB(target, i + 1, format,
-										  images[imageIndex].mipmaps[i].width,
-										  images[imageIndex].mipmaps[i].height, 0,
-										  images[imageIndex].mipmaps[i].size,
-										  images[imageIndex].mipmaps[i]);
-			}
-			glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0);
-			glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, numMipMaps);
-		}
-#else
+	if (compressed) {
 		glCompressedTexImage2D(target, 0, format,
 							   images[imageIndex].width, images[imageIndex].height, 0,
 							   images[imageIndex].size, images[imageIndex]);
 
 		// load all mipmaps
 		unsigned int numMipMaps = (unsigned int)images[imageIndex].mipmaps.size();
-		if (numMipMaps)
-		{
-			for (unsigned int i = 0; i < numMipMaps; i++)
-			{
+		if (numMipMaps) {
+			for (unsigned int i = 0; i < numMipMaps; ++i) {
 				glCompressedTexImage2D(target, i + 1, format,
 									   images[imageIndex].mipmaps[i].width,
 									   images[imageIndex].mipmaps[i].height, 0,
@@ -588,19 +433,16 @@ bool CDDSImage::upload_texture2D(int imageIndex, GLenum target)
 			glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0);
 			glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, numMipMaps);
 		}
-#endif
-	} else
-	{
+	}
+	else {
 		glTexImage2D(target, 0, components, images[imageIndex].width,
 					 images[imageIndex].height, 0, format, GL_UNSIGNED_BYTE,
 					 images[imageIndex]);
 
 		// load all mipmaps
 		unsigned int numMipMaps = (unsigned int)images[imageIndex].mipmaps.size();
-		if (numMipMaps)
-		{
-			for (unsigned int i = 0; i < numMipMaps; i++)
-			{
+		if (numMipMaps) {
+			for (unsigned int i = 0; i < numMipMaps; ++i) {
 				glTexImage2D(target, i + 1, components,
 							 images[imageIndex].mipmaps[i].width,
 							 images[imageIndex].mipmaps[i].height, 0, format,
@@ -614,87 +456,49 @@ bool CDDSImage::upload_texture2D(int imageIndex, GLenum target)
 	return true;
 }
 
-#ifdef GL_NV_texture_rectangle
-bool CDDSImage::upload_textureRectangle()
+bool DDSImage::upload_textureRectangle()
 {
-	assert(valid);
-	assert(images.size() >= 1);
+	assert(valid && images.size() >= 1);
 
-	if (!upload_texture2D(0, GL_TEXTURE_RECTANGLE_NV))
+	if (!upload_texture2D(0, GL_TEXTURE_RECTANGLE)) {
 		return false;
+	}
 
 	return true;
 }
-#endif
 
 // uploads a compressed/uncompressed cubemap texture
-bool CDDSImage::upload_textureCubemap()
+bool DDSImage::upload_textureCubemap()
 {
-	assert(valid);
-	assert(cubemap);
-	assert(images.size() == 6);
+	assert(valid && cubemap && images.size() == 6);
 
 	GLenum target;
 
 	// loop through cubemap faces and load them as 2D textures 
-	for (int n = 0; n < 6; n++)
-	{
+	for (int n = 0; n < 6; ++n) {
 		// specify cubemap face
-		target = GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB + n;
-		if (!upload_texture2D(n, target))
+		target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + n;
+		if (!upload_texture2D(n, target)) {
 			return false;
+		}
 	}
 
 	return true;
 }
 
 // uploads a compressed/uncompressed 3D texture
-bool CDDSImage::upload_texture3D()
+bool DDSImage::upload_texture3D()
 {
-	assert(valid);
-	assert(volume);
-	assert(images[0].depth >= 1);
+	assert(valid && volume && images[0].depth >= 1);
 
-	if (compressed)
-	{
-#if defined(_WIN32) || defined(LINUX)
-		// retrieve function pointer if needed
-		if (glCompressedTexImage3DARB == NULL)
-		{
-			GET_EXT_POINTER(glCompressedTexImage3DARB,
-							PFNGLCOMPRESSEDTEXIMAGE3DARBPROC);
-		}
-
-		if (glCompressedTexImage3DARB == NULL)
-			return false;
-
-		glCompressedTexImage3DARB(GL_TEXTURE_3D, 0, format, images[0].width,
-								  images[0].height, images[0].depth, 0, images[0].size, images[0]);
-
-		// load all mipmap volumes
-		unsigned int numMipMaps = (unsigned int)images[0].mipmaps.size();
-		if (numMipMaps)
-		{
-			for (unsigned int i = 0; i < numMipMaps; i++)
-			{
-				glCompressedTexImage3DARB(GL_TEXTURE_3D, i + 1, format,
-										  images[0].mipmaps[i].width, images[0].mipmaps[i].height,
-										  images[0].depth, 0, images[0].mipmaps[i].size,
-										  images[0].mipmaps[i]);
-			}
-			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_BASE_LEVEL, 0);
-			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAX_LEVEL, numMipMaps);
-		}
-#else
+	if (compressed) {
 		glCompressedTexImage3D(GL_TEXTURE_3D, 0, format, images[0].width,
 							   images[0].height, images[0].depth, 0, images[0].size, images[0]);
 
 		// load all mipmap volumes
 		unsigned int numMipMaps = (unsigned int)images[0].mipmaps.size();
-		if (numMipMaps)
-		{
-			for (unsigned int i = 0; i < numMipMaps; i++)
-			{
+		if (numMipMaps) {
+			for (unsigned int i = 0; i < numMipMaps; ++i) {
 				glCompressedTexImage3D(GL_TEXTURE_3D, i + 1, format,
 									   images[0].mipmaps[i].width, images[0].mipmaps[i].height,
 									   images[0].depth, 0, images[0].mipmaps[i].size,
@@ -703,31 +507,16 @@ bool CDDSImage::upload_texture3D()
 			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_BASE_LEVEL, 0);
 			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAX_LEVEL, numMipMaps);
 		}
-
-#endif
-	} else
-	{
-#if defined(_WIN32) || defined(LINUX)
-		// retrieve function pointer if needed
-		if (glTexImage3D == NULL)
-		{
-			GET_EXT_POINTER(glTexImage3D, PFNGLTEXIMAGE3DEXTPROC);
-		}
-
-		if (glTexImage3D == NULL)
-			return false;
-#endif
-
+	}
+	else {
 		glTexImage3D(GL_TEXTURE_3D, 0, components, images[0].width,
 					 images[0].height, images[0].depth, 0, format, GL_UNSIGNED_BYTE,
 					 images[0]);
 
 		// load all mipmap volumes
 		unsigned int numMipMaps = (unsigned int)images[0].mipmaps.size();
-		if (numMipMaps)
-		{
-			for (unsigned int i = 0; i < numMipMaps; i++)
-			{
+		if (numMipMaps) {
+			for (unsigned int i = 0; i < numMipMaps; ++i) {
 				glTexImage3D(GL_TEXTURE_3D, i + 1, components,
 							 images[0].mipmaps[i].width, images[0].mipmaps[i].height,
 							 images[0].mipmaps[i].depth, 0, format, GL_UNSIGNED_BYTE,
@@ -741,80 +530,66 @@ bool CDDSImage::upload_texture3D()
 }
 
 // clamps input size to [1-size]
-inline int CDDSImage::clamp_size(int size)
+inline int DDSImage::clamp_size(int size)
 {
-	if (size <= 0)
+	if (size <= 0) {
 		size = 1;
-
+	}
 	return size;
 }
 
-// CDDSImage private functions
+// DDSImage private functions
 
 // calculates 4-byte aligned width of image
-inline int CDDSImage::get_line_width(int width, int bpp)
+inline int DDSImage::get_line_width(int width, int bpp)
 {
 	return ((width * bpp + 31) & -32) >> 3;
 }
 
 // calculates size of DXTC texture in bytes
-inline int CDDSImage::size_dxtc(int width, int height)
+inline int DDSImage::size_dxtc(int width, int height)
 {
-	return ((width + 3) / 4)*((height + 3) / 4)*
+	return ((width + 3) / 4) * ((height + 3) / 4) *
 		(format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ? 8 : 16);
 }
 
 // calculates size of uncompressed RGB texture in bytes
-inline int CDDSImage::size_rgb(int width, int height)
+inline int DDSImage::size_rgb(int width, int height)
 {
 	return width*height*components;
 }
 
-// Swap the bytes in a 32 bit value
-inline void CDDSImage::swap_endian(void *val)
-{
-#ifdef MACOS
-	unsigned int *ival = (unsigned int *)val;
-
-	*ival = ((*ival >> 24) & 0x000000ff) |
-		((*ival >> 8) & 0x0000ff00) |
-		((*ival << 8) & 0x00ff0000) |
-		((*ival << 24) & 0xff000000);
-#endif
-}
-
 // align to 4 byte boundary (add pad bytes to end of each line in the image)
-void CDDSImage::align_memory(CTexture *surface)
+void DDSImage::align_memory(DDSTexture* surface)
 {
 	// don't bother with compressed images, volume textures, or cubemaps
-	if (compressed || volume || cubemap)
+	if (compressed || volume || cubemap) {
 		return;
+	}
 
 	// calculate new image size
 	int linesize = get_line_width(surface->width, components * 8);
 	int imagesize = linesize*surface->height;
 
 	// exit if already aligned
-	if (surface->size == imagesize)
+	if (surface->size == imagesize) {
 		return;
+	}
 
 	// create new image of new size
-	CTexture newSurface(surface->width, surface->height, surface->depth,
-						imagesize);
+	DDSTexture newSurface(surface->width, surface->height, surface->depth, imagesize);
 
 	// add pad bytes to end of each line
-	char *srcimage = (char*)*surface;
-	char *dstimage = (char*)newSurface;
-	for (int n = 0; n < surface->depth; n++)
-	{
+	char* srcimage = (char*)*surface;
+	char* dstimage = (char*)newSurface;
+	for (int n = 0; n < surface->depth; ++n) {
 		char *curline = srcimage;
 		char *newline = dstimage;
 
 		int imsize = surface->size / surface->depth;
 		int lnsize = imsize / surface->height;
 
-		for (int i = 0; i < surface->height; i++)
-		{
+		for (int i = 0; i < surface->height; ++i) {
 			memcpy(newline, curline, lnsize);
 			newline += linesize;
 			curline += lnsize;
@@ -826,52 +601,48 @@ void CDDSImage::align_memory(CTexture *surface)
 }
 
 // flip image around X axis
-void CDDSImage::flip(char *image, int width, int height, int depth, int size)
+void DDSImage::flip(char* image, int width, int height, int depth, int size)
 {
 	int linesize;
 	int offset;
 
-	if (!compressed)
-	{
+	if (!compressed) {
 		assert(depth > 0);
 
 		int imagesize = size / depth;
 		linesize = imagesize / height;
 
-		for (int n = 0; n < depth; n++)
-		{
+		for (int n = 0; n < depth; ++n) {
 			offset = imagesize*n;
-			char *top = image + offset;
-			char *bottom = top + (imagesize - linesize);
+			char* top = image + offset;
+			char* bottom = top + (imagesize - linesize);
 
-			for (int i = 0; i < (height >> 1); i++)
-			{
+			for (int i = 0; i < (height >> 1); ++i) {
 				swap(bottom, top, linesize);
 
 				top += linesize;
 				bottom -= linesize;
 			}
 		}
-	} else
-	{
-		void (CDDSImage::*flipblocks)(DXTColBlock*, int);
+	}
+	else {
+		void (DDSImage::*flipblocks)(DXTColBlock*, int);
 		int xblocks = width / 4;
 		int yblocks = height / 4;
 		int blocksize;
 
-		switch (format)
-		{
+		switch (format) {
 			case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
 				blocksize = 8;
-				flipblocks = &CDDSImage::flip_blocks_dxtc1;
+				flipblocks = &DDSImage::flip_blocks_dxtc1;
 				break;
 			case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
 				blocksize = 16;
-				flipblocks = &CDDSImage::flip_blocks_dxtc3;
+				flipblocks = &DDSImage::flip_blocks_dxtc3;
 				break;
 			case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
 				blocksize = 16;
-				flipblocks = &CDDSImage::flip_blocks_dxtc5;
+				flipblocks = &DDSImage::flip_blocks_dxtc5;
 				break;
 			default:
 				return;
@@ -879,11 +650,10 @@ void CDDSImage::flip(char *image, int width, int height, int depth, int size)
 
 		linesize = xblocks * blocksize;
 
-		DXTColBlock *top;
-		DXTColBlock *bottom;
+		DXTColBlock* top;
+		DXTColBlock* bottom;
 
-		for (int j = 0; j < (yblocks >> 1); j++)
-		{
+		for (int j = 0; j < (yblocks >> 1); ++j) {
 			top = (DXTColBlock*)(image + j * linesize);
 			bottom = (DXTColBlock*)(image + (((yblocks - j) - 1) * linesize));
 
@@ -896,9 +666,9 @@ void CDDSImage::flip(char *image, int width, int height, int depth, int size)
 }
 
 // swap to sections of memory
-void CDDSImage::swap(void *byte1, void *byte2, int size)
+void DDSImage::swap(void* byte1, void* byte2, int size)
 {
-	unsigned char *tmp = new unsigned char[size];
+	unsigned char* tmp = new unsigned char[size];
 
 	memcpy(tmp, byte1, size);
 	memcpy(byte1, byte2, size);
@@ -908,43 +678,41 @@ void CDDSImage::swap(void *byte1, void *byte2, int size)
 }
 
 // flip a DXT1 color block
-void CDDSImage::flip_blocks_dxtc1(DXTColBlock *line, int numBlocks)
+void DDSImage::flip_blocks_dxtc1(DXTColBlock* line, int numBlocks)
 {
-	DXTColBlock *curblock = line;
+	DXTColBlock* curblock = line;
 
-	for (int i = 0; i < numBlocks; i++)
-	{
+	for (int i = 0; i < numBlocks; ++i) {
 		swap(&curblock->row[0], &curblock->row[3], sizeof(unsigned char));
 		swap(&curblock->row[1], &curblock->row[2], sizeof(unsigned char));
 
-		curblock++;
+		++curblock;
 	}
 }
 
 // flip a DXT3 color block
-void CDDSImage::flip_blocks_dxtc3(DXTColBlock *line, int numBlocks)
+void DDSImage::flip_blocks_dxtc3(DXTColBlock* line, int numBlocks)
 {
-	DXTColBlock *curblock = line;
-	DXT3AlphaBlock *alphablock;
+	DXTColBlock* curblock = line;
+	DXT3AlphaBlock* alphablock;
 
-	for (int i = 0; i < numBlocks; i++)
-	{
+	for (int i = 0; i < numBlocks; ++i) {
 		alphablock = (DXT3AlphaBlock*)curblock;
 
 		swap(&alphablock->row[0], &alphablock->row[3], sizeof(unsigned short));
 		swap(&alphablock->row[1], &alphablock->row[2], sizeof(unsigned short));
 
-		curblock++;
+		++curblock;
 
 		swap(&curblock->row[0], &curblock->row[3], sizeof(unsigned char));
 		swap(&curblock->row[1], &curblock->row[2], sizeof(unsigned char));
 
-		curblock++;
+		++curblock;
 	}
 }
 
 // flip a DXT5 alpha block
-void CDDSImage::flip_dxt5_alpha(DXT5AlphaBlock *block)
+void DDSImage::flip_dxt5_alpha(DXT5AlphaBlock* block)
 {
 	unsigned char gBits[4][4];
 
@@ -1016,58 +784,56 @@ void CDDSImage::flip_dxt5_alpha(DXT5AlphaBlock *block)
 }
 
 // flip a DXT5 color block
-void CDDSImage::flip_blocks_dxtc5(DXTColBlock *line, int numBlocks)
+void DDSImage::flip_blocks_dxtc5(DXTColBlock* line, int numBlocks)
 {
-	DXTColBlock *curblock = line;
-	DXT5AlphaBlock *alphablock;
+	DXTColBlock* curblock = line;
+	DXT5AlphaBlock* alphablock;
 
-	for (int i = 0; i < numBlocks; i++)
-	{
+	for (int i = 0; i < numBlocks; ++i) {
 		alphablock = (DXT5AlphaBlock*)curblock;
 
 		flip_dxt5_alpha(alphablock);
 
-		curblock++;
+		++curblock;
 
 		swap(&curblock->row[0], &curblock->row[3], sizeof(unsigned char));
 		swap(&curblock->row[1], &curblock->row[2], sizeof(unsigned char));
 
-		curblock++;
+		++curblock;
 	}
 }
 
-// CTexture implementation
+// DDSTexture implementation
 
 // default constructor
-CTexture::CTexture()
-	: CSurface()  // initialize base class part
+DDSTexture::DDSTexture() :
+	DDSSurface()  // initialize base class part
 {
 }
 
 // creates an empty texture
-CTexture::CTexture(int w, int h, int d, int imgSize)
-	: CSurface(w, h, d, imgSize)  // initialize base class part
+DDSTexture::DDSTexture(int w, int h, int d, int imgSize) :
+	DDSSurface(w, h, d, imgSize)  // initialize base class part
 {
 }
 
 // copy constructor
-CTexture::CTexture(const CTexture &copy)
-	: CSurface(copy)
+DDSTexture::DDSTexture(const DDSTexture &copy) :
+	DDSSurface(copy)
 {
-	for (unsigned int i = 0; i < copy.mipmaps.size(); i++)
+	for (unsigned int i = 0; i < copy.mipmaps.size(); ++i) {
 		mipmaps.push_back(copy.mipmaps[i]);
+	}
 }
 
 // assignment operator
-CTexture &CTexture::operator= (const CTexture &rhs)
+DDSTexture& DDSTexture::operator=(const DDSTexture& rhs)
 {
-	if (this != &rhs)
-	{
-		CSurface::operator = (rhs);
+	if (this != &rhs) {
+		DDSSurface::operator = (rhs);
 
 		mipmaps.clear();
-		for (unsigned int i = 0; i < rhs.mipmaps.size(); i++)
-		{
+		for (unsigned int i = 0; i < rhs.mipmaps.size(); ++i) {
 			mipmaps.push_back(rhs.mipmaps[i]);
 		}
 	}
@@ -1076,41 +842,39 @@ CTexture &CTexture::operator= (const CTexture &rhs)
 }
 
 // clean up texture memory
-CTexture::~CTexture()
+DDSTexture::~DDSTexture()
 {
 	mipmaps.clear();
 }
 
-// CSurface implementation
+// DDSSurface implementation
 
 // default constructor
-CSurface::CSurface()
-	: width(0),
+DDSSurface::DDSSurface() :
+	width(0),
 	height(0),
 	depth(0),
 	size(0),
-	pixels(NULL)
+	pixels(nullptr)
 {
 }
 
 // creates an empty image
-CSurface::CSurface(int w, int h, int d, int imgsize)
+DDSSurface::DDSSurface(int w, int h, int d, int imgsize)
 {
-	pixels = NULL;
+	pixels = nullptr;
 	create(w, h, d, imgsize);
 }
 
 // copy constructor
-CSurface::CSurface(const CSurface &copy)
-	: width(0),
+DDSSurface::DDSSurface(const DDSSurface& copy) :
+	width(0),
 	height(0),
 	depth(0),
 	size(0),
-	pixels(NULL)
+	pixels(nullptr)
 {
-
-	if (copy.pixels)
-	{
+	if (copy.pixels) {
 		size = copy.size;
 		width = copy.width;
 		height = copy.height;
@@ -1121,14 +885,12 @@ CSurface::CSurface(const CSurface &copy)
 }
 
 // assignment operator
-CSurface &CSurface::operator= (const CSurface &rhs)
+DDSSurface& DDSSurface::operator=(const DDSSurface& rhs)
 {
-	if (this != &rhs)
-	{
+	if (this != &rhs) {
 		clear();
 
-		if (rhs.pixels)
-		{
+		if (rhs.pixels) {
 			size = rhs.size;
 			width = rhs.width;
 			height = rhs.height;
@@ -1143,19 +905,19 @@ CSurface &CSurface::operator= (const CSurface &rhs)
 }
 
 // clean up image memory
-CSurface::~CSurface()
+DDSSurface::~DDSSurface()
 {
 	clear();
 }
 
 // returns a pointer to image
-CSurface::operator char*()
+DDSSurface::operator char*()
 {
 	return pixels;
 }
 
 // creates an empty image
-void CSurface::create(int w, int h, int d, int imgsize)
+void DDSSurface::create(int w, int h, int d, int imgsize)
 {
 	clear();
 
@@ -1167,8 +929,8 @@ void CSurface::create(int w, int h, int d, int imgsize)
 }
 
 // free surface memory
-void CSurface::clear()
+void DDSSurface::clear()
 {
 	delete[] pixels;
-	pixels = NULL;
+	pixels = nullptr;
 }

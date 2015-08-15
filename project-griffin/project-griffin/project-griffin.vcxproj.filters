@@ -184,9 +184,6 @@
     <ClCompile Include="source\render\font\FreeType.cpp">
       <Filter>render\font</Filter>
     </ClCompile>
-    <ClCompile Include="source\render\texture\nv_dds.cpp">
-      <Filter>render\texture\impl</Filter>
-    </ClCompile>
     <ClCompile Include="source\resource\impl\ResourceSource.cpp">
       <Filter>resource\impl</Filter>
     </ClCompile>
@@ -276,6 +273,9 @@
     </ClCompile>
     <ClCompile Include="source\game\player\PlayerControlSystem.cpp">
       <Filter>game\player</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\texture\dds.cpp">
+      <Filter>render\texture\impl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -639,12 +639,6 @@
     <ClInclude Include="source\resource\Resource.h">
       <Filter>resource</Filter>
     </ClInclude>
-    <ClInclude Include="source\render\texture\dds.h">
-      <Filter>render\texture</Filter>
-    </ClInclude>
-    <ClInclude Include="source\render\texture\nv_dds.h">
-      <Filter>render\texture</Filter>
-    </ClInclude>
     <ClInclude Include="source\render\font\FreeType.h">
       <Filter>render\font</Filter>
     </ClInclude>
@@ -786,6 +780,9 @@
     </ClInclude>
     <ClInclude Include="source\game\player\PlayerControlSystem.h">
       <Filter>game\player</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\texture\dds.h">
+      <Filter>render\texture</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,7 +1,14 @@
 #include "../Texture2D_GL.h"
+#include "../dds.h"
 #include <gl/glew.h>
 #include <SDL_log.h>
-#include <SOIL.h>
+//#include <SOIL.h>
+
+//#ifdef _DEBUG
+//#pragma comment( lib, "SOIL_d.lib" )
+//#else
+//#pragma comment( lib, "SOIL.lib" )
+//#endif
 
 namespace griffin {
 	namespace render {
@@ -23,26 +30,58 @@ namespace griffin {
 			}
 		}
 
+		void Texture2D_GL::setFilteringMode(bool mipmaps)
+		{
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			if (mipmaps) {
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			}
+			else {
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			}
+
+			// TODO: TEMP, do NOT keep this here as it will be queried at runtime, move to OpenGL setup and set a flag
+			if (glewIsExtensionSupported("GL_EXT_texture_filter_anisotropic")) {
+				float fLargest = 1.0f;
+				glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest);
+				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
+			}
+		}
+
 		bool Texture2D_GL::loadFromMemory(unsigned char* data, size_t size)
 		{
 			// if image is already loaded, do some cleanup?
 
+			glGenTextures(1, &m_glTexture);
+			glBindTexture(GL_TEXTURE_2D, m_glTexture);
+			DDSImage image;
+			bool ok = image.loadFromMemory(data, true) &&
+					  image.upload_texture2D();
+
+			setFilteringMode(image.get_num_mipmaps() > 0);
+
+			/*
 			m_glTexture = SOIL_load_OGL_texture_from_memory(
 				data, static_cast<int>(size),
 				SOIL_LOAD_AUTO,
 				SOIL_CREATE_NEW_ID,
 				SOIL_FLAG_INVERT_Y | SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_MIPMAPS | SOIL_FLAG_DDS_LOAD_DIRECT | SOIL_FLAG_COMPRESS_TO_DXT);
+			*/
+
+			m_sizeBytes = size;
 
 			SDL_Log("tex: %d\n", m_glTexture);
 
 			// check for an error during the load process
-			if (m_glTexture == 0) {
-				SDL_Log("SOIL loading error: %s\n", SOIL_last_result());
+			//if (m_glTexture == 0) {
+			//	SDL_Log("SOIL loading error: %s\n", SOIL_last_result());
+			//}
+
+			if (!ok) {
+				SDL_Log("texture loading error\n");
 			}
 
-			m_sizeBytes = size;
-
-			return (m_glTexture != 0);
+			return ok;// (m_glTexture != 0);
 		}
 
 		bool Texture2D_GL::loadFromInternalMemory(bool discard)
@@ -55,24 +94,35 @@ namespace griffin {
 			return result;
 		}
 
-		bool Texture2D_GL::loadFromFile(const std::string &name)
+		bool Texture2D_GL::loadFromFile(const char* filename)
 		{
 			// if image is already loaded, do some cleanup?
 
-			m_glTexture = SOIL_load_OGL_texture(
+			glGenTextures(1, &m_glTexture);
+			glBindTexture(GL_TEXTURE_2D, m_glTexture);
+			DDSImage image;
+			bool ok = image.load(filename, true) &&
+					  image.upload_texture2D();
+
+			setFilteringMode(image.get_num_mipmaps() > 0);
+
+			m_sizeBytes = image.get_size();
+
+			/*m_glTexture = SOIL_load_OGL_texture(
 				name.c_str(),
 				SOIL_LOAD_AUTO,
 				SOIL_CREATE_NEW_ID,
 				SOIL_FLAG_INVERT_Y | SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_MIPMAPS | SOIL_FLAG_DDS_LOAD_DIRECT | SOIL_FLAG_COMPRESS_TO_DXT);
+			*/
 
 			SDL_Log("tex: %d\n", m_glTexture);
 
 			// check for an error during the load process
-			if (m_glTexture == 0) {
-				SDL_Log("SOIL loading error: %s\n", SOIL_last_result());
-			}
+			//if (m_glTexture == 0) {
+			//	SDL_Log("SOIL loading error: %s\n", SOIL_last_result());
+			//}
 
-			return (m_glTexture != 0);
+			return ok;// (m_glTexture != 0);
 		}
 
 		void Texture2D_GL::bind(unsigned int textureSlot = GL_TEXTURE0) const
