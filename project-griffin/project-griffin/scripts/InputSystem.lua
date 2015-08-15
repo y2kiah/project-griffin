@@ -417,7 +417,6 @@ function catchAllHandler(frameInput)
 		for j,mi in pairs(mc) do
 			if not mi.handled then
 				print("state " .. ffi.string(mi.inputMapping.name) .. " handled active")
-				print(mi.handled)
 			end
 		end
 	end

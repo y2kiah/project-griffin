@@ -49,27 +49,49 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& en
 	}
 
 	// Camera movement
-	if (moveForward != 0 || moveSide != 0) { // TODO: this goes away when keys control acceleration instead of velocity
-		auto camInstId = scene.entityManager->getEntityComponentId(playerId, scene::CameraInstanceContainer::componentType);
-		auto& camInst = scene.entityManager->getComponentStore<scene::CameraInstanceContainer>().getComponent(camInstId);
-		auto& cam = *scene.cameras[camInst.cameraId];
+	{
+		vec3 targetV = { 0, 0, 0 };
 
-		float speedTarget = 12.0f; // jog speed, in ft/s
-		if (speedToggle == SpeedFlag_Sprint) {
-			speedTarget = 29.0f;
+		if (moveForward != 0 || moveSide != 0) {
+			auto camInstId = scene.entityManager->getEntityComponentId(playerId, scene::CameraInstanceContainer::componentType);
+			auto& camInst = scene.entityManager->getComponentStore<scene::CameraInstanceContainer>().getComponent(camInstId);
+			auto& cam = *scene.cameras[camInst.cameraId];
+
+			// determine target velocity
+			float speedTarget = 12.0f; // jog speed, in ft/s
+			if (speedToggle == SpeedFlag_Sprint &&
+				moveForward == 1) // can only sprint moving forward
+			{
+				speedTarget = 29.0f;
+			}
+			else if (speedToggle == SpeedFlag_Walk) {
+				speedTarget = 5.0f;
+			}
+			speedTarget *= ui.deltaT; // speed per timestep
+
+			vec3 forwardDir = normalize(vec3(cam.getViewDirection().x, cam.getViewDirection().y, 0));
+			vec3 right = cross(forwardDir, cam.getWorldUp());
+
+			targetV = forwardDir * static_cast<float>(moveForward);
+			targetV += right * static_cast<float>(moveSide);
+
+			targetV = normalize(targetV) * speedTarget;
 		}
-		else if (speedToggle == SpeedFlag_Walk) {
-			speedTarget = 5.0f;
+
+		// TODO: note that once collisions come into the play, the achieved velocity from last frame
+		// might be different than the original velocity attempted. Verlet integration handles this
+
+		// accelerate to the targetVelocity from current velocity
+		auto deltaV = targetV - velocity; // difference between target and current
+		float len2 = (deltaV.x * deltaV.x) + (deltaV.y * deltaV.y) + (deltaV.z * deltaV.z);
+		if (len2 < epsilon<float>()) { // target velocity achieved
+			velocity = targetV;
 		}
-
-		vec3 forwardDir = normalize(vec3(cam.getViewDirection().x, cam.getViewDirection().y, 0));
-		vec3 right = cross(forwardDir, cam.getWorldUp());
-		
-		vec3 velocity = forwardDir * static_cast<float>(moveForward);
-		velocity += right * static_cast<float>(moveSide);
-
-		// TODO: we want to smoothly accelerate to the speedTarget from a separate speed
-		velocity = normalize(velocity) * speedTarget * ui.deltaT;
+		else { // accelerate toward target velocity
+			// cap acceleration to the distance remaining to the target velocity
+			float acceleration = glm::min(44.0f * ui.deltaT * ui.deltaT, sqrt(len2)); // ft/s^2
+			velocity += normalize(deltaV) * acceleration;
+		}
 
 		node.translationLocal += velocity;
 		node.positionDirty = 1;
