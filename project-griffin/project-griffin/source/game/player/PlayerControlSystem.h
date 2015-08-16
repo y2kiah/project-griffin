@@ -25,6 +25,7 @@ namespace griffin {
 			glm::vec3	velocity = {};							//<! current player velocity
 
 			Id_T		playerId;								//<! entity id of the player
+			Id_T		movementComponentId;					//<! movement component for the player entity
 			Id_T		playerfpsInputContextId;				//<! handle for the playerfps input context
 			Id_T		forwardId, backId, leftId, rightId;		//<! mapping handles for the inputs
 			Id_T		sprintId, walkId, lookXId, lookYId;

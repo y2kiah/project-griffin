@@ -20,7 +20,10 @@ namespace griffin {
 	// Functions
 
 	/**
-	*
+	* Runs the simulation logic at a fixed frame rate. Keep a "previous" and "next" value for
+	* any state that needs to be interpolated smoothly in the renderFrameTick loop. The sceneNode
+	* position and orientation are interpolated automatically, but other values like color that
+	* need smooth interpolation for rendering should be handled manually.
 	*/
 	void gameUpdateFrameTick(Game* pGame, Engine& engine, UpdateInfo& ui)
 	{
@@ -35,11 +38,14 @@ namespace griffin {
 
 
 	/**
-	*
+	* Runs at the "full" variable frame rate of the render loop, often bound to vsync at 60hz. For
+	* smooth animation, state must be kept from the two most recent update ticks, and interpolated
+	* in this loop for final rendering.
 	*/
 	void gameRenderFrameTick(Game* pGame, Engine& engine, float interpolation)
 	{
 		Game& game = *pGame;
+
 
 	}
 

@@ -16,9 +16,7 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& en
 
 	Game& game = *pGame;
 	auto& scene = engine.sceneManager->getScene(game.sceneId);
-
-	auto sceneNodeId = scene.entityManager->getEntityComponentId(playerId, scene::SceneNode::componentType);
-	auto& node = scene.entityManager->getComponentStore<scene::SceneNode>().getComponent(sceneNodeId);
+	auto& move = scene.entityManager->getComponent<scene::MovementComponent>(movementComponentId);
 
 	// TODO: this all probably works for (0,1,0) worldup vector, but worldup changes with position on planet, need to make this work everywhere
 	// if based on local coordinate system, maybe all I need to to is parent the player with a worldup aligned parent node, then localY up is
@@ -26,6 +24,8 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& en
 
 	// Mouse look
 	if (pitchRaw != 0 || yawRaw != 0) {
+		move.prevRotation = move.nextRotation;
+
 		const float lookRate = 2.0f  * static_cast<float>(M_PI);
 
 		float yawAngle = -yawMapped * lookRate * ui.deltaT;
@@ -33,7 +33,7 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& en
 		
 		// constrain pitch to +89/-90 degrees
 		const float deg179 = radians(179.0f);
-		float currentPitch = pitch(node.rotationLocal); // get pitch in parent node's space
+		float currentPitch = pitch(move.prevRotation); // get pitch in parent node's space
 		if (currentPitch + pitchAngle < 0) {
 			pitchAngle = -currentPitch;
 		}
@@ -41,11 +41,14 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& en
 			pitchAngle = deg179 - currentPitch;
 		}
 
-		node.rotationLocal = normalize(
+		move.nextRotation = normalize(
 								angleAxis(yawAngle, vec3(0, 0, 1.0f))
-								* node.rotationLocal
+								* move.prevRotation
 								* angleAxis(pitchAngle, vec3(1.0f, 0, 0)));
-		node.orientationDirty = 1;
+		move.rotationDirty = 1;
+	}
+	else {
+		move.rotationDirty = 0;
 	}
 
 	// Camera movement
@@ -93,8 +96,9 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& en
 			velocity += normalize(deltaV) * acceleration;
 		}
 
-		node.translationLocal += velocity;
-		node.positionDirty = 1;
+		move.prevTranslation = move.nextTranslation;
+		move.nextTranslation += velocity;
+		move.translationDirty = 1;
 	}
 
 	// reset movement vars for next frame
@@ -117,19 +121,27 @@ void griffin::game::PlayerControlSystem::init(Game* pGame, const Engine& engine,
 		60.0f, Camera_Perspective
 	}, "player");
 
-	// set up camera position and orientation
-	auto camNode = scene.entityManager->getEntityComponentId(playerId, scene::SceneNode::componentType);
-	auto& node = scene.entityManager->getComponentStore<scene::SceneNode>().getComponent(camNode);
+	movementComponentId = scene.entityManager->getEntityComponentId(playerId, scene::MovementComponent::componentType);
 
-	auto camInst = scene.entityManager->getEntityComponentId(playerId, scene::CameraInstanceContainer::componentType);
-	auto& cam = scene.entityManager->getComponentStore<scene::CameraInstanceContainer>().getComponent(camInst);
+	// set up camera position and orientation
+	auto pNode    = scene.entityManager->getEntityComponent<scene::SceneNode>(playerId);
+	auto pCamInst = scene.entityManager->getEntityComponent<scene::CameraInstanceContainer>(playerId);
+	
+	assert(pNode != nullptr && pCamInst != nullptr && movementComponentId != NullId_T);
+	auto &node = *pNode;
+	auto &cam = *pCamInst;
+	auto& move = scene.entityManager->getComponent<scene::MovementComponent>(movementComponentId);
+
 	scene.cameras[cam.cameraId]->lookAt(vec3{ 0, 0, 6.0f }, vec3{ 1.0f, 0, 6.0f }, vec3{ 0, 0, 1.0f });
 
 	// set scene node location and orientation to the camera's
 	node.translationLocal = scene.cameras[cam.cameraId]->getEyePoint();
 	node.positionDirty = 1;
+	move.prevTranslation = move.nextTranslation = node.translationLocal;
+
 	node.rotationLocal = scene.cameras[cam.cameraId]->getOrientation();
 	node.orientationDirty = 1;
+	move.prevRotation = move.nextRotation = node.rotationLocal;
 
 	// get playerfps input mapping ids
 	{

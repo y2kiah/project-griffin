@@ -8,16 +8,26 @@
 #include <scene/Camera.h>
 #include <entity/EntityManager.h>
 #include <render/Render.h>
+#include <glm/vec3.hpp>
 #include <glm/mat4x4.hpp>
+#include <glm/gtc/quaternion.hpp>
 
+
+using namespace griffin;
 using namespace griffin::scene;
 
+
+// Globals
 griffin::render::RenderSystemWeakPtr g_renderPtr;
 
 void griffin::scene::setRenderSystemPtr(const griffin::render::RenderSystemWeakPtr& renderPtr)
 {
 	g_renderPtr = renderPtr;
 }
+
+
+// Forward Declarations
+void interpolateSceneNodes(entity::EntityManager& entityMgr, float interpolation);
 
 
 // class Scene
@@ -80,7 +90,22 @@ void SceneManager::updateActiveScenes()
 {
 	for (auto& s : m_scenes.getItems()) {
 		if (s.active) {
-			s.sceneGraph->update();
+			// ???
+		}
+	}
+}
+
+void SceneManager::renderActiveScenes(float interpolation)
+{
+	auto& render = *g_renderPtr.lock();
+
+	for (auto& s : m_scenes.getItems()) {
+		if (s.active) {
+			// run the movement system to interpolate all moving nodes in the scene
+			interpolateSceneNodes(*s.entityManager, interpolation);
+			
+			// traverse scene graph, update world positions and orientations
+			s.sceneGraph->updateNodeTransforms();
 
 			// update position/orientation of active camera from the scene graph
 			//	only supports one active camera now, but the active cameras could be extended into a list to support several views
@@ -97,20 +122,8 @@ void SceneManager::updateActiveScenes()
 					break;
 				}
 			}
-		}
-	}
-}
 
-void SceneManager::renderActiveScenes()
-{
-	auto& render = *g_renderPtr.lock();
-
-	for (auto& s : m_scenes.getItems()) {
-		if (s.active) {
-			// render all visible mesh instances
-
-			
-			// for each active camera, set the renderer viewport 
+			// set the renderer viewport to the active camera
 			auto& cam = *s.cameras[s.activeRenderCamera];
 			
 			glm::mat4 viewProjMat(cam.getProjectionMatrix() * cam.getModelViewMatrix());
@@ -125,6 +138,13 @@ void SceneManager::renderActiveScenes()
 				frustumDistance,
 				1.0f / frustumDistance
 			});
+
+			// run the frustum culling system to determine visible objects
+
+
+			// render all visible mesh instances
+
+
 		}
 	}
 }
@@ -136,5 +156,39 @@ SceneManager::SceneManager() :
 SceneManager::~SceneManager() {
 	if (m_scenes.capacity() > RESERVE_SCENEMANAGER_SCENES) {
 		SDL_Log("check RESERVE_SCENEMANAGER_SCENES: original=%d, highest=%d", RESERVE_SCENEMANAGER_SCENES, m_scenes.capacity());
+	}
+}
+
+
+// Free functions
+
+void interpolateSceneNodes(entity::EntityManager& entityMgr, float interpolation)
+{
+	auto& moveComponents = entityMgr.getComponentStore<scene::MovementComponent>().getComponents();
+
+	for (auto& move : moveComponents.getItems()) {
+		if (move.component.rotationDirty == 0 && move.component.translationDirty == 0) {
+			continue;
+		}
+
+		auto pNode = entityMgr.getEntityComponent<scene::SceneNode>(move.entityId);
+		assert(pNode != nullptr);
+		auto& node = *pNode;
+
+		if (move.component.rotationDirty == 1) {
+			node.rotationLocal = glm::slerp(move.component.prevRotation,
+											move.component.nextRotation,
+											interpolation);
+			node.orientationDirty = 1;
+			//move.component.rotationDirty = 0;
+		}
+
+		if (move.component.translationDirty == 1) {
+			node.translationLocal = glm::mix(move.component.prevTranslation,
+											 move.component.nextTranslation,
+											 interpolation);
+			node.positionDirty = 1;
+			//move.component.translationDirty = 0;
+		}
 	}
 }

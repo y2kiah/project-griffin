@@ -1,3 +1,5 @@
+#if (0)
+
 #include "../ComponentStoreSerialization.h"
 #include "../components.h"
 #include "../ComponentStore.h"
@@ -248,3 +250,5 @@ void griffin::entity::test_reflection() {
 	ifs.close();
 	SDL_Log("personStore read:\n%s\n\n", personStoreReadTest.to_string().c_str());
 }
+
+#endif

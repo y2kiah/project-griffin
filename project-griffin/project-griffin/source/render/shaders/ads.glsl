@@ -198,8 +198,8 @@
 		/////
 
 		// temp texture stuff
-		//vec3 surfaceColor = materialKd;
-		vec3 surfaceColor = texture(diffuseMap, uv).rgb;
+		vec3 surfaceColor = materialKd;
+		//vec3 surfaceColor = texture(diffuseMap, uv).rgb;
 		/////
 
 		float lambertian = 0.0;

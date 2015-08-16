@@ -35,11 +35,18 @@ namespace griffin {
 		* worldspace position of each node.
 		*/
 		COMPONENT(SceneNode,
+			(uint32_t,		numChildren,,		"number of children contained"),
+
+			// Flags
+			(uint8_t,		positionDirty,,		"position needs recalc"),
+			(uint8_t,		orientationDirty,,	"orientation needs recalc"),
+			(uint8_t,		_padding_0,[2],		""),
+
 			// transform vars
 			(glm::dvec3,	translationLocal,,	"translation relative to parent"),
 			(glm::quat,		rotationLocal,,		"local rotation quaternion relative to parent"),
 
-			(glm::dvec3,	positionWorld,,		"double-precision position in world space"),
+			(glm::dvec3,	positionWorld,,		"position in world space"),
 			(glm::quat,		orientationWorld,,	"orientation in world space"),
 
 			// support scale??
@@ -48,13 +55,7 @@ namespace griffin {
 			(SceneNodeId,	firstChild,,		"first child node index"),
 			(SceneNodeId,	nextSibling,,		"next sibling node index"),
 			(SceneNodeId,	prevSibling,,		"previous sibling node index"),
-			(SceneNodeId,	parent,,			"parent node index"),
-			(uint32_t,		numChildren,,		"number of children contained"),
-
-			(uint8_t,		positionDirty,,		"position needs recalc"),
-			(uint8_t,		orientationDirty,,	"orientation needs recalc"),
-
-			(uint8_t,		_padding_end,[2],	"")
+			(SceneNodeId,	parent,,			"parent node index")
 		)
 
 		/**
@@ -82,9 +83,27 @@ namespace griffin {
 			(char,			name,[32],			"name of the camera")
 		)
 
+		/**
+		* The MovementComponent is present in all SceneNodes that aren't static. This structure
+		* contains prev/next values so the render loop can interpolate between them to get the
+		* final rendered position, which is then set in the SceneNode. IT IS UP TO YOU to use this
+		* component correctly for movement, in other words you have to set the prev/next values and
+		* dirty flags on each update tick so the movement system behaves correctly. It is always an
+		* option to NOT use this component to achieve movement in special cases, but you would have
+		* to handle the interpolation yourself in a renderTick handler and set the SceneNode values
+		* directly.
+		*/
 		COMPONENT(MovementComponent,
-			(glm::vec3,		velocity,,			"linear velocity"),
-			(glm::vec3,		angularVelocity,,	"angular velocity")
+			// flags
+			(uint8_t,		translationDirty,,	"position needs recalc"),
+			(uint8_t,		rotationDirty,,		"orientation needs recalc"),
+			(uint8_t,		_padding_0,[6],		""),
+
+			// movement vars
+			(glm::dvec3,	prevTranslation,,	"previous local translation"),
+			(glm::dvec3,	nextTranslation,,	"next local translation"),
+			(glm::quat,		prevRotation,,		"previous local rotation"),
+			(glm::quat,		nextRotation,,		"next local rotation")
 		)
 		
 		/**
@@ -95,7 +114,10 @@ namespace griffin {
 			explicit SceneGraph(EntityManager& _entityMgr);
 			~SceneGraph();
 
-			void update();
+			/**
+			*
+			*/
+			void updateNodeTransforms();
 
 			/**
 			* Adds a SceneNode component to the entity and incorporate into the scene graph as a

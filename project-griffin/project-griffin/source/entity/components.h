@@ -27,18 +27,10 @@ namespace griffin {
 		* its id. This does not actually define the component, that's done using the COMPONENT macro.
 		*/
 		COMPONENT_LIST(
-			SceneNode,
-			MeshInstanceContainer,
-			CameraInstanceContainer,
-			MovementComponent,
-			Person
-		)
-
-		COMPONENT(Person,
-			(int,				age,,		"Person's age in years"),
-			(float,				speed,,		"How fast person walks in ft/s"),
-			(char,				name,[32],	"Person's name")//,
-			//(std::vector<int>,	stuff,	"Person's integer stuff")
+			SceneNode,					//<! System: SceneGraph, all entities that exist at a position in the scene get this
+			MeshInstanceContainer,		//<! System: SceneGraph, mesh instance, submitted to renderer if visible
+			CameraInstanceContainer,	//<! System: SceneGraph, camera instance, submitted to renderer if active
+			MovementComponent			//<! System: SceneGraph, all entities that can move in the scene with auto interpolation
 		)
 
 	}

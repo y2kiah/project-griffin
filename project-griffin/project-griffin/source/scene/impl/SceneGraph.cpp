@@ -12,7 +12,7 @@ using namespace griffin::scene;
 
 // class SceneGraph
 
-void SceneGraph::update()
+void SceneGraph::updateNodeTransforms()
 {
 	// get the SceneNode components
 	auto& nodeComponents = entityMgr.getComponentStore<SceneNode>().getComponents();
@@ -37,14 +37,14 @@ void SceneGraph::update()
 		bool positionDirty = (node.positionDirty == 1) || (bfs.ancestorPositionDirty == 1);
 		if (positionDirty) {
 			node.positionWorld = bfs.translationToWorld + node.translationLocal;
-			node.positionDirty = false;
+			node.positionDirty = 0;
 		}
 
 		// recalc world orientation if this, or any ancestors have rotated since last frame
 		bool orientationDirty = (node.orientationDirty == 1) || (bfs.ancestorOrientationDirty == 1);
 		if (orientationDirty) {
 			node.orientationWorld = glm::normalize(bfs.rotationToWorld * node.rotationLocal);
-			node.orientationDirty = false;
+			node.orientationDirty = 0;
 		}
 
 		if (node.numChildren > 0) {
@@ -85,6 +85,10 @@ SceneNodeId SceneGraph::addToScene(EntityId entityId, const glm::dvec3& translat
 
 	// add a SceneNode component to the entity
 	SceneNode node = {
+		0,															// numChildren
+		0,															// positionDirty
+		0,															// orientationDirty
+		{},															// padding
 		translationLocal,											// translationLocal
 		rotationLocal,												// rotationLocal
 		parentNode.positionWorld + translationLocal,				// positionWorld
@@ -92,10 +96,7 @@ SceneNodeId SceneGraph::addToScene(EntityId entityId, const glm::dvec3& translat
 		NullId_T,													// firstChild
 		parentNode.firstChild,										// nextSibling
 		NullId_T,													// prevSibling
-		parentNodeId,												// parent
-		0,															// numChildren
-		0,															// positionDirty
-		0															// orientationDirty
+		parentNodeId												// parent
 	};
 
 	auto nodeId = entityMgr.addComponentToEntity(std::move(node), entityId);
@@ -194,7 +195,7 @@ bool SceneGraph::removeEntityFromScene(EntityId entityId, bool cascade, std::vec
 		return false;
 	}
 
-	auto& entityComponents = entityMgr.getEntityComponents(entityId);
+	auto& entityComponents = entityMgr.getAllEntityComponents(entityId);
 
 	bool removed = false;
 	for (auto &sceneNodeId : entityComponents) {

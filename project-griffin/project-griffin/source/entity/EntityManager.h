@@ -73,8 +73,33 @@ namespace griffin {
 			* @return	const reference to the components vector, don't store it just use it
 			*	immediately and discard
 			*/
-			const std::vector<ComponentId>& getEntityComponents(EntityId entityId) const {
+			const std::vector<ComponentId>& getAllEntityComponents(EntityId entityId) const {
 				return m_entityStore[entityId].components;
+			}
+
+			/**
+			* @return	pointer to component data by entity and component type.
+			*	nullptr if component doesn't exist.
+			*	Returns the first component in the list encountered. Use the getEntityComponents
+			*	function if more than one component of a type is expected.
+			*/
+			template <typename T>
+			T* getEntityComponent(EntityId entityId) {
+				auto cmpId = getEntityComponentId(entityId, T::componentType);
+				if (cmpId == NullId_T) {
+					return nullptr;
+				}
+				return &getComponent<T>(cmpId);
+			}
+
+			/**
+			* This call is "unsafe" if the componentId is invalid. It asserts in debug builds only.
+			* Use this function directly only when you know the component is present.
+			* @return	reference to component by id, throws if component doesn't exist
+			*/
+			template <typename T>
+			T& getComponent(ComponentId componentId) {
+				return getComponentStore<T>().getComponent(componentId);
 			}
 
 			/**

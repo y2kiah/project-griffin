@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
 			SDL_GL_MakeCurrent(app.getPrimaryWindow().window, app.getPrimaryWindow().glContext); // gl context made current on the main loop thread
 			Timer timer;
 			
-			FixedTimestep update(1000.0f / 60.0f, Timer::countsPerMs(),
+			FixedTimestep update(1000.0f / 30.0f, Timer::countsPerMs(),
 				[&](const int64_t virtualTime, const int64_t gameTime, const int64_t deltaCounts,
 					const float deltaMs, const float deltaT, const float gameSpeed)
 			{

@@ -39,7 +39,11 @@ namespace griffin {
 			strcpy_s(ci.name, 32, name);
 
 			auto camNodeId = s.entityManager->addComponentToEntity(std::move(ci), entityId);
-			if (camNodeId != NullId_T) {
+			
+			scene::MovementComponent mc{};
+			auto moveId = s.entityManager->addComponentToEntity(std::move(mc), entityId);
+			
+			if (camNodeId != NullId_T && moveId != NullId_T) {
 				return entityId;
 			}
 		}

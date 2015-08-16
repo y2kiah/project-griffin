@@ -39,8 +39,7 @@ namespace griffin {
 		//	ResourcePredictionSystem
 		//	etc.
 
-		engine.sceneManager->updateActiveScenes();
-		engine.sceneManager->renderActiveScenes();
+		//engine.sceneManager->updateActiveScenes();
 
 		// below currently does nothing
 		//#ifdef GRIFFIN_TOOLS_BUILD
@@ -57,6 +56,8 @@ namespace griffin {
 		engine.resourceLoader->executeCallbacks();
 
 		gameRenderFrameTick(pGame, engine, interpolation);
+
+		engine.sceneManager->renderActiveScenes(interpolation);
 
 		engine.renderSystem->renderFrame(interpolation);
 	}

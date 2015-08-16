@@ -101,7 +101,7 @@ namespace griffin {
 			SceneId createScene(const std::string& name, bool makeActive);
 
 			void updateActiveScenes();
-			void renderActiveScenes();
+			void renderActiveScenes(float interpolation);
 
 		private:
 			// Private Variables
