@@ -12,26 +12,28 @@ namespace griffin {
 
 		struct DevCameraSystem {
 			// TEMP, not really needed, just a demonstration of adding a script component
-			struct DevCameraMovementComponent {
+			/*struct DevCameraMovementComponent {
 				int		moveForward;
 				int		moveSide;
 				int		moveVertical;
 				bool	speedToggle;
-			};
+			};*/
 
-			int		moveForward, moveSide, moveVertical, roll;
-			int		pitchRaw, yawRaw;
-			float	pitchMapped, yawMapped;
-			bool	speedToggle;
+			int			moveForward, moveSide, moveVertical, roll;
+			int			pitchRaw, yawRaw;
+			float		pitchMapped, yawMapped;
+			bool		speedToggle;
+			bool		active;
+			uint32_t	toggleActiveCamera;
 
-			Id_T	devCameraId;							//<! entity id of the dev camera
-			Id_T	devCameraMovementId;					//<! TEMP dev camera movement component id
+			Id_T		devCameraId;							//<! entity id of the dev camera
+			Id_T		movementComponentId;					//<! movement component for the dev camera entity
 
-			Id_T	devCameraInputContextId;				//<! handle for the devcamera input context
-			Id_T	toggleId;								//<! input to turn devcamera on/off
-			Id_T	forwardId, backId, leftId, rightId;		//<! mapping handles for the inputs
-			Id_T	rollLeftId, rollRightId, upId, downId;
-			Id_T	speedToggleId, lookXId, lookYId;
+			Id_T		devCameraInputContextId;				//<! handle for the devcamera input context
+			Id_T		toggleId;								//<! input to turn devcamera on/off
+			Id_T		forwardId, backId, leftId, rightId;		//<! mapping handles for the inputs
+			Id_T		rollLeftId, rollRightId, upId, downId;
+			Id_T		speedToggleId, lookXId, lookYId;
 
 
 			void updateFrameTick(Game* pGame, Engine& engine, const UpdateInfo& ui);

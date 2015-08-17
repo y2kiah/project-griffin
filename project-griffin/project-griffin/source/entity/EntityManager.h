@@ -14,8 +14,6 @@
 #include "ComponentStore.h"
 #include "Entity.h"
 
-#pragma warning(disable: 4351) // "new behavior" warning for zero-init {}
-
 namespace griffin {
 	namespace entity {
 

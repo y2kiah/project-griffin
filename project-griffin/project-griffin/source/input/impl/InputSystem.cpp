@@ -634,15 +634,27 @@ Id_T InputSystem::createContext(uint16_t optionsMask, uint8_t priority, bool mak
 }
 
 
-bool InputSystem::setContextActive(Id_T contextId, bool active)
+bool InputSystem::setContextActive(Id_T contextId, bool active, int8_t priority)
 {
 	if (m_inputContexts.isValid(contextId)) {
 		for (auto& ac : m_activeInputContexts) {
 			if (ac.contextId == contextId) {
 				ac.active = active;
+				if (priority >= 0) {
+					ac.priority = static_cast<uint8_t>(priority);
+				}
 				break;
 			}
 		}
+
+		if (priority >= 0) {
+			// re-sort the contexts if the priority was set explicitly
+			std::stable_sort(m_activeInputContexts.begin(), m_activeInputContexts.end(),
+							 [](const ActiveInputContext& i, const ActiveInputContext& j) {
+				return i.priority < j.priority;
+			});
+		}
+
 		return true;
 	}
 	return false;

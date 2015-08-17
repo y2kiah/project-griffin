@@ -316,7 +316,7 @@ namespace griffin {
 			/**
 			* Set the InputContext, returns true on success
 			*/
-			bool setContextActive(Id_T contextId, bool active = true);
+			bool setContextActive(Id_T contextId, bool active = true, int8_t priority = -1);
 
 			/**
 			* Get an input context from its handle, asserts that the handle is valid.

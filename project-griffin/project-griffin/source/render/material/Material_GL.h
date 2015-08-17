@@ -5,8 +5,6 @@
 #include <glm/vec3.hpp>
 #include <utility/container/handle_map.h>
 
-#pragma warning(disable: 4351)	// "new behavior" warning
-
 namespace griffin {
 	namespace render {
 

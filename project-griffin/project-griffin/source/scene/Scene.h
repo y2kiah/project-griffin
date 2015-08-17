@@ -76,6 +76,10 @@ namespace griffin {
 
 			uint32_t createCamera(const CameraParameters& cameraParams, bool makeActive = false);
 			
+			uint32_t getActiveCamera() const {
+				return activeRenderCamera;
+			}
+
 			void setActiveCamera(uint32_t cameraId) {
 				assert(cameraId >= 0 && cameraId < cameras.size() && "camera id out of range");
 				activeRenderCamera = cameraId;

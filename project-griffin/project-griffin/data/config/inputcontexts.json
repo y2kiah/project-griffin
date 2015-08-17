@@ -1,10 +1,9 @@
 {
 	"devcamera": {
 		"name": "Dev Camera Controls",
-		"priority": 1,
+		"priority": 0,
 		"visible": false,
 		"actions": [
-			{ "name": "Toggle",			"bind": "down" }
 		],
 		"states": [
 			{ "name": "Move Forward",	"bind": "down" },
@@ -48,8 +47,9 @@
 		"priority": 0,
 		"visibility": true,
 		"actions": [
-			{ "name": "Exit",			"bind": "down" },
-			{ "name": "Capture Mouse",	"bind": "down" }
+			{ "name": "Exit",				"bind": "down" },
+			{ "name": "Capture Mouse",		"bind": "down" },
+			{ "name": "Toggle Dev Camera",	"bind": "down" }
 		],
 		"states": [
 			{ "name": "Pause",			"bind": "toggle" }

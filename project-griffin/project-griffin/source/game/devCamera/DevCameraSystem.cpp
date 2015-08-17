@@ -14,21 +14,15 @@ void griffin::game::DevCameraSystem::updateFrameTick(Game* pGame, Engine& engine
 {
 	using namespace glm;
 
-	// check if there's any input to handle
-	if (moveForward == 0 && moveSide == 0 && moveVertical == 0 &&
-		roll == 0 && pitchRaw == 0 && yawRaw == 0)
-	{
-		return;
-	}
-
 	Game& game = *pGame;
 	auto& scene = engine.sceneManager->getScene(game.sceneId);
-
-	auto sceneNodeId = scene.entityManager->getEntityComponentId(devCameraId, scene::SceneNode::componentType);
-	auto& node = scene.entityManager->getComponentStore<scene::SceneNode>().getComponent(sceneNodeId);
+	auto& move = scene.entityManager->getComponent<scene::MovementComponent>(movementComponentId);
 
 	// Mouse look
 	if (pitchRaw != 0 || yawRaw != 0 || roll != 0) {
+		auto pNode = scene.entityManager->getEntityComponent<scene::SceneNode>(devCameraId);
+		assert(pNode != nullptr);
+
 		const float rollRate = 0.25f * pi<float>();
 		const float lookRate = 2.0f  * pi<float>();
 
@@ -37,10 +31,14 @@ void griffin::game::DevCameraSystem::updateFrameTick(Game* pGame, Engine& engine
 		float rollAngle = roll * rollRate * ui.deltaT;
 
 		vec3 angles(-pitchAngle, -yawAngle, -rollAngle);
-		angles = angles * inverse(node.orientationWorld); // transform angles into viewspace
+		angles = angles * inverse(pNode->orientationWorld); // transform angles into viewspace
 
-		node.rotationLocal = normalize(quat(angles) * node.rotationLocal);
-		node.orientationDirty = 1;
+		move.prevRotation = move.nextRotation;
+		move.nextRotation = normalize(quat(angles) * move.prevRotation);
+		move.rotationDirty = 1;
+	}
+	else {
+		move.rotationDirty = 0;
 	}
 
 	// Camera movement
@@ -61,8 +59,12 @@ void griffin::game::DevCameraSystem::updateFrameTick(Game* pGame, Engine& engine
 
 		velocity = normalize(velocity) * speed * (!speedToggle ? 3.0f : 1.0f) * ui.deltaT;
 
-		node.translationLocal += velocity;
-		node.positionDirty = 1;
+		move.prevTranslation = move.nextTranslation;
+		move.nextTranslation += velocity;
+		move.translationDirty = 1;
+	}
+	else {
+		move.translationDirty = 0;
 	}
 
 	// reset movement vars for next frame
@@ -80,9 +82,9 @@ void griffin::game::DevCameraSystem::init(Game* pGame, const Engine& engine, con
 
 	// create game component stores for this system
 	///// TEMP the devcamera store is not needed, only one of these things, just testing the waters
-	game.gameComponentStoreIds[DevCameraMovementComponentTypeId] = scene.entityManager->createScriptComponentStore(
-		DevCameraMovementComponentTypeId,
-		sizeof(DevCameraMovementComponent), 1);
+	//game.gameComponentStoreIds[DevCameraMovementComponentTypeId] = scene.entityManager->createScriptComponentStore(
+	//	DevCameraMovementComponentTypeId,
+	//	sizeof(DevCameraMovementComponent), 1);
 	///// end TEMP
 
 	// create dev camera scene node
@@ -92,34 +94,44 @@ void griffin::game::DevCameraSystem::init(Game* pGame, const Engine& engine, con
 		60.0f, Camera_Perspective
 	}, "devcamera");
 
+	movementComponentId = scene.entityManager->getEntityComponentId(devCameraId, scene::MovementComponent::componentType);
+
 	///// TEMP the devcamera store is not needed, demonstration
 	// add devcamera movement component
-	devCameraMovementId = scene.entityManager->addScriptComponentToEntity(DevCameraMovementComponentTypeId,
-																		  devCameraId);
+	//devCameraMovementId = scene.entityManager->addScriptComponentToEntity(DevCameraMovementComponentTypeId,
+	//																	  devCameraId);
 
-	auto devCamMove = (DevCameraMovementComponent*)scene.entityManager->getScriptComponentData(devCameraMovementId);
+	//auto devCamMove = (DevCameraMovementComponent*)scene.entityManager->getScriptComponentData(devCameraMovementId);
 	///// end TEMP
 
 	// look at the origin
-	auto camNode = scene.entityManager->getEntityComponentId(devCameraId, scene::SceneNode::componentType);
-	auto& node = scene.entityManager->getComponentStore<scene::SceneNode>().getComponent(camNode);
+	auto pNode    = scene.entityManager->getEntityComponent<scene::SceneNode>(devCameraId);
+	auto pCamInst = scene.entityManager->getEntityComponent<scene::CameraInstanceContainer>(devCameraId);
 
-	auto camInst = scene.entityManager->getEntityComponentId(devCameraId, scene::CameraInstanceContainer::componentType);
-	auto& cam = scene.entityManager->getComponentStore<scene::CameraInstanceContainer>().getComponent(camInst);
+	assert(pNode != nullptr && pCamInst != nullptr && movementComponentId != NullId_T);
+	auto &node = *pNode;
+	auto &cam = *pCamInst;
+	auto& move = scene.entityManager->getComponent<scene::MovementComponent>(movementComponentId);
+
 	scene.cameras[cam.cameraId]->lookAt(vec3{ 120.0f, 0, 40.0f }, vec3{ 0, 0, 0 }, vec3{ 0, 0, 1.0f });
 
 	// set scene node location and orientation to the camera's
 	node.translationLocal = scene.cameras[cam.cameraId]->getEyePoint();
 	node.positionDirty = 1;
+	move.prevTranslation = move.nextTranslation = node.translationLocal;
+
 	node.rotationLocal = scene.cameras[cam.cameraId]->getOrientation();
 	node.orientationDirty = 1;
+	move.prevRotation = move.nextRotation = node.rotationLocal;
 
 	// get devcamera input mapping ids
 	{
+		auto ingameCtx = engine.inputSystem->getInputContextHandle("ingame");
+		toggleId = engine.inputSystem->getInputMappingHandle("Toggle Dev Camera", ingameCtx);
+
 		auto ctx = engine.inputSystem->getInputContextHandle("devcamera");
 		devCameraInputContextId = ctx;
 
-		toggleId      = engine.inputSystem->getInputMappingHandle("Toggle", ctx);
 		forwardId     = engine.inputSystem->getInputMappingHandle("Move Forward", ctx);
 		backId        = engine.inputSystem->getInputMappingHandle("Move Backward", ctx);
 		leftId        = engine.inputSystem->getInputMappingHandle("Move Left", ctx);
@@ -151,8 +163,19 @@ void griffin::game::DevCameraSystem::init(Game* pGame, const Engine& engine, con
 
 			auto& scene = engine.sceneManager->getScene(game.sceneId);
 
-			engine.inputSystem->handleInputAction(toggleId, mi, [this](MappedAction& ma, InputContext& c){
-				// toggle this cam and the primary scene cam
+			engine.inputSystem->handleInputAction(toggleId, mi, [this, &engine, &scene](MappedAction& ma, InputContext& c){
+				active = !active;
+				
+				engine.inputSystem->setContextActive(devCameraInputContextId, active);
+
+				if (active) {
+					toggleActiveCamera = scene.getActiveCamera(); // save the camera to go back to
+					auto pCamInst = scene.entityManager->getEntityComponent<scene::CameraInstanceContainer>(devCameraId);
+					scene.setActiveCamera(pCamInst->cameraId);
+				}
+				else {
+					scene.setActiveCamera(toggleActiveCamera);
+				}
 				return true;
 			});
 

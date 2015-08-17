@@ -24,8 +24,6 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& en
 
 	// Mouse look
 	if (pitchRaw != 0 || yawRaw != 0) {
-		move.prevRotation = move.nextRotation;
-
 		const float lookRate = 2.0f  * static_cast<float>(M_PI);
 
 		float yawAngle = -yawMapped * lookRate * ui.deltaT;
@@ -33,6 +31,9 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& en
 		
 		// constrain pitch to +89/-90 degrees
 		const float deg179 = radians(179.0f);
+		
+		move.prevRotation = move.nextRotation;
+		
 		float currentPitch = pitch(move.prevRotation); // get pitch in parent node's space
 		if (currentPitch + pitchAngle < 0) {
 			pitchAngle = -currentPitch;

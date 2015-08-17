@@ -81,7 +81,6 @@ namespace griffin {
 
 		// startup active input contexts
 		engine.inputSystem->setContextActive(game.player.playerfpsInputContextId);
-		//engine.inputSystem->setContextActive(game.devCamera.devCameraInputContextId);
 
 		return gamePtr;
 	}

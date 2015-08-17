@@ -7,7 +7,6 @@
 #include <game/devCamera/DevCameraSystem.h>
 #include <utility/container/handle_map.h>
 
-
 #define GRIFFIN_MAX_GAME_COMPONENTS		32
 
 namespace griffin {
@@ -23,11 +22,11 @@ namespace griffin {
 	* possible, try to keep everything in the game within this block.
 	*/
 	struct Game {
-		Id_T						sceneId;
-		game::PlayerControlSystem	player;
-		game::DevCameraSystem		devCamera;
+		Id_T						sceneId = NullId_T;
+		game::PlayerControlSystem	player = {};
+		game::DevCameraSystem		devCamera = {};
 
-		uint16_t					gameComponentStoreIds[GRIFFIN_MAX_GAME_COMPONENTS];
+		uint16_t					gameComponentStoreIds[GRIFFIN_MAX_GAME_COMPONENTS] = {};
 	};
 
 
