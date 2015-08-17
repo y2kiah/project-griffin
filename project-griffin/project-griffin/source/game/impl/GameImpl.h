@@ -23,8 +23,8 @@ namespace griffin {
 	*/
 	struct Game {
 		Id_T						sceneId = NullId_T;
-		game::PlayerControlSystem	player = {};
-		game::DevCameraSystem		devCamera = {};
+		game::PlayerControlSystem	player;
+		game::DevCameraSystem		devCamera;
 
 		uint16_t					gameComponentStoreIds[GRIFFIN_MAX_GAME_COMPONENTS] = {};
 	};

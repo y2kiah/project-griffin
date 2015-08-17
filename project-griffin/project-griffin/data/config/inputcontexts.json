@@ -1,8 +1,23 @@
 {
-	"devcamera": {
-		"name": "Dev Camera Controls",
+	"ingame": {
+		"name": "System Controls",
 		"priority": 0,
-		"visible": false,
+		"visible": true,
+		"actions": [
+			{ "name": "Exit",			"bind": "down" },
+			{ "name": "Capture Mouse",	"bind": "down" },
+			{ "name": "Toggle Dev Camera", "bind": "down",  "visible": false }
+		],
+		"states": [
+			{ "name": "Pause",			"bind": "toggle" }
+		],
+		"axes": []
+	},
+    "devcamera": {
+		"name": "Dev Camera Controls",
+		"priority": 1,
+        "visible": false,
+        "eatsMouseInput": true,
 		"actions": [
 		],
 		"states": [
@@ -23,7 +38,7 @@
 	},
 	"playerfps": {
 		"name": "First Person Controls",
-		"priority": 1,
+		"priority": 2,
 		"visible": true,
 		"eatsMouseInput": true,
 		"actions": [
@@ -41,19 +56,5 @@
 			{ "name": "Mouse Look X",	"relativeMotion": true },
 			{ "name": "Mouse Look Y",	"relativeMotion": true }
 		]
-	},
-	"ingame": {
-		"name": "System Controls",
-		"priority": 0,
-		"visibility": true,
-		"actions": [
-			{ "name": "Exit",				"bind": "down" },
-			{ "name": "Capture Mouse",		"bind": "down" },
-			{ "name": "Toggle Dev Camera",	"bind": "down" }
-		],
-		"states": [
-			{ "name": "Pause",			"bind": "toggle" }
-		],
-		"axes": []
 	}
 }

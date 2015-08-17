@@ -19,12 +19,12 @@ namespace griffin {
 				bool	speedToggle;
 			};*/
 
-			int			moveForward, moveSide, moveVertical, roll;
-			int			pitchRaw, yawRaw;
-			float		pitchMapped, yawMapped;
-			bool		speedToggle;
-			bool		active;
-			uint32_t	toggleActiveCamera;
+			int			moveForward = 0, moveSide = 0, moveVertical = 0, roll = 0;
+			int			pitchRaw = 0, yawRaw = 0;
+			float		pitchMapped = 0, yawMapped = 0;
+			bool		speedToggle = false;
+			bool		active = false;
+			uint32_t	toggleActiveCamera = 0;
 
 			Id_T		devCameraId;							//<! entity id of the dev camera
 			Id_T		movementComponentId;					//<! movement component for the dev camera entity

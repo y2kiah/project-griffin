@@ -163,6 +163,9 @@ void griffin::game::DevCameraSystem::init(Game* pGame, const Engine& engine, con
 
 			auto& scene = engine.sceneManager->getScene(game.sceneId);
 
+			/**
+			* Handle ingame context's devcamera toggle
+			*/
 			engine.inputSystem->handleInputAction(toggleId, mi, [this, &engine, &scene](MappedAction& ma, InputContext& c){
 				active = !active;
 				
@@ -179,6 +182,9 @@ void griffin::game::DevCameraSystem::init(Game* pGame, const Engine& engine, con
 				return true;
 			});
 
+			/**
+			* Handle movement states
+			*/
 			engine.inputSystem->handleInputState(forwardId, mi, [this](MappedState& ms, InputContext& c){
 				moveForward = glm::min(moveForward + 1, 1);
 				return true;
@@ -224,6 +230,9 @@ void griffin::game::DevCameraSystem::init(Game* pGame, const Engine& engine, con
 				return true;
 			});
 
+			/**
+			* Handle Mouse-Look
+			*/
 			engine.inputSystem->handleInputAxis(lookXId, mi, [this](MappedAxis& ma, InputContext& c){
 				/*SDL_Log("devcamera axis %s,  handled motion, relRaw=%d, relMapped=%0.1f",
 						ma.inputMapping->name, ma.axisMotion->relRaw, ma.axisMotion->relMapped);*/

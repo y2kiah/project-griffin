@@ -8,6 +8,18 @@
 
 #include <api/SceneApi.h>
 #include <scene/Camera.h>
+#include <cmath>
+
+
+#define playerHeight			6.0f	// ft/s
+#define sprintSpeed				29.0f	// ft/s
+#define jogSpeed				12.0f	// ft/s
+#define walkSpeed				5.0f	// ft/s
+#define movementAcceleration	60.0f	// ft/s^2
+//#define sprintStride			14.5f	// ft
+//#define jogStride				6.0f	// ft
+#define walkStride				2.5f	// ft
+#define headBobDrop				0.16f	// ft
 
 
 void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& engine, const UpdateInfo& ui)
@@ -62,14 +74,14 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& en
 			auto& cam = *scene.cameras[camInst.cameraId];
 
 			// determine target velocity
-			float speedTarget = 12.0f; // jog speed, in ft/s
+			float speedTarget = jogSpeed; // jog speed, in ft/s
 			if (speedToggle == SpeedFlag_Sprint &&
 				moveForward == 1) // can only sprint moving forward
 			{
-				speedTarget = 29.0f;
+				speedTarget = sprintSpeed;
 			}
 			else if (speedToggle == SpeedFlag_Walk) {
-				speedTarget = 5.0f;
+				speedTarget = walkSpeed;
 			}
 			speedTarget *= ui.deltaT; // speed per timestep
 
@@ -93,12 +105,33 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& en
 		}
 		else { // accelerate toward target velocity
 			// cap acceleration to the distance remaining to the target velocity
-			float acceleration = glm::min(44.0f * ui.deltaT * ui.deltaT, sqrt(len2)); // ft/s^2
+			float acceleration = glm::min(movementAcceleration * ui.deltaT * ui.deltaT, sqrt(len2)); // ft/s^2
 			velocity += normalize(deltaV) * acceleration;
 		}
 
+		// calculate head bob height, we assume a walking stride of 2.5ft per step and a peak fall of 4 inches
+		float headBobZ = 0.0f;
+		{
+			float frameSpeed2 = (velocity.x * velocity.x) + (velocity.y * velocity.y) + (velocity.z * velocity.z);
+			
+			float t = frameSpeed2 / (29.9f * 29.0f);
+			float stride = ((1.0f - t)*2.5f) + (t*14.5f);
+			
+			float headBobInterval = frameSpeed2 / (stride * stride * ui.deltaT); // (ft^2/s^2) / (ft^2 * s^2)
+			//float headBobInterval = ui.deltaT / 0.5f;
+
+			headBob += ((float)M_PI / stride) * headBobInterval;
+			// use only the first PI radians of the sine wave
+			while (headBob >= (float)M_PI) {
+				headBob -= (float)M_PI;
+			}
+			headBobZ = playerHeight - (sinf(headBob) * headBobDrop);
+		}
+
+		// update movement component values
 		move.prevTranslation = move.nextTranslation;
 		move.nextTranslation += velocity;
+		move.nextTranslation.z = headBobZ;
 		move.translationDirty = 1;
 	}
 
@@ -133,7 +166,7 @@ void griffin::game::PlayerControlSystem::init(Game* pGame, const Engine& engine,
 	auto &cam = *pCamInst;
 	auto& move = scene.entityManager->getComponent<scene::MovementComponent>(movementComponentId);
 
-	scene.cameras[cam.cameraId]->lookAt(vec3{ 0, 0, 6.0f }, vec3{ 1.0f, 0, 6.0f }, vec3{ 0, 0, 1.0f });
+	scene.cameras[cam.cameraId]->lookAt(vec3{ 0, 0, playerHeight }, vec3{ 1.0f, 0, playerHeight }, vec3{ 0, 0, 1.0f });
 
 	// set scene node location and orientation to the camera's
 	node.translationLocal = scene.cameras[cam.cameraId]->getEyePoint();

@@ -18,11 +18,12 @@ namespace griffin {
 				SpeedFlag_Walk   = 2
 			};
 
-			int			moveForward, moveSide;
-			int			pitchRaw, yawRaw;
-			float		pitchMapped, yawMapped;
+			int			moveForward = 0, moveSide = 0;
+			int			pitchRaw = 0,    yawRaw = 0;
+			float		pitchMapped = 0, yawMapped = 0;
 			int			speedToggle = SpeedFlag_Normal;			//<! 0=normal, 1=sprint, 2=walk
 			glm::vec3	velocity = {};							//<! current player velocity
+			float		headBob = 0;							//<! current head bob value passed into sin(t)
 
 			Id_T		playerId;								//<! entity id of the player
 			Id_T		movementComponentId;					//<! movement component for the player entity

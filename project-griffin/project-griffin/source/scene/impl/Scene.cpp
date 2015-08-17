@@ -109,35 +109,33 @@ void SceneManager::renderActiveScenes(float interpolation)
 
 			// update position/orientation of active camera from the scene graph
 			//	only supports one active camera now, but the active cameras could be extended into a list to support several views
-			for (auto& camInstance : s.entityManager->getComponentStore<CameraInstanceContainer>().getComponents()) {
+			for (auto& camInstance : s.entityManager->getComponentStore<CameraInstanceContainer>().getComponents().getItems()) {
 				if (camInstance.component.cameraId == s.activeRenderCamera) {
-					auto& cam = *s.cameras[camInstance.component.cameraId];
-					SceneNodeId nodeId = s.entityManager->getEntityComponentId(camInstance.entityId, SceneNode::componentType);
-					auto& node = s.entityManager->getComponentStore<SceneNode>().getComponent(nodeId);
+					auto& node = *s.entityManager->getEntityComponent<SceneNode>(camInstance.entityId);
+					auto& cam = *s.cameras[s.activeRenderCamera];
 
 					cam.setEyePoint(node.positionWorld);
 					cam.setOrientation(node.orientationWorld);
 					cam.calcModelView();
 
+					// set the renderer viewport to the active camera
+					glm::mat4 viewProjMat(cam.getProjectionMatrix() * cam.getModelViewMatrix());
+					float frustumDistance = cam.getFarClip() - cam.getNearClip();
+
+					// set viewport 0 which is the main view viewport
+					render.setViewportParameters(0, render::ViewportParameters{
+						cam.getModelViewMatrix(),
+						cam.getProjectionMatrix(),
+						viewProjMat,
+						cam.getNearClip(),
+						cam.getFarClip(),
+						frustumDistance,
+						1.0f / frustumDistance
+					});
+
 					break;
 				}
 			}
-
-			// set the renderer viewport to the active camera
-			auto& cam = *s.cameras[s.activeRenderCamera];
-			
-			glm::mat4 viewProjMat(cam.getProjectionMatrix() * cam.getModelViewMatrix());
-			float frustumDistance = cam.getFarClip() - cam.getNearClip();
-
-			render.setViewportParameters(s.activeRenderCamera, render::ViewportParameters{
-				cam.getModelViewMatrix(),
-				cam.getProjectionMatrix(),
-				viewProjMat,
-				cam.getNearClip(),
-				cam.getFarClip(),
-				frustumDistance,
-				1.0f / frustumDistance
-			});
 
 			// run the frustum culling system to determine visible objects
 
