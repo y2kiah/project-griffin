@@ -129,6 +129,8 @@ void griffin::game::DevCameraSystem::init(Game* pGame, const Engine& engine, con
 		auto ingameCtx = engine.inputSystem->getInputContextHandle("ingame");
 		toggleId = engine.inputSystem->getInputMappingHandle("Toggle Dev Camera", ingameCtx);
 
+		playerfpsInputContextId = engine.inputSystem->getInputContextHandle("playerfps");
+
 		auto ctx = engine.inputSystem->getInputContextHandle("devcamera");
 		devCameraInputContextId = ctx;
 
@@ -170,6 +172,8 @@ void griffin::game::DevCameraSystem::init(Game* pGame, const Engine& engine, con
 				active = !active;
 				
 				engine.inputSystem->setContextActive(devCameraInputContextId, active);
+				//engine.inputSystem->setContextActive(playerfpsInputContextId, !active);
+				// TODO: need above to work, when it's left in the dirst devcamera state triggered is sticky, seems like a bug in the input system
 
 				if (active) {
 					toggleActiveCamera = scene.getActiveCamera(); // save the camera to go back to
@@ -187,6 +191,7 @@ void griffin::game::DevCameraSystem::init(Game* pGame, const Engine& engine, con
 			*/
 			engine.inputSystem->handleInputState(forwardId, mi, [this](MappedState& ms, InputContext& c){
 				moveForward = glm::min(moveForward + 1, 1);
+				SDL_Log("move forward active, %d", ms.totalFrames);
 				return true;
 			});
 

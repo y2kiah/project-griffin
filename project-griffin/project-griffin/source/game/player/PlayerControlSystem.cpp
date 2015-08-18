@@ -12,14 +12,13 @@
 
 
 #define playerHeight			6.0f	// ft/s
-#define sprintSpeed				29.0f	// ft/s
+#define sprintSpeed				27.0f	// ft/s
 #define jogSpeed				12.0f	// ft/s
 #define walkSpeed				5.0f	// ft/s
 #define movementAcceleration	60.0f	// ft/s^2
-//#define sprintStride			14.5f	// ft
-//#define jogStride				6.0f	// ft
+#define sprintStride			13.5f	// ft
 #define walkStride				2.5f	// ft
-#define headBobDrop				0.16f	// ft
+#define headBobDrop				0.0833f	// ft
 
 
 void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& engine, const UpdateInfo& ui)
@@ -112,19 +111,43 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& en
 		// calculate head bob height, we assume a walking stride of 2.5ft per step and a peak fall of 4 inches
 		float headBobZ = 0.0f;
 		{
-			float frameSpeed2 = (velocity.x * velocity.x) + (velocity.y * velocity.y) + (velocity.z * velocity.z);
+			float frameStep = length(velocity);
 			
-			float t = frameSpeed2 / (29.9f * 29.0f);
-			float stride = ((1.0f - t)*2.5f) + (t*14.5f);
-			
-			float headBobInterval = frameSpeed2 / (stride * stride * ui.deltaT); // (ft^2/s^2) / (ft^2 * s^2)
-			//float headBobInterval = ui.deltaT / 0.5f;
+			// add to head bob due to movement velocity
+			if (frameStep != 0.0f) {
+				float frameSprintSpeed = sprintSpeed * ui.deltaT;
 
-			headBob += ((float)M_PI / stride) * headBobInterval;
-			// use only the first PI radians of the sine wave
-			while (headBob >= (float)M_PI) {
-				headBob -= (float)M_PI;
+				// adjust head bob stride based on movement speed
+				float pct = frameStep / frameSprintSpeed;
+				float stride = max(pct * sprintStride, walkStride);
+
+				// normalize this frame's step distance according to head bob stride
+				float headBobInterval = frameStep / stride;
+
+				headBob += (float)M_PI * headBobInterval;
+				// use only the first PI radians of the sine wave
+				while (headBob >= (float)M_PI) {
+					headBob -= (float)M_PI;
+				}
 			}
+			// add to head bob due to standing up straight when not moving
+			else if (headBob != 0.0f) {
+				float standUpInterval = (float)M_PI * 2 * ui.deltaT;
+				// take the quickest route back to zero, plus or minus
+				if (headBob > (float)M_PI * 0.5f) {
+					headBob += standUpInterval;
+					if (headBob >= (float)M_PI) {
+						headBob = 0.0f;
+					}
+				}
+				else {
+					headBob -= standUpInterval;
+					if (headBob < 0) {
+						headBob = 0.0f;
+					}
+				}
+			}
+
 			headBobZ = playerHeight - (sinf(headBob) * headBobDrop);
 		}
 
@@ -188,12 +211,14 @@ void griffin::game::PlayerControlSystem::init(Game* pGame, const Engine& engine,
 		rightId   = engine.inputSystem->getInputMappingHandle("Move Right", ctx);
 		sprintId  = engine.inputSystem->getInputMappingHandle("Sprint", ctx);
 		walkId    = engine.inputSystem->getInputMappingHandle("Walk", ctx);
+		crouchId  = engine.inputSystem->getInputMappingHandle("Crouch", ctx);
 		lookXId   = engine.inputSystem->getInputMappingHandle("Mouse Look X", ctx);
 		lookYId   = engine.inputSystem->getInputMappingHandle("Mouse Look Y", ctx);
 
 		assert(forwardId != NullId_T && backId  != NullId_T &&
 			   leftId    != NullId_T && rightId != NullId_T &&
 			   sprintId  != NullId_T && walkId  != NullId_T &&
+			   crouchId  != NullId_T &&
 			   lookXId   != NullId_T && lookYId != NullId_T &&
 			   "playerfps input mappings changed");
 	}
@@ -237,6 +262,11 @@ void griffin::game::PlayerControlSystem::init(Game* pGame, const Engine& engine,
 				speedToggle = SpeedFlag_Walk;
 				return true;
 			});
+
+			//engine.inputSystem->handleInputState(crouchId, mi, [this](MappedState& ms, InputContext& c){
+				
+			//	return true;
+			//});
 
 			engine.inputSystem->handleInputAxis(lookXId, mi, [this](MappedAxis& ma, InputContext& c){
 				yawRaw += ma.axisMotion->relRaw;

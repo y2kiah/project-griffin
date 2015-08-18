@@ -30,6 +30,7 @@ namespace griffin {
 			Id_T		movementComponentId;					//<! movement component for the dev camera entity
 
 			Id_T		devCameraInputContextId;				//<! handle for the devcamera input context
+			Id_T		playerfpsInputContextId;				//<! handle for the playerfps input context
 			Id_T		toggleId;								//<! input to turn devcamera on/off
 			Id_T		forwardId, backId, leftId, rightId;		//<! mapping handles for the inputs
 			Id_T		rollLeftId, rollRightId, upId, downId;

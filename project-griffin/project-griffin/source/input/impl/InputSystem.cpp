@@ -352,7 +352,7 @@ Id_T InputSystem::registerCallback(int priority, CallbackFunc_T func)
 	Id_T cbId = m_callbacks.insert(std::move(func));
 	
 	m_callbackPriorityList.push_back({ cbId, priority });
-	// TODO: should I do insertion sort instead?
+	
 	std::stable_sort(m_callbackPriorityList.begin(), m_callbackPriorityList.end(),
 		[](const CallbackPriority& a, const CallbackPriority& b){
 			return (a.priority < b.priority);
@@ -424,8 +424,8 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 		case SDL_KEYDOWN:
 		case SDL_KEYUP: {
 			if (event.key.repeat == 0) {
-				/*SDL_Log("key event=%d: state=%d: key=%d: repeat=%d: realTime=%lu\n",
-						event.type, event.key.state, event.key.keysym.scancode, event.key.repeat, timestamp);*/
+				SDL_Log("key event=%d: state=%d: key=%d: repeat=%d: realTime=%lu\n",
+						event.type, event.key.state, event.key.keysym.scancode, event.key.repeat, timestamp);
 
 				m_eventsQueue.push({ timestamp, std::move(event), Event_Keyboard_T, {} });
 			}

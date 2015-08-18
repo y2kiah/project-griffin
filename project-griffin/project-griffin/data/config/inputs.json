@@ -23,8 +23,9 @@
 		{ "context": "playerfps",	"name": "Move Left",		"device": 0,	"keycode": 97 },
 		{ "context": "playerfps",	"name": "Move Right",		"device": 0,	"keycode": 100 },
 		{ "context": "playerfps",	"name": "Sprint",			"device": 0,	"keycode": 1073742049 },
-		{ "context": "playerfps",	"name": "Walk",				"device": 0,	"keycode": 1073742048 }
-	],
+		{ "context": "playerfps",	"name": "Walk",				"device": 0,	"keycode": 1073742048 },
+	    { "context": "playerfps",	"name": "Crouch",			"device": 0,	"keycode": 99 }
+    ],
 	"axes": [
 		{ "context": "devcamera",	"name": "Mouse Look X",		"device": 0,	"axis": 0,	"sensitivity": 15.0 },
 		{ "context": "devcamera",	"name": "Mouse Look Y",		"device": 0,	"axis": 1,	"sensitivity": 10.0 },

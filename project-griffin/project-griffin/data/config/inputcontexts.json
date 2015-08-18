@@ -38,7 +38,7 @@
 	},
 	"playerfps": {
 		"name": "First Person Controls",
-		"priority": 2,
+		"priority": 1,
 		"visible": true,
 		"eatsMouseInput": true,
 		"actions": [
@@ -50,8 +50,9 @@
 			{ "name": "Move Left",		"bind": "down" },
 			{ "name": "Move Right",		"bind": "down" },
 			{ "name": "Sprint",			"bind": "down" },
-			{ "name": "Walk",			"bind": "down" }
-		],
+			{ "name": "Walk",			"bind": "down" },
+		    { "name": "Crouch",			"bind": "toggle" }
+        ],
 		"axes": [
 			{ "name": "Mouse Look X",	"relativeMotion": true },
 			{ "name": "Mouse Look Y",	"relativeMotion": true }
