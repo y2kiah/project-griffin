@@ -29,17 +29,25 @@ void InputSystem::updateFrameTick(const UpdateInfo& ui)
 	m_frameMappedInput.axes.clear();
 
 	// remove active states that are no longer mappings in any active context
-	std::remove_if(m_frameMappedInput.states.begin(), m_frameMappedInput.states.end(),
+	auto newEnd = std::remove_if(m_frameMappedInput.states.begin(), m_frameMappedInput.states.end(),
 				   [&](const MappedState& state) {
 		for (const auto& ac : m_activeInputContexts) {
 			if (!ac.active) { continue; }
 			auto& context = m_inputContexts[ac.contextId];
-			if (std::find(context.inputMappings.begin(), context.inputMappings.end(), state.mappingId) != context.inputMappings.end()) {
+			
+			// Apply this filter to states where keypress down is active. Don't apply it to toggles
+			// or bindings where the key being unpressed is active. Also don't filter states where
+			// the mappingId is found in the active context.
+			bool hasDownUpBinding = (state.inputMapping->bindIn == Bind_Down_T && state.inputMapping->bindOut == Bind_Up_T);
+			if (!hasDownUpBinding ||
+				std::find(context.inputMappings.begin(), context.inputMappings.end(), state.mappingId) != context.inputMappings.end())
+			{
 				return false;
 			}
 		}
 		return true;
 	});
+	m_frameMappedInput.states.resize(newEnd - m_frameMappedInput.states.begin());
 
 	// loop over active states, add to totalCounts, totalMS and totalFrames, reset handled flag
 	for (auto& state : m_frameMappedInput.states) {
@@ -148,7 +156,6 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 								// TODO: states cannot use modifiers currently, make sure this is ok
 								// might want to support modifiers but check whether modifier "matters" or not - if there is a matching key mapping
 								// with the modifier, then it matters, otherwise it doesn't
-			if (matched) { SDL_Log("matched active on state %u", mapping.keycode); } // TEMP
 							}
 							else if ((mapping.bindIn == Bind_Down_T && evt.evt.type == SDL_MOUSEBUTTONDOWN) ||
 									 (mapping.bindIn == Bind_Up_T   && evt.evt.type == SDL_MOUSEBUTTONUP))
@@ -170,7 +177,6 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 										   evt.evt.key.keysym.mod == mapping.modifier*/);
 								// TODO: maybe need to look for sym and mod keys separately here and make state inactive for either one
 								// if the modifier OR the key is lifted in either order, the state should be deactivated
-			if (matched) { SDL_Log("matched inactive on state %u", mapping.keycode); } // TEMP
 							}
 							else if ((mapping.bindOut == Bind_Down_T && evt.evt.type == SDL_MOUSEBUTTONDOWN) ||
 									 (mapping.bindOut == Bind_Up_T   && evt.evt.type == SDL_MOUSEBUTTONUP))
@@ -199,12 +205,10 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 						// make state inactive
 						else if (matched && stateActive) {
 							// make inactive, remove from states list by swap with last and pop_back
-							/*if (m_frameMappedInput.states.size() > 1) {
-								// use m_frameMappedInput.states.swap()
+							if (stateIndex != m_frameMappedInput.states.size() - 1) {
 								std::swap(m_frameMappedInput.states.at(stateIndex), m_frameMappedInput.states.back());
 							}
-							m_frameMappedInput.states.pop_back();*/
-							m_frameMappedInput.states.erase(m_frameMappedInput.states.begin() + stateIndex);
+							m_frameMappedInput.states.pop_back();
 							break;
 						}
 					}

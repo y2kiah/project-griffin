@@ -11,14 +11,16 @@
 #include <cmath>
 
 
-#define playerHeight			6.0f	// ft/s
+#define playerHeight			6.0f	// ft
 #define sprintSpeed				27.0f	// ft/s
 #define jogSpeed				12.0f	// ft/s
 #define walkSpeed				5.0f	// ft/s
 #define movementAcceleration	60.0f	// ft/s^2
 #define sprintStride			13.5f	// ft
 #define walkStride				2.5f	// ft
-#define headBobDrop				0.0833f	// ft
+#define headBobDrop				0.1f	// ft
+#define crouchHeight			3.0f	// ft
+#define crouchRate				6.0f	// ft/s
 
 
 void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& engine, const UpdateInfo& ui)
@@ -73,9 +75,12 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& en
 			auto& cam = *scene.cameras[camInst.cameraId];
 
 			// determine target velocity
-			float speedTarget = jogSpeed; // jog speed, in ft/s
+			float speedTarget = (crouching ? walkSpeed : jogSpeed); // default to jog speed, or walk when crouching
+
+			// can only sprint moving forward and not crouching
 			if (speedToggle == SpeedFlag_Sprint &&
-				moveForward == 1) // can only sprint moving forward
+				moveForward == 1 &&
+				!crouching)
 			{
 				speedTarget = sprintSpeed;
 			}
@@ -106,6 +111,20 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& en
 			// cap acceleration to the distance remaining to the target velocity
 			float acceleration = glm::min(movementAcceleration * ui.deltaT * ui.deltaT, sqrt(len2)); // ft/s^2
 			velocity += normalize(deltaV) * acceleration;
+		}
+
+		// calculate crouch height
+		// TODO: collision detection above the bounding sphere should keep the player crouching
+		//	even though they've toggled crouching off, until they are free of the obstacle above
+		{
+			float targetCrouchZ = (crouching ? playerHeight - crouchHeight : 0.0f);
+
+			if (crouchZ < targetCrouchZ) {
+				crouchZ = min(crouchZ + crouchRate * ui.deltaT, targetCrouchZ);
+			}
+			else if (crouchZ > targetCrouchZ) {
+				crouchZ = max(crouchZ - crouchRate * ui.deltaT, targetCrouchZ);
+			}
 		}
 
 		// calculate head bob height, we assume a walking stride of 2.5ft per step and a peak fall of 4 inches
@@ -148,13 +167,13 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& en
 				}
 			}
 
-			headBobZ = playerHeight - (sinf(headBob) * headBobDrop);
+			headBobZ = sinf(headBob) * headBobDrop;
 		}
 
 		// update movement component values
 		move.prevTranslation = move.nextTranslation;
 		move.nextTranslation += velocity;
-		move.nextTranslation.z = headBobZ;
+		move.nextTranslation.z = playerHeight - crouchZ - headBobZ;
 		move.translationDirty = 1;
 	}
 
@@ -162,6 +181,7 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& en
 	moveForward = moveSide = pitchRaw = yawRaw = 0;
 	pitchMapped = yawMapped = 0.0f;
 	speedToggle = SpeedFlag_Normal;
+	crouching = false; // TEMP
 }
 
 
@@ -263,10 +283,12 @@ void griffin::game::PlayerControlSystem::init(Game* pGame, const Engine& engine,
 				return true;
 			});
 
-			//engine.inputSystem->handleInputState(crouchId, mi, [this](MappedState& ms, InputContext& c){
-				
-			//	return true;
-			//});
+			// TODO: add this function, need to be able to handle In/Out seperately, return value true means DO change the state, false means cancel the state change
+			//engine.inputSystem->handleInputStateEvent(crouchId, mi, [this](MappedState& ms, InputContext& c, ... which event, in or out ? ){
+			engine.inputSystem->handleInputState(crouchId, mi, [this](MappedState& ms, InputContext& c){
+				crouching = !crouching;//true;
+				return true;
+			});
 
 			engine.inputSystem->handleInputAxis(lookXId, mi, [this](MappedAxis& ma, InputContext& c){
 				yawRaw += ma.axisMotion->relRaw;

@@ -25,8 +25,8 @@ namespace griffin {
 			glm::vec3	velocity = {};							//<! current player velocity
 			
 			bool		crouching = false;
+			float		crouchZ = 0.0f;							//<! crouch distance subtracted from player's height
 			float		headBob = 0;							//<! current head bob value passed into sin(t)
-
 
 			Id_T		playerId;								//<! entity id of the player
 			Id_T		movementComponentId;					//<! movement component for the player entity

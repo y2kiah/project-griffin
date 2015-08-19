@@ -19,8 +19,7 @@ ffi.cdef[[
 
 	enum {
 		MAPPING_BIND_DOWN   = 0,
-		MAPPING_BIND_UP     = 1,
-		MAPPING_BIND_TOGGLE = 2
+		MAPPING_BIND_UP     = 1
 	};
 	
 	enum {

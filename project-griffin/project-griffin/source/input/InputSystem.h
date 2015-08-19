@@ -82,7 +82,6 @@ namespace griffin {
 		MakeEnum(InputMappingBindEvent, uint8_t,
 				 (Bind_Down)	//<! Bind to DOWN event of keyboard key, mouse or joystick button
 				 (Bind_Up)		//<! Bind to UP event of keyboard key, mouse or joystick button
-				 (Bind_Toggle)	//<! Axis are ranges of motion normalized to [-1,1]
 				 , _T);
 
 		/**
