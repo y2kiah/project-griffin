@@ -172,7 +172,7 @@ void griffin::game::DevCameraSystem::init(Game* pGame, const Engine& engine, con
 				active = !active;
 				
 				engine.inputSystem->setContextActive(devCameraInputContextId, active);
-				//engine.inputSystem->setContextActive(playerfpsInputContextId, !active);
+				engine.inputSystem->setContextActive(playerfpsInputContextId, !active);
 				// TODO: need above to work, when it's left in the dirst devcamera state triggered is sticky, seems like a bug in the input system
 
 				if (active) {
@@ -192,6 +192,15 @@ void griffin::game::DevCameraSystem::init(Game* pGame, const Engine& engine, con
 			engine.inputSystem->handleInputState(forwardId, mi, [this](MappedState& ms, InputContext& c){
 				moveForward = glm::min(moveForward + 1, 1);
 				SDL_Log("move forward active, %d", ms.totalFrames);
+
+				static int32_t lastTotalFrames = -1;
+				if (ms.totalFrames == lastTotalFrames) {
+					SDL_Log("repeated total frames, %d", lastTotalFrames);
+				}
+				else {
+					lastTotalFrames = ms.totalFrames;
+				}
+
 				return true;
 			});
 

@@ -38,7 +38,7 @@
 	},
 	"playerfps": {
 		"name": "First Person Controls",
-		"priority": 1,
+		"priority": 2,
 		"visible": true,
 		"eatsMouseInput": true,
 		"actions": [

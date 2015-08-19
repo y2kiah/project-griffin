@@ -295,7 +295,7 @@ namespace griffin {
 			/**
 			* Get index of active state in frame states array, -1 if not present.
 			*/
-			size_t findActiveState(Id_T mappingId) const;
+			int findActiveState(Id_T mappingId) const;
 
 
 			// Input Contexts

@@ -76,7 +76,6 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 		bool matched = false;
 
 		for (const auto& ac : m_activeInputContexts) {		// for each active context
-			// skip contexts that aren't active
 			if (!ac.active) { continue; }
 
 			auto& context = m_inputContexts[ac.contextId];
@@ -149,6 +148,7 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 								// TODO: states cannot use modifiers currently, make sure this is ok
 								// might want to support modifiers but check whether modifier "matters" or not - if there is a matching key mapping
 								// with the modifier, then it matters, otherwise it doesn't
+			if (matched) { SDL_Log("matched active on state %u", mapping.keycode); } // TEMP
 							}
 							else if ((mapping.bindIn == Bind_Down_T && evt.evt.type == SDL_MOUSEBUTTONDOWN) ||
 									 (mapping.bindIn == Bind_Up_T   && evt.evt.type == SDL_MOUSEBUTTONUP))
@@ -170,6 +170,7 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 										   evt.evt.key.keysym.mod == mapping.modifier*/);
 								// TODO: maybe need to look for sym and mod keys separately here and make state inactive for either one
 								// if the modifier OR the key is lifted in either order, the state should be deactivated
+			if (matched) { SDL_Log("matched inactive on state %u", mapping.keycode); } // TEMP
 							}
 							else if ((mapping.bindOut == Bind_Down_T && evt.evt.type == SDL_MOUSEBUTTONDOWN) ||
 									 (mapping.bindOut == Bind_Up_T   && evt.evt.type == SDL_MOUSEBUTTONUP))
@@ -198,10 +199,12 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 						// make state inactive
 						else if (matched && stateActive) {
 							// make inactive, remove from states list by swap with last and pop_back
-							if (m_frameMappedInput.states.size() > 1) {
+							/*if (m_frameMappedInput.states.size() > 1) {
+								// use m_frameMappedInput.states.swap()
 								std::swap(m_frameMappedInput.states.at(stateIndex), m_frameMappedInput.states.back());
 							}
-							m_frameMappedInput.states.pop_back();
+							m_frameMappedInput.states.pop_back();*/
+							m_frameMappedInput.states.erase(m_frameMappedInput.states.begin() + stateIndex);
 							break;
 						}
 					}
@@ -424,8 +427,8 @@ bool InputSystem::handleEvent(const SDL_Event& event)
 		case SDL_KEYDOWN:
 		case SDL_KEYUP: {
 			if (event.key.repeat == 0) {
-				SDL_Log("key event=%d: state=%d: key=%d: repeat=%d: realTime=%lu\n",
-						event.type, event.key.state, event.key.keysym.scancode, event.key.repeat, timestamp);
+				/*SDL_Log("key event=%d: state=%d: key=%d: repeat=%d: realTime=%lu\n",
+						event.type, event.key.state, event.key.keysym.scancode, event.key.repeat, timestamp);*/
 
 				m_eventsQueue.push({ timestamp, std::move(event), Event_Keyboard_T, {} });
 			}
@@ -607,10 +610,12 @@ Id_T InputSystem::getInputMappingHandle(const char* name, Id_T contextId) const
 }
 
 
-size_t InputSystem::findActiveState(Id_T mappingId) const
+int InputSystem::findActiveState(Id_T mappingId) const
 {
-	for (size_t s = 0; s < m_frameMappedInput.states.size();  ++s) {
-		if (m_frameMappedInput.states[s].mappingId.value == mappingId.value) { return s; }
+	for (size_t s = 0; s < m_frameMappedInput.states.size(); ++s) {
+		if (m_frameMappedInput.states[s].mappingId.value == mappingId.value) {
+			return static_cast<int>(s);
+		}
 	}
 	return -1;
 }
