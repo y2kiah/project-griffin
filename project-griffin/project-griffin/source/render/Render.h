@@ -35,7 +35,7 @@ namespace griffin {
 
 		enum RendererType {
 			RendererType_Deferred = 0,
-			RendererType_Forward  = 1
+			RendererType_Forward = 1
 		};
 
 		/**
@@ -68,7 +68,7 @@ namespace griffin {
 				};
 				struct TransparentKey {		// TransparentKey 48 bits for depth alone
 					uint64_t backToFrontDepth : 48;
-					
+
 					uint64_t _translucent_pad : 16;
 				};
 				uint64_t value;
@@ -83,7 +83,7 @@ namespace griffin {
 			// render flags?
 		};
 
-		
+
 		class RenderQueue {
 		public:
 			typedef struct { RenderQueueKey key; int entryIndex; } KeyType;
@@ -98,7 +98,7 @@ namespace griffin {
 			~RenderQueue();
 
 			void addRenderEntry(RenderQueueKey sortKey, RenderEntry entry);
-			
+
 			/**
 			* Sorts the keys, will be the traversal order for rendering
 			*/
@@ -118,7 +118,7 @@ namespace griffin {
 		};
 
 
-		#define MAX_VIEWPORTS	32
+#define MAX_VIEWPORTS	32
 
 		struct ViewportParameters {
 			glm::mat4	viewMat;
@@ -186,7 +186,7 @@ namespace griffin {
 		*		- for each viewport, active camera's frustum sent to culling system
 		*			- frustum culled against quad tree objects, sends back list of rendered objects
 		*			- render called on each object, submits RenderEntry to render system
-		*	
+		*
 		*	- update on fixed timesteps
 		*		- scene graph transforms updated, with dirty flag optimization
 		*		- when new scene info is ready, queue an event to tell render thread to swap states
@@ -211,7 +211,7 @@ namespace griffin {
 			void setViewportParameters(uint8_t viewport, ViewportParameters&& viewportParams)
 			{
 				assert(viewport < MAX_VIEWPORTS && "viewport out of range");
-				
+
 				m_viewports[viewport].params = std::forward<ViewportParameters>(viewportParams);
 				m_viewports[viewport].display = true;
 			}
@@ -226,6 +226,7 @@ namespace griffin {
 
 		typedef shared_ptr<RenderSystem> RenderSystemPtr;
 		typedef weak_ptr<RenderSystem>   RenderSystemWeakPtr;
+
 	}
 }
 

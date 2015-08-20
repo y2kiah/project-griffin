@@ -53,12 +53,15 @@ namespace griffin {
 
 			ShaderProgram_GL(ShaderProgram_GL&& other) :
 				m_programId{ other.m_programId },
-				m_shaderCode(std::move(other.m_shaderCode)),
-				m_shaders(std::move(other.m_shaders))
+				m_numShaders{ other.m_numShaders },
+				m_shaderCode(std::move(other.m_shaderCode))
 			{
 				SDL_Log("moving shader program with m_programId = %d", m_programId);
 				other.m_programId = 0;
-				other.m_shaders.clear();
+				for (uint32_t s = 0; s < other.m_numShaders; ++s) {
+					m_shaders[s] = std::move(other.m_shaders[s]);
+				}
+				other.m_numShaders = 0;
 			}
 
 			ShaderProgram_GL(const Shader_GL&) = delete;
@@ -73,7 +76,8 @@ namespace griffin {
 
 		private:
 			unsigned int		m_programId = 0;
-			vector<Shader_GL>	m_shaders;
+			uint32_t			m_numShaders = 0;
+			Shader_GL			m_shaders[5] = {};
 			string				m_shaderCode;
 		};
 

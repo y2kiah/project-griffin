@@ -20,7 +20,7 @@
 #define walkStride				2.5f	// ft
 #define headBobDrop				0.1f	// ft
 #define crouchHeight			3.0f	// ft
-#define crouchRate				6.0f	// ft/s
+#define crouchRate				12.0f	// ft/s
 
 
 void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& engine, const UpdateInfo& ui)

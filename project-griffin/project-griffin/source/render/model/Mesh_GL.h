@@ -7,7 +7,7 @@
 #include <string>
 #include "render/VertexBuffer_GL.h"
 #include "render/IndexBuffer_GL.h"
-#include "render/material/Material_GL.h"
+#include "render/Material_GL.h"
 #include <glm/mat4x4.hpp>
 
 

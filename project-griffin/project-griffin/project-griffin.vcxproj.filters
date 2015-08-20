@@ -59,17 +59,8 @@
     <Filter Include="render\font">
       <UniqueIdentifier>{af031da3-8eaf-449e-b3d3-2e0079866e2c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="render\impl">
-      <UniqueIdentifier>{f7ea8796-9ecd-42e7-b442-89d192fe733c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="resource\impl">
       <UniqueIdentifier>{e4f55fb2-5e6b-4ce2-9587-5a4b73899f14}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="render\material">
-      <UniqueIdentifier>{ae226d8e-78f3-4442-9fbf-c86a55ac1971}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="render\material\impl">
-      <UniqueIdentifier>{92424fbf-f6e4-4cd9-8dd2-ba5207247758}</UniqueIdentifier>
     </Filter>
     <Filter Include="render\model">
       <UniqueIdentifier>{66e5010d-df90-4c1b-9cd0-a2dadaf3d582}</UniqueIdentifier>
@@ -167,6 +158,12 @@
     <Filter Include="game\player">
       <UniqueIdentifier>{c18303bc-98e5-45a6-a6b7-b748d97eb2cb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="render\system">
+      <UniqueIdentifier>{2907b4a8-c293-4c4e-a816-02676ca177e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="render\system\impl">
+      <UniqueIdentifier>{f7ea8796-9ecd-42e7-b442-89d192fe733c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">
@@ -203,19 +200,19 @@
       <Filter>render\model\impl</Filter>
     </ClCompile>
     <ClCompile Include="source\render\impl\VertexBuffer_GL.cpp">
-      <Filter>render\impl</Filter>
+      <Filter>render\system\impl</Filter>
     </ClCompile>
     <ClCompile Include="source\render\model\impl\Mesh_GL.cpp">
       <Filter>render\model\impl</Filter>
     </ClCompile>
     <ClCompile Include="source\render\impl\IndexBuffer_GL.cpp">
-      <Filter>render\impl</Filter>
+      <Filter>render\system\impl</Filter>
     </ClCompile>
     <ClCompile Include="source\render\impl\Render.cpp">
-      <Filter>render\impl</Filter>
+      <Filter>render\system\impl</Filter>
     </ClCompile>
     <ClCompile Include="source\render\impl\ShaderProgram_GL.cpp">
-      <Filter>render\impl</Filter>
+      <Filter>render\system\impl</Filter>
     </ClCompile>
     <ClCompile Include="source\render\geometry\impl\Cube.cpp">
       <Filter>render\geometry\impl</Filter>
@@ -227,7 +224,7 @@
       <Filter>render\geometry\impl</Filter>
     </ClCompile>
     <ClCompile Include="source\render\impl\RenderTarget_GL.cpp">
-      <Filter>render\impl</Filter>
+      <Filter>render\system\impl</Filter>
     </ClCompile>
     <ClCompile Include="source\entity\impl\Component.cpp">
       <Filter>entity\impl</Filter>
@@ -276,6 +273,9 @@
     </ClCompile>
     <ClCompile Include="source\render\texture\dds.cpp">
       <Filter>render\texture\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\impl\ShaderManager_GL.cpp">
+      <Filter>render\system\impl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -642,9 +642,6 @@
     <ClInclude Include="source\render\font\FreeType.h">
       <Filter>render\font</Filter>
     </ClInclude>
-    <ClInclude Include="source\render\Render.h">
-      <Filter>render</Filter>
-    </ClInclude>
     <ClInclude Include="source\resource\ResourceSource.h">
       <Filter>resource</Filter>
     </ClInclude>
@@ -663,23 +660,11 @@
     <ClInclude Include="source\render\model\ModelImport_Assimp.h">
       <Filter>render\model</Filter>
     </ClInclude>
-    <ClInclude Include="source\render\VertexBuffer_GL.h">
-      <Filter>render</Filter>
-    </ClInclude>
-    <ClInclude Include="source\render\IndexBuffer_GL.h">
-      <Filter>render</Filter>
-    </ClInclude>
     <ClInclude Include="source\render\model\Mesh_GL.h">
       <Filter>render\model</Filter>
     </ClInclude>
     <ClInclude Include="source\render\model\Model_GL.h">
       <Filter>render\model</Filter>
-    </ClInclude>
-    <ClInclude Include="source\render\ShaderProgramLayouts_GL.h">
-      <Filter>render</Filter>
-    </ClInclude>
-    <ClInclude Include="source\render\ShaderProgram_GL.h">
-      <Filter>render</Filter>
     </ClInclude>
     <ClInclude Include="source\render\geometry\Cube.h">
       <Filter>render\geometry</Filter>
@@ -689,9 +674,6 @@
     </ClInclude>
     <ClInclude Include="source\render\geometry\Geometry.h">
       <Filter>render\geometry</Filter>
-    </ClInclude>
-    <ClInclude Include="source\render\RenderTarget_GL.h">
-      <Filter>render</Filter>
     </ClInclude>
     <ClInclude Include="source\entity\Component.h">
       <Filter>entity</Filter>
@@ -722,9 +704,6 @@
     </ClInclude>
     <ClInclude Include="source\application\Engine.h">
       <Filter>application</Filter>
-    </ClInclude>
-    <ClInclude Include="source\render\material\Material_GL.h">
-      <Filter>render\material</Filter>
     </ClInclude>
     <ClInclude Include="source\scene\Scene.h">
       <Filter>scene</Filter>
@@ -775,14 +754,38 @@
     <ClInclude Include="source\game\impl\GameImpl.h">
       <Filter>game\impl</Filter>
     </ClInclude>
-    <ClInclude Include="source\render\RenderHelpers.h">
-      <Filter>render</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\player\PlayerControlSystem.h">
       <Filter>game\player</Filter>
     </ClInclude>
     <ClInclude Include="source\render\texture\dds.h">
       <Filter>render\texture</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\IndexBuffer_GL.h">
+      <Filter>render\system</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\Render.h">
+      <Filter>render\system</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\RenderHelpers.h">
+      <Filter>render\system</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\RenderTarget_GL.h">
+      <Filter>render\system</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\ShaderProgram_GL.h">
+      <Filter>render\system</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\ShaderProgramLayouts_GL.h">
+      <Filter>render\system</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\VertexBuffer_GL.h">
+      <Filter>render\system</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\Material_GL.h">
+      <Filter>render\system</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\ShaderManager_GL.h">
+      <Filter>render\system</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

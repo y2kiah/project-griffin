@@ -366,6 +366,7 @@ namespace griffin {
 		}
 
 
+		// TODO: move to ShaderManager file??
 		ResourceHandle<ShaderProgram_GL> loadShaderProgram(wstring programPath, CacheType cache)
 		{
 			using namespace resource;

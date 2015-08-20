@@ -39,7 +39,15 @@ namespace griffin {
 				case GL_GEOMETRY_SHADER:
 					shaderDefine = "#version 440 core\n#define _GEOMETRY_\n";
 					break;
+				case GL_TESS_CONTROL_SHADER:
+					shaderDefine = "#version 440 core\n#define _TESS_CONTROL_\n";
+					break;
+				case GL_TESS_EVALUATION_SHADER:
+					shaderDefine = "#version 440 core\n#define _TESS_EVAL_\n";
+					break;
 			}
+
+			// TODO: use shaderKey passed in to #define a bunch more stuff for ubershader
 
 			const char* source[2] = {
 				shaderDefine,
@@ -78,23 +86,37 @@ namespace griffin {
 		}
 
 		bool ShaderProgram_GL::compileAndLinkProgram() {
-			bool hasGeometryStage = (m_shaderCode.find("_GEOMETRY_", 0, 10) != string::npos);
+			bool hasGeometryStage    = (m_shaderCode.find("_GEOMETRY_", 0) != string::npos);
+			bool hasTessControlStage = (m_shaderCode.find("_TESS_CONTROL_", 0) != string::npos);
+			bool hasTessEvalStage    = (m_shaderCode.find("_TESS_EVAL_", 0) != string::npos);
 			
-			m_shaders.reserve(hasGeometryStage ? 3 : 2);
-			
+			m_numShaders = (hasGeometryStage ? 3 : 2);
+
 			// Compile code as vertex shader (defines _VERTEX_)
-			m_shaders.emplace_back();
-			bool ok = m_shaders.back().compileShader(m_shaderCode, GL_VERTEX_SHADER);
+			int currentShader = 0;
+			bool ok = m_shaders[currentShader].compileShader(m_shaderCode, GL_VERTEX_SHADER);
 			
+			if (hasTessControlStage) {
+				++currentShader;
+				// Compile code as tesselation control shader (defines _TESS_CONTROL_)
+				ok = ok && m_shaders[currentShader].compileShader(m_shaderCode, GL_TESS_CONTROL_SHADER);
+			}
+
+			if (hasTessEvalStage) {
+				++currentShader;
+				// Compile code as tesselation evaluation shader (defines _TESS_EVAL_)
+				ok = ok && m_shaders[currentShader].compileShader(m_shaderCode, GL_TESS_EVALUATION_SHADER);
+			}
+
 			if (hasGeometryStage) {
+				++currentShader;
 				// Compile code as geometry shader (defines _GEOMETRY_)
-				m_shaders.emplace_back();
-				ok = ok && m_shaders.back().compileShader(m_shaderCode, GL_GEOMETRY_SHADER);
+				ok = ok && m_shaders[currentShader].compileShader(m_shaderCode, GL_GEOMETRY_SHADER);
 			}
 
 			// Compile code as fragment shader (defines _FRAGMENT_)
-			m_shaders.emplace_back();
-			ok = ok && m_shaders.back().compileShader(m_shaderCode, GL_FRAGMENT_SHADER);
+			++currentShader;
+			ok = ok && m_shaders[currentShader].compileShader(m_shaderCode, GL_FRAGMENT_SHADER);
 
 			// Link the program
 			if (ok) {

@@ -22,7 +22,7 @@
 #include <limits>
 
 #include <render/model/Mesh_GL.h>
-#include <render/material/Material_GL.h>
+#include <render/Material_GL.h>
 #include <glm/vec4.hpp>
 
 #include <SDL_log.h>
@@ -489,13 +489,13 @@ namespace griffin {
 					switch (tt) {
 						case aiTextureType_DIFFUSE:    texType = MaterialTexture_Diffuse; break;
 						case aiTextureType_SPECULAR:   texType = MaterialTexture_Specular; break;
-						case aiTextureType_AMBIENT:    texType = MaterialTexture_Ambient; break;
+						case aiTextureType_AMBIENT:    texType = MaterialTexture_Metallic_Reflectivity_AO; break;
 						case aiTextureType_EMISSIVE:   texType = MaterialTexture_Emissive; break;
-						case aiTextureType_NORMALS:    texType = MaterialTexture_Normals; break;
-						case aiTextureType_HEIGHT:     texType = MaterialTexture_Height; break;
-						case aiTextureType_SHININESS:  texType = MaterialTexture_Shininess; break;
-						case aiTextureType_REFLECTION: texType = MaterialTexture_Reflection; break;
-						case aiTextureType_OPACITY:    texType = MaterialTexture_Opacity; break;
+						case aiTextureType_NORMALS:    texType = MaterialTexture_Normal_Height; break;
+						case aiTextureType_HEIGHT:     texType = MaterialTexture_Normal_Height; break;
+						case aiTextureType_SHININESS:  texType = MaterialTexture_Specular; break;
+						case aiTextureType_REFLECTION: texType = MaterialTexture_Metallic_Reflectivity_AO; break;
+						case aiTextureType_OPACITY:    texType = MaterialTexture_Diffuse_Opacity; break;
 					}
 
 					// for each texture of a type

@@ -25,6 +25,7 @@
 
 // Render System
 #define RESERVE_RENDER_QUEUE					500
+#define RESERVE_SHADER_PROGRAMS					100
 
 // Scene System
 #define RESERVE_SCENEGRAPH_TRAVERSAL_QUEUE		100

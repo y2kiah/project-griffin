@@ -102,6 +102,17 @@
 	//uniform vec3 diffuseColor;
 	uniform sampler2D diffuseMap;	// 4
 
+	// these would be used to support models with > 1 channel
+	// these should go in the per-material uniform buffer
+	//uniform int diffuseUVChannelIndex0 = 0;
+	//uniform int diffuseUVChannelIndex1 = 0;
+	//uniform int diffuseUVChannelIndex2 = 0;
+	//uniform int diffuseUVChannelIndex3 = 0;
+	// etc... for each texture
+	//
+	//uniform int diffuseVertexColorChannel = 0;
+	
+
 	// Input Variables
 
 	in vec4 positionViewspace;

@@ -45,6 +45,7 @@
     <ClCompile Include="source\render\impl\IndexBuffer_GL.cpp" />
     <ClCompile Include="source\render\impl\Render.cpp" />
     <ClCompile Include="source\render\impl\RenderTarget_GL.cpp" />
+    <ClCompile Include="source\render\impl\ShaderManager_GL.cpp" />
     <ClCompile Include="source\render\impl\ShaderProgram_GL.cpp" />
     <ClCompile Include="source\render\impl\VertexBuffer_GL.cpp" />
     <ClCompile Include="source\render\model\impl\Mesh_GL.cpp" />
@@ -94,13 +95,14 @@
     <ClInclude Include="source\render\geometry\Cube.h" />
     <ClInclude Include="source\render\geometry\Geometry.h" />
     <ClInclude Include="source\render\IndexBuffer_GL.h" />
-    <ClInclude Include="source\render\material\Material_GL.h" />
+    <ClInclude Include="source\render\Material_GL.h" />
     <ClInclude Include="source\render\model\Mesh_GL.h" />
     <ClInclude Include="source\render\model\ModelImport_Assimp.h" />
     <ClInclude Include="source\render\model\Model_GL.h" />
     <ClInclude Include="source\render\Render.h" />
     <ClInclude Include="source\render\RenderHelpers.h" />
     <ClInclude Include="source\render\RenderTarget_GL.h" />
+    <ClInclude Include="source\render\ShaderManager_GL.h" />
     <ClInclude Include="source\render\ShaderProgramLayouts_GL.h" />
     <ClInclude Include="source\render\ShaderProgram_GL.h" />
     <ClInclude Include="source\render\texture\dds.h" />
