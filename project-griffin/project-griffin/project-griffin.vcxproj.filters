@@ -787,6 +787,9 @@
     <ClInclude Include="source\render\ShaderManager_GL.h">
       <Filter>render\system</Filter>
     </ClInclude>
+    <ClInclude Include="source\utility\blend.h">
+      <Filter>utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="vendor\glm\glm\gtc\constants.inl">
