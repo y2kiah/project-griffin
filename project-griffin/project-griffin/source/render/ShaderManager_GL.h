@@ -98,6 +98,19 @@ namespace griffin {
 			*/
 			bool hasUbershaderForKey(ShaderKey key, uint16_t* outIndex = nullptr) const;
 
+			/**
+			* Causes all currently built ubershaders to be recompiled and linked. This is useful
+			* during development for hot reloading after shader code changes have been made.
+			*/
+			bool rebuildAllCurrentUbershaders();
+
+			/**
+			* Sets the ubershader code used to compile all material permutations. There is a very
+			* close tie between the shader code, and the code within this class that sets the
+			* compile time conditional flags based on material key parameters.
+			*/
+			void setUbershaderCode(const char* code);
+
 		private:
 
 			// Variables
