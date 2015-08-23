@@ -223,6 +223,11 @@ namespace griffin {
 		*/
 		class InputSystem {
 		public:
+			enum StateTransition : uint8_t {
+				State_Activate = 0,
+				State_Deactivate
+			};
+
 			// Static Variables
 
 			static const SDLApplication* app;
@@ -264,7 +269,7 @@ namespace griffin {
 			/**
 			* Executed on the input/GUI thread
 			*/
-			bool handleEvent(const SDL_Event& event);
+			bool handleMessage(const SDL_Event& event);
 
 
 			// Input Mappings
@@ -334,21 +339,27 @@ namespace griffin {
 
 
 			/**
-			* Convenience function for handling a single mapped action event
+			* Convenience function for handling a single active mapped action event
+			* @param	callback	returns true if input was handled, false if not handled
+			* @return	true if a mapped action is found and handled by the callback
 			*/
-			void handleInputAction(Id_T mappingId, FrameMappedInput& mappedInput,
+			bool handleInputAction(Id_T mappingId, FrameMappedInput& mappedInput,
 								   std::function<bool(MappedAction&, InputContext&)> callback);
 
 			/**
-			* Convenience function for handling a single mapped state event
+			* Convenience function for handling a single active mapped state event
+			* @param	callback	returns true if input was handled, false if not handled
+			* @return	true if a mapped state is found and handled by the callback
 			*/
-			void handleInputState(Id_T mappingId, FrameMappedInput& mappedInput,
+			bool handleInputState(Id_T mappingId, FrameMappedInput& mappedInput,
 								  std::function<bool(MappedState&, InputContext&)> callback);
 
 			/**
-			* Convenience function for handling a single mapped axis event
+			* Convenience function for handling a single active mapped axis event
+			* @param	callback	returns true if input was handled, false if not handled
+			* @return	true if a mapped axis is found and handled by the callback
 			*/
-			void handleInputAxis(Id_T mappingId, FrameMappedInput& mappedInput,
+			bool handleInputAxis(Id_T mappingId, FrameMappedInput& mappedInput,
 								 std::function<bool(MappedAxis&, InputContext&)> callback);
 
 

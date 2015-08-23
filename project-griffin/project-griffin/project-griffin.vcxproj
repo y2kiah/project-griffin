@@ -42,6 +42,7 @@
     <ClCompile Include="source\render\font\FreeType.cpp" />
     <ClCompile Include="source\render\geometry\impl\Cube.cpp" />
     <ClCompile Include="source\render\geometry\impl\Geometry.cpp" />
+    <ClCompile Include="source\render\geometry\impl\Intersection.cpp" />
     <ClCompile Include="source\render\impl\IndexBuffer_GL.cpp" />
     <ClCompile Include="source\render\impl\Render.cpp" />
     <ClCompile Include="source\render\impl\RenderTarget_GL.cpp" />
@@ -94,6 +95,7 @@
     <ClInclude Include="source\render\font\FreeType.h" />
     <ClInclude Include="source\render\geometry\Cube.h" />
     <ClInclude Include="source\render\geometry\Geometry.h" />
+    <ClInclude Include="source\render\geometry\Intersection.h" />
     <ClInclude Include="source\render\IndexBuffer_GL.h" />
     <ClInclude Include="source\render\Material_GL.h" />
     <ClInclude Include="source\render\model\Mesh_GL.h" />

@@ -1,100 +1,105 @@
 #include "../Geometry.h"
 
-namespace griffin {
-	namespace render {
-		namespace geometry {
+using namespace griffin;
+using namespace griffin::geometry;
+			
 
-			/**
-			* For an explanation of the following code, see "Fast Extraction of Viewing Frustum
-			* Planes from the World-View-Projection Matrix"
-			*/
-			void Frustum::extractFromMatrixGL(float matrix[16], bool normalize)
-			{
-				const auto& m = *reinterpret_cast<MatrixColumnMajor*>(matrix);
+/**
+* For an explanation of the following code, see "Fast Extraction of Viewing Frustum
+* Planes from the World-View-Projection Matrix"
+*/
+void Frustum::extractFromMatrixGL(float matrix[16], bool normalize)
+{
+	const auto& m = *reinterpret_cast<MatrixColumnMajor*>(matrix);
 				
-				left.a   = m._41 + m._11;
-				left.b   = m._42 + m._12;
-				left.c   = m._43 + m._13;
-				left.d   = m._44 + m._14;
+	nx[Near]   = m._41 + m._31;
+	ny[Near]   = m._42 + m._32;
+	nz[Near]   = m._43 + m._33;
+	d[Near]    = m._44 + m._34;
 
-				right.a  = m._41 - m._11;
-				right.b  = m._42 - m._12;
-				right.c  = m._43 - m._13;
-				right.d  = m._44 - m._14;
+	nx[Far]    = m._41 + m._31;
+	ny[Far]    = m._42 + m._32;
+	nz[Far]    = m._43 + m._33;
+	d[Far]     = m._44 + m._34;
 
-				top.a    = m._41 - m._21;
-				top.b    = m._42 - m._22;
-				top.c    = m._43 - m._23;
-				top.d    = m._44 - m._24;
+	nx[Left]   = m._41 + m._11;
+	ny[Left]   = m._42 + m._12;
+	nz[Left]   = m._43 + m._13;
+	d[Left]    = m._44 + m._14;
 
-				bottom.a = m._41 + m._21;
-				bottom.b = m._42 + m._22;
-				bottom.c = m._43 + m._23;
-				bottom.d = m._44 + m._24;
+	nx[Right]  = m._41 - m._11;
+	ny[Right]  = m._42 - m._12;
+	nz[Right]  = m._43 - m._13;
+	d[Right]   = m._44 - m._14;
 
-				near.a   = m._41 + m._31;
-				near.b   = m._42 + m._32;
-				near.c   = m._43 + m._33;
-				near.d   = m._44 + m._34;
+	nx[Top]    = m._41 - m._21;
+	ny[Top]    = m._42 - m._22;
+	nz[Top]    = m._43 - m._23;
+	d[Top]     = m._44 - m._24;
 
-				far.a    = m._41 + m._31;
-				far.b    = m._42 + m._32;
-				far.c    = m._43 + m._33;
-				far.d    = m._44 + m._34;
+	nx[Bottom] = m._41 + m._21;
+	ny[Bottom] = m._42 + m._22;
+	nz[Bottom] = m._43 + m._23;
+	d[Bottom]  = m._44 + m._24;
 
-				if (normalize) {
-					left.normalize();
-					right.normalize();
-					top.normalize();
-					bottom.normalize();
-					near.normalize();
-					far.normalize();
-				}
-			}
+	if (normalize) {
+		// TODO: find a faster way to normalize all planes, use SIMD code like the collision detection routine would
+		Plane planes[6] = {};
+		getPlanes(planes);
+		for (int p = 0; p < 6; ++p) {
+			planes[p].normalize();
+			nx[p] = planes[p].nx;
+			ny[p] = planes[p].ny;
+			nz[p] = planes[p].nz;
+			d[p] = planes[p].d;
+		}
+	}
+}
 
-			void Frustum::extractFromMatrixD3D(float matrix[16], bool normalize)
-			{
-				const auto& m = *reinterpret_cast<MatrixRowMajor*>(matrix);
+void Frustum::extractFromMatrixD3D(float matrix[16], bool normalize)
+{
+	const auto& m = *reinterpret_cast<MatrixRowMajor*>(matrix);
 				
-				left.a   = m._14 + m._11;
-				left.b   = m._24 + m._21;
-				left.c   = m._34 + m._31;
-				left.d   = m._44 + m._41;
+	nx[Near]   = m._13;
+	ny[Near]   = m._23;
+	nz[Near]   = m._33;
+	d[Near]    = m._43;
 
-				right.a  = m._14 - m._11;
-				right.b  = m._24 - m._21;
-				right.c  = m._34 - m._31;
-				right.d  = m._44 - m._41;
+	nx[Far]    = m._14 - m._13;
+	ny[Far]    = m._24 - m._23;
+	nz[Far]    = m._34 - m._33;
+	d[Far]     = m._44 - m._43;
 
-				top.a    = m._14 - m._12;
-				top.b    = m._24 - m._22;
-				top.c    = m._34 - m._32;
-				top.d    = m._44 - m._42;
+	nx[Left]   = m._14 + m._11;
+	ny[Left]   = m._24 + m._21;
+	nz[Left]   = m._34 + m._31;
+	d[Left]    = m._44 + m._41;
 
-				bottom.a = m._14 + m._12;
-				bottom.b = m._24 + m._22;
-				bottom.c = m._34 + m._32;
-				bottom.d = m._44 + m._42;
+	nx[Right]  = m._14 - m._11;
+	ny[Right]  = m._24 - m._21;
+	nz[Right]  = m._34 - m._31;
+	d[Right]   = m._44 - m._41;
 
-				near.a   = m._13;
-				near.b   = m._23;
-				near.c   = m._33;
-				near.d   = m._43;
+	nx[Top]    = m._14 - m._12;
+	ny[Top]    = m._24 - m._22;
+	nz[Top]    = m._34 - m._32;
+	d[Top]     = m._44 - m._42;
 
-				far.a    = m._14 - m._13;
-				far.b    = m._24 - m._23;
-				far.c    = m._34 - m._33;
-				far.d    = m._44 - m._43;
+	nx[Bottom] = m._14 + m._12;
+	ny[Bottom] = m._24 + m._22;
+	nz[Bottom] = m._34 + m._32;
+	d[Bottom]  = m._44 + m._42;
 
-				if (normalize) {
-					left.normalize();
-					right.normalize();
-					top.normalize();
-					bottom.normalize();
-					near.normalize();
-					far.normalize();
-				}
-			}
+	if (normalize) {
+		// TODO: find a faster way to normalize all planes, use SSE intrinsics like the collision detection code
+		Plane planes[6] = {};
+		getPlanes(planes);
+		for (int p = 0; p < 6; ++p) {
+			planes[p].normalize();
+			nx[p] = planes[p].nx;
+			ny[p] = planes[p].ny;
+			nz[p] = planes[p].nz;
+			d[p] = planes[p].d;
 		}
 	}
 }

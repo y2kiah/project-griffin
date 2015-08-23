@@ -379,7 +379,7 @@ bool InputSystem::unregisterCallback(Id_T callbackId)
 	return (m_callbacks.erase(callbackId) == 1);
 }
 
-void InputSystem::handleInputAction(Id_T mappingId, FrameMappedInput& mappedInput,
+bool InputSystem::handleInputAction(Id_T mappingId, FrameMappedInput& mappedInput,
 									std::function<bool(MappedAction&, InputContext&)> callback)
 {
 	InputMapping mapping = m_inputMappings[mappingId];
@@ -389,11 +389,13 @@ void InputSystem::handleInputAction(Id_T mappingId, FrameMappedInput& mappedInpu
 		if (mi.mappingId == mappingId && !mi.handled) {
 			auto& context = m_inputContexts[mi.inputMapping->contextId];
 			mi.handled = callback(mi, context);
+			return mi.handled;
 		}
 	}
+	return false;
 }
 
-void InputSystem::handleInputState(Id_T mappingId, FrameMappedInput& mappedInput,
+bool InputSystem::handleInputState(Id_T mappingId, FrameMappedInput& mappedInput,
 								   std::function<bool(MappedState&, InputContext&)> callback)
 {
 	InputMapping mapping = m_inputMappings[mappingId];
@@ -403,11 +405,13 @@ void InputSystem::handleInputState(Id_T mappingId, FrameMappedInput& mappedInput
 		if (mi.mappingId == mappingId && !mi.handled) {
 			auto& context = m_inputContexts[mi.inputMapping->contextId];
 			mi.handled = callback(mi, context);
+			return mi.handled;
 		}
 	}
+	return false;
 }
 
-void InputSystem::handleInputAxis(Id_T mappingId, FrameMappedInput& mappedInput,
+bool InputSystem::handleInputAxis(Id_T mappingId, FrameMappedInput& mappedInput,
 								  std::function<bool(MappedAxis&, InputContext&)> callback)
 {
 	InputMapping mapping = m_inputMappings[mappingId];
@@ -417,12 +421,14 @@ void InputSystem::handleInputAxis(Id_T mappingId, FrameMappedInput& mappedInput,
 		if (mi.mappingId == mappingId && !mi.handled) {
 			auto& context = m_inputContexts[mi.inputMapping->contextId];
 			mi.handled = callback(mi, context);
+			return mi.handled;
 		}
 	}
+	return false;
 }
 
 
-bool InputSystem::handleEvent(const SDL_Event& event)
+bool InputSystem::handleMessage(const SDL_Event& event)
 {
 	bool handled = false;
 	auto timestamp = Timer::queryCounts();

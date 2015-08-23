@@ -9,14 +9,13 @@ namespace griffin {
 		return (1.0f - t) * a + t * b;
 	}
 
-	// TODO: s-curve function
+	// TODO: spline functions
 
-	inline float quint(float a, float b, float t)
-	{
-		
-	}
+	
 
-	// http://developer.amd.com/wordpress/media/2012/10/Andersson-TerrainRendering(Siggraph07).pdf
+	/**
+	* @see http://developer.amd.com/wordpress/media/2012/10/Andersson-TerrainRendering(Siggraph07).pdf
+	*/
 	inline float overlayBlend(float base, float value, float opacity)
 	{
 		float a = (base < 0.5f) ? (2.0f * base * value) : (1.0f - 2.0f * (1.0f - base) * (1.0f - value));

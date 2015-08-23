@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
 			SDL_Event event;
 			while (SDL_PollEvent(&event)) {
 				// send to the input system to handle the event
-				bool handled = engine.inputSystem->handleEvent(event);
+				bool handled = engine.inputSystem->handleMessage(event);
 				
 				if (!handled) {
 					switch (event.type) {

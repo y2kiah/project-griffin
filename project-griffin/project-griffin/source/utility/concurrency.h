@@ -1,15 +1,6 @@
 /**
 * @file concurrency.h
 * @author Jeff Kiah
-* Two neat classes from Herb Sutter that wrap any other class of type T and synchronizes every
-* member function call, effectively making the wrapped class thread-safe. The wrapping pattern
-* used is interesting by itself. The concurrent class uses a concurrent_queue and worker thread to
-* get asynchronous non-blocking behavior, returning a std::future. The monitor class uses a simple
-* for thread safety, but should hardly ever be used because it both over-locks (every method is
-* too much) and under-locks (no transaction-level locking) in most real situations. It can maybe
-* be used for printf or cout logging, but even then a concurrent_queue is preferrable. The
-* wrapping pattern can also be used in lieu of inheritance in many situations.
-* @see http://channel9.msdn.com/Shows/Going+Deep/C-and-Beyond-2012-Herb-Sutter-Concurrency-and-Parallelism
 */
 #pragma once
 #ifndef GRIFFIN_CONCURRENCY_H_
@@ -141,6 +132,16 @@ namespace griffin {
 			popTasks.clear();
 		}
 
+
+		/**
+		* Data-parallel jobs may want to know how many worker threads there are, to divide up the
+		* work evenly.
+		*/
+		int getNumWorkerThreads() const
+		{
+			return m_numWorkerThreads;
+		}
+
 		// Implements FIFO scheduling, with a thread affinity system
 		//   If affinity is set a thread will execute that task first and leave the worker tasks
 		//   it skips to be executed by a worker thread. In that way, tasks that specify affinity
@@ -160,18 +161,22 @@ namespace griffin {
 		TaskQueueList	m_tasks;		//<! concurrent_queues for pushing
 		TaskPopList		m_popTasks;		//<! vectors for popping tasks from the queue to be executed on fixed threads
 		//std::atomic<std::bitset<MAX_WORKER_THREADS>> m_busy = 0;
-		int8_t			m_numWorkerThreads = 0;
 		atomic<bool>	m_done = false;
+		int8_t			m_numWorkerThreads = 0;
 		
 	};
 
 	typedef std::shared_ptr<thread_pool> ThreadPoolPtr;
 
 
+	/**
+	*
+	*/
 	class task_base {
 	public:
 		static ThreadPoolPtr s_threadPool;	//<! declared in Engine.cpp
 	};
+
 
 	/**
 	*
@@ -196,8 +201,8 @@ namespace griffin {
 			promise_type	p;				//<! promise for result of task
 			future_type		result;			//<! future return value of the task
 			ThreadAffinity	threadAffinity;	//<! thread affinity for scheduling the task
-			uint8_t			flags;			//<! contains flags for this task
 			std::function<void(ThreadAffinity)> fCont;	//<! continuation capture
+			uint8_t			flags;			//<! contains flags for this task
 		};
 		std::shared_ptr<Impl> _pImpl;
 
@@ -459,6 +464,15 @@ namespace griffin {
 	};
 
 
+	/**
+	* @class concurrent
+	* Concurrent class from Herb Sutter that wraps any other class of type T and serializes every
+	* member function call, effectively making the wrapped class thread-safe. The wrapping is done
+	* by type-erasure. The concurrent class uses a concurrent_queue and worker thread to give
+	* asynchronous non-blocking behavior, returning a std::future for all calls.
+	* @see http://channel9.msdn.com/Shows/Going+Deep/C-and-Beyond-2012-Herb-Sutter-Concurrency-and-Parallelism
+	* @tparam	T	class or data wrapped for thread safety
+	*/
 	template <typename T>
 	class concurrent {
 	public:
@@ -509,15 +523,17 @@ namespace griffin {
 		}
 	};
 
-
+	
 	/**
 	* @class monitor
 	* The monitor class wraps any class T and accepts lambdas that take a reference to the
 	* contained object for performing operations (via member-function calls presumably) in a thread
-	* safe manner. Invoked lambdas are internally synchronized using a mutex, so this would
-	* potentially block client threads and cause contention. This should almost never be used,
-	* prefer the concurrent<T> class and task parallelism when possible.
-	* @tparam	T	class or data wrapped to be protected by a mutex for thread safety
+	* safe manner. Invoked lambdas are internally synchronized using a mutex, so this blocks the
+	* calling thread and can cause contention. This should almost never be used due to potential
+	* over locking - (locking every method call is often too much), and under locking - (no
+	* "transaction" level locking). Prefer the concurrent<T> class for an asynchronous API.
+	* @see http://channel9.msdn.com/Shows/Going+Deep/C-and-Beyond-2012-Herb-Sutter-Concurrency-and-Parallelism
+	* @tparam	T	class or data wrapped for thread safety
 	*/
 	template <typename T>
 	class monitor {

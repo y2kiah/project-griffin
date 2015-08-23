@@ -2,14 +2,15 @@
 #include <cstdint>
 #include <glm/vec3.hpp>
 
-namespace griffin {
-namespace render {
-namespace geometry {
+using namespace griffin;
+using namespace griffin::render;
+
 
 struct vertex_pn {
 	glm::vec3 p;
 	glm::vec3 n;
 };
+
 
 const vertex_pn g_cubeVertexBufferData[] = {
 	// front face
@@ -74,8 +75,4 @@ const uint8_t g_cubeIndexBufferData[] = {
 
 Cube::Cube() {
 	
-}
-
-}
-}
 }

@@ -181,7 +181,6 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& en
 	moveForward = moveSide = pitchRaw = yawRaw = 0;
 	pitchMapped = yawMapped = 0.0f;
 	speedToggle = SpeedFlag_Normal;
-	crouching = false; // TEMP
 }
 
 
@@ -283,12 +282,10 @@ void griffin::game::PlayerControlSystem::init(Game* pGame, const Engine& engine,
 				return true;
 			});
 
-			// TODO: add this function, need to be able to handle In/Out seperately, return value true means DO change the state, false means cancel the state change
-			//engine.inputSystem->handleInputStateEvent(crouchId, mi, [this](MappedState& ms, InputContext& c, ... which event, in or out ? ){
-			engine.inputSystem->handleInputState(crouchId, mi, [this](MappedState& ms, InputContext& c){
-				crouching = !crouching;//true;
+			bool crouchActive = engine.inputSystem->handleInputState(crouchId, mi, [this](MappedState& ms, InputContext& c){
 				return true;
 			});
+			crouching = crouchActive;
 
 			engine.inputSystem->handleInputAxis(lookXId, mi, [this](MappedAxis& ma, InputContext& c){
 				yawRaw += ma.axisMotion->relRaw;
