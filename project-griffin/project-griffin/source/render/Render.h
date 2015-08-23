@@ -79,6 +79,7 @@ namespace griffin {
 		struct RenderEntry {
 			glm::dvec3	translationWorld;
 			glm::quat	orientationWorld;
+			Id_T		entityId;
 			// render callback function
 			// render flags?
 		};
@@ -118,7 +119,11 @@ namespace griffin {
 		};
 
 
-#define MAX_VIEWPORTS	32
+		/**
+		* Maximum number of render viewports. Multiple viewports can be used for multi-screen
+		* rendering where each screen contains a separate camera view.
+		*/
+		#define MAX_VIEWPORTS	16
 
 		struct ViewportParameters {
 			glm::mat4	viewMat;

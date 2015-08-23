@@ -71,6 +71,7 @@ namespace griffin {
 		COMPONENT(MeshInstanceContainer,
 			(Id_T,			meshId,,			"resource id of the mesh"),
 			(Id_T,			materialOverrides,,	"id of first material override")
+			// TODO: skeletal animation positions, or track keyframe/t values and blends
 		)
 
 		/**
@@ -106,6 +107,20 @@ namespace griffin {
 			(glm::quat,		nextRotation,,		"next local rotation")
 		)
 		
+		/**
+		* All entities that can be rendered has a RenderCullInfo component. This stores the data
+		* needed for keeping track of its indexing in the space partitioning structure, the data
+		* needed to perform frustum culling, and the data needed to submit the entity to the
+		* renderer to be rendered in a frame.
+		*/
+		COMPONENT(RenderCullInfo,
+			(uint64_t,		renderQueueKey,,		"value of the RenderQueueKey for rendering"),
+			(uint32_t,		visibleFrustumBits,,	"resource id of the mesh"),
+			(uint32_t,		minWorldAABB,[3],		"AABB integer lower coords in worldspace"),
+			(uint32_t,		maxWorldAABB,[3],		"AABB integer upper coords in worldspace"),
+			(float,			viewspaceBSphere,[4],	"bounding sphere x,y,z,r in viewspace")
+		)
+
 		/**
 		*
 		*/

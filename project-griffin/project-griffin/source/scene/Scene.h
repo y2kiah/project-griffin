@@ -54,6 +54,15 @@ namespace griffin {
 			uint8_t		_padding_end[3];
 		};
 
+
+		/**
+		* TODO: make multiple active cameras supported
+		* This is the max number of active cameras for any one frame of a rendered scene. This
+		* number includes cameras needed for rendering all viewports and shadow frustums. The
+		* frustum culling results are stored in a 4-byte bitset, hence this limitation.
+		*/
+		#define SCENE_MAX_ACTIVE_CAMERAS	32
+
 		/**
 		*
 		*/
@@ -74,13 +83,17 @@ namespace griffin {
 
 			// Functions
 
+			void getVisibleEntities();
+
 			uint32_t createCamera(const CameraParameters& cameraParams, bool makeActive = false);
 			
-			uint32_t getActiveCamera() const {
+			uint32_t getActiveCamera() const
+			{
 				return activeRenderCamera;
 			}
 
-			void setActiveCamera(uint32_t cameraId) {
+			void setActiveCamera(uint32_t cameraId /*, TODO: take a viewport index */)
+			{
 				assert(cameraId >= 0 && cameraId < cameras.size() && "camera id out of range");
 				activeRenderCamera = cameraId;
 			}
@@ -100,14 +113,20 @@ namespace griffin {
 			explicit SceneManager();
 			~SceneManager();
 
-			Scene& getScene(SceneId sceneId) { return m_scenes[sceneId]; }
-			
+			Scene& getScene(SceneId sceneId)
+			{
+				return m_scenes[sceneId];
+			}
+
 			SceneId createScene(const std::string& name, bool makeActive);
 
 			void updateActiveScenes();
 			void renderActiveScenes(float interpolation);
 
 		private:
+
+			void frustumCullActiveScenes();
+
 			// Private Variables
 
 			handle_map<Scene> m_scenes;

@@ -11,6 +11,7 @@
 #include <glm/vec3.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <render/geometry/Intersection.h>
 
 
 using namespace griffin;
@@ -138,12 +139,53 @@ void SceneManager::renderActiveScenes(float interpolation)
 			}
 
 			// run the frustum culling system to determine visible objects
-
+			frustumCullActiveScenes();
 
 			// render all visible mesh instances
 
 
 		}
+	}
+}
+
+
+/**
+* 1.	After scene nodes are interpolated, update render entry worldspace AABB/quadtree indices.
+* 2.	Filter objects "per camera/frustum" in wordspace using integer AABB/quadtree index
+*		containing frustum against the integer AABB/quadtree index containing object.
+*		Set frustum bit to 1 for each renderable object in each frustum space.
+* 3.	Update filtered entity list viewspace positions and bounding spheres
+* 4.	Frustum cull against view space bounding spheres, set frustum bits back to 0 if culled
+* 5.	Final list of render entries is submitted to renderer. Double-precision world coordinates
+*		are transformed to single-precision in viewspace.
+*/
+void SceneManager::frustumCullActiveScenes()
+{
+	using namespace geometry;
+
+	for (auto& scene : m_scenes) {
+		auto& reStore = scene.entityManager->getComponentStore<RenderCullInfo>();
+
+		//for (int activeFrustum = 0; activeFrustum < numActiveFrustums; frustumMask <<= 1; ++activeFrustum) {
+			// To do the frustum index, we need an active cameras list, take index into that list for the camera.
+			// Can have > 32 cameras in scene, but only up to 32 active cameras.
+			// Do not simply take the camera index itself, we want the "active camera" index.
+		uint32_t activeFrustum = 0;
+		uint32_t frustumMask = 1;
+		
+			Plane frustumPlanes[6] = {};
+			// TODO: code to get frustum
+
+			for (auto& re : reStore.getComponents().getItems()) {
+				auto inside = intersect(frustumPlanes, *reinterpret_cast<Sphere*>(&re.component.viewspaceBSphere));
+				re.component.visibleFrustumBits |= frustumMask & (inside != Outside);
+			}
+		//}
+
+		//for (i = 0; i < gridCell->blockCounts[blockIter]; ++i) {
+			// filter list here (if masks[i] is zero it should be skipped)
+			// ...
+		//}
 	}
 }
 
@@ -178,7 +220,6 @@ void interpolateSceneNodes(entity::EntityManager& entityMgr, float interpolation
 											move.component.nextRotation,
 											interpolation);
 			node.orientationDirty = 1;
-			//move.component.rotationDirty = 0;
 		}
 
 		if (move.component.translationDirty == 1) {
@@ -186,7 +227,6 @@ void interpolateSceneNodes(entity::EntityManager& entityMgr, float interpolation
 											 move.component.nextTranslation,
 											 interpolation);
 			node.positionDirty = 1;
-			//move.component.translationDirty = 0;
 		}
 	}
 }

@@ -12,37 +12,32 @@ __declspec(align(16)) static const unsigned int absPlaneMask[4] = { 0x7FFFFFFF, 
 
 // Frustum-Sphere
 
-bool intersect(const Plane* frustumPlanes, Sphere& s)
+IntersectionResult griffin::geometry::intersect(const Plane* frustumPlanes, Sphere& s)
 {
+	enum : uint8_t { IntersectingBits=1, FullInsideBits=3 };
 	float px = s.x;
 	float py = s.y;
 	float pz = s.z;
 	float radius = s.r;
+	uint8_t result = FullInsideBits;
 
-	return (!(frustumPlanes[0].distanceToPoint(px, py, pz) > radius) ||
-			!(frustumPlanes[1].distanceToPoint(px, py, pz) > radius) ||
-			!(frustumPlanes[2].distanceToPoint(px, py, pz) > radius) ||
-			!(frustumPlanes[3].distanceToPoint(px, py, pz) > radius) ||
-			!(frustumPlanes[4].distanceToPoint(px, py, pz) > radius) ||
-			!(frustumPlanes[5].distanceToPoint(px, py, pz) > radius));
+	for (int p = 0; p < 6; ++p) {
+		float dist = frustumPlanes[p].distanceToPoint(px, py, pz);
+		if (dist < -radius) {
+			result &= FullInsideBits;
+		}
+		else if (dist <= radius) {
+			result &= IntersectingBits;
+		}
+		else {
+			return Outside;
+		}
+	}
+	// TODO: this is aweful, can we just settle on a single return enum?
+	// need to look at the SSE collision detection function to see why 0,1,2 is used there
+	return (result == IntersectingBits ? Intersect : Inside);
 }
 
-void culling() {
-	/*while (1)
-	{
-		uint blockIter = interlockedIncrement(currentBlockIndex) - 1;
-		if (blockIter >= blockCount) {
-			break;
-		}
-				u32 masks[EntityGridCell::Block::MaxCount] = {}, frustumMask = 1;		block = gridCell->blocks[blockIter];
-
-		foreach(frustum in frustums, frustumMask <<= 1) {			for (i = 0; i < gridCell->blockCounts[blockIter]; ++i) {				u32 inside = intersect(frustum, block->postition[i]);				masks[i] |= frustumMask & inside;			}
-		}
-
-		for (i = 0; i < gridCell->blockCounts[blockIter]; ++i) {			// filter list here (if masks[i] is zero it should be skipped)			// ...
-		}
-	}*/
-}
 
 /*
 uint8_t intersect(Frustum& f, float p[3])

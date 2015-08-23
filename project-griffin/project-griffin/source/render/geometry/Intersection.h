@@ -30,7 +30,7 @@ namespace griffin {
 
 
 		// Frustum-Sphere
-
+		IntersectionResult intersect(const Plane* frustumPlanes, Sphere& s);
 
 		// Frustum-AABB
 		void CullAABBList_SSE_1(AABB* aabbList, unsigned int numAABBs, Plane* frustumPlanes, unsigned int* result);

@@ -30,7 +30,8 @@ namespace griffin {
 			SceneNode,					//<! System: SceneGraph, all entities that exist at a position in the scene get this
 			MeshInstanceContainer,		//<! System: SceneGraph, mesh instance, submitted to renderer if visible
 			CameraInstanceContainer,	//<! System: SceneGraph, camera instance, submitted to renderer if active
-			MovementComponent			//<! System: SceneGraph, all entities that can move in the scene with auto interpolation
+			MovementComponent,			//<! System: SceneGraph, all entities that can move in the scene with auto interpolation
+			RenderCullInfo				//<! System: SceneGraph, all entitied that can be rendered to the screen
 		)
 
 	}
