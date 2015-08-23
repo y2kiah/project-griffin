@@ -18,6 +18,14 @@ uint16_t ShaderManager_GL::addShaderProgram(ShaderProgram_GL&& program)
 
 uint16_t ShaderManager_GL::ensureUbershaderForKey(ShaderKey key)
 {
+	for (int s = 0; s < m_index.size(); ++s) {
+		if (key.value == m_index[s].key.value) {
+			return s;
+		}
+	}
+	ShaderProgram_GL program();
+	//program.compileAndLinkProgram();
+	//addShaderProgram(ShaderProgram_GL&& program);
 	return 0;
 }
 
