@@ -42,14 +42,15 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& en
 		float yawAngle = -yawMapped * lookRate * ui.deltaT;
 		float pitchAngle = -pitchMapped * lookRate * ui.deltaT;
 		
-		// constrain pitch to +89/-90 degrees
+		// constrain pitch to +/-89 degrees
+		const float deg1 = radians(1.0f);
 		const float deg179 = radians(179.0f);
 		
 		move.prevRotation = move.nextRotation;
 		
 		float currentPitch = pitch(move.prevRotation); // get pitch in parent node's space
-		if (currentPitch + pitchAngle < 0) {
-			pitchAngle = -currentPitch;
+		if (currentPitch + pitchAngle < deg1) {
+			pitchAngle = deg1 - currentPitch;
 		}
 		else if (currentPitch + pitchAngle >= deg179) {
 			pitchAngle = deg179 - currentPitch;
