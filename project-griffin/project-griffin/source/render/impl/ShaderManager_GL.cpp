@@ -24,7 +24,7 @@ uint16_t ShaderManager_GL::ensureUbershaderForKey(ShaderKey key)
 		}
 	}
 	ShaderProgram_GL program;
-	//program.compileAndLinkProgram(ubershadercode);
+	program.compileAndLinkProgram(ubershadercode);
 
 	m_shaderPrograms.push_back(std::forward<ShaderProgram_GL>(program));
 	

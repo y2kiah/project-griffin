@@ -1,6 +1,7 @@
 #include "../ShaderProgram_GL.h"
 #include <gl/glew.h>
 #include <vector>
+#include <cassert>
 
 namespace griffin {
 	namespace render {
@@ -19,7 +20,7 @@ namespace griffin {
 			}
 		}
 
-		bool Shader_GL::compileShader(const string& shaderCode, unsigned int shaderType)
+		bool Shader_GL::compileShader(const char* shaderCode, unsigned int shaderType)
 		{
 			GLint result = GL_FALSE;
 			int infoLogLength = 0;
@@ -51,7 +52,7 @@ namespace griffin {
 
 			const char* source[2] = {
 				shaderDefine,
-				shaderCode.c_str()
+				shaderCode
 			};
 			glShaderSource(shaderId, 2, source, nullptr);
 			glCompileShader(shaderId);
@@ -85,7 +86,16 @@ namespace griffin {
 			}
 		}
 
-		bool ShaderProgram_GL::compileAndLinkProgram() {
+		bool ShaderProgram_GL::compileAndLinkProgram(const char* shaderCode) {
+			if (shaderCode == nullptr) {
+				shaderCode = m_shaderCode.c_str();
+				assert(m_shaderCode.length() > 0 && "no shader code set");
+			}
+			else {
+				m_shaderCode = shaderCode;
+			}
+			
+			// convert from string find to strnpos?
 			bool hasGeometryStage    = (m_shaderCode.find("_GEOMETRY_", 0) != string::npos);
 			bool hasTessControlStage = (m_shaderCode.find("_TESS_CONTROL_", 0) != string::npos);
 			bool hasTessEvalStage    = (m_shaderCode.find("_TESS_EVAL_", 0) != string::npos);
@@ -94,29 +104,29 @@ namespace griffin {
 
 			// Compile code as vertex shader (defines _VERTEX_)
 			int currentShader = 0;
-			bool ok = m_shaders[currentShader].compileShader(m_shaderCode, GL_VERTEX_SHADER);
+			bool ok = m_shaders[currentShader].compileShader(shaderCode, GL_VERTEX_SHADER);
 			
 			if (hasTessControlStage) {
 				++currentShader;
 				// Compile code as tesselation control shader (defines _TESS_CONTROL_)
-				ok = ok && m_shaders[currentShader].compileShader(m_shaderCode, GL_TESS_CONTROL_SHADER);
+				ok = ok && m_shaders[currentShader].compileShader(shaderCode, GL_TESS_CONTROL_SHADER);
 			}
 
 			if (hasTessEvalStage) {
 				++currentShader;
 				// Compile code as tesselation evaluation shader (defines _TESS_EVAL_)
-				ok = ok && m_shaders[currentShader].compileShader(m_shaderCode, GL_TESS_EVALUATION_SHADER);
+				ok = ok && m_shaders[currentShader].compileShader(shaderCode, GL_TESS_EVALUATION_SHADER);
 			}
 
 			if (hasGeometryStage) {
 				++currentShader;
 				// Compile code as geometry shader (defines _GEOMETRY_)
-				ok = ok && m_shaders[currentShader].compileShader(m_shaderCode, GL_GEOMETRY_SHADER);
+				ok = ok && m_shaders[currentShader].compileShader(shaderCode, GL_GEOMETRY_SHADER);
 			}
 
 			// Compile code as fragment shader (defines _FRAGMENT_)
 			++currentShader;
-			ok = ok && m_shaders[currentShader].compileShader(m_shaderCode, GL_FRAGMENT_SHADER);
+			ok = ok && m_shaders[currentShader].compileShader(shaderCode, GL_FRAGMENT_SHADER);
 
 			// Link the program
 			if (ok) {
