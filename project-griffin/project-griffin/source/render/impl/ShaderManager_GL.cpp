@@ -23,10 +23,15 @@ uint16_t ShaderManager_GL::ensureUbershaderForKey(ShaderKey key)
 			return s;
 		}
 	}
-	ShaderProgram_GL program();
-	//program.compileAndLinkProgram();
-	//addShaderProgram(ShaderProgram_GL&& program);
-	return 0;
+	ShaderProgram_GL program;
+	program.compileAndLinkProgram(ubershadercode);
+
+	m_shaderPrograms.push_back(std::forward<ShaderProgram_GL>(program));
+	
+	uint16_t shaderIndex = static_cast<uint16_t>(m_shaderPrograms.size() - 1);
+	m_index.push_back(ShaderIndex{ key, shaderIndex });
+
+	return shaderIndex;
 }
 
 

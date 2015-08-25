@@ -33,7 +33,7 @@ namespace griffin {
 
 			~Shader_GL();
 
-			bool			compileShader(const string& shaderCode, unsigned int shaderType);
+			bool			compileShader(const char* shaderCode, unsigned int shaderType);
 
 			unsigned int	getShaderId() const { return m_shaderId; }
 
@@ -68,7 +68,12 @@ namespace griffin {
 			
 			~ShaderProgram_GL();
 
-			bool				compileAndLinkProgram();
+			/**
+			* @param	shaderCode	null-terminated string containing shader code, if nullptr is
+			*	passed, code is taken from m_shaderCode which must have been set at construction.
+			* @returns	true if compilation and link succeed, false on failure
+			*/
+			bool				compileAndLinkProgram(const char* shaderCode = nullptr);
 
 			unsigned int		getProgramId() const { return m_programId; }
 
