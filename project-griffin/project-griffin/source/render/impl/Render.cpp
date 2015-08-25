@@ -294,7 +294,9 @@ namespace griffin {
 			//loadModelTemp("data/models/untitled.blend");
 			try {
 				//auto mesh = loadMesh(L"models/Spitfire/spitfire.gmd", CacheType::Cache_Models_T);
-				auto mesh = loadMesh(L"models/landing_platform.gmd", CacheType::Cache_Models_T);
+				//auto mesh = loadMesh(L"models/landing_platform.gmd", CacheType::Cache_Models_T);
+				auto mesh = loadMesh(L"models/collision_test/collision_test.gmd", CacheType::Cache_Models_T);
+				//auto mesh = loadMesh(L"models/gunship/gunship.gmd", CacheType::Cache_Models_T);
 
 				using namespace resource;
 				auto loader = g_resourceLoader.lock();

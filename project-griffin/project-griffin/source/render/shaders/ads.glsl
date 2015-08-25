@@ -208,9 +208,12 @@
 		float spotlightPower = 1.5; // does this make sense?? used to clamp the distance falloff
 		/////
 
-		// temp texture stuff
-		vec3 surfaceColor = materialKd;
-		//vec3 surfaceColor = texture(diffuseMap, uv).rgb;
+		// Diffuse surface color
+		#if HAS_DIFFUSE_TEXTURE == 1
+			vec3 surfaceColor = texture(diffuseMap, uv).rgb;
+		#else
+			vec3 surfaceColor = materialKd;
+		#endif
 		/////
 
 		float lambertian = 0.0;
