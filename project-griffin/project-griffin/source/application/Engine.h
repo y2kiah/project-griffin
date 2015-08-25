@@ -23,6 +23,7 @@ namespace griffin {
 		input::InputSystemPtr			inputSystem		= nullptr;
 		resource::ResourceLoaderPtr		resourceLoader	= nullptr;
 		render::RenderSystemPtr			renderSystem	= nullptr;
+		render::ShaderManagerPtr		shaderManager	= nullptr;
 		scene::SceneManagerPtr			sceneManager	= nullptr;
 
 		Id_T							engineLuaState	= NullId_T;

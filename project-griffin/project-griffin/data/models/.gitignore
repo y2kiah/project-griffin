@@ -7,3 +7,6 @@
 # Models
 *.gmd
 *.x
+*.skp
+*.skb
+*.dae

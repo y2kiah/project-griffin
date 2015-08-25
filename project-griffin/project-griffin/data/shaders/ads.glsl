@@ -220,9 +220,9 @@
 
 		// Diffuse surface color
 		#if HAS_DIFFUSE_TEXTURE == 1
-		vec3 surfaceColor = texture(diffuseMap, uv).rgb;
+			vec3 surfaceColor = texture(diffuseMap, uv).rgb;
 		#else
-		vec3 surfaceColor = materialKd;
+			vec3 surfaceColor = materialKd;
 		#endif
 		/////
 

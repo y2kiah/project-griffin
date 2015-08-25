@@ -12,24 +12,26 @@
 namespace griffin {
 	namespace script {
 		class ScriptManager;
-		typedef std::shared_ptr<ScriptManager>	ScriptManagerPtr;
+		typedef std::shared_ptr<ScriptManager>		ScriptManagerPtr;
 	}
 	namespace input {
 		class InputSystem;
-		typedef std::shared_ptr<InputSystem>	InputSystemPtr;
-		typedef std::weak_ptr<InputSystem>		InputSystemWeakPtr;
+		typedef std::shared_ptr<InputSystem>		InputSystemPtr;
+		typedef std::weak_ptr<InputSystem>			InputSystemWeakPtr;
 	}
 	namespace resource {
 		class ResourceLoader;
-		typedef std::shared_ptr<ResourceLoader>	ResourceLoaderPtr;
+		typedef std::shared_ptr<ResourceLoader>		ResourceLoaderPtr;
 	}
 	namespace render {
 		class RenderSystem;
-		typedef std::shared_ptr<RenderSystem>	RenderSystemPtr;
+		class ShaderManager_GL;
+		typedef std::shared_ptr<RenderSystem>		RenderSystemPtr;
+		typedef std::shared_ptr<ShaderManager_GL>	ShaderManagerPtr;
 	}
 	namespace scene {
 		class SceneManager;
-		typedef std::shared_ptr<SceneManager>	SceneManagerPtr;
+		typedef std::shared_ptr<SceneManager>		SceneManagerPtr;
 	}
 	namespace tools {
 		class GriffinToolsManager;

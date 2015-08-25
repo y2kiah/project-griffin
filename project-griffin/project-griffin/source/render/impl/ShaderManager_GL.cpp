@@ -24,7 +24,7 @@ uint16_t ShaderManager_GL::ensureUbershaderForKey(ShaderKey key)
 		}
 	}
 	ShaderProgram_GL program;
-	program.compileAndLinkProgram(ubershadercode);
+	program.compileAndLinkProgram(m_ubershaderCode.c_str());
 
 	m_shaderPrograms.push_back(std::forward<ShaderProgram_GL>(program));
 	
@@ -46,4 +46,20 @@ bool ShaderManager_GL::hasUbershaderForKey(ShaderKey key, uint16_t* outIndex) co
 		}
 	}
 	return false;
+}
+
+bool ShaderManager_GL::rebuildAllCurrentUbershaders()
+{
+	bool result = true;
+	for (int s = 0; s < m_index.size(); ++s) {
+		if (m_index[s].key.isUbershader) {
+			result = result && m_shaderPrograms[m_index[s].shaderIndex].compileAndLinkProgram(m_ubershaderCode.c_str());
+		}
+	}
+	return result;
+}
+
+void ShaderManager_GL::loadUbershaderCode(const char* filename)
+{
+
 }

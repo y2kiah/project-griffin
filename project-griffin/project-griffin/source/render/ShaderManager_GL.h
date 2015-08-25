@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <cassert>
 #include <vector>
+#include <string>
 #include <utility/memory_reserve.h>
 #include <render/ShaderProgram_GL.h>
 
@@ -94,7 +95,8 @@ namespace griffin {
 			uint16_t ensureUbershaderForKey(ShaderKey key);
 
 			/**
-			*
+			* @param	outIndex	if true is returned, index of the shader is written into this
+			* @returns	true if there is already a compiled ubershader for the given key.
 			*/
 			bool hasUbershaderForKey(ShaderKey key, uint16_t* outIndex = nullptr) const;
 
@@ -105,11 +107,11 @@ namespace griffin {
 			bool rebuildAllCurrentUbershaders();
 
 			/**
-			* Sets the ubershader code used to compile all material permutations. There is a very
+			* Loads the ubershader code used to compile all material permutations. There is a very
 			* close tie between the shader code, and the code within this class that sets the
 			* compile time conditional flags based on material key parameters.
 			*/
-			void setUbershaderCode(const char* code);
+			void loadUbershaderCode(const char* filename);
 
 		private:
 
@@ -124,6 +126,7 @@ namespace griffin {
 
 			std::vector<ShaderIndex>		m_index;
 			std::vector<ShaderProgram_GL>	m_shaderPrograms;
+			std::string						m_ubershaderCode;
 		};
 
 	}
