@@ -62,7 +62,7 @@ namespace griffin {
 			const aiScene* p_scene = importer.ReadFile(filename, ppFlags);
 
 			if (!p_scene) {
-				//debugPrintf("Mesh::importFromFile: failed: %s\n", importer.GetErrorString());
+				SDL_Log("importModelFile: %s\n", importer.GetErrorString());
 				return nullptr;
 			}
 			auto& scene = *p_scene;

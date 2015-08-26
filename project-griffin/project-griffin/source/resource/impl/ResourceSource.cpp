@@ -68,7 +68,7 @@ namespace griffin {
 			size_t size = 0;
 			const wstring resPath(m_dataPath + name);
 
-			FILE *inFile = _wfsopen(resPath.c_str(), L"rb", _SH_DENYWR);
+			FILE *inFile = _wfsopen(resPath.c_str(), L"rb", _SH_DENYNO);
 			if (inFile) {
 				// get size
 				struct _stat64 st;
