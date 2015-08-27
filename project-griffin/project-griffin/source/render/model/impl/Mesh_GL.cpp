@@ -8,7 +8,7 @@
 #include <cassert>
 #include <render/ShaderProgramLayouts_GL.h>
 #include <render/Render.h>
-#include <render/texture/Texture2D_GL.h>
+#include <render/RenderResources.h>
 #include <resource/ResourceLoader.h>
 #include <utility/container/vector_queue.h>
 #include <glm/mat4x4.hpp>

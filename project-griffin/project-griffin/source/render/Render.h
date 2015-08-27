@@ -6,12 +6,10 @@
 #include <memory>
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <resource/ResourceLoader.h>
 #include <utility/memory_reserve.h>
 #include "VertexBuffer_GL.h"
 #include "RenderTarget_GL.h"
-#include <resource/Resource.h>
-#include <render/texture/Texture2D_GL.h>
-#include <render/ShaderProgram_GL.h>
 
 
 namespace griffin {
@@ -24,7 +22,6 @@ namespace griffin {
 		using std::weak_ptr;
 		using std::shared_ptr;
 		using std::wstring;
-		using resource::ResourceHandle;
 		using resource::ResourcePtr;
 		using resource::CacheType;
 
@@ -177,11 +174,6 @@ namespace griffin {
 			RenderTarget_GL		m_colorBuffer;						//<! color buffer for FXAA
 		};
 
-
-		// Resource Loading Functions - do these belong here?
-		ResourceHandle<Texture2D_GL>     loadTexture(wstring texturePath, CacheType cache = CacheType::Cache_Materials_T);
-		ResourceHandle<ShaderProgram_GL> loadShaderProgram(wstring programPath, CacheType cache = CacheType::Cache_Materials_T);
-
 		/**
 		* need the systems to
 		*	- get full render states 1 and 2 from entity store, each holds copy of components
@@ -205,9 +197,6 @@ namespace griffin {
 			~RenderSystem();
 
 			void init(int viewportWidth, int viewportHeight);
-
-			// needed?
-			void interpolateStates(float interpolation) {}
 
 			/**
 			* Sets the camera matrices and clip planes. Needs to be set for each viewport rendered

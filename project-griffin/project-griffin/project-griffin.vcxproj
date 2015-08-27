@@ -103,6 +103,7 @@
     <ClInclude Include="source\render\model\Model_GL.h" />
     <ClInclude Include="source\render\Render.h" />
     <ClInclude Include="source\render\RenderHelpers.h" />
+    <ClInclude Include="source\render\RenderResources.h" />
     <ClInclude Include="source\render\RenderTarget_GL.h" />
     <ClInclude Include="source\render\ShaderManager_GL.h" />
     <ClInclude Include="source\render\ShaderProgramLayouts_GL.h" />

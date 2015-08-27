@@ -21,10 +21,12 @@
 #include <queue>
 #include <limits>
 
-#include <render/model/Mesh_GL.h>
+#include <render/Render.h>
+#include <render/RenderResources.h>
+#include <render/ShaderManager_GL.h>
 #include <render/Material_GL.h>
-#include <glm/vec4.hpp>
 
+#include <glm/vec4.hpp>
 #include <SDL_log.h>
 
 using namespace Assimp;
@@ -42,7 +44,7 @@ namespace griffin {
 		uint32_t fillVertexBuffer(const aiScene&, unsigned char*, size_t);
 		uint32_t getTotalIndexBufferSize(const aiScene&, DrawSet*, size_t);
 		uint32_t fillIndexBuffer(const aiScene&, unsigned char*, size_t, size_t, DrawSet*);
-		void     fillMaterials(const aiScene&, Material_GL*, size_t, DrawSet*);
+		void     fillMaterials(const aiScene&, Material_GL*, size_t, DrawSet*, const string&);
 		std::tuple<uint32_t, uint32_t, uint32_t> getSceneArraySizes(const aiScene&);
 		void     fillSceneGraph(const aiScene&, MeshSceneGraph&);
 
@@ -111,7 +113,7 @@ namespace griffin {
 			// fill materials
 			uint32_t materialsOffset = static_cast<uint32_t>(totalDrawSetsSize);
 			Material_GL* materials = reinterpret_cast<Material_GL*>(modelData.get() + materialsOffset);
-			fillMaterials(scene, materials, numMaterials, drawSets);
+			fillMaterials(scene, materials, numMaterials, drawSets, filename);
 
 			// fill scene graph
 			uint32_t meshSceneOffset = static_cast<uint32_t>(totalDrawSetsSize + totalMaterialsSize);
@@ -426,12 +428,15 @@ namespace griffin {
 		* fill materials buffer
 		*/
 		void fillMaterials(const aiScene& scene, Material_GL* materials,
-						   size_t numMaterials, DrawSet* drawSets)
+						   size_t numMaterials, DrawSet* drawSets,
+						   const string& meshFilename)
 		{
 			for (uint32_t m = 0; m < numMaterials; ++m) {
 				auto assimpMat = scene.mMaterials[m];
 				auto& mat = materials[m];
-				
+
+				ShaderKey key{};
+
 				aiString name;
 				aiGetMaterialString(assimpMat, AI_MATKEY_NAME, &name);
 				// store name in material?
@@ -460,10 +465,6 @@ namespace griffin {
 
 				// store the shader hash key in the material
 				// how to handle LOD, e.g. turn off normal / displacement mapping with distance from camera
-
-				// TODO: assimp defines texture stacks per texture type, and blend function between stack to come up with final color
-				// Should we support stack of diffuse? I can't see a reason to support stack for any other texture type, but diffuse
-				// might be useful for ambient occlusion and procedural effects like dirt and damage.
 
 				//Texture Loading pseudo-code from http://assimp.sourceforge.net/lib_html/materials.html
 				//Also see that page for example shader code to get color channel contributions
@@ -553,7 +554,33 @@ namespace griffin {
 						}
 
 						// do synchronous loading of texture since this is a utility function
-						// if needed could also build the texture here and inject into cache, then pass assumeCached=true
+						// injects the texture into cache, pass assumeCached=true
+						// prefix texture path with the path to the model being loaded
+						string aName = meshFilename.substr(0, meshFilename.find_last_of('/')) + '/' + mat.textures[samplerIndex].name;
+						wstring wName;
+						wName.assign(aName.begin(), aName.end());
+						auto resHandle = render::loadTexture(wName, resource::CacheType::Cache_Materials_T);
+
+						auto resPtr = g_resourceLoader.lock()->getResource(resHandle);
+						auto& tex = resPtr.get()->getResource<Texture2D_GL>();
+						// TODO: add to Texture2D_GL a function to tell depth or whether there is an alpha channel
+
+						// TODO: if texture name matches a known pattern, change the texture type despite the assimp type assigned
+
+
+						// set shader key diffuse params
+						if (texType == MaterialTexture_Diffuse || texType == MaterialTexture_Diffuse_Opacity) {
+							++key.numDiffuseTextures;
+							assert(key.numDiffuseTextures <= 4);
+							if (i == 0) { // this is the first diffuse texture
+								if (texType == MaterialTexture_Diffuse) {
+									key.hasFirstDiffuseMap = 1;
+								}
+								else {
+									key.hasFirstDiffuseOpacityMap = 1;
+								}
+							}
+						}
 
 						// everything converted successfully, set the texture type away from None
 						mat.textures[samplerIndex].textureType = texType;
@@ -562,6 +589,11 @@ namespace griffin {
 						++samplerIndex;
 					}
 				}
+
+				key.isUbershader = 1;
+				mat.shaderKey = key.value;
+				// compile ubershader?
+
 			}
 		}
 

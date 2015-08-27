@@ -796,6 +796,9 @@
     <ClInclude Include="source\render\geometry\Intersection.h">
       <Filter>render\geometry</Filter>
     </ClInclude>
+    <ClInclude Include="source\render\RenderResources.h">
+      <Filter>render\system</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="vendor\glm\glm\gtc\constants.inl">

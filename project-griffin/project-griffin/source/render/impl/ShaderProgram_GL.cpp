@@ -2,6 +2,7 @@
 #include <gl/glew.h>
 #include <vector>
 #include <cassert>
+#include <SDL_log.h>
 
 namespace griffin {
 	namespace render {
@@ -20,7 +21,7 @@ namespace griffin {
 			}
 		}
 
-		bool Shader_GL::compileShader(const char* shaderCode, unsigned int shaderType)
+		bool Shader_GL::compileShader(const char* shaderSource, unsigned int shaderType)
 		{
 			GLint result = GL_FALSE;
 			int infoLogLength = 0;
@@ -29,32 +30,7 @@ namespace griffin {
 			SDL_Log("Compiling shader");
 			GLuint shaderId = glCreateShader(shaderType);
 			
-			const char *shaderDefine = nullptr;
-			switch (shaderType) {
-				case GL_VERTEX_SHADER:
-					shaderDefine = "#version 440 core\n#define _VERTEX_\n";
-					break;
-				case GL_FRAGMENT_SHADER:
-					shaderDefine = "#version 440 core\n#define _FRAGMENT_\n";
-					break;
-				case GL_GEOMETRY_SHADER:
-					shaderDefine = "#version 440 core\n#define _GEOMETRY_\n";
-					break;
-				case GL_TESS_CONTROL_SHADER:
-					shaderDefine = "#version 440 core\n#define _TESS_CONTROL_\n";
-					break;
-				case GL_TESS_EVALUATION_SHADER:
-					shaderDefine = "#version 440 core\n#define _TESS_EVAL_\n";
-					break;
-			}
-
-			// TODO: use shaderKey passed in to #define a bunch more stuff for ubershader
-
-			const char* source[2] = {
-				shaderDefine,
-				shaderCode
-			};
-			glShaderSource(shaderId, 2, source, nullptr);
+			glShaderSource(shaderId, 1, &shaderSource, nullptr);
 			glCompileShader(shaderId);
 
 			// Check Shader
@@ -78,6 +54,22 @@ namespace griffin {
 
 		// class ShaderProgram_GL
 
+		ShaderProgram_GL::ShaderProgram_GL(ShaderProgram_GL&& other) :
+			m_programId{ other.m_programId },
+			m_numShaders{ other.m_numShaders },
+			m_shaderCode(std::move(other.m_shaderCode))
+		{
+			SDL_Log("moving shader program with m_programId = %d", m_programId);
+			other.m_programId = 0;
+			for (uint32_t s = 0; s < other.m_numShaders; ++s) {
+				m_shaders[s] = std::move(other.m_shaders[s]);
+			}
+			other.m_numShaders = 0;
+
+			m_preprocessorMacros.reserve(other.m_preprocessorMacros.size());
+			m_preprocessorMacros = std::move(other.m_preprocessorMacros);
+		}
+
 		ShaderProgram_GL::~ShaderProgram_GL()
 		{
 			if (m_programId != 0) {
@@ -95,38 +87,43 @@ namespace griffin {
 				m_shaderCode = shaderCode;
 			}
 			
-			// convert from string find to strnpos?
 			bool hasGeometryStage    = (m_shaderCode.find("_GEOMETRY_", 0) != string::npos);
 			bool hasTessControlStage = (m_shaderCode.find("_TESS_CONTROL_", 0) != string::npos);
 			bool hasTessEvalStage    = (m_shaderCode.find("_TESS_EVAL_", 0) != string::npos);
-			
-			m_numShaders = (hasGeometryStage ? 3 : 2);
 
 			// Compile code as vertex shader (defines _VERTEX_)
 			int currentShader = 0;
-			bool ok = m_shaders[currentShader].compileShader(shaderCode, GL_VERTEX_SHADER);
+			string shaderSource = "#version 440 core\n#define _VERTEX_\n" + m_preprocessorMacros + m_shaderCode;
+			bool ok = m_shaders[currentShader].compileShader(shaderSource.c_str(), GL_VERTEX_SHADER);
 			
 			if (hasTessControlStage) {
-				++currentShader;
 				// Compile code as tesselation control shader (defines _TESS_CONTROL_)
-				ok = ok && m_shaders[currentShader].compileShader(shaderCode, GL_TESS_CONTROL_SHADER);
+				++currentShader;
+				shaderSource = "#version 440 core\n#define _TESS_CONTROL_\n" + m_preprocessorMacros + m_shaderCode;
+				ok = ok && m_shaders[currentShader].compileShader(shaderSource.c_str(), GL_TESS_CONTROL_SHADER);
 			}
 
 			if (hasTessEvalStage) {
-				++currentShader;
 				// Compile code as tesselation evaluation shader (defines _TESS_EVAL_)
-				ok = ok && m_shaders[currentShader].compileShader(shaderCode, GL_TESS_EVALUATION_SHADER);
+				++currentShader;
+				shaderSource = "#version 440 core\n#define _TESS_EVAL_\n" + m_preprocessorMacros + m_shaderCode;
+				ok = ok && m_shaders[currentShader].compileShader(shaderSource.c_str(), GL_TESS_EVALUATION_SHADER);
 			}
 
 			if (hasGeometryStage) {
-				++currentShader;
 				// Compile code as geometry shader (defines _GEOMETRY_)
-				ok = ok && m_shaders[currentShader].compileShader(shaderCode, GL_GEOMETRY_SHADER);
+				++currentShader;
+				shaderSource = "#version 440 core\n#define _GEOMETRY_\n" + m_preprocessorMacros + m_shaderCode;
+				ok = ok && m_shaders[currentShader].compileShader(shaderSource.c_str(), GL_GEOMETRY_SHADER);
 			}
 
 			// Compile code as fragment shader (defines _FRAGMENT_)
 			++currentShader;
-			ok = ok && m_shaders[currentShader].compileShader(shaderCode, GL_FRAGMENT_SHADER);
+			shaderSource = "#version 440 core\n#define _FRAGMENT_\n" + m_preprocessorMacros + m_shaderCode;
+			ok = ok && m_shaders[currentShader].compileShader(shaderSource.c_str(), GL_FRAGMENT_SHADER);
+
+
+			m_numShaders = currentShader + 1;
 
 			// Link the program
 			if (ok) {

@@ -68,11 +68,12 @@ namespace griffin {
 			float		metallic = 0;
 			// 64
 			Id_T		shaderResourceHandle = NullId_T;
-			uint32_t	shaderKey = 0;		//<! shader key combines vertex and material flags, shader manager stores ubershader by key
-			uint32_t	numTextures = 0;	// don't need the full 32 bits only one, the rest is padding, get bytes from here if needed
-			// 80
-			MaterialTexture textures[GRIFFIN_MAX_MATERIAL_TEXTURES];
-			// 272
+			uint64_t	shaderKey = 0;		//<! shader key combines vertex and material flags, shader manager stores ubershader by key
+			uint8_t		numTextures = 0;
+			uint8_t		_padding_0[7] = {};
+			// 88
+			MaterialTexture textures[GRIFFIN_MAX_MATERIAL_TEXTURES]; // 80 * 12 = 960
+			// 1048
 
 			// Functions
 

@@ -67,12 +67,7 @@ namespace griffin {
 				m_shaderPrograms.reserve(RESERVE_SHADER_PROGRAMS);
 			}
 
-			~ShaderManager_GL()
-			{
-				if (m_shaderPrograms.capacity() > RESERVE_SHADER_PROGRAMS) {
-					SDL_Log("check RESERVE_SHADER_PROGRAMS: original=%d, highest=%d", RESERVE_SHADER_PROGRAMS, m_shaderPrograms.capacity());
-				}
-			}
+			~ShaderManager_GL();
 
 			ShaderProgram_GL& getShaderProgram(uint16_t index)
 			{

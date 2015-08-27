@@ -13,6 +13,7 @@
 
 #include <resource/ResourceLoader.h>
 #include <render/Render.h>
+#include <render/RenderResources.h>
 #include <render/RenderHelpers.h>
 #include <render/ShaderProgramLayouts_GL.h>
 #include <render/model/Mesh_GL.h>
@@ -27,10 +28,6 @@ namespace griffin {
 		using std::string;
 		using std::vector;
 		using std::move;
-
-		// Forward Declarations
-
-		ResourceHandle<Mesh_GL> loadMesh(wstring, CacheType);
 
 		// Global Variables
 
@@ -292,7 +289,7 @@ namespace griffin {
 				auto mesh = loadMesh(L"models/landing_platform.gmd", CacheType::Cache_Models_T);
 				//auto mesh = loadMesh(L"models/collision_test/collision_test.gmd", CacheType::Cache_Models_T);
 				//auto mesh = loadMesh(L"models/gunship/gunship.gmd", CacheType::Cache_Models_T);
-				//auto mesh = loadMesh(L"models/A-10C Pit/A-10C Pit.gmd", CacheType::Cache_Models_T);
+				//auto mesh = loadMesh(L"models/A-10C Pit.gmd", CacheType::Cache_Models_T);
 				//auto mesh = loadMesh(L"models/other_pit.gmd", CacheType::Cache_Models_T);
 
 				using namespace resource;
@@ -334,7 +331,7 @@ namespace griffin {
 		}
 
 
-		// Free Functions
+		// Free Functions, RenderResources.h
 
 		ResourceHandle<Texture2D_GL> loadTexture(wstring texturePath, CacheType cache)
 		{
@@ -365,7 +362,6 @@ namespace griffin {
 		}
 
 
-		// TODO: move to ShaderManager file??
 		ResourceHandle<ShaderProgram_GL> loadShaderProgram(wstring programPath, CacheType cache)
 		{
 			using namespace resource;
@@ -395,9 +391,6 @@ namespace griffin {
 
 		ResourceHandle<Mesh_GL> loadMesh(wstring modelFilePath, CacheType cache)
 		{
-			//g_tempMesh = importModelFile(modelFilePath);
-			//return (g_tempMesh != false);
-
 			using namespace resource;
 
 			auto loader = g_resourceLoader.lock();
