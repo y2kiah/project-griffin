@@ -33,11 +33,20 @@ namespace griffin {
 
 			void bind(unsigned int textureSlot) const;
 
+			int getWidth() const { return m_width; }
+			int getHeight() const { return m_height; }
+			int getNumMipmaps() const { return m_numMipmaps; }
+			int getComponents() const { return m_components; }
+
 		private:
 			void setFilteringMode(bool mipmaps);
 
-			size_t m_sizeBytes = 0;
-			unsigned int m_glTexture = 0;
+			size_t			m_sizeBytes = 0;
+			unsigned int	m_glTexture = 0;
+			int				m_width = 0;
+			int				m_height = 0;
+			int				m_numMipmaps = 0;
+			int				m_components = 0;
 
 			std::unique_ptr<unsigned char[]> m_tmpData = nullptr;
 		};

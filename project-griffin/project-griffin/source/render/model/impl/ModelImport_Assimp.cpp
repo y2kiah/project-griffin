@@ -15,6 +15,7 @@
 #include <assimp/config.h>		// Configuration properties
 
 #include <string>
+#include <cstring>
 #include <memory>
 #include <functional>
 #include <vector>
@@ -492,7 +493,7 @@ namespace griffin {
 						case aiTextureType_SPECULAR:   texType = MaterialTexture_Specular; break;
 						case aiTextureType_AMBIENT:    texType = MaterialTexture_Metallic_Reflectivity_AO; break;
 						case aiTextureType_EMISSIVE:   texType = MaterialTexture_Emissive; break;
-						case aiTextureType_NORMALS:    texType = MaterialTexture_Normal_Height; break;
+						case aiTextureType_NORMALS:    texType = MaterialTexture_Normal; break;
 						case aiTextureType_HEIGHT:     texType = MaterialTexture_Normal_Height; break;
 						case aiTextureType_SHININESS:  texType = MaterialTexture_Specular; break;
 						case aiTextureType_REFLECTION: texType = MaterialTexture_Metallic_Reflectivity_AO; break;
@@ -563,12 +564,31 @@ namespace griffin {
 
 						auto resPtr = g_resourceLoader.lock()->getResource(resHandle);
 						auto& tex = resPtr.get()->getResource<Texture2D_GL>();
-						// TODO: add to Texture2D_GL a function to tell depth or whether there is an alpha channel
 
-						// TODO: if texture name matches a known pattern, change the texture type despite the assimp type assigned
+						// if texture name matches a known pattern, change the texture type despite the assimp type assigned
+						if (strstr(mat.textures[samplerIndex].name, "_diffuse") != nullptr) {
+							texType = MaterialTexture_Diffuse;
+						}
+						else if (strstr(mat.textures[samplerIndex].name, "_diffuse_opacity") != nullptr) {
+							texType = MaterialTexture_Diffuse_Opacity;
+						}
+						else if (strstr(mat.textures[samplerIndex].name, "_specular") != nullptr) {
+							texType = MaterialTexture_Specular;
+						}
+						else if (strstr(mat.textures[samplerIndex].name, "_emissive") != nullptr) {
+							texType = MaterialTexture_Emissive;
+						}
+						else if (strstr(mat.textures[samplerIndex].name, "_normal") != nullptr) {
+							texType = MaterialTexture_Normal;
+						}
+						else if (strstr(mat.textures[samplerIndex].name, "_normal_height") != nullptr) {
+							texType = MaterialTexture_Normal_Height;
+						}
+						else if (strstr(mat.textures[samplerIndex].name, "_metallic_reflectivity_ao") != nullptr) {
+							texType = MaterialTexture_Metallic_Reflectivity_AO;
+						}
 
-
-						// set shader key diffuse params
+						// set shader key params
 						if (texType == MaterialTexture_Diffuse || texType == MaterialTexture_Diffuse_Opacity) {
 							++key.numDiffuseTextures;
 							assert(key.numDiffuseTextures <= 4);
@@ -581,6 +601,24 @@ namespace griffin {
 								}
 							}
 						}
+						else if (texType == MaterialTexture_Specular) {
+							key.hasSpecularMap = 1;
+						}
+						else if (texType == MaterialTexture_Emissive) {
+							key.hasEmissiveMap = 1;
+						}
+						else if (texType == MaterialTexture_Normal) {
+							key.hasNormalMap = 1;
+						}
+						else if (texType == MaterialTexture_Normal_Height) {
+							key.hasNormalMap = 1;
+							key.hasHeightMap = 1;
+						}
+						else if (texType == MaterialTexture_Metallic_Reflectivity_AO) {
+							key.hasMetallicMap = 1;
+							key.hasReflectivityMap = 1;
+							key.hasAOMap = 1;
+						}
 
 						// everything converted successfully, set the texture type away from None
 						mat.textures[samplerIndex].textureType = texType;
@@ -592,8 +630,6 @@ namespace griffin {
 
 				key.isUbershader = 1;
 				mat.shaderKey = key.value;
-				// compile ubershader?
-
 			}
 		}
 

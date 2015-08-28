@@ -104,6 +104,6 @@ void ShaderManager_GL::loadUbershaderCode(const char* filename)
 			throw std::runtime_error("ubershader load failed");
 		}
 
-		m_ubershaderCode.copy(bPtr.get(), st.st_size);
+		m_ubershaderCode.assign(bPtr.get(), st.st_size);
 	}
 }

@@ -17,9 +17,14 @@ namespace griffin {
 		{
 			m_glTexture = other.m_glTexture;
 			m_sizeBytes = other.m_sizeBytes;
+			m_width = other.m_width;
+			m_height = other.m_height;
+			m_numMipmaps = other.m_numMipmaps;
+			m_components = other.m_components;
 			m_tmpData = std::move(other.m_tmpData);
 			other.m_sizeBytes = 0;
 			other.m_glTexture = 0;
+			other.m_width = other.m_height = other.m_numMipmaps = other.m_components = 0;
 			other.m_tmpData = nullptr;
 		}
 
@@ -69,8 +74,10 @@ namespace griffin {
 			*/
 
 			m_sizeBytes = size;
-
-			SDL_Log("tex: %d\n", m_glTexture);
+			m_width = image.get_width();
+			m_height = image.get_height();
+			m_numMipmaps = image.get_num_mipmaps();
+			m_components = image.get_components();
 
 			// check for an error during the load process
 			//if (m_glTexture == 0) {
@@ -107,6 +114,10 @@ namespace griffin {
 			setFilteringMode(image.get_num_mipmaps() > 0);
 
 			m_sizeBytes = image.get_size();
+			m_width = image.get_width();
+			m_height = image.get_height();
+			m_numMipmaps = image.get_num_mipmaps();
+			m_components = image.get_components();
 
 			/*m_glTexture = SOIL_load_OGL_texture(
 				name.c_str(),
@@ -114,8 +125,6 @@ namespace griffin {
 				SOIL_CREATE_NEW_ID,
 				SOIL_FLAG_INVERT_Y | SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_MIPMAPS | SOIL_FLAG_DDS_LOAD_DIRECT | SOIL_FLAG_COMPRESS_TO_DXT);
 			*/
-
-			SDL_Log("tex: %d\n", m_glTexture);
 
 			// check for an error during the load process
 			//if (m_glTexture == 0) {
