@@ -572,6 +572,9 @@ namespace griffin {
 						else if (strstr(mat.textures[samplerIndex].name, "_diffuse_opacity") != nullptr) {
 							texType = MaterialTexture_Diffuse_Opacity;
 						}
+						else if (strstr(mat.textures[samplerIndex].name, "_diffuse_ao") != nullptr) {
+							texType = MaterialTexture_Diffuse_AO;
+						}
 						else if (strstr(mat.textures[samplerIndex].name, "_specular") != nullptr) {
 							texType = MaterialTexture_Specular;
 						}
@@ -589,15 +592,23 @@ namespace griffin {
 						}
 
 						// set shader key params
-						if (texType == MaterialTexture_Diffuse || texType == MaterialTexture_Diffuse_Opacity) {
+						if (texType == MaterialTexture_Diffuse ||
+							texType == MaterialTexture_Diffuse_Opacity ||
+							texType == MaterialTexture_Diffuse_AO)
+						{
 							++key.numDiffuseTextures;
 							assert(key.numDiffuseTextures <= 4);
-							if (i == 0) { // this is the first diffuse texture
+							if (i == 0) { // this is the first diffuse texture, it can contain the opacity or AO channel
 								if (texType == MaterialTexture_Diffuse) {
 									key.hasFirstDiffuseMap = 1;
 								}
-								else {
+								else if (texType == MaterialTexture_Diffuse_Opacity) {
 									key.hasFirstDiffuseOpacityMap = 1;
+								}
+								// TODO: need to look at this... why does FirstDiffuseOpacity have its own special-case flag, but this doesn't?? Which one should change?
+								else if (texType == MaterialTexture_Diffuse_AO) {
+									key.hasFirstDiffuseMap = 1;
+									key.hasAOMap = 1;
 								}
 							}
 						}

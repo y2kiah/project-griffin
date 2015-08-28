@@ -11,17 +11,17 @@ namespace griffin {
 		#define GRIFFIN_MAX_MATERIAL_TEXTURES			12
 		#define GRIFFIN_MAX_MATERIAL_TEXTURE_NAME_SIZE	64
 
-		// TODO: which material property is most commonly needed along with diffuse, to go in alpha channel when
-		// both transparency and specular reflectivity map aren't needed? I'm thinking metallic or shininess
+
 		enum MaterialTextureType : uint16_t {
 			MaterialTexture_None			= 0,
-			MaterialTexture_Diffuse			= 1,			// RGB - diffuse surface color,			A - *Unused/Available*
-			MaterialTexture_Diffuse_Opacity	= 2,			// RGB - diffuse surface color,			A - opacity
-			MaterialTexture_Specular		= 3,			// RGB - specular reflectivity color,	A - specular power/shininess
-			MaterialTexture_Emissive		= 4,			// RGB - emissive light color,			A - brightness
-			MaterialTexture_Normal			= 5,			// RGB - normal map,					A - *Unused/Available* AO??
-			MaterialTexture_Normal_Height	= 6,			// RGB - normal map,					A - height map
-			MaterialTexture_Metallic_Reflectivity_AO = 7	// R - Metallic, G - Reflectivity, B - Ambient Occlusion, A - *Unused/Available*
+			MaterialTexture_Diffuse			= 1,			// RGB - diffuse surface color,			A - unused
+			MaterialTexture_Diffuse_Opacity = 2,			// RGB - diffuse surface color,			A - opacity
+			MaterialTexture_Diffuse_AO		= 3,			// RGB - diffuse surface color,			A - ambient occlusion
+			MaterialTexture_Specular		= 4,			// RGB - specular reflectivity color,	A - specular power/shininess
+			MaterialTexture_Emissive		= 5,			// RGB - emissive light color,			A - brightness
+			MaterialTexture_Normal			= 6,			// RGB - normal map,					A - unused
+			MaterialTexture_Normal_Height	= 7,			// RGB - normal map,					A - height map
+			MaterialTexture_Metallic_Reflectivity_AO = 8	// R - metallic, G - reflectivity, B - ambient occlusion, A - *Unused/Available*
 		};
 
 		enum MaterialTextureMappingMode : uint8_t {

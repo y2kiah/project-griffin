@@ -103,7 +103,10 @@ namespace griffin {
 
 
 		/**
-		*
+		* @class Mesh_GL
+		* The Mesh_GL has a trivially-copyable and padded data layout for direct memory-image
+		* serialization. This is contained by a Model_GL, which provides a richer C++ interface
+		* and handles to child resources for the mesh like textures and the material shader.
 		*/
 		class Mesh_GL {
 		public:

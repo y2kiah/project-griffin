@@ -14,7 +14,9 @@ namespace griffin {
 	namespace resource {
 
 		/**
-		*
+		* @struct ResourceHandle
+		* This is the type safe asynchronous wrapper around the Id_T handle for a resource.
+		* @tparam	T	Resource type
 		*/
 		template <typename T>
 		struct ResourceHandle {
@@ -36,12 +38,12 @@ namespace griffin {
 
 		/**
 		* @class Resource_T
-		*	The "_T" indicates a type erasure class.
-		*	For details on the type erasure pattern, see the following talks and repo:
-		*	https://www.youtube.com/watch?v=qH6sSOr-yk8
-		*	https://www.youtube.com/watch?v=bIhUE5uUFOA
-		*	https://www.youtube.com/watch?v=0I0FD3N5cgM
-		*	https://github.com/tzlaine/type_erasure/
+		* A type erasure container for all resources.
+		* For details on the type erasure pattern, see the following talks and repo:
+		* @see https://www.youtube.com/watch?v=qH6sSOr-yk8
+		* @see https://www.youtube.com/watch?v=bIhUE5uUFOA
+		* @see https://www.youtube.com/watch?v=0I0FD3N5cgM
+		* @see https://github.com/tzlaine/type_erasure/
 		*/
 		class Resource_T {
 		public:

@@ -9,6 +9,7 @@
 #include <api/SceneApi.h>
 #include <scene/Camera.h>
 #include <cmath>
+#include <utility/blend.h>
 
 
 #define playerHeight			6.0f	// ft
@@ -20,7 +21,7 @@
 #define walkStride				2.5f	// ft
 #define headBobDrop				0.1f	// ft
 #define crouchHeight			3.0f	// ft
-#define crouchRate				12.0f	// ft/s
+#define crouchRate				2.0f	// 1/s
 
 
 void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& engine, const UpdateInfo& ui)
@@ -117,15 +118,12 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& en
 		// calculate crouch height
 		// TODO: collision detection above the bounding sphere should keep the player crouching
 		//	even though they've toggled crouching off, until they are free of the obstacle above
-		{
-			float targetCrouchZ = (crouching ? playerHeight - crouchHeight : 0.0f);
 
-			if (crouchZ < targetCrouchZ) {
-				crouchZ = min(crouchZ + crouchRate * ui.deltaT, targetCrouchZ);
-			}
-			else if (crouchZ > targetCrouchZ) {
-				crouchZ = max(crouchZ - crouchRate * ui.deltaT, targetCrouchZ);
-			}
+		float crouchZ = 0.0f; // crouch distance subtracted from player's height
+		{
+			float crouchDeltaT = (crouching ? 1.0f : -1.0f) * crouchRate * ui.deltaT;
+			crouchT = clamp(crouchT + crouchDeltaT, 0.0f, 1.0f);
+			crouchZ = mix(0.0f, playerHeight - crouchHeight, hermite(crouchT));
 		}
 
 		// calculate head bob height, we assume a walking stride of 2.5ft per step and a peak fall of 4 inches

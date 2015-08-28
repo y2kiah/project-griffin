@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstdint>
 #include <cassert>
+#include <glm/vec3.hpp>
 
 namespace griffin {
 	namespace geometry {
@@ -36,6 +37,9 @@ namespace griffin {
 			*/
 			float distanceToPoint(float p[3]) const;
 			float distanceToPoint(float x, float y, float z) const;
+			void set(float p1[3], float p2[3], float p3[3]);
+			void set(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3);
+			void set(float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3);
 		};
 
 		struct Sphere {

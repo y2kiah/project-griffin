@@ -1,8 +1,36 @@
 #include "../Geometry.h"
+#include <glm/geometric.hpp>
 
 using namespace griffin;
 using namespace griffin::geometry;
-			
+using namespace glm;
+
+
+// struct Plane
+
+void Plane::set(float p1[3], float p2[3], float p3[3])
+{
+	set(*(vec3*)p1, *(vec3*)p2, *(vec3*)p3);
+}
+
+void Plane::set(float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3)
+{
+	set(vec3{ x1, y1, z1 }, vec3{ x2, y2, z2 }, vec3{ x3, y3, z3 });
+}
+
+void Plane::set(vec3 p1, vec3 p2, vec3 p3)
+{
+	vec3 v1 = p2 - p1;
+	vec3 v2 = p3 - p1;
+	v1 = glm::normalize(cross(v1, v2));
+	nx = v1.x;
+	ny = v1.y;
+	nz = v1.z;
+	d = dot(v1, p1);
+}
+
+
+// struct Frustum
 
 /**
 * For an explanation of the following code, see "Fast Extraction of Viewing Frustum
