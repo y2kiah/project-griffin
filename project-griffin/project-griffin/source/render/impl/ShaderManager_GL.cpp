@@ -40,7 +40,16 @@ uint16_t ShaderManager_GL::ensureUbershaderForKey(ShaderKey key)
 	// set compiler flags
 	{
 		if (key.hasFirstDiffuseMap || key.hasFirstDiffuseOpacityMap) {
-			program.addPreprocessorMacro("#define HAS_DIFFUSE_MAP");
+			program.addPreprocessorMacro("#define _HAS_DIFFUSE_MAP");
+		}
+		if (key.hasSpecularMap) {
+			program.addPreprocessorMacro("#define _HAS_SPECULAR_MAP");
+		}
+		if (key.hasNormalMap) {
+			program.addPreprocessorMacro("#define _HAS_NORMAL_MAP");
+			if (key.usesBumpMapping) {
+				program.addPreprocessorMacro("#define _BUMP_MAPPING");
+			}
 		}
 	}
 

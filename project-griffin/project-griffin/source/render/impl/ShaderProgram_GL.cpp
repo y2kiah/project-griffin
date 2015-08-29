@@ -2,6 +2,7 @@
 #include <gl/glew.h>
 #include <vector>
 #include <cassert>
+#include <memory>
 #include <SDL_log.h>
 
 namespace griffin {
@@ -159,6 +160,97 @@ namespace griffin {
 			}
 			return false;
 		}
+
+		/**
+		* Shader_GL binary file header, contains all properties needed for serialization
+		*/
+		struct Shader_GL_Header {
+			unsigned int binaryFormat;
+			int programBinarySize;
+		};
+
+		
+		bool ShaderProgram_GL::loadProgramBinaryFromMemory(unsigned char* data, size_t size)
+		{
+			auto header = reinterpret_cast<Shader_GL_Header*>(data);
+			void* shaderBinary = header + sizeof(Shader_GL_Header);
+
+			// load the binary into the program object
+			glProgramBinary(m_programId, header->binaryFormat, shaderBinary, header->programBinarySize);
+
+			GLint success = 0;
+			glGetProgramiv(m_programId, GL_LINK_STATUS, &success);
+
+			if (!success) {
+				// Something must have changed since the program binaries
+				// were cached away.  Fallback to source shader loading path,
+				// and then retrieve and cache new program binaries once again.
+			}
+
+			return (success == 1);
+		}
+
+
+		bool ShaderProgram_GL::loadProgramBinaryFromFile(const char* filename)
+		{
+			// read the program binary
+			FILE* inFile = nullptr;
+			
+			if (fopen_s(&inFile, filename, "rb")) {
+				fseek(inFile, 0, SEEK_END);
+				auto size = ftell(inFile);
+				auto dataPtr = std::make_unique<unsigned char[]>(size);
+				
+				// move this part to deserialize function, switch to istream file
+				fseek(inFile, 0, SEEK_SET);
+				fread((void*)dataPtr.get(), 1, size, inFile);
+				fclose(inFile);
+
+				return loadProgramBinaryFromMemory(dataPtr.get(), size);
+			}
+			return false;
+		}
+		
+
+		bool ShaderProgram_GL::writeProgramBinaryFile(const char* filename) const
+		{
+			if (m_programId == 0) {
+				return false;
+			}
+
+			// get the program binary
+			GLint binaryLength = 0;
+			GLenum binaryFormat = 0;
+			glGetProgramiv(m_programId, GL_PROGRAM_BINARY_LENGTH, &binaryLength);
+			auto binary = std::make_unique<char[]>(binaryLength);
+			glGetProgramBinary(m_programId, binaryLength, nullptr, &binaryFormat, (void*)binary.get());
+
+			// write the program binary file
+			FILE* outFile = nullptr;
+			if (!fopen_s(&outFile, filename, "wb")) {
+				return false;
+			}
+
+			// move this part to serialize function, switch to ostream file
+			Shader_GL_Header header{};
+			header.binaryFormat = binaryFormat;
+			header.programBinarySize = binaryLength;
+
+			fwrite(&header, sizeof(Shader_GL_Header), 1, outFile);
+			fwrite(binary.get(), 1, binaryLength, outFile);
+			fclose(outFile);
+
+			return true;
+		}
+		
+		
+		void ShaderProgram_GL::deserialize(std::istream& in)
+		{}
+
+
+		void ShaderProgram_GL::serialize(std::ostream& out)
+		{}
+
 
 		void ShaderProgram_GL::useProgram() const
 		{

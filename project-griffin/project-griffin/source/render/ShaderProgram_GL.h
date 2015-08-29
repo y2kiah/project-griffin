@@ -64,6 +64,13 @@ namespace griffin {
 			* @returns	true if compilation and link succeed, false on failure
 			*/
 			bool compileAndLinkProgram(const char* shaderCode = nullptr);
+			
+			bool loadProgramBinaryFromMemory(unsigned char* data, size_t size);
+			bool loadProgramBinaryFromFile(const char* filename);
+			bool writeProgramBinaryFile(const char* filename) const;
+
+			void deserialize(std::istream& in);
+			void serialize(std::ostream& out);
 
 			void addPreprocessorMacro(const char* preprocessor)
 			{

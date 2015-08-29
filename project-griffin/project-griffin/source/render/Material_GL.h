@@ -75,16 +75,6 @@ namespace griffin {
 			// 88
 			MaterialTexture textures[GRIFFIN_MAX_MATERIAL_TEXTURES]; // 80 * 12 = 960
 			// 1048
-
-			// Functions
-
-			// TODO: reenable this check in terms of presence of the textures and shader program id
-			bool allResourcesAvailable() const {
-				//for (const auto& t : textures) {
-				//	if (!t.isAvailable()) { return false; }
-				//}
-				return true;
-			}
 		};
 
 	}
