@@ -54,13 +54,14 @@ namespace griffin {
 		* Imports a model using assimp. Call this from the OpenGL thread only.
 		* @returns "unique_ptr holding the loaded mesh, or nullptr on error"
 		*/
-		std::unique_ptr<Mesh_GL> importModelFile(const string &filename, bool flipUVs)
+		std::unique_ptr<Mesh_GL> importModelFile(const string &filename, bool preTransformVertices, bool flipUVs)
 		{
 			Importer importer;
 			importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_POINT | aiPrimitiveType_LINE);
 
 			uint32_t ppFlags = aiProcessPreset_TargetRealtime_MaxQuality |
-				aiProcess_TransformUVCoords | aiProcess_OptimizeGraph | aiProcess_PreTransformVertices |
+				aiProcess_TransformUVCoords | //aiProcess_OptimizeGraph |
+				(preTransformVertices ? aiProcess_PreTransformVertices : 0) |
 				(flipUVs ? aiProcess_FlipUVs : 0);
 
 			const aiScene* p_scene = importer.ReadFile(filename, ppFlags);

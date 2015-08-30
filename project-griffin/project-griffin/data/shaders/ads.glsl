@@ -219,11 +219,11 @@
 		/////
 
 		// Diffuse surface color
-		//#ifdef _HAS_DIFFUSE_MAP
+		#ifdef _HAS_DIFFUSE_MAP
 			vec3 surfaceColor = texture(diffuseMap, uv).rgb;
-		//#else
-		//	vec3 surfaceColor = materialKd;
-		//#endif
+		#else
+			vec3 surfaceColor = materialKd;
+		#endif
 		/////
 
 		float lambertian = 0.0;

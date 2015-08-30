@@ -29,7 +29,7 @@ extern "C" {
 	using namespace griffin::render;
 
 
-	uint64_t griffin_tools_importMesh(const char* filename, bool flipUVs)
+	uint64_t griffin_tools_importMesh(const char* filename, bool preTransformVertices, bool flipUVs)
 	{
 		try {
 			auto loader = g_resourceLoader.lock();
@@ -40,8 +40,8 @@ extern "C" {
 			// run the import task on the OpenGL thread since it creates GL resources
 			task<uint64_t> tsk(ThreadAffinity::Thread_OpenGL_Render);
 
-			tsk.run([loader, filename, flipUVs]{
-				std::unique_ptr<Mesh_GL> meshPtr = importModelFile(filename, flipUVs);
+			tsk.run([loader, filename, preTransformVertices, flipUVs]{
+				std::unique_ptr<Mesh_GL> meshPtr = importModelFile(filename, preTransformVertices, flipUVs);
 				if (meshPtr == nullptr) {
 					return 0ULL;
 				}
@@ -97,9 +97,10 @@ extern "C" {
 	}
 
 
-	uint64_t griffin_tools_convertMesh(const char* sourceFilename, const char* destFilename, bool flipUVs)
+	uint64_t griffin_tools_convertMesh(const char* sourceFilename, const char* destFilename,
+									   bool preTransformVertices, bool flipUVs)
 	{
-		uint64_t mesh = griffin_tools_importMesh(sourceFilename, flipUVs);
+		uint64_t mesh = griffin_tools_importMesh(sourceFilename, preTransformVertices, flipUVs);
 		if (mesh == 0) {
 			return 0;
 		}

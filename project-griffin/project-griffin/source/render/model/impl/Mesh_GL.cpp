@@ -51,6 +51,7 @@ namespace griffin {
 			glm::mat4 modelToWorld;
 			
 			// temp
+			//modelToWorld = glm::translate(modelToWorld, glm::vec3(0.0f, -50.0f, 0.0f));
 			modelToWorld = glm::rotate(glm::translate(modelToWorld, glm::vec3(0.0f, -50.0f, 0.0f)),
 									   glm::radians(90.0f),
 									   glm::vec3(1.0f, 0, 0));
@@ -76,11 +77,13 @@ namespace griffin {
 			bfsQueue.push({ 0, modelToWorld }); // push root node to start traversal
 
 			while (!bfsQueue.empty()) {
-				uint32_t nodeIndex = bfsQueue.front().nodeIndex;
+				auto& thisItem = bfsQueue.front();
+
+				uint32_t nodeIndex = thisItem.nodeIndex;
 				assert(nodeIndex >= 0 && nodeIndex < m_meshScene.numNodes && "node index out of range");
 
-				const auto& node = m_meshScene.sceneNodes[bfsQueue.front().nodeIndex];
-				glm::mat4 transform = bfsQueue.front().toWorld * node.transform;
+				const auto& node = m_meshScene.sceneNodes[thisItem.nodeIndex];
+				glm::mat4 transform = thisItem.toWorld * node.transform;
 
 				glUniformMatrix4fv(modelMatLoc, 1, GL_FALSE, &transform[0][0]);
 
@@ -100,7 +103,7 @@ namespace griffin {
 					if (mat.numTextures > 0) {
 						// should NOT use this method to get the resource, it serializes to the worker thread
 						// this part of the render is a time-critical section, should have the resourcePtr directly by now
-						// consider storing resourcePtr's within the mesh
+						// store resourcePtr's within the model containing this mesh, render from the model file
 						auto tex = g_resourceLoader.lock()->getResource<Texture2D_GL>(mat.textures[0].textureResourceHandle, CacheType::Cache_Materials_T);
 						if (tex) {
 							tex->bind(GL_TEXTURE4);
