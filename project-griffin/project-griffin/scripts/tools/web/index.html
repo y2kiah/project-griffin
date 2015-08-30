@@ -18,15 +18,24 @@
 			<button id="importMeshBtn" type="button" class="btn btn-default">Import Mesh</button>
 			<button id="saveMeshBtn" type="button" class="btn btn-default">Save Mesh</button>
 			<button id="convertMeshBtn" type="button" class="btn btn-default">Convert Mesh</button>
-			
-			<label for="importedMeshId">Imported Mesh ID</label>
-			<input type="text" id="importedMeshId" value="">
-			
-			<label for="sourceFilename">Source Filename</label>
-			<input type="text" id="sourceFilename" value="models/landing platform.dae">
-			
-			<label for="destFilename">Dest Filename</label>
-			<input type="text" id="destFilename" value="models/landing_platform.gmd">
+
+			<div class="form-group">
+				<label for="sourceFilename">Source Filename</label>
+				<input type="text" id="sourceFilename" value="models/landing platform.dae">
+
+				<label for="importedMeshId">Flip UVs</label>
+				<input type="checkbox" id="flipUVs" value="1">
+			</div>
+
+			<div class="form-group">
+				<label for="importedMeshId">Imported Mesh ID</label>
+				<input type="text" id="importedMeshId" value="">
+			</div>
+
+			<div class="form-group">
+				<label for="destFilename">Dest Filename</label>
+				<input type="text" id="destFilename" value="models/landing_platform.gmd">
+			</div>
 		</div>
 	</div>
 
@@ -38,7 +47,8 @@
 
 				$.getJSON("/api.lua?method=griffin_tools_importMesh",
 					{
-						filename: $("#sourceFilename").val()
+						filename: $("#sourceFilename").val(),
+						flipUVs: $("#flipUVs").is("checked")
 					},
 					function (data, textStatus) {
 						console.log(data);
@@ -73,7 +83,8 @@
 				$.getJSON("/api.lua?method=griffin_tools_convertMesh",
 					{
 						sourceFilename: $("#sourceFilename").val(),
-						destFilename: $("#destFilename").val()
+						destFilename: $("#destFilename").val(),
+						flipUVs: $("#flipUVs").is(":checked")
 					},
 					function (data, textStatus) {
 						console.log(data);

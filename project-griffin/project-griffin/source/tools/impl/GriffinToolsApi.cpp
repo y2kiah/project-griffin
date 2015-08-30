@@ -29,7 +29,7 @@ extern "C" {
 	using namespace griffin::render;
 
 
-	uint64_t griffin_tools_importMesh(const char* filename)
+	uint64_t griffin_tools_importMesh(const char* filename, bool flipUVs)
 	{
 		try {
 			auto loader = g_resourceLoader.lock();
@@ -40,8 +40,8 @@ extern "C" {
 			// run the import task on the OpenGL thread since it creates GL resources
 			task<uint64_t> tsk(ThreadAffinity::Thread_OpenGL_Render);
 
-			tsk.run([loader, filename]{
-				std::unique_ptr<Mesh_GL> meshPtr = importModelFile(filename);
+			tsk.run([loader, filename, flipUVs]{
+				std::unique_ptr<Mesh_GL> meshPtr = importModelFile(filename, flipUVs);
 				if (meshPtr == nullptr) {
 					return 0ULL;
 				}
@@ -50,8 +50,8 @@ extern "C" {
 
 				ResourcePtr meshResPtr = std::make_shared<Resource_T>(std::move(*mesh), mesh->getSize());
 
-				// TODO: it makes no sense to load meshes into a "Materials" cache, pick another one
 				auto res = loader->addResourceToCache<Mesh_GL>(meshResPtr, CacheType::Cache_Models_T);
+				res.resourceId.wait();
 
 				return res.resourceId.get().value;
 
@@ -77,7 +77,6 @@ extern "C" {
 			Id_T handle;
 			handle.value = mesh;
 
-			// TODO: change cache to same as import function
 			auto res = loader->getResource<Mesh_GL>(handle, CacheType::Cache_Models_T);
 
 			std::ofstream ofs;
@@ -98,9 +97,9 @@ extern "C" {
 	}
 
 
-	uint64_t griffin_tools_convertMesh(const char* sourceFilename, const char* destFilename)
+	uint64_t griffin_tools_convertMesh(const char* sourceFilename, const char* destFilename, bool flipUVs)
 	{
-		uint64_t mesh = griffin_tools_importMesh(sourceFilename);
+		uint64_t mesh = griffin_tools_importMesh(sourceFilename, flipUVs);
 		if (mesh == 0) {
 			return 0;
 		}

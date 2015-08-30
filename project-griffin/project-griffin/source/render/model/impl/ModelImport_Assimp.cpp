@@ -54,13 +54,14 @@ namespace griffin {
 		* Imports a model using assimp. Call this from the OpenGL thread only.
 		* @returns "unique_ptr holding the loaded mesh, or nullptr on error"
 		*/
-		std::unique_ptr<Mesh_GL> importModelFile(const string &filename)
+		std::unique_ptr<Mesh_GL> importModelFile(const string &filename, bool flipUVs)
 		{
 			Importer importer;
 			importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_POINT | aiPrimitiveType_LINE);
 
 			uint32_t ppFlags = aiProcessPreset_TargetRealtime_MaxQuality |
-				aiProcess_TransformUVCoords | aiProcess_OptimizeGraph | aiProcess_PreTransformVertices;
+				aiProcess_TransformUVCoords | aiProcess_OptimizeGraph | aiProcess_PreTransformVertices |
+				(flipUVs ? aiProcess_FlipUVs : 0);
 
 			const aiScene* p_scene = importer.ReadFile(filename, ppFlags);
 
@@ -525,7 +526,7 @@ namespace griffin {
 							}
 						}
 						mat.textures[samplerIndex].uvChannelIndex = static_cast<uint8_t>(uvChannel);
-						
+
 						// texture mapping mode (wrap, clamp, decal, mirror)
 						aiTextureMapMode mappingModeU = aiTextureMapMode_Wrap;
 						aiTextureMapMode mappingModeV = aiTextureMapMode_Wrap;
@@ -533,12 +534,12 @@ namespace griffin {
 						assimpMat->Get(AI_MATKEY_MAPPINGMODE_V(tt, i), mappingModeU);
 						mat.textures[samplerIndex].textureMappingModeU = (mappingModeU == aiTextureMapMode_Clamp ? MaterialTextureMappingMode_Clamp :
 																		  (mappingModeU == aiTextureMapMode_Decal ? MaterialTextureMappingMode_Decal :
-																		   (mappingModeU == aiTextureMapMode_Mirror ? MaterialTextureMappingMode_Mirror :
-																		    MaterialTextureMappingMode_Wrap)));
+																		  (mappingModeU == aiTextureMapMode_Mirror ? MaterialTextureMappingMode_Mirror :
+																		  MaterialTextureMappingMode_Wrap)));
 						mat.textures[samplerIndex].textureMappingModeV = (mappingModeV == aiTextureMapMode_Clamp ? MaterialTextureMappingMode_Clamp :
 																		  (mappingModeV == aiTextureMapMode_Decal ? MaterialTextureMappingMode_Decal :
-																		   (mappingModeV == aiTextureMapMode_Mirror ? MaterialTextureMappingMode_Mirror :
-																		    MaterialTextureMappingMode_Wrap)));
+																		  (mappingModeV == aiTextureMapMode_Mirror ? MaterialTextureMappingMode_Mirror :
+																		  MaterialTextureMappingMode_Wrap)));
 
 						// not supporting aiTextureFlags, aiTextureMapping, aiTextureOp
 
@@ -557,14 +558,16 @@ namespace griffin {
 						// do synchronous loading of texture since this is a utility function
 						// injects the texture into cache, pass assumeCached=true
 						// prefix texture path with the path to the model being loaded
-						string aName = meshFilename.substr(0, meshFilename.find_last_of('/')) + '/' + mat.textures[samplerIndex].name;
+						auto pathStart = meshFilename.find("models");
+						auto pathEnd = meshFilename.find_last_of('/');
+						string aName = meshFilename.substr(pathStart, pathEnd - pathStart) + '/' + mat.textures[samplerIndex].name;
 						wstring wName;
 						wName.assign(aName.begin(), aName.end());
-						auto resHandle = render::loadTexture(wName, resource::CacheType::Cache_Materials_T);
+						auto resHandle = render::loadTexture(wName);
 
 						auto resPtr = g_resourceLoader.lock()->getResource(resHandle);
 						auto& tex = resPtr.get()->getResource<Texture2D_GL>();
-
+						
 						// if texture name matches a known pattern, change the texture type despite the assimp type assigned
 						if (strstr(mat.textures[samplerIndex].name, "_diffuse") != nullptr) {
 							texType = MaterialTexture_Diffuse;

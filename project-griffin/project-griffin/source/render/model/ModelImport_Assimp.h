@@ -14,7 +14,7 @@ namespace griffin {
 	namespace render {
 		class Mesh_GL;
 
-		extern std::unique_ptr<Mesh_GL> importModelFile(const std::string &filename);
+		extern std::unique_ptr<Mesh_GL> importModelFile(const std::string &filename, bool flipUVs = false);
 	}
 }
 
