@@ -10,3 +10,6 @@
 *.skp
 *.skb
 *.dae
+
+# Tools
+open3mod_1_1_standalone/
