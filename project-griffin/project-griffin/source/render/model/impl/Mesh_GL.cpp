@@ -48,27 +48,19 @@ namespace griffin {
 						   int diffuseMapLoc,
 						   const glm::mat4& viewMat, const glm::mat4& viewProjMat/*All TEMP*/) const
 		{
-			glm::mat4 modelToWorld;
+			using namespace glm;
+			
+			mat4 modelToWorld;
 			
 			// temp
-			//modelToWorld = glm::translate(modelToWorld, glm::vec3(0.0f, -50.0f, 0.0f));
 			modelToWorld = glm::rotate(glm::translate(modelToWorld, glm::vec3(0.0f, -50.0f, 0.0f)),
 									   glm::radians(90.0f),
 									   glm::vec3(1.0f, 0, 0));
 			modelToWorld = glm::scale(modelToWorld, glm::vec3(Meters_to_Feet));
 
-			glm::mat4 modelView(viewMat * modelToWorld);
-			glm::mat4 mvp(viewProjMat * modelToWorld);
-			glm::mat4 normalMat(glm::transpose(glm::inverse(glm::mat3(modelView))));
-
-			glUniformMatrix4fv(modelMatLoc, 1, GL_FALSE, &modelToWorld[0][0]);
-			glUniformMatrix4fv(modelViewMatLoc, 1, GL_FALSE, &modelView[0][0]);
-			glUniformMatrix4fv(mvpMatLoc, 1, GL_FALSE, &mvp[0][0]);
-			glUniformMatrix4fv(normalMatLoc, 1, GL_FALSE, &normalMat[0][0]);
-
 			struct BFSQueueItem {
-				uint32_t  nodeIndex;
-				glm::mat4 toWorld;
+				uint32_t nodeIndex;
+				mat4     toWorld;
 			};
 			// TODO: lot of memory being created and destroyed every frame, should all be pre-calculated and stored for non-animated meshes?
 			vector_queue<BFSQueueItem> bfsQueue;
@@ -83,9 +75,16 @@ namespace griffin {
 				assert(nodeIndex >= 0 && nodeIndex < m_meshScene.numNodes && "node index out of range");
 
 				const auto& node = m_meshScene.sceneNodes[thisItem.nodeIndex];
-				glm::mat4 transform = thisItem.toWorld * node.transform;
-
-				glUniformMatrix4fv(modelMatLoc, 1, GL_FALSE, &transform[0][0]);
+				
+				modelToWorld = thisItem.toWorld * node.transform;
+				mat4 modelView(viewMat * modelToWorld);
+				mat4 mvp(viewProjMat * modelToWorld);
+				mat4 normalMat(glm::transpose(glm::inverse(glm::mat3(modelView))));
+				
+				glUniformMatrix4fv(modelMatLoc, 1, GL_FALSE, &modelToWorld[0][0]);
+				glUniformMatrix4fv(modelViewMatLoc, 1, GL_FALSE, &modelView[0][0]);
+				glUniformMatrix4fv(mvpMatLoc, 1, GL_FALSE, &mvp[0][0]);
+				glUniformMatrix4fv(normalMatLoc, 1, GL_FALSE, &normalMat[0][0]);
 
 				// draw this node's meshes
 				for (uint32_t m = 0; m < node.numMeshes; ++m) {
@@ -121,7 +120,7 @@ namespace griffin {
 					assert(childNodeIndex >= 0 && childNodeIndex < m_meshScene.numNodes && "child node index out of range");
 					assert(childNodeIndex > nodeIndex && "child node is not lower in the tree");
 
-					bfsQueue.push({ childNodeIndex, transform });
+					bfsQueue.push({ childNodeIndex, modelToWorld });
 				}
 
 				bfsQueue.pop();
