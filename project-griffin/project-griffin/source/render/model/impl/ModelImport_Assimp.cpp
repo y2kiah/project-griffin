@@ -48,6 +48,7 @@ namespace griffin {
 		void     fillMaterials(const aiScene&, Material_GL*, size_t, DrawSet*, const string&);
 		std::tuple<uint32_t, uint32_t, uint32_t> getSceneArraySizes(const aiScene&);
 		void     fillSceneGraph(const aiScene&, MeshSceneGraph&);
+		void     fillAnimationBuffer(const aiScene&, size_t, MeshSceneGraph&);
 
 
 		/**
@@ -91,8 +92,15 @@ namespace griffin {
 										 ((meshScene.numChildIndices + meshScene.numMeshIndices) * sizeof(uint32_t)) +
 										 (meshScene.numNodes * sizeof(MeshSceneNodeMetaData));
 
+			// get animations size
+			uint32_t numAnimations = scene.mNumAnimations;
+			size_t totalAnimationsSize = numAnimations * /* TEMP */ sizeof(uint8_t);
+
 			// create model data buffer
-			size_t modelDataSize = totalDrawSetsSize + totalMaterialsSize + totalSceneGraphSize;
+			size_t modelDataSize =	totalDrawSetsSize +
+									totalMaterialsSize +
+									totalSceneGraphSize +
+									totalAnimationsSize;
 			auto modelData = std::make_unique<unsigned char[]>(modelDataSize);
 
 			// get meshes, vertex and index buffers
@@ -128,6 +136,10 @@ namespace griffin {
 			meshScene.meshIndices  = reinterpret_cast<uint32_t*>(modelData.get() + meshSceneOffset + meshScene.meshIndicesOffset);
 			meshScene.sceneNodeMetaData = reinterpret_cast<MeshSceneNodeMetaData*>(modelData.get() + meshSceneOffset + meshScene.meshMetaDataOffset);
 			fillSceneGraph(scene, meshScene);
+
+			// fill animations
+			uint32_t animationsOffset = meshSceneOffset + static_cast<uint32_t>(totalSceneGraphSize);
+			fillAnimationBuffer(scene, numAnimations, meshScene);
 
 			// build the mesh object
 			auto meshPtr = std::make_unique<Mesh_GL>(modelDataSize,
@@ -749,6 +761,42 @@ namespace griffin {
 			});
 		}
 
+
+		// Animation Loading
+
+		void fillAnimationBuffer(const aiScene& scene, size_t numAnimations, MeshSceneGraph& meshScene)
+		{
+			for (int a = 0; a < numAnimations; ++a) {
+				auto& anim = *scene.mAnimations[a];
+				
+				float ticksPerSecond = static_cast<float>(anim.mTicksPerSecond);
+				float durationTicks = static_cast<float>(anim.mDuration);
+				float durationSeconds = ticksPerSecond * durationTicks;
+
+				uint16_t numNodeAnimationChannels = anim.mNumMeshChannels;
+
+				for (uint16_t c = 0; c < numNodeAnimationChannels; ++c) {
+					auto& na = *anim.mChannels[c];
+					
+					// find node by name
+					int nodeIndex = -1;
+					for (int ni = 0; ni < meshScene.numNodes; ++ni) {
+						if (strncmp(meshScene.sceneNodeMetaData[ni].name,
+							na.mNodeName.C_Str(),
+							GRIFFIN_MAX_MESHSCENENODE_NAME_SIZE) == 0)
+						{
+							nodeIndex = ni;
+						}
+					}
+
+					// found the node
+					if (nodeIndex != -1) {
+						//na.
+					}
+				}
+			}
+		
+		}
 	}
 }
 
