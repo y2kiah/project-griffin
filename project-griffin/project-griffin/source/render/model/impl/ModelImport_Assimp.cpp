@@ -764,6 +764,61 @@ namespace griffin {
 
 		// Animation Loading
 
+		struct PositionKeyFrame {
+			float time;
+			float x, y, z;
+		};
+
+		struct RotationKeyFrame {
+			float time;
+			float x, y, z, w;
+		};
+
+		struct ScalingKeyFrame {
+			float time;
+			float x, y, z;
+		};
+
+		struct AnimationTrack {
+			uint32_t	nodeAnimationsOffset;
+			uint32_t	boneAnimationsOffset;
+			uint16_t	numNodeAnimations;
+			uint16_t	numBoneAnimations;
+			
+		};
+
+		struct NodeAnimation {
+			uint32_t	sceneNodeIndex;				//<! index of sceneNode that this animation controls
+			uint32_t	positionKeysIndexOffset;	//<! offset into positionKeys array of the first position keyframe
+			uint32_t	rotationKeysIndexOffset;	//<! offset into rotationKeys array of the first rotation keyframe
+			uint32_t	scalingKeysIndexOffset;		//<! offset into scalingKeys array of the first scaling keyframe
+			uint16_t	numPositionKeys;
+			uint16_t	numRotationKeys;
+			uint16_t	numScalingKeys;
+			uint8_t		preState;					//<! TODO: define enum for these states, look at assimp values
+			uint8_t		postState;
+		};
+
+		struct BoneAnimation {};
+
+		#define GRIFFIN_MAX_ANIMATION_NAME_SIZE	64
+		struct AnimLookupRecord {
+			uint32_t	animationIndex;
+			char		name[GRIFFIN_MAX_ANIMATION_NAME_SIZE];
+		};
+
+		struct AnimationSet {
+			uint32_t			numAnimations;
+			AnimationTrack*		animations;
+			NodeAnimation*		nodeAnimations;
+			BoneAnimation*		boneAnimations;
+			PositionKeyFrame*	positionKeys;
+			RotationKeyFrame*	rotationKeys;
+			ScalingKeyFrame*	scalingKeys;
+			AnimLookupRecord*	table;
+		};
+
+
 		void fillAnimationBuffer(const aiScene& scene, size_t numAnimations, MeshSceneGraph& meshScene)
 		{
 			for (int a = 0; a < numAnimations; ++a) {
@@ -774,7 +829,7 @@ namespace griffin {
 				float durationSeconds = ticksPerSecond * durationTicks;
 
 				uint16_t numNodeAnimationChannels = anim.mNumMeshChannels;
-
+				
 				for (uint16_t c = 0; c < numNodeAnimationChannels; ++c) {
 					auto& na = *anim.mChannels[c];
 					
@@ -791,7 +846,16 @@ namespace griffin {
 
 					// found the node
 					if (nodeIndex != -1) {
-						//na.
+						na.mPreState;
+						na.mPostState;
+						na.mNumPositionKeys;
+						na.mNumRotationKeys;
+						na.mNumScalingKeys;
+						for (uint32_t k = 0; k < na.mNumPositionKeys; ++k) {
+							na.mPositionKeys[k].mTime;
+							na.mPositionKeys[k].mValue;
+						}
+						
 					}
 				}
 			}
