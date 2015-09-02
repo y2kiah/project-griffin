@@ -15,7 +15,8 @@ namespace griffin {
 	namespace render {
 		
 		#define GRIFFIN_MAX_MESHSCENENODE_NAME_SIZE		64
-		
+		#define GRIFFIN_MAX_ANIMATION_NAME_SIZE			64
+
 
 		// Type Declarations
 
@@ -99,6 +100,68 @@ namespace griffin {
 			uint32_t *	childIndices = nullptr;		//<! combined array of child indices for scene nodes, each an index into sceneNodes array
 			uint32_t *	meshIndices = nullptr;		//<! combined array of mesh indices for scene nodes, each an index into m_drawSets array
 			MeshSceneNodeMetaData * sceneNodeMetaData = nullptr;	//<! metaData is indexed corresponding to sceneNodes
+		};
+
+		// Animation Structs
+
+		struct PositionKeyFrame {
+			float	time;
+			float	x, y, z;
+		};
+
+		struct RotationKeyFrame {
+			float	time;
+			float	x, y, z, w;
+		};
+
+		struct ScalingKeyFrame {
+			float	time;
+			float	x, y, z;
+		};
+
+		struct AnimationTrack {
+			uint32_t	nodeAnimationsOffset;
+			uint32_t	boneAnimationsOffset;
+			uint16_t	numNodeAnimations;
+			uint16_t	numBoneAnimations;
+		};
+
+		struct NodeAnimation {
+			uint32_t	sceneNodeIndex;				//<! index of sceneNode that this animation controls
+			uint32_t	positionKeysIndexOffset;	//<! offset into positionKeys array of the first position keyframe
+			uint32_t	rotationKeysIndexOffset;	//<! offset into rotationKeys array of the first rotation keyframe
+			uint32_t	scalingKeysIndexOffset;		//<! offset into scalingKeys array of the first scaling keyframe
+			uint16_t	numPositionKeys;
+			uint16_t	numRotationKeys;
+			uint16_t	numScalingKeys;
+			uint8_t		preState;					//<! TODO: define enum for these states, look at assimp values
+			uint8_t		postState;
+		};
+
+		struct BoneAnimation {};
+
+		struct AnimationIndex {
+			uint32_t	animationIndex;
+			uint32_t	nameHash;
+		};
+
+		struct AnimationSet {
+			uint32_t			numAnimations = 0;
+			uint32_t			indexOffset = 0;
+			uint32_t			nodeAnimationsOffset = 0;
+			uint32_t			boneAnimationsOffset = 0;
+			uint32_t			positionKeysOffset = 0;
+			uint32_t			rotationKeysOffset = 0;
+			uint32_t			scalingKeysOffset = 0;
+			uint32_t			_padding_0 = 0;
+			AnimationTrack *	animations = nullptr;		//<! animation tracks, offset always 0 relative to start of animation data
+			AnimationIndex *	index = nullptr;			//<! provides lookup of an animation by hashed string value
+			NodeAnimation *		nodeAnimations = nullptr;
+			BoneAnimation *		boneAnimations = nullptr;
+			PositionKeyFrame *	positionKeys = nullptr;
+			RotationKeyFrame *	rotationKeys = nullptr;
+			ScalingKeyFrame *	scalingKeys = nullptr;
+			char **				names;
 		};
 
 
@@ -205,7 +268,7 @@ namespace griffin {
 			Material_GL *	m_materials = nullptr;
 
 			MeshSceneGraph	m_meshScene;
-
+			AnimationSet	m_animations;
 			VertexBuffer_GL	m_vertexBuffer;
 			IndexBuffer_GL	m_indexBuffer;
 

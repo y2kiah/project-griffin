@@ -48,6 +48,7 @@ namespace griffin {
 		void     fillMaterials(const aiScene&, Material_GL*, size_t, DrawSet*, const string&);
 		std::tuple<uint32_t, uint32_t, uint32_t> getSceneArraySizes(const aiScene&);
 		void     fillSceneGraph(const aiScene&, MeshSceneGraph&);
+		uint32_t getTotalAnimationsSize(const aiScene&, AnimationSet*);
 		void     fillAnimationBuffer(const aiScene&, size_t, MeshSceneGraph&);
 
 
@@ -93,8 +94,7 @@ namespace griffin {
 										 (meshScene.numNodes * sizeof(MeshSceneNodeMetaData));
 
 			// get animations size
-			uint32_t numAnimations = scene.mNumAnimations;
-			size_t totalAnimationsSize = numAnimations * /* TEMP */ sizeof(uint8_t);
+			size_t totalAnimationsSize = getTotalAnimationsSize(scene);
 
 			// create model data buffer
 			size_t modelDataSize =	totalDrawSetsSize +
@@ -764,59 +764,18 @@ namespace griffin {
 
 		// Animation Loading
 
-		struct PositionKeyFrame {
-			float time;
-			float x, y, z;
-		};
+		uint32_t getTotalAnimationsSize(const aiScene& scene, AnimationSet* set)
+		{
+			uint32_t totalSize = sizeof(AnimationSet);
 
-		struct RotationKeyFrame {
-			float time;
-			float x, y, z, w;
-		};
-
-		struct ScalingKeyFrame {
-			float time;
-			float x, y, z;
-		};
-
-		struct AnimationTrack {
-			uint32_t	nodeAnimationsOffset;
-			uint32_t	boneAnimationsOffset;
-			uint16_t	numNodeAnimations;
-			uint16_t	numBoneAnimations;
-			
-		};
-
-		struct NodeAnimation {
-			uint32_t	sceneNodeIndex;				//<! index of sceneNode that this animation controls
-			uint32_t	positionKeysIndexOffset;	//<! offset into positionKeys array of the first position keyframe
-			uint32_t	rotationKeysIndexOffset;	//<! offset into rotationKeys array of the first rotation keyframe
-			uint32_t	scalingKeysIndexOffset;		//<! offset into scalingKeys array of the first scaling keyframe
-			uint16_t	numPositionKeys;
-			uint16_t	numRotationKeys;
-			uint16_t	numScalingKeys;
-			uint8_t		preState;					//<! TODO: define enum for these states, look at assimp values
-			uint8_t		postState;
-		};
-
-		struct BoneAnimation {};
-
-		#define GRIFFIN_MAX_ANIMATION_NAME_SIZE	64
-		struct AnimLookupRecord {
-			uint32_t	animationIndex;
-			char		name[GRIFFIN_MAX_ANIMATION_NAME_SIZE];
-		};
-
-		struct AnimationSet {
-			uint32_t			numAnimations;
-			AnimationTrack*		animations;
-			NodeAnimation*		nodeAnimations;
-			BoneAnimation*		boneAnimations;
-			PositionKeyFrame*	positionKeys;
-			RotationKeyFrame*	rotationKeys;
-			ScalingKeyFrame*	scalingKeys;
-			AnimLookupRecord*	table;
-		};
+			uint32_t numAnimations = scene.mNumAnimations;
+			for (uint32_t a = 0; a < numAnimations; ++a) {
+				auto& anim = *scene.mAnimations[a];
+				
+				for (uint16_t c = 0; c < anim.mNumMeshChannels; ++c) {
+				}
+			}
+		}
 
 
 		void fillAnimationBuffer(const aiScene& scene, size_t numAnimations, MeshSceneGraph& meshScene)
@@ -824,6 +783,7 @@ namespace griffin {
 			for (int a = 0; a < numAnimations; ++a) {
 				auto& anim = *scene.mAnimations[a];
 				
+				anim.mName;
 				float ticksPerSecond = static_cast<float>(anim.mTicksPerSecond);
 				float durationTicks = static_cast<float>(anim.mDuration);
 				float durationSeconds = ticksPerSecond * durationTicks;
@@ -855,7 +815,14 @@ namespace griffin {
 							na.mPositionKeys[k].mTime;
 							na.mPositionKeys[k].mValue;
 						}
-						
+						for (uint32_t k = 0; k < na.mNumRotationKeys; ++k) {
+							na.mRotationKeys[k].mTime;
+							na.mRotationKeys[k].mValue;
+						}
+						for (uint32_t k = 0; k < na.mNumScalingKeys; ++k) {
+							na.mScalingKeys[k].mTime;
+							na.mScalingKeys[k].mValue;
+						}
 					}
 				}
 			}
