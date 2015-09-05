@@ -48,8 +48,8 @@ namespace griffin {
 		void     fillMaterials(const aiScene&, Material_GL*, size_t, DrawSet*, const string&);
 		std::tuple<uint32_t, uint32_t, uint32_t> getSceneArraySizes(const aiScene&);
 		void     fillSceneGraph(const aiScene&, MeshSceneGraph&);
-		uint32_t getTotalAnimationsSize(const aiScene&, AnimationSet*);
-		void     fillAnimationBuffer(const aiScene&, size_t, MeshSceneGraph&);
+		uint32_t getTotalAnimationsSize(const aiScene&, MeshAnimations&);
+		void     fillAnimationBuffer(const aiScene&, MeshSceneGraph&, MeshAnimations&);
 
 
 		/**
@@ -94,7 +94,8 @@ namespace griffin {
 										 (meshScene.numNodes * sizeof(MeshSceneNodeMetaData));
 
 			// get animations size
-			size_t totalAnimationsSize = getTotalAnimationsSize(scene);
+			MeshAnimations meshAnimations{};
+			size_t totalAnimationsSize = getTotalAnimationsSize(scene, meshAnimations);
 
 			// create model data buffer
 			size_t modelDataSize =	totalDrawSetsSize +
@@ -102,6 +103,7 @@ namespace griffin {
 									totalSceneGraphSize +
 									totalAnimationsSize;
 			auto modelData = std::make_unique<unsigned char[]>(modelDataSize);
+			memset(modelData.get(), 0, modelDataSize); // zero out the buffer
 
 			// get meshes, vertex and index buffers
 			DrawSet* drawSets = reinterpret_cast<DrawSet*>(modelData.get());
@@ -127,19 +129,31 @@ namespace griffin {
 			fillMaterials(scene, materials, numMaterials, drawSets, filename);
 
 			// fill scene graph
-			uint32_t meshSceneOffset = static_cast<uint32_t>(totalDrawSetsSize + totalMaterialsSize);
-			meshScene.childIndicesOffset = (meshScene.numNodes * sizeof(MeshSceneNode));
-			meshScene.meshIndicesOffset  = meshScene.childIndicesOffset + (meshScene.numChildIndices * sizeof(uint32_t));
-			meshScene.meshMetaDataOffset = meshScene.meshIndicesOffset + (meshScene.numMeshIndices * sizeof(uint32_t));
-			meshScene.sceneNodes   = reinterpret_cast<MeshSceneNode*>(modelData.get() + meshSceneOffset);
-			meshScene.childIndices = reinterpret_cast<uint32_t*>(modelData.get() + meshSceneOffset + meshScene.childIndicesOffset);
-			meshScene.meshIndices  = reinterpret_cast<uint32_t*>(modelData.get() + meshSceneOffset + meshScene.meshIndicesOffset);
-			meshScene.sceneNodeMetaData = reinterpret_cast<MeshSceneNodeMetaData*>(modelData.get() + meshSceneOffset + meshScene.meshMetaDataOffset);
+			uint32_t meshSceneOffset		= static_cast<uint32_t>(totalDrawSetsSize + totalMaterialsSize);
+			meshScene.childIndicesOffset	= (meshScene.numNodes * sizeof(MeshSceneNode));
+			meshScene.meshIndicesOffset		= meshScene.childIndicesOffset + (meshScene.numChildIndices * sizeof(uint32_t));
+			meshScene.meshMetaDataOffset	= meshScene.meshIndicesOffset + (meshScene.numMeshIndices * sizeof(uint32_t));
+			meshScene.sceneNodes			= reinterpret_cast<MeshSceneNode*>(modelData.get() + meshSceneOffset);
+			meshScene.childIndices			= reinterpret_cast<uint32_t*>(modelData.get() + meshSceneOffset + meshScene.childIndicesOffset);
+			meshScene.meshIndices			= reinterpret_cast<uint32_t*>(modelData.get() + meshSceneOffset + meshScene.meshIndicesOffset);
+			meshScene.sceneNodeMetaData		= reinterpret_cast<MeshSceneNodeMetaData*>(modelData.get() + meshSceneOffset + meshScene.meshMetaDataOffset);
+
 			fillSceneGraph(scene, meshScene);
 
 			// fill animations
-			uint32_t animationsOffset = meshSceneOffset + static_cast<uint32_t>(totalSceneGraphSize);
-			fillAnimationBuffer(scene, numAnimations, meshScene);
+			uint32_t animationsOffset		= meshSceneOffset + static_cast<uint32_t>(totalSceneGraphSize);
+			
+			assert(meshSceneOffset + meshScene.meshMetaDataOffset + (meshScene.numNodes * sizeof(MeshSceneNodeMetaData)) ==
+				   animationsOffset && "totalSceneGraphSize problem");
+
+			meshAnimations.animations		= reinterpret_cast<AnimationTrack*>(modelData.get() + animationsOffset);
+			meshAnimations.nodeAnimations	= reinterpret_cast<NodeAnimation*>(meshAnimations.animations + meshAnimations.nodeAnimationsOffset);
+			meshAnimations.positionKeys		= reinterpret_cast<PositionKeyFrame*>(meshAnimations.animations + meshAnimations.positionKeysOffset);
+			meshAnimations.rotationKeys		= reinterpret_cast<RotationKeyFrame*>(meshAnimations.animations + meshAnimations.rotationKeysOffset);
+			meshAnimations.scalingKeys		= reinterpret_cast<ScalingKeyFrame*>(meshAnimations.animations + meshAnimations.scalingKeysOffset);
+			meshAnimations.trackNames		= reinterpret_cast<char*>(meshAnimations.animations + meshAnimations.trackNamesOffset);
+			
+			fillAnimationBuffer(scene, meshScene, meshAnimations);
 
 			// build the mesh object
 			auto meshPtr = std::make_unique<Mesh_GL>(modelDataSize,
@@ -148,8 +162,11 @@ namespace griffin {
 													 0, // drawSetsOffset, always 0 when using assimp import
 													 materialsOffset,
 													 meshSceneOffset,
+													 static_cast<uint32_t>(totalAnimationsSize),
+													 animationsOffset,
 													 std::move(modelData),
 													 std::move(meshScene),
+													 std::move(meshAnimations),
 													 std::move(vb),
 													 std::move(ib));
 			
@@ -764,38 +781,82 @@ namespace griffin {
 
 		// Animation Loading
 
-		uint32_t getTotalAnimationsSize(const aiScene& scene, AnimationSet* set)
+		uint32_t getTotalAnimationsSize(const aiScene& scene, MeshAnimations& anims)
 		{
-			uint32_t totalSize = sizeof(AnimationSet);
+			uint32_t totalSize = 0;
 
-			uint32_t numAnimations = scene.mNumAnimations;
-			for (uint32_t a = 0; a < numAnimations; ++a) {
-				auto& anim = *scene.mAnimations[a];
+			anims.numAnimationTracks = scene.mNumAnimations;
+			totalSize += anims.numAnimationTracks * sizeof(AnimationTrack);
+			
+			uint32_t numNodeAnims = 0;
+			uint32_t numBoneAnims = 0;
+			uint32_t numPositionKeys = 0;
+			uint32_t numRotationKeys = 0;
+			uint32_t numScalingKeys = 0;
+
+			for (uint32_t a = 0; a < anims.numAnimationTracks; ++a) {
+				auto& assimpAnim = *scene.mAnimations[a];
 				
-				for (uint16_t c = 0; c < anim.mNumMeshChannels; ++c) {
+				for (uint16_t c = 0; c < assimpAnim.mNumChannels; ++c) {
+					auto& na = *assimpAnim.mChannels[c];
+
+					if (scene.mRootNode->FindNode(na.mNodeName) != nullptr) {
+						// found the node by name
+						++numNodeAnims;
+						numPositionKeys += assimpAnim.mChannels[c]->mNumPositionKeys;
+						numRotationKeys += assimpAnim.mChannels[c]->mNumRotationKeys;
+						numScalingKeys  += assimpAnim.mChannels[c]->mNumScalingKeys;
+					}
 				}
 			}
+
+			anims.nodeAnimationsOffset = totalSize;
+			totalSize += numNodeAnims * sizeof(NodeAnimation);
+			
+			anims.positionKeysOffset = totalSize;
+			totalSize += numPositionKeys * sizeof(PositionKeyFrame);
+
+			anims.rotationKeysOffset = totalSize;
+			totalSize += numRotationKeys * sizeof(RotationKeyFrame);
+
+			anims.scalingKeysOffset = totalSize;
+			totalSize += numScalingKeys * sizeof(ScalingKeyFrame);
+
+			anims.trackNamesOffset = totalSize;
+			totalSize += anims.numAnimationTracks * GRIFFIN_MAX_ANIMATION_NAME_SIZE;
+
+			return totalSize;
 		}
 
 
-		void fillAnimationBuffer(const aiScene& scene, size_t numAnimations, MeshSceneGraph& meshScene)
+		void fillAnimationBuffer(const aiScene& scene, MeshSceneGraph& meshScene, MeshAnimations& anims)
 		{
-			for (int a = 0; a < numAnimations; ++a) {
-				auto& anim = *scene.mAnimations[a];
-				
-				anim.mName;
-				float ticksPerSecond = static_cast<float>(anim.mTicksPerSecond);
-				float durationTicks = static_cast<float>(anim.mDuration);
-				float durationSeconds = ticksPerSecond * durationTicks;
+			uint32_t nodeAnimationsIndex = 0;
+			uint32_t positionKeysIndex = 0;
+			uint32_t rotationKeysIndex = 0;
+			uint32_t scalingKeysIndex = 0;
 
-				uint16_t numNodeAnimationChannels = anim.mNumMeshChannels;
-				
-				for (uint16_t c = 0; c < numNodeAnimationChannels; ++c) {
-					auto& na = *anim.mChannels[c];
-					
-					// find node by name
+			for (uint32_t a = 0; a < scene.mNumAnimations; ++a) {
+				auto& assimpAnim = *scene.mAnimations[a];
+				auto& anim = anims.animations[a];
+
+				// copy name into names buffer
+				strncpy_s(anims.trackNames + (a * GRIFFIN_MAX_ANIMATION_NAME_SIZE), GRIFFIN_MAX_ANIMATION_NAME_SIZE,
+						  assimpAnim.mName.C_Str(), _TRUNCATE);
+
+				anim.nodeAnimationsIndexOffset = nodeAnimationsIndex;
+				anim.numNodeAnimations = 0;
+				anim.ticksPerSecond = static_cast<float>(assimpAnim.mTicksPerSecond);
+				anim.durationTicks = static_cast<float>(assimpAnim.mDuration);
+				anim.durationSeconds = anim.ticksPerSecond * anim.durationTicks;
+				anim.durationMilliseconds = anim.durationSeconds * 1000.0f;
+
+				for (uint16_t c = 0; c < assimpAnim.mNumChannels; ++c) {
+					auto& na = *assimpAnim.mChannels[c];
+
+					// find node index by node name
 					int nodeIndex = -1;
-					for (int ni = 0; ni < meshScene.numNodes; ++ni) {
+					for (uint32_t ni = 0; ni < meshScene.numNodes; ++ni) {
 						if (strncmp(meshScene.sceneNodeMetaData[ni].name,
 							na.mNodeName.C_Str(),
 							GRIFFIN_MAX_MESHSCENENODE_NAME_SIZE) == 0)
@@ -806,25 +867,62 @@ namespace griffin {
 
 					// found the node
 					if (nodeIndex != -1) {
-						na.mPreState;
-						na.mPostState;
-						na.mNumPositionKeys;
-						na.mNumRotationKeys;
-						na.mNumScalingKeys;
+						auto& thisNodeAnim = anims.nodeAnimations[nodeAnimationsIndex + anim.numNodeAnimations];
+
+						thisNodeAnim.sceneNodeIndex = nodeIndex;
+
+						switch (na.mPreState) {
+							case aiAnimBehaviour_DEFAULT:  thisNodeAnim.preState = AnimationBehavior_Default; break;
+							case aiAnimBehaviour_CONSTANT: thisNodeAnim.preState = AnimationBehavior_Constant; break;
+							case aiAnimBehaviour_LINEAR:   thisNodeAnim.preState = AnimationBehavior_Linear; break;
+							case aiAnimBehaviour_REPEAT:   thisNodeAnim.preState = AnimationBehavior_Repeat; break;
+						}
+						switch (na.mPostState) {
+							case aiAnimBehaviour_DEFAULT:  thisNodeAnim.postState = AnimationBehavior_Default; break;
+							case aiAnimBehaviour_CONSTANT: thisNodeAnim.postState = AnimationBehavior_Constant; break;
+							case aiAnimBehaviour_LINEAR:   thisNodeAnim.postState = AnimationBehavior_Linear; break;
+							case aiAnimBehaviour_REPEAT:   thisNodeAnim.postState = AnimationBehavior_Repeat; break;
+						}
+
+						thisNodeAnim.positionKeysIndexOffset = positionKeysIndex;
+						thisNodeAnim.rotationKeysIndexOffset = rotationKeysIndex;
+						thisNodeAnim.scalingKeysIndexOffset  = scalingKeysIndex;
+
+						thisNodeAnim.numPositionKeys = na.mNumPositionKeys;
+						thisNodeAnim.numRotationKeys = na.mNumRotationKeys;
+						thisNodeAnim.numScalingKeys  = na.mNumScalingKeys;
+
 						for (uint32_t k = 0; k < na.mNumPositionKeys; ++k) {
-							na.mPositionKeys[k].mTime;
-							na.mPositionKeys[k].mValue;
+							auto& thisKey = anims.positionKeys[positionKeysIndex];
+							thisKey.time = static_cast<float>(na.mPositionKeys[k].mTime);
+							thisKey.x = na.mPositionKeys[k].mValue.x;
+							thisKey.y = na.mPositionKeys[k].mValue.y;
+							thisKey.z = na.mPositionKeys[k].mValue.z;
+							++positionKeysIndex;
 						}
 						for (uint32_t k = 0; k < na.mNumRotationKeys; ++k) {
-							na.mRotationKeys[k].mTime;
-							na.mRotationKeys[k].mValue;
+							auto& thisKey = anims.rotationKeys[rotationKeysIndex];
+							thisKey.time = static_cast<float>(na.mRotationKeys[k].mTime);
+							thisKey.x = na.mRotationKeys[k].mValue.x;
+							thisKey.y = na.mRotationKeys[k].mValue.y;
+							thisKey.z = na.mRotationKeys[k].mValue.z;
+							thisKey.w = na.mRotationKeys[k].mValue.w;
+							++rotationKeysIndex;
 						}
 						for (uint32_t k = 0; k < na.mNumScalingKeys; ++k) {
-							na.mScalingKeys[k].mTime;
-							na.mScalingKeys[k].mValue;
+							auto& thisKey = anims.scalingKeys[scalingKeysIndex];
+							thisKey.time = static_cast<float>(na.mScalingKeys[k].mTime);
+							thisKey.x = na.mScalingKeys[k].mValue.x;
+							thisKey.y = na.mScalingKeys[k].mValue.y;
+							thisKey.z = na.mScalingKeys[k].mValue.z;
+							++scalingKeysIndex;
 						}
+
+						++anim.numNodeAnimations;
 					}
 				}
+
+				nodeAnimationsIndex += anim.numNodeAnimations;
 			}
 		
 		}

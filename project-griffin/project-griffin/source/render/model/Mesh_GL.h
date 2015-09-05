@@ -84,46 +84,56 @@ namespace griffin {
 
 
 		struct MeshSceneNodeMetaData {
-			char		name[GRIFFIN_MAX_MESHSCENENODE_NAME_SIZE];	//<! name of the scene graph node
+			char			name[GRIFFIN_MAX_MESHSCENENODE_NAME_SIZE];	//<! name of the scene graph node
 		};
 		static_assert(sizeof(MeshSceneNodeMetaData) % 4 == 0, "MeshSceneNodeMetaData size should be multiple of 4 for alignment of mesh buffer");
 
 
 		struct MeshSceneGraph {
-			uint32_t	numNodes = 0;
-			uint32_t	numChildIndices = 0;
-			uint32_t	numMeshIndices = 0;
-			uint32_t	childIndicesOffset = 0;		//<! offset in bytes to start of childIndices array data
-			uint32_t	meshIndicesOffset = 0;		//<! offset in bytes to start of meshIndices array data
-			uint32_t	meshMetaDataOffset = 0;		//<! offset in bytes to start of sceneNodeMetaData array data
-			MeshSceneNode * sceneNodes = nullptr;	//<! array of nodes starting with root, in breadth-first order, offset is always 0 relative to start of MeshSceneGraph data
-			uint32_t *	childIndices = nullptr;		//<! combined array of child indices for scene nodes, each an index into sceneNodes array
-			uint32_t *	meshIndices = nullptr;		//<! combined array of mesh indices for scene nodes, each an index into m_drawSets array
+			uint32_t		numNodes = 0;
+			uint32_t		numChildIndices = 0;
+			uint32_t		numMeshIndices = 0;
+			uint32_t		childIndicesOffset = 0;		//<! offset in bytes to start of childIndices array data
+			uint32_t		meshIndicesOffset = 0;		//<! offset in bytes to start of meshIndices array data
+			uint32_t		meshMetaDataOffset = 0;		//<! offset in bytes to start of sceneNodeMetaData array data
+			MeshSceneNode * sceneNodes = nullptr;		//<! array of nodes starting with root, in breadth-first order, offset is always 0 relative to start of MeshSceneGraph data
+			uint32_t *		childIndices = nullptr;		//<! combined array of child indices for scene nodes, each an index into sceneNodes array
+			uint32_t *		meshIndices = nullptr;		//<! combined array of mesh indices for scene nodes, each an index into m_drawSets array
 			MeshSceneNodeMetaData * sceneNodeMetaData = nullptr;	//<! metaData is indexed corresponding to sceneNodes
 		};
 
 		// Animation Structs
 
 		struct PositionKeyFrame {
-			float	time;
-			float	x, y, z;
+			float		time;
+			float		x, y, z;
 		};
 
 		struct RotationKeyFrame {
-			float	time;
-			float	x, y, z, w;
+			float		time;
+			float		x, y, z, w;
+			uint8_t		_padding_end[4];
 		};
 
 		struct ScalingKeyFrame {
-			float	time;
-			float	x, y, z;
+			float		time;
+			float		x, y, z;
 		};
 
 		struct AnimationTrack {
-			uint32_t	nodeAnimationsOffset;
-			uint32_t	boneAnimationsOffset;
-			uint16_t	numNodeAnimations;
-			uint16_t	numBoneAnimations;
+			uint32_t	nodeAnimationsIndexOffset;
+			uint32_t	numNodeAnimations;
+			float		ticksPerSecond;
+			float		durationTicks;
+			float		durationSeconds;
+			float		durationMilliseconds;
+		};
+
+		enum AnimationBehavior : uint8_t {
+			AnimationBehavior_Default  = 0,	//<! The value from the default node transformation is taken
+			AnimationBehavior_Constant = 1, //<! The nearest key value is used without interpolation
+			AnimationBehavior_Linear   = 2, //<! nearest two keys is linearly extrapolated for the current time value
+			AnimationBehavior_Repeat   = 3  //<! The animation is repeated. If the animation key go from n to m and the current time is t, use the value at (t-n) % (|m-n|).
 		};
 
 		struct NodeAnimation {
@@ -138,30 +148,19 @@ namespace griffin {
 			uint8_t		postState;
 		};
 
-		struct BoneAnimation {};
-
-		struct AnimationIndex {
-			uint32_t	animationIndex;
-			uint32_t	nameHash;
-		};
-
-		struct AnimationSet {
-			uint32_t			numAnimations = 0;
-			uint32_t			indexOffset = 0;
-			uint32_t			nodeAnimationsOffset = 0;
-			uint32_t			boneAnimationsOffset = 0;
-			uint32_t			positionKeysOffset = 0;
-			uint32_t			rotationKeysOffset = 0;
-			uint32_t			scalingKeysOffset = 0;
-			uint32_t			_padding_0 = 0;
-			AnimationTrack *	animations = nullptr;		//<! animation tracks, offset always 0 relative to start of animation data
-			AnimationIndex *	index = nullptr;			//<! provides lookup of an animation by hashed string value
-			NodeAnimation *		nodeAnimations = nullptr;
-			BoneAnimation *		boneAnimations = nullptr;
-			PositionKeyFrame *	positionKeys = nullptr;
-			RotationKeyFrame *	rotationKeys = nullptr;
-			ScalingKeyFrame *	scalingKeys = nullptr;
-			char **				names;
+		struct MeshAnimations {
+			uint32_t			numAnimationTracks;
+			uint32_t			nodeAnimationsOffset;	// all offsets in this struct are relative to the start of animation data ...
+			uint32_t			positionKeysOffset;		// ... unlike other offsets which are relative to start of full model data buffer
+			uint32_t			rotationKeysOffset;
+			uint32_t			scalingKeysOffset;
+			uint32_t			trackNamesOffset;
+			AnimationTrack *	animations;		//<! animation tracks, offset always 0 relative to start of animation data
+			NodeAnimation *		nodeAnimations;
+			PositionKeyFrame *	positionKeys;
+			RotationKeyFrame *	rotationKeys;
+			ScalingKeyFrame *	scalingKeys;
+			char *				trackNames;		//<! single buffer to be treated as array of individual 64-byte strings
 		};
 
 
@@ -192,7 +191,8 @@ namespace griffin {
 			*/
 			explicit Mesh_GL(size_t sizeBytes, uint16_t numDrawSets, uint16_t numMaterials,
 							 uint32_t drawSetsOffset, uint32_t materialsOffset, uint32_t meshSceneOffset,
-							 ByteBuffer modelData, MeshSceneGraph&& meshScene,
+							 uint32_t animationsSize, uint32_t animationsOffset,
+							 ByteBuffer modelData, MeshSceneGraph&& meshScene, MeshAnimations&& meshAnimations,
 							 VertexBuffer_GL&& vb, IndexBuffer_GL&& ib);
 			
 			Mesh_GL(Mesh_GL&& other);
@@ -202,6 +202,13 @@ namespace griffin {
 			// Functions
 
 			size_t getSize() const { return m_sizeBytes; }
+
+			/**
+			* Gets the animation track index by the animation name. Do this once after load and
+			* store the result for O(1) lookup later. Assumes there are < UINT32_MAX animations.
+			* @returns	index or UINT32_MAX if name not found
+			*/
+			uint32_t getAnimationTrackIndexByName(const char* name) const;
 
 			/**
 			* Binds the vertex + index buffers, and enables vertex attrib pointers
@@ -261,6 +268,8 @@ namespace griffin {
 			uint32_t		m_drawSetsOffset = 0;		//<! offsets into m_modelData
 			uint32_t		m_materialsOffset = 0;
 			uint32_t		m_meshSceneOffset = 0;
+			uint32_t		m_animationsSize = 0;
+			uint32_t		m_animationsOffset = 0;
 			uint32_t		m_vertexBufferOffset = 0;	//<! 0 when m_vertexBuffer contains internal data, > 0 when vertex data is part of m_modelData
 			uint32_t		m_indexBufferOffset = 0;	//<! 0 when m_indexBuffer contains internal data, > 0 when index data is part of m_modelData
 
@@ -268,7 +277,7 @@ namespace griffin {
 			Material_GL *	m_materials = nullptr;
 
 			MeshSceneGraph	m_meshScene;
-			AnimationSet	m_animations;
+			MeshAnimations	m_animations;
 			VertexBuffer_GL	m_vertexBuffer;
 			IndexBuffer_GL	m_indexBuffer;
 

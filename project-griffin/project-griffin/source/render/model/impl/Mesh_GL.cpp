@@ -249,9 +249,24 @@ namespace griffin {
 		}
 
 
+		// Animation Functions
+
+		uint32_t Mesh_GL::getAnimationTrackIndexByName(const char* name) const
+		{
+			for (uint32_t a = 0; a < m_animations.numAnimationTracks; ++a) {
+				if (strncmp(m_animations.trackNames + (a * GRIFFIN_MAX_ANIMATION_NAME_SIZE),
+							name, GRIFFIN_MAX_ANIMATION_NAME_SIZE) == 0)
+				{
+					return a;
+				}
+			}
+			return UINT32_MAX;
+		}
+
+
 		// Serialization Functions
 
-		#define GRIFFIN_MESH_SERIALIZATION_CURRENT_VERSION	2
+		#define GRIFFIN_MESH_SERIALIZATION_CURRENT_VERSION	3
 
 		/**
 		* Mesh_GL binary file header, contains all properties needed for serialization
@@ -266,14 +281,26 @@ namespace griffin {
 			uint32_t	drawSetsOffset;
 			uint32_t	materialsOffset;
 			uint32_t	meshSceneOffset;
+			
 			uint32_t	sceneNumNodes;
 			uint32_t	sceneNumChildIndices;
 			uint32_t	sceneNumMeshIndices;
 			uint32_t	sceneChildIndicesOffset;
 			uint32_t	sceneMeshIndicesOffset;
 			uint32_t	sceneMetaDataOffset;
+			
+			uint32_t	animationsSize;
+			uint32_t	animationsOffset;
+			uint32_t	numAnimationTracks;
+			uint32_t	nodeAnimationsOffset;
+			uint32_t	positionKeysOffset;
+			uint32_t	rotationKeysOffset;
+			uint32_t	scalingKeysOffset;
+			uint32_t	animationTrackNamesOffset;
+
 			uint32_t	vertexBufferSize;
 			uint32_t	vertexBufferOffset;
+			
 			uint32_t	indexBufferSize;
 			uint32_t	indexBufferOffset;
 			uint8_t		indexBufferFlags;
@@ -305,19 +332,33 @@ namespace griffin {
 			header.key[0] = 'g'; header.key[1] = 'm'; header.key[2] = 'd';
 			header.version					= GRIFFIN_MESH_SERIALIZATION_CURRENT_VERSION;
 			header.bufferSize				= bufferSize;
+			
 			header.numDrawSets				= m_numDrawSets;
 			header.numMaterials				= m_numMaterials;
 			header.drawSetsOffset			= headerSize + 0;
 			header.materialsOffset			= header.drawSetsOffset + drawSetsSize;
 			header.meshSceneOffset			= header.materialsOffset + materialsSize;
+			
 			header.sceneNumNodes			= m_meshScene.numNodes;
 			header.sceneNumChildIndices		= m_meshScene.numChildIndices;
 			header.sceneNumMeshIndices		= m_meshScene.numMeshIndices;
 			header.sceneChildIndicesOffset	= header.meshSceneOffset + sceneNodesSize;
 			header.sceneMeshIndicesOffset	= header.sceneChildIndicesOffset + sceneChildIndicesSize;
 			header.sceneMetaDataOffset		= header.sceneMeshIndicesOffset + sceneMeshIndicesSize;
+			
+			header.animationsSize			= m_animationsSize;
+			header.animationsOffset			= header.sceneMetaDataOffset + sceneMetaDataSize;
+			assert(header.sceneMetaDataOffset + sceneMetaDataSize == m_animationsOffset && "animations offset error");
+			header.numAnimationTracks		= m_animations.numAnimationTracks;
+			header.nodeAnimationsOffset		= m_animations.nodeAnimationsOffset;
+			header.positionKeysOffset		= m_animations.positionKeysOffset;
+			header.rotationKeysOffset		= m_animations.rotationKeysOffset;
+			header.scalingKeysOffset		= m_animations.scalingKeysOffset;
+			header.animationTrackNamesOffset = m_animations.trackNamesOffset;
+
 			header.vertexBufferSize			= static_cast<uint32_t>(m_vertexBuffer.getSize());
-			header.vertexBufferOffset		= header.sceneMetaDataOffset + sceneMetaDataSize;
+			header.vertexBufferOffset		= header.animationsOffset + m_animationsSize;
+			
 			header.indexBufferSize			= static_cast<uint32_t>(m_indexBuffer.getSize());
 			header.indexBufferOffset		= header.vertexBufferOffset + header.vertexBufferSize;
 			header.indexBufferFlags			= static_cast<uint8_t>(m_indexBuffer.getFlags());
@@ -332,7 +373,8 @@ namespace griffin {
 			out.write(reinterpret_cast<const char*>(m_meshScene.childIndices), sceneChildIndicesSize);
 			out.write(reinterpret_cast<const char*>(m_meshScene.meshIndices), sceneMeshIndicesSize);
 			out.write(reinterpret_cast<const char*>(m_meshScene.sceneNodeMetaData), sceneMetaDataSize);
-			
+			out.write(reinterpret_cast<const char*>(m_animations.animations), m_animationsSize);
+
 			// source the vertex data from either the m_modelData buffer, or the VertexBuffer_GL's internal buffer,
 			// it could be one or the other depending on whether the model was deserialized or imported
 			unsigned char* vertexData = nullptr;
@@ -396,7 +438,8 @@ namespace griffin {
 				header.sceneChildIndicesOffset != header.meshSceneOffset + (header.sceneNumNodes * sizeof(MeshSceneNode)) ||
 				header.sceneMeshIndicesOffset != header.sceneChildIndicesOffset + (header.sceneNumChildIndices * sizeof(uint32_t)) ||
 				header.sceneMetaDataOffset != header.sceneMeshIndicesOffset + (header.sceneNumMeshIndices * sizeof(uint32_t)) ||
-				header.vertexBufferOffset != header.sceneMetaDataOffset + (header.sceneNumNodes * sizeof(MeshSceneNodeMetaData)) ||
+				header.animationsOffset != header.sceneMetaDataOffset + (header.sceneNumNodes * sizeof(MeshSceneNodeMetaData)) ||
+				header.vertexBufferOffset != header.animationsOffset + header.animationsSize ||
 				header.indexBufferOffset != header.vertexBufferOffset + header.vertexBufferSize ||
 				totalSize != header.indexBufferOffset + header.indexBufferSize)
 			{
@@ -410,26 +453,43 @@ namespace griffin {
 			m_drawSetsOffset				= header.drawSetsOffset;
 			m_materialsOffset				= header.materialsOffset;
 			m_meshSceneOffset				= header.meshSceneOffset;
+			m_animationsSize				= header.animationsSize;
+			m_animationsOffset				= header.animationsOffset;
 			m_vertexBufferOffset			= header.vertexBufferOffset;
 			m_indexBufferOffset				= header.indexBufferOffset;
+			
 			m_meshScene.numNodes			= header.sceneNumNodes;
 			m_meshScene.numChildIndices		= header.sceneNumChildIndices;
 			m_meshScene.numMeshIndices		= header.sceneNumMeshIndices;
 			m_meshScene.childIndicesOffset	= header.sceneChildIndicesOffset;
 			m_meshScene.meshIndicesOffset	= header.sceneMeshIndicesOffset;
 			m_meshScene.meshMetaDataOffset	= header.sceneMetaDataOffset;
+			
+			m_animations.numAnimationTracks	= header.numAnimationTracks;
+			m_animations.nodeAnimationsOffset = header.nodeAnimationsOffset;
+			m_animations.positionKeysOffset	= header.positionKeysOffset;
+			m_animations.rotationKeysOffset	= header.rotationKeysOffset;
+			m_animations.scalingKeysOffset	= header.scalingKeysOffset;
+			m_animations.trackNamesOffset	= header.animationTrackNamesOffset;
 
 			// set size and flags into the buffers, we later call loadFromMemory and use getters to read these back
 			m_vertexBuffer.set(nullptr, header.vertexBufferSize);
 			m_indexBuffer.set(nullptr,  header.indexBufferSize, static_cast<IndexBuffer_GL::IndexBufferFlags>(header.indexBufferFlags));
 
 			// fix up internal pointers based on offsets in header
-			m_drawSets = reinterpret_cast<DrawSet*>(m_modelData.get() + m_drawSetsOffset);
-			m_materials = reinterpret_cast<Material_GL*>(m_modelData.get() + m_materialsOffset);
-			m_meshScene.sceneNodes = reinterpret_cast<MeshSceneNode*>(m_modelData.get() + m_meshSceneOffset);
-			m_meshScene.childIndices = reinterpret_cast<uint32_t*>(m_modelData.get() + m_meshScene.childIndicesOffset);
-			m_meshScene.meshIndices = reinterpret_cast<uint32_t*>(m_modelData.get() + m_meshScene.meshIndicesOffset);
-			m_meshScene.sceneNodeMetaData = reinterpret_cast<MeshSceneNodeMetaData*>(m_modelData.get() + m_meshScene.meshMetaDataOffset);
+			m_drawSets						= reinterpret_cast<DrawSet*>(m_modelData.get() + m_drawSetsOffset);
+			m_materials						= reinterpret_cast<Material_GL*>(m_modelData.get() + m_materialsOffset);
+			m_meshScene.sceneNodes			= reinterpret_cast<MeshSceneNode*>(m_modelData.get() + m_meshSceneOffset);
+			m_meshScene.childIndices		= reinterpret_cast<uint32_t*>(m_modelData.get() + m_meshScene.childIndicesOffset);
+			m_meshScene.meshIndices			= reinterpret_cast<uint32_t*>(m_modelData.get() + m_meshScene.meshIndicesOffset);
+			m_meshScene.sceneNodeMetaData	= reinterpret_cast<MeshSceneNodeMetaData*>(m_modelData.get() + m_meshScene.meshMetaDataOffset);
+
+			m_animations.animations			= reinterpret_cast<AnimationTrack*>(m_modelData.get() + m_animationsOffset);
+			m_animations.nodeAnimations		= reinterpret_cast<NodeAnimation*>(m_animations.animations + m_animations.nodeAnimationsOffset);
+			m_animations.positionKeys		= reinterpret_cast<PositionKeyFrame*>(m_animations.animations + m_animations.positionKeysOffset);
+			m_animations.rotationKeys		= reinterpret_cast<RotationKeyFrame*>(m_animations.animations + m_animations.rotationKeysOffset);
+			m_animations.scalingKeys		= reinterpret_cast<ScalingKeyFrame*>(m_animations.animations + m_animations.scalingKeysOffset);
+			m_animations.trackNames			= reinterpret_cast<char*>(m_animations.animations + m_animations.trackNamesOffset);
 		}
 
 		
@@ -490,8 +550,10 @@ namespace griffin {
 
 		Mesh_GL::Mesh_GL(size_t sizeBytes, uint16_t numDrawSets, uint16_t numMaterials,
 						 uint32_t drawSetsOffset, uint32_t materialsOffset, uint32_t meshSceneOffset,
+						 uint32_t animationsSize, uint32_t animationsOffset,
 						 ByteBuffer modelData,
 						 MeshSceneGraph&& meshScene,
+						 MeshAnimations&& meshAnimations,
 						 VertexBuffer_GL&& vb, IndexBuffer_GL&& ib) :
 			m_sizeBytes{ static_cast<uint32_t>(sizeBytes) },
 			m_numDrawSets{ numDrawSets },
@@ -499,10 +561,13 @@ namespace griffin {
 			m_drawSetsOffset{ drawSetsOffset },
 			m_materialsOffset{ materialsOffset },
 			m_meshSceneOffset{ meshSceneOffset },
+			m_animationsSize{ animationsSize },
+			m_animationsOffset{ animationsOffset },
 			m_vertexBufferOffset{ 0 },
 			m_indexBufferOffset{ 0 },
 			m_modelData(std::move(modelData)),
-			m_meshScene{ std::forward<MeshSceneGraph>(meshScene) },
+			m_meshScene(std::forward<MeshSceneGraph>(meshScene)),
+			m_animations(std::forward<MeshAnimations>(meshAnimations)),
 			m_vertexBuffer(std::forward<VertexBuffer_GL>(vb)),
 			m_indexBuffer(std::forward<IndexBuffer_GL>(ib))
 		{
@@ -520,11 +585,14 @@ namespace griffin {
 			m_drawSetsOffset{ other.m_drawSetsOffset },
 			m_materialsOffset{ other.m_materialsOffset },
 			m_meshSceneOffset{ other.m_meshSceneOffset },
+			m_animationsSize{ other.m_animationsSize },
+			m_animationsOffset{ other.m_animationsOffset },
 			m_vertexBufferOffset{ other.m_vertexBufferOffset },
 			m_indexBufferOffset{ other.m_indexBufferOffset },
 			m_drawSets{ other.m_drawSets },
 			m_materials{ other.m_materials },
 			m_meshScene(std::move(other.m_meshScene)),
+			m_animations(std::move(other.m_animations)),
 			m_vertexBuffer(std::move(other.m_vertexBuffer)),
 			m_indexBuffer(std::move(other.m_indexBuffer)),
 			m_sizeBytes{ other.m_sizeBytes },
@@ -535,6 +603,8 @@ namespace griffin {
 			other.m_drawSetsOffset = 0;
 			other.m_materialsOffset = 0;
 			other.m_meshSceneOffset = 0;
+			other.m_animationsSize = 0;
+			other.m_animationsOffset = 0;
 			other.m_vertexBufferOffset = 0;
 			other.m_indexBufferOffset = 0;
 			other.m_drawSets = nullptr;
