@@ -146,14 +146,16 @@ namespace griffin {
 			assert(meshSceneOffset + meshScene.meshMetaDataOffset + (meshScene.numNodes * sizeof(MeshSceneNodeMetaData)) ==
 				   animationsOffset && "totalSceneGraphSize problem");
 
-			meshAnimations.animations		= reinterpret_cast<AnimationTrack*>(modelData.get() + animationsOffset);
-			meshAnimations.nodeAnimations	= reinterpret_cast<NodeAnimation*>(meshAnimations.animations + meshAnimations.nodeAnimationsOffset);
-			meshAnimations.positionKeys		= reinterpret_cast<PositionKeyFrame*>(meshAnimations.animations + meshAnimations.positionKeysOffset);
-			meshAnimations.rotationKeys		= reinterpret_cast<RotationKeyFrame*>(meshAnimations.animations + meshAnimations.rotationKeysOffset);
-			meshAnimations.scalingKeys		= reinterpret_cast<ScalingKeyFrame*>(meshAnimations.animations + meshAnimations.scalingKeysOffset);
-			meshAnimations.trackNames		= reinterpret_cast<char*>(meshAnimations.animations + meshAnimations.trackNamesOffset);
+			if (totalAnimationsSize > 0) {
+				meshAnimations.animations		= reinterpret_cast<AnimationTrack*>(modelData.get() + animationsOffset);
+				meshAnimations.nodeAnimations	= reinterpret_cast<NodeAnimation*>(meshAnimations.animations + meshAnimations.nodeAnimationsOffset);
+				meshAnimations.positionKeys		= reinterpret_cast<PositionKeyFrame*>(meshAnimations.animations + meshAnimations.positionKeysOffset);
+				meshAnimations.rotationKeys		= reinterpret_cast<RotationKeyFrame*>(meshAnimations.animations + meshAnimations.rotationKeysOffset);
+				meshAnimations.scalingKeys		= reinterpret_cast<ScalingKeyFrame*>(meshAnimations.animations + meshAnimations.scalingKeysOffset);
+				meshAnimations.trackNames		= reinterpret_cast<char*>(meshAnimations.animations + meshAnimations.trackNamesOffset);
 			
-			fillAnimationBuffer(scene, meshScene, meshAnimations);
+				fillAnimationBuffer(scene, meshScene, meshAnimations);
+			}
 
 			// build the mesh object
 			auto meshPtr = std::make_unique<Mesh_GL>(modelDataSize,

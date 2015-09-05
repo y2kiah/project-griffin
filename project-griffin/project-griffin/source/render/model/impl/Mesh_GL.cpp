@@ -310,7 +310,6 @@ namespace griffin {
 		static_assert(sizeof(Mesh_GL_Header) % 8 == 0, "Mesh_GL_Header size should be multiple of 8 for alignment of mesh buffer");
 		static_assert(std::is_trivially_copyable<Mesh_GL_Header>::value, "Mesh_GL_Header must be trivially copyable for serialization");
 
-
 		void Mesh_GL::serialize(std::ostream& out)
 		{
 			uint32_t headerSize = sizeof(Mesh_GL_Header);
@@ -348,7 +347,6 @@ namespace griffin {
 			
 			header.animationsSize			= m_animationsSize;
 			header.animationsOffset			= header.sceneMetaDataOffset + sceneMetaDataSize;
-			assert(header.sceneMetaDataOffset + sceneMetaDataSize == m_animationsOffset && "animations offset error");
 			header.numAnimationTracks		= m_animations.numAnimationTracks;
 			header.nodeAnimationsOffset		= m_animations.nodeAnimationsOffset;
 			header.positionKeysOffset		= m_animations.positionKeysOffset;
