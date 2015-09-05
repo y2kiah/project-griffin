@@ -66,9 +66,6 @@ namespace griffin {
 			uint8_t		numTexCoordChannels = 0;	//<! how many U, UV or UVW coordinate sets are there? Up to 8 supported.
 			uint8_t		numTexCoordComponents[GRIFFIN_MAX_MATERIAL_TEXTURES];	//<! indexed by channel, how many components in the channel?
 		};
-		static_assert(sizeof(DrawSet) % 4 == 0, "DrawSet size should be multiple of 4 for alignment of mesh buffer");
-		static_assert(std::is_trivially_copyable<DrawSet>::value, "DrawSet must be trivially copyable for serialization");
-
 
 		struct MeshSceneNode {
 			glm::mat4	transform;
@@ -79,15 +76,10 @@ namespace griffin {
 			uint32_t	meshIndexOffset = 0;		//<! offset into array of mesh instances, numMeshes elements belong to this node
 			// scene node string name is stored in the metadata buffer with the same index
 		};
-		static_assert(sizeof(MeshSceneNode) % 4 == 0, "MeshSceneNode size should be multiple of 4 for alignment of mesh buffer");
-		//static_assert(std::is_trivially_copyable<MeshSceneNode>::value, "MeshSceneNode must be trivially copyable for serialization");
-
 
 		struct MeshSceneNodeMetaData {
-			char			name[GRIFFIN_MAX_MESHSCENENODE_NAME_SIZE];	//<! name of the scene graph node
+			char		name[GRIFFIN_MAX_MESHSCENENODE_NAME_SIZE];	//<! name of the scene graph node
 		};
-		static_assert(sizeof(MeshSceneNodeMetaData) % 4 == 0, "MeshSceneNodeMetaData size should be multiple of 4 for alignment of mesh buffer");
-
 
 		struct MeshSceneGraph {
 			uint32_t		numNodes = 0;
@@ -148,6 +140,10 @@ namespace griffin {
 			uint8_t		postState;
 		};
 
+		struct AnimationTrackMetaData {
+			char		name[GRIFFIN_MAX_ANIMATION_NAME_SIZE];	//<! name of the animation track
+		};
+
 		struct MeshAnimations {
 			uint32_t			numAnimationTracks;
 			uint32_t			nodeAnimationsOffset;	// all offsets in this struct are relative to the start of animation data ...
@@ -155,13 +151,30 @@ namespace griffin {
 			uint32_t			rotationKeysOffset;
 			uint32_t			scalingKeysOffset;
 			uint32_t			trackNamesOffset;
-			AnimationTrack *	animations;		//<! animation tracks, offset always 0 relative to start of animation data
+			AnimationTrack *	animations;				//<! animation tracks, offset always 0 relative to start of animation data
 			NodeAnimation *		nodeAnimations;
 			PositionKeyFrame *	positionKeys;
 			RotationKeyFrame *	rotationKeys;
 			ScalingKeyFrame *	scalingKeys;
-			char *				trackNames;		//<! single buffer to be treated as array of individual 64-byte strings
+			AnimationTrackMetaData * trackNames;		//<! array of 64-byte strings
 		};
+
+
+		static_assert(sizeof(DrawSet) % 4 == 0, "DrawSet size should be multiple of 4 for alignment of animation buffer");
+		static_assert(sizeof(MeshSceneNode) % 4 == 0, "MeshSceneNode size should be multiple of 4 for alignment of animation buffer");
+		static_assert(sizeof(MeshSceneNodeMetaData) % 4 == 0, "MeshSceneNodeMetaData size should be multiple of 4 for alignment of animation buffer");
+		static_assert(sizeof(PositionKeyFrame) % 4 == 0, "PositionKeyFrame size should be multiple of 4 for alignment of mesh buffer");
+		static_assert(sizeof(RotationKeyFrame) % 4 == 0, "RotationKeyFrame size should be multiple of 4 for alignment of mesh buffer");
+		static_assert(sizeof(ScalingKeyFrame) % 4 == 0, "ScalingKeyFrame size should be multiple of 4 for alignment of mesh buffer");
+		static_assert(sizeof(AnimationTrack) % 4 == 0, "AnimationTrack size should be multiple of 4 for alignment of mesh buffer");
+		static_assert(sizeof(NodeAnimation) % 4 == 0, "NodeAnimation size should be multiple of 4 for alignment of mesh buffer");
+		static_assert(sizeof(AnimationTrackMetaData) % 4 == 0, "AnimationTrackMetaData size should be multiple of 4 for alignment of mesh buffer");
+		static_assert(std::is_trivially_copyable<DrawSet>::value /*&& std::is_trivially_copyable<MeshSceneNode>::value*/, // check disabled due to glm::mat, it's still safe though
+					  "Mesh structs must be trivially copyable for serialization");
+		static_assert(std::is_trivially_copyable<PositionKeyFrame>::value && std::is_trivially_copyable<RotationKeyFrame>::value &&
+					  std::is_trivially_copyable<ScalingKeyFrame>::value && std::is_trivially_copyable<AnimationTrack>::value &&
+					  std::is_trivially_copyable<NodeAnimation>::value && std::is_trivially_copyable<AnimationTrackMetaData>::value,
+					  "Animation structs must be trivially copyable for serialization");
 
 
 		/**

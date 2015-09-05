@@ -254,7 +254,7 @@ namespace griffin {
 		uint32_t Mesh_GL::getAnimationTrackIndexByName(const char* name) const
 		{
 			for (uint32_t a = 0; a < m_animations.numAnimationTracks; ++a) {
-				if (strncmp(m_animations.trackNames + (a * GRIFFIN_MAX_ANIMATION_NAME_SIZE),
+				if (strncmp(m_animations.trackNames[a].name,
 							name, GRIFFIN_MAX_ANIMATION_NAME_SIZE) == 0)
 				{
 					return a;
@@ -322,7 +322,8 @@ namespace griffin {
 
 			// get the total size of the model buffer
 			uint32_t bufferSize = drawSetsSize + materialsSize + sceneNodesSize +
-				sceneChildIndicesSize + sceneMeshIndicesSize + sceneMetaDataSize +
+				sceneChildIndicesSize + sceneMeshIndicesSize +
+				sceneMetaDataSize + m_animationsSize +
 				static_cast<uint32_t>(m_vertexBuffer.getSize()) +
 				static_cast<uint32_t>(m_indexBuffer.getSize());
 				
@@ -430,6 +431,7 @@ namespace griffin {
 			{
 				throw std::logic_error("Unrecognized file format");
 			}
+
 			if (header.drawSetsOffset != sizeof(Mesh_GL_Header) ||
 				header.materialsOffset != header.drawSetsOffset + (header.numDrawSets * sizeof(DrawSet)) ||
 				header.meshSceneOffset != header.materialsOffset + (header.numMaterials * sizeof(Material_GL)) ||
@@ -483,11 +485,11 @@ namespace griffin {
 			m_meshScene.sceneNodeMetaData	= reinterpret_cast<MeshSceneNodeMetaData*>(m_modelData.get() + m_meshScene.meshMetaDataOffset);
 
 			m_animations.animations			= reinterpret_cast<AnimationTrack*>(m_modelData.get() + m_animationsOffset);
-			m_animations.nodeAnimations		= reinterpret_cast<NodeAnimation*>(m_animations.animations + m_animations.nodeAnimationsOffset);
-			m_animations.positionKeys		= reinterpret_cast<PositionKeyFrame*>(m_animations.animations + m_animations.positionKeysOffset);
-			m_animations.rotationKeys		= reinterpret_cast<RotationKeyFrame*>(m_animations.animations + m_animations.rotationKeysOffset);
-			m_animations.scalingKeys		= reinterpret_cast<ScalingKeyFrame*>(m_animations.animations + m_animations.scalingKeysOffset);
-			m_animations.trackNames			= reinterpret_cast<char*>(m_animations.animations + m_animations.trackNamesOffset);
+			m_animations.nodeAnimations		= reinterpret_cast<NodeAnimation*>(m_modelData.get() + m_animationsOffset + m_animations.nodeAnimationsOffset);
+			m_animations.positionKeys		= reinterpret_cast<PositionKeyFrame*>(m_modelData.get() + m_animationsOffset + m_animations.positionKeysOffset);
+			m_animations.rotationKeys		= reinterpret_cast<RotationKeyFrame*>(m_modelData.get() + m_animationsOffset + m_animations.rotationKeysOffset);
+			m_animations.scalingKeys		= reinterpret_cast<ScalingKeyFrame*>(m_modelData.get() + m_animationsOffset + m_animations.scalingKeysOffset);
+			m_animations.trackNames			= reinterpret_cast<AnimationTrackMetaData*>(m_modelData.get() + m_animationsOffset + m_animations.trackNamesOffset);
 		}
 
 		

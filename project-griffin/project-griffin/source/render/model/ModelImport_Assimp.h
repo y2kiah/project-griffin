@@ -15,6 +15,7 @@ namespace griffin {
 		class Mesh_GL;
 
 		extern std::unique_ptr<Mesh_GL> importModelFile(const std::string &filename,
+														bool optimizeGraph = true,
 														bool preTransformVertices = false,
 														bool flipUVs = false);
 	}

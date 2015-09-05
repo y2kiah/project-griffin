@@ -23,23 +23,26 @@
 
 			<div class="form-group">
 				<label for="sourceFilename">Source Filename</label>
-				<input type="text" id="sourceFilename" value="models/landing platform.dae">
+				<input type="text" id="sourceFilename" name="sourceFilename" value="models/landing platform.dae">
+
+				<label for="optimizeGraph">Optimize Graph</label>
+				<input type="checkbox" id="optimizeGraph" name="optimizeGraph" value="1">
 
 				<label for="preTransformVertices">Pre-transform Vertices</label>
-				<input type="checkbox" id="preTransformVertices" value="1">
+				<input type="checkbox" id="preTransformVertices" name="preTransformVertices" value="1">
 
 				<label for="flipUVs">Flip UVs</label>
-				<input type="checkbox" id="flipUVs" value="1">
+				<input type="checkbox" id="flipUVs" name="flipUVs" value="1">
 			</div>
 
 			<div class="form-group">
 				<label for="importedMeshId">Imported Mesh ID</label>
-				<input type="text" id="importedMeshId" value="">
+				<input type="text" id="importedMeshId" name="importedMeshId" value="">
 			</div>
 
 			<div class="form-group">
 				<label for="destFilename">Dest Filename</label>
-				<input type="text" id="destFilename" value="models/landing_platform.gmd">
+				<input type="text" id="destFilename" name="destFilename" value="models/landing_platform.gmd">
 			</div>
 		</div>
 	</div>
@@ -53,6 +56,7 @@
 				$.getJSON("/api.lua?method=griffin_tools_importMesh",
 					{
 						filename: $("#sourceFilename").val(),
+						optimizeGraph: $("#optimizeGraph").is(":checked"),
 						preTransformVertices: $("#preTransformVertices").is(":checked"),
 						flipUVs: $("#flipUVs").is("checked")
 					},
@@ -90,6 +94,7 @@
 					{
 						sourceFilename: $("#sourceFilename").val(),
 						destFilename: $("#destFilename").val(),
+						optimizeGraph: $("#optimizeGraph").is(":checked"),
 						preTransformVertices: $("#preTransformVertices").is(":checked"),
 						flipUVs: $("#flipUVs").is(":checked")
 					},

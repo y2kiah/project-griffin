@@ -56,13 +56,14 @@ namespace griffin {
 		* Imports a model using assimp. Call this from the OpenGL thread only.
 		* @returns "unique_ptr holding the loaded mesh, or nullptr on error"
 		*/
-		std::unique_ptr<Mesh_GL> importModelFile(const string &filename, bool preTransformVertices, bool flipUVs)
+		std::unique_ptr<Mesh_GL> importModelFile(const string &filename, bool optimizeGraph, bool preTransformVertices, bool flipUVs)
 		{
 			Importer importer;
 			importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_POINT | aiPrimitiveType_LINE);
 
 			uint32_t ppFlags = aiProcessPreset_TargetRealtime_MaxQuality |
-				aiProcess_TransformUVCoords | //aiProcess_OptimizeGraph |
+				aiProcess_TransformUVCoords |
+				(optimizeGraph ? aiProcess_OptimizeGraph : 0) |
 				(preTransformVertices ? aiProcess_PreTransformVertices : 0) |
 				(flipUVs ? aiProcess_FlipUVs : 0);
 
@@ -148,11 +149,11 @@ namespace griffin {
 
 			if (totalAnimationsSize > 0) {
 				meshAnimations.animations		= reinterpret_cast<AnimationTrack*>(modelData.get() + animationsOffset);
-				meshAnimations.nodeAnimations	= reinterpret_cast<NodeAnimation*>(meshAnimations.animations + meshAnimations.nodeAnimationsOffset);
-				meshAnimations.positionKeys		= reinterpret_cast<PositionKeyFrame*>(meshAnimations.animations + meshAnimations.positionKeysOffset);
-				meshAnimations.rotationKeys		= reinterpret_cast<RotationKeyFrame*>(meshAnimations.animations + meshAnimations.rotationKeysOffset);
-				meshAnimations.scalingKeys		= reinterpret_cast<ScalingKeyFrame*>(meshAnimations.animations + meshAnimations.scalingKeysOffset);
-				meshAnimations.trackNames		= reinterpret_cast<char*>(meshAnimations.animations + meshAnimations.trackNamesOffset);
+				meshAnimations.nodeAnimations	= reinterpret_cast<NodeAnimation*>(modelData.get() + animationsOffset + meshAnimations.nodeAnimationsOffset);
+				meshAnimations.positionKeys		= reinterpret_cast<PositionKeyFrame*>(modelData.get() + animationsOffset + meshAnimations.positionKeysOffset);
+				meshAnimations.rotationKeys		= reinterpret_cast<RotationKeyFrame*>(modelData.get() + animationsOffset + meshAnimations.rotationKeysOffset);
+				meshAnimations.scalingKeys		= reinterpret_cast<ScalingKeyFrame*>(modelData.get() + animationsOffset + meshAnimations.scalingKeysOffset);
+				meshAnimations.trackNames		= reinterpret_cast<AnimationTrackMetaData*>(modelData.get() + animationsOffset + meshAnimations.trackNamesOffset);
 			
 				fillAnimationBuffer(scene, meshScene, meshAnimations);
 			}
@@ -772,7 +773,8 @@ namespace griffin {
 				}
 
 				// copy metadata
-				strcpy_s(thisMetaData.name, GRIFFIN_MAX_MESHSCENENODE_NAME_SIZE - 1, assimpNode.mName.C_Str());
+				strncpy_s(thisMetaData.name, GRIFFIN_MAX_MESHSCENENODE_NAME_SIZE - 1,
+						  assimpNode.mName.C_Str(), _TRUNCATE);
 
 				// advance the counters for the next node
 				childIndexOffset += assimpNode.mNumChildren;
@@ -825,7 +827,7 @@ namespace griffin {
 			totalSize += numScalingKeys * sizeof(ScalingKeyFrame);
 
 			anims.trackNamesOffset = totalSize;
-			totalSize += anims.numAnimationTracks * GRIFFIN_MAX_ANIMATION_NAME_SIZE;
+			totalSize += anims.numAnimationTracks * sizeof(AnimationTrackMetaData);
 
 			return totalSize;
 		}
@@ -843,7 +845,7 @@ namespace griffin {
 				auto& anim = anims.animations[a];
 
 				// copy name into names buffer
-				strncpy_s(anims.trackNames + (a * GRIFFIN_MAX_ANIMATION_NAME_SIZE), GRIFFIN_MAX_ANIMATION_NAME_SIZE,
+				strncpy_s(anims.trackNames[a].name, GRIFFIN_MAX_ANIMATION_NAME_SIZE - 1,
 						  assimpAnim.mName.C_Str(), _TRUNCATE);
 
 				anim.nodeAnimationsIndexOffset = nodeAnimationsIndex;
@@ -864,9 +866,10 @@ namespace griffin {
 							GRIFFIN_MAX_MESHSCENENODE_NAME_SIZE) == 0)
 						{
 							nodeIndex = ni;
+							break;
 						}
 					}
-
+					
 					// found the node
 					if (nodeIndex != -1) {
 						auto& thisNodeAnim = anims.nodeAnimations[nodeAnimationsIndex + anim.numNodeAnimations];
@@ -919,7 +922,7 @@ namespace griffin {
 							thisKey.z = na.mScalingKeys[k].mValue.z;
 							++scalingKeysIndex;
 						}
-
+						
 						++anim.numNodeAnimations;
 					}
 				}

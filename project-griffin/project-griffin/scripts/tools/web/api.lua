@@ -20,6 +20,7 @@ if method == "GET" then
 		cgilua.QUERY.filename)
 	then
 		local meshId = ffi.C.griffin_tools_importMesh("data/"..cgilua.QUERY.filename,
+													  (cgilua.QUERY.optimizeGraph == "true"),
 													  (cgilua.QUERY.preTransformVertices == "true"),
 													  (cgilua.QUERY.flipUVs == "true"))
 		data = tonumber(meshId)
@@ -40,6 +41,7 @@ if method == "GET" then
 	then
 		local result = ffi.C.griffin_tools_convertMesh("data/"..cgilua.QUERY.sourceFilename,
 													   "data/"..cgilua.QUERY.destFilename,
+													   (cgilua.QUERY.optimizeGraph == "true"),
 													   (cgilua.QUERY.preTransformVertices == "true"),
 													   (cgilua.QUERY.flipUVs == "true"))
 		data = result -- TODO: this is throwing a JSON encoding error
