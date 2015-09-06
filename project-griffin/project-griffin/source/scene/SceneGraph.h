@@ -63,15 +63,17 @@ namespace griffin {
 		* entity represent a unique instance of a mesh in the scene. The materialOverrides id is
 		* normally NullId_T, and the mesh materials are taken from the default "shared" materials
 		* list stored within the Mesh_GL object itself. When a specific instance wants to override
-		* any of the default materials, the override are added to the Scene's overrides map as an
+		* any of the default materials, the override is added to the Scene's overrides map as an
 		* embedded linked list, and the id of the first override is stored in this component. The
 		* renderer must look here for any material overrides first for each submesh, and fall back
 		* to the default values for any submesh where an override is not present.
+		* The animationId works the same way, it points to the first MeshAnimationComponent for
+		* mesh types that have animations.
 		*/
 		COMPONENT(MeshInstanceContainer,
 			(Id_T,			meshId,,			"resource id of the mesh"),
-			(Id_T,			materialOverrides,,	"id of first material override")
-			// TODO: skeletal animation positions, or track keyframe/t values and blends
+			(Id_T,			materialOverrides,,	"id of first material override component"),
+			(Id_T,			animationId,,		"id of first mesh animation component")
 		)
 
 		/**

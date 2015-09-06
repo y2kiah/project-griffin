@@ -124,6 +124,8 @@ namespace griffin {
 
 		void DeferredRenderer_GL::renderViewport(ViewportParameters& viewportParams)
 		{
+			static float animTime = 0.0f; // TEMP
+
 			// Start g-buffer rendering
 			m_gbuffer.start();
 			{
@@ -166,12 +168,18 @@ namespace griffin {
 				glUniform1f(frustumFarLoc, viewportParams.farClipPlane);
 				glUniform1f(inverseFrustumDistanceLoc, viewportParams.inverseFrustumDistance);
 
+				// TEMP
+				animTime += 0.001667f;
+				if (animTime > 2.5f) {
+					animTime = 0.0f;
+				}
+
 				// draw the test mesh
 				if (g_tempMesh) {
 					auto& mesh = g_tempMesh->getResource<Mesh_GL>();
 					mesh.draw(modelMatLoc, modelViewMatLoc, mvpMatLoc, normalMatLoc,
 							  ambientLoc, diffuseLoc, specularLoc, shininessLoc,
-							  diffuseMapLoc,
+							  diffuseMapLoc, animTime,
 							  viewportParams.viewMat, viewportParams.viewProjMat); // temporarily passing in the modelMatLoc
 				}
 

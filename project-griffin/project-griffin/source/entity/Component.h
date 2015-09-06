@@ -44,7 +44,7 @@ namespace griffin {
 		*/
 		#define COMPONENT(name, ...) \
 			struct name { \
-				static const ComponentType componentType = ComponentType::name##_T; \
+				static const griffin::entity::ComponentType componentType = griffin::entity::ComponentType::name##_T; \
 				FOR_EACH_I(EACH_FIELD, , __VA_ARGS__) \
 				\
 				struct Reflection; \

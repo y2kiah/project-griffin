@@ -31,7 +31,10 @@ namespace griffin {
 			MeshInstanceContainer,		//<! System: SceneGraph, mesh instance, submitted to renderer if visible
 			CameraInstanceContainer,	//<! System: SceneGraph, camera instance, submitted to renderer if active
 			MovementComponent,			//<! System: SceneGraph, all entities that can move in the scene with auto interpolation
-			RenderCullInfo				//<! System: SceneGraph, all entitied that can be rendered to the screen
+			RenderCullInfo,				//<! System: SceneGraph, all entitied that can be rendered to the screen
+
+			MeshAnimationComponent,		//<! System: Render, mesh instance animation times and blends
+			MaterialOverrideComponent	//<! System: Render, mesh instance material overrides
 		)
 
 	}

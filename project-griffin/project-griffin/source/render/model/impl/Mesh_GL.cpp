@@ -45,18 +45,19 @@ namespace griffin {
 
 		void Mesh_GL::draw(int modelMatLoc, int modelViewMatLoc, int mvpMatLoc, int normalMatLoc,
 						   int ambientLoc, int diffuseLoc, int specularLoc, int shininessLoc,
-						   int diffuseMapLoc,
+						   int diffuseMapLoc, float animTime,
 						   const glm::mat4& viewMat, const glm::mat4& viewProjMat/*All TEMP*/) const
 		{
 			using namespace glm;
 			
 			mat4 modelToWorld;
+			mat4 nodeTransform;
 			
 			// temp
-			modelToWorld = glm::rotate(glm::translate(modelToWorld, glm::vec3(0.0f, -50.0f, 0.0f)),
-									   glm::radians(90.0f),
-									   glm::vec3(1.0f, 0, 0));
-			modelToWorld = glm::scale(modelToWorld, glm::vec3(Meters_to_Feet));
+			modelToWorld = rotate(translate(modelToWorld, vec3(0.0f, -50.0f, 0.0f)),
+								  radians(90.0f),
+								  vec3(1.0f, 0, 0));
+			modelToWorld = scale(modelToWorld, vec3(Meters_to_Feet));
 
 			struct BFSQueueItem {
 				uint32_t nodeIndex;
@@ -75,12 +76,60 @@ namespace griffin {
 				assert(nodeIndex >= 0 && nodeIndex < m_meshScene.numNodes && "node index out of range");
 
 				const auto& node = m_meshScene.sceneNodes[thisItem.nodeIndex];
-				
-				modelToWorld = thisItem.toWorld * node.transform;
+				nodeTransform = node.transform;
+
+				// Get this node's animation, if any. Alter the node transform matrix.
+				// TODO: make sure animation takes place only when instance is going to be visible after early frustum cull
+				if (m_animations.numAnimationTracks > 0) {
+					auto& anim = m_animations.animations[0];
+					for (uint32_t na = anim.nodeAnimationsIndexOffset; na < anim.nodeAnimationsIndexOffset + anim.numNodeAnimations; ++na) {
+						// TODO: move everything surrounding this out of the scene graph traversal, we should know the active animation
+						// ahead of time, no need to check on every node
+						auto& nodeAnim = m_animations.nodeAnimations[na];
+						if (nodeAnim.sceneNodeIndex == nodeIndex) {
+							if (nodeAnim.numPositionKeys > 0) {
+								int key1 = -1;
+								int key2 = -1;
+								// get nearest two key frames
+								for (uint32_t pk = nodeAnim.positionKeysIndexOffset; pk < nodeAnim.positionKeysIndexOffset + nodeAnim.numPositionKeys; ++pk) {
+									auto& posKey = m_animations.positionKeys[pk];
+									if (animTime < posKey.time) {
+										key1 = (pk == nodeAnim.positionKeysIndexOffset ? pk : pk - 1);
+										key2 = pk;
+										break;
+									}
+								}
+								// went past the last key
+								if (key1 == -1) {
+									key1 = nodeAnim.positionKeysIndexOffset + nodeAnim.numPositionKeys - 1;
+									key2 = key1;
+								}
+
+								// TODO: look at pre/post state, we may be able to exit early and accept the default modelToWorld when key1 == key2, depending on the state
+								// Also, the key1 or key2 at either end of the animation may have to be set to default node transform instead of clamping the animations frame
+								float time1 = m_animations.positionKeys[key1].time;
+								vec3 pos1(m_animations.positionKeys[key1].x, m_animations.positionKeys[key1].y, m_animations.positionKeys[key1].z);
+								float time2 = m_animations.positionKeys[key2].time;
+								vec3 pos2(m_animations.positionKeys[key2].x, m_animations.positionKeys[key2].y, m_animations.positionKeys[key2].z);
+								
+								float interp = 0.0f;
+								if (key1 != key2) {
+									interp = (animTime - time1) / (time2 - time1);
+								}
+
+								// TODO: allow interpolation curves other than linear... hermite, cubic, spring system, etc.
+								pos1 = mix(pos1, pos2, interp);
+								nodeTransform[3].xyz = pos1;
+							}
+						}
+					}
+				}
+
+				modelToWorld = thisItem.toWorld * nodeTransform;
 				mat4 modelView(viewMat * modelToWorld);
 				mat4 mvp(viewProjMat * modelToWorld);
-				mat4 normalMat(glm::transpose(glm::inverse(glm::mat3(modelView))));
-				
+				mat4 normalMat(transpose(inverse(mat3(modelView))));
+
 				glUniformMatrix4fv(modelMatLoc, 1, GL_FALSE, &modelToWorld[0][0]);
 				glUniformMatrix4fv(modelViewMatLoc, 1, GL_FALSE, &modelView[0][0]);
 				glUniformMatrix4fv(mvpMatLoc, 1, GL_FALSE, &mvp[0][0]);
