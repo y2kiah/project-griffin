@@ -91,7 +91,15 @@ namespace griffin {
 							quat nodeRotation;
 							vec3 nodeScale;
 
-							if (nodeAnim.numPositionKeys > 0) {
+							// This code requires at least one key from each of position, rotation and scaling so we avoid having to
+							// decompose the default node matrix. Luckily it appears that assimp always gives us at least one key for
+							// each channel, but that could also be from Blender specifically. This assertion tells us if there is a
+							// missing channel in the animation.
+							assert(nodeAnim.numPositionKeys > 0 && nodeAnim.numRotationKeys > 0 && nodeAnim.numScalingKeys > 0 &&
+								   "animation requires at least one key per channel");
+							
+							// Translation keyframes
+							{
 								int key1 = -1;
 								int key2 = -1;
 								// get nearest two key frames
@@ -124,8 +132,8 @@ namespace griffin {
 								// TODO: allow interpolation curves other than linear... hermite, cubic, spring system, etc.
 								nodeTranslation = mix(pos1, pos2, interp);
 							}
-
-							if (nodeAnim.numRotationKeys > 0) {
+							// Rotation keyframes
+							{
 								int key1 = -1;
 								int key2 = -1;
 
@@ -147,7 +155,7 @@ namespace griffin {
 
 								float time1 = m_animations.rotationKeys[key1].time;
 								quat rot1(m_animations.rotationKeys[key1].w, m_animations.rotationKeys[key1].x, m_animations.rotationKeys[key1].y, m_animations.rotationKeys[key1].z);
-								float time2 = m_animations.positionKeys[key2].time;
+								float time2 = m_animations.rotationKeys[key2].time;
 								quat rot2(m_animations.rotationKeys[key2].w, m_animations.rotationKeys[key2].x, m_animations.rotationKeys[key2].y, m_animations.rotationKeys[key2].z);
 
 								float interp = 0.0f;
@@ -157,8 +165,8 @@ namespace griffin {
 
 								nodeRotation = slerp(rot1, rot2, interp);
 							}
-
-							if (nodeAnim.numScalingKeys > 0) {
+							// Scaling keyframes
+							{
 								int key1 = -1;
 								int key2 = -1;
 
@@ -180,7 +188,7 @@ namespace griffin {
 
 								float time1 = m_animations.scalingKeys[key1].time;
 								vec3 scale1(m_animations.scalingKeys[key1].x, m_animations.scalingKeys[key1].y, m_animations.scalingKeys[key1].z);
-								float time2 = m_animations.positionKeys[key2].time;
+								float time2 = m_animations.scalingKeys[key2].time;
 								vec3 scale2(m_animations.scalingKeys[key2].x, m_animations.scalingKeys[key2].y, m_animations.scalingKeys[key2].z);
 
 								float interp = 0.0f;
