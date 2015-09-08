@@ -87,6 +87,10 @@ namespace griffin {
 						// ahead of time, do we need to check on every node?
 						auto& nodeAnim = m_animations.nodeAnimations[na];
 						if (nodeAnim.sceneNodeIndex == nodeIndex) {
+							vec3 nodeTranslation;
+							quat nodeRotation;
+							vec3 nodeScale;
+
 							if (nodeAnim.numPositionKeys > 0) {
 								int key1 = -1;
 								int key2 = -1;
@@ -118,9 +122,77 @@ namespace griffin {
 								}
 
 								// TODO: allow interpolation curves other than linear... hermite, cubic, spring system, etc.
-								pos1 = mix(pos1, pos2, interp);
-								nodeTransform[3].xyz = pos1;
+								nodeTranslation = mix(pos1, pos2, interp);
 							}
+
+							if (nodeAnim.numRotationKeys > 0) {
+								int key1 = -1;
+								int key2 = -1;
+
+								// get nearest two key frames
+								for (uint32_t k = nodeAnim.rotationKeysIndexOffset; k < nodeAnim.rotationKeysIndexOffset + nodeAnim.numRotationKeys; ++k) {
+									auto& rotKey = m_animations.rotationKeys[k];
+									if (animTime < rotKey.time) {
+										key1 = (k == nodeAnim.rotationKeysIndexOffset ? k : k - 1);
+										key2 = k;
+										break;
+									}
+								}
+
+								// went past the last key
+								if (key1 == -1) {
+									key1 = nodeAnim.rotationKeysIndexOffset + nodeAnim.numRotationKeys - 1;
+									key2 = key1;
+								}
+
+								float time1 = m_animations.rotationKeys[key1].time;
+								quat rot1(m_animations.rotationKeys[key1].w, m_animations.rotationKeys[key1].x, m_animations.rotationKeys[key1].y, m_animations.rotationKeys[key1].z);
+								float time2 = m_animations.positionKeys[key2].time;
+								quat rot2(m_animations.rotationKeys[key2].w, m_animations.rotationKeys[key2].x, m_animations.rotationKeys[key2].y, m_animations.rotationKeys[key2].z);
+
+								float interp = 0.0f;
+								if (key1 != key2) {
+									interp = (animTime - time1) / (time2 - time1);
+								}
+
+								nodeRotation = slerp(rot1, rot2, interp);
+							}
+
+							if (nodeAnim.numScalingKeys > 0) {
+								int key1 = -1;
+								int key2 = -1;
+
+								// get nearest two key frames
+								for (uint32_t k = nodeAnim.scalingKeysIndexOffset; k < nodeAnim.scalingKeysIndexOffset + nodeAnim.numScalingKeys; ++k) {
+									auto& scaleKey = m_animations.scalingKeys[k];
+									if (animTime < scaleKey.time) {
+										key1 = (k == nodeAnim.scalingKeysIndexOffset ? k : k - 1);
+										key2 = k;
+										break;
+									}
+								}
+
+								// went past the last key
+								if (key1 == -1) {
+									key1 = nodeAnim.scalingKeysIndexOffset + nodeAnim.numScalingKeys - 1;
+									key2 = key1;
+								}
+
+								float time1 = m_animations.scalingKeys[key1].time;
+								vec3 scale1(m_animations.scalingKeys[key1].x, m_animations.scalingKeys[key1].y, m_animations.scalingKeys[key1].z);
+								float time2 = m_animations.positionKeys[key2].time;
+								vec3 scale2(m_animations.scalingKeys[key2].x, m_animations.scalingKeys[key2].y, m_animations.scalingKeys[key2].z);
+
+								float interp = 0.0f;
+								if (key1 != key2) {
+									interp = (animTime - time1) / (time2 - time1);
+								}
+
+								nodeScale = mix(scale1, scale2, interp);
+							}
+							nodeTransform = mat4_cast(nodeRotation);
+							nodeTransform[3].xyz = nodeTranslation;
+							nodeTransform = scale(nodeTransform, nodeScale);
 						}
 					}
 				}

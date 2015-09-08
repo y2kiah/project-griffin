@@ -58,6 +58,12 @@ void updateMeshInstanceAnimations(entity::EntityManager& entityMgr)
 }
 
 
+struct NodeTransformResult {
+	glm::vec3 translation;
+	glm::quat rotation;
+	glm::vec3 scaling;
+};
+
 void getNodeTransformForTrack(const MeshAnimations& animations, AnimationTrack& track, NodeAnimation& nodeAnim, float animTime)
 {
 	using namespace glm;
@@ -65,15 +71,17 @@ void getNodeTransformForTrack(const MeshAnimations& animations, AnimationTrack& 
 	if (nodeAnim.numPositionKeys > 0) {
 		int key1 = -1;
 		int key2 = -1;
+		
 		// get nearest two key frames
-		for (uint32_t pk = nodeAnim.positionKeysIndexOffset; pk < nodeAnim.positionKeysIndexOffset + nodeAnim.numPositionKeys; ++pk) {
-			auto& posKey = animations.positionKeys[pk];
+		for (uint32_t k = nodeAnim.positionKeysIndexOffset; k < nodeAnim.positionKeysIndexOffset + nodeAnim.numPositionKeys; ++k) {
+			auto& posKey = animations.positionKeys[k];
 			if (animTime < posKey.time) {
-				key1 = (pk == nodeAnim.positionKeysIndexOffset ? pk : pk - 1);
-				key2 = pk;
+				key1 = (k == nodeAnim.positionKeysIndexOffset ? k : k - 1);
+				key2 = k;
 				break;
 			}
 		}
+		
 		// went past the last key
 		if (key1 == -1) {
 			key1 = nodeAnim.positionKeysIndexOffset + nodeAnim.numPositionKeys - 1;
@@ -94,7 +102,83 @@ void getNodeTransformForTrack(const MeshAnimations& animations, AnimationTrack& 
 
 		// TODO: allow interpolation curves other than linear... hermite, cubic, spring system, etc.
 		pos1 = mix(pos1, pos2, interp);
-//		nodeTransform[3].xyz = pos1;
-// TODO: add to return
+		//nodeTransform[3].xyz = pos1;
+		// TODO: add to return
+	}
+
+	if (nodeAnim.numRotationKeys > 0) {
+		int key1 = -1;
+		int key2 = -1;
+
+		// get nearest two key frames
+		for (uint32_t k = nodeAnim.rotationKeysIndexOffset; k < nodeAnim.rotationKeysIndexOffset + nodeAnim.numRotationKeys; ++k) {
+			auto& rotKey = animations.rotationKeys[k];
+			if (animTime < rotKey.time) {
+				key1 = (k == nodeAnim.rotationKeysIndexOffset ? k : k - 1);
+				key2 = k;
+				break;
+			}
+		}
+
+		// went past the last key
+		if (key1 == -1) {
+			key1 = nodeAnim.rotationKeysIndexOffset + nodeAnim.numRotationKeys - 1;
+			key2 = key1;
+		}
+
+		// TODO: look at pre/post state, we may be able to exit early and accept the default modelToWorld when key1 == key2, depending on the state
+		// Also, the key1 or key2 at either end of the animation may have to be set to default node transform instead of clamping the animations frame
+		float time1 = animations.rotationKeys[key1].time;
+		quat rot1(animations.rotationKeys[key1].w, animations.rotationKeys[key1].x, animations.rotationKeys[key1].y, animations.rotationKeys[key1].z);
+		float time2 = animations.positionKeys[key2].time;
+		quat rot2(animations.rotationKeys[key2].w, animations.rotationKeys[key2].x, animations.rotationKeys[key2].y, animations.rotationKeys[key2].z);
+
+		float interp = 0.0f;
+		if (key1 != key2) {
+			interp = (animTime - time1) / (time2 - time1);
+		}
+
+		// TODO: allow interpolation curves other than linear... hermite, cubic, spring system, etc.
+		rot1 = slerp(rot1, rot2, interp);
+		//nodeTransform[3].xyz = pos1;
+		// TODO: add to return
+	}
+
+	if (nodeAnim.numScalingKeys > 0) {
+		int key1 = -1;
+		int key2 = -1;
+
+		// get nearest two key frames
+		for (uint32_t k = nodeAnim.scalingKeysIndexOffset; k < nodeAnim.scalingKeysIndexOffset + nodeAnim.numScalingKeys; ++k) {
+			auto& scaleKey = animations.scalingKeys[k];
+			if (animTime < scaleKey.time) {
+				key1 = (k == nodeAnim.scalingKeysIndexOffset ? k : k - 1);
+				key2 = k;
+				break;
+			}
+		}
+
+		// went past the last key
+		if (key1 == -1) {
+			key1 = nodeAnim.scalingKeysIndexOffset + nodeAnim.numScalingKeys - 1;
+			key2 = key1;
+		}
+
+		// TODO: look at pre/post state, we may be able to exit early and accept the default modelToWorld when key1 == key2, depending on the state
+		// Also, the key1 or key2 at either end of the animation may have to be set to default node transform instead of clamping the animations frame
+		float time1 = animations.scalingKeys[key1].time;
+		vec3 scale1(animations.scalingKeys[key1].x, animations.scalingKeys[key1].y, animations.scalingKeys[key1].z);
+		float time2 = animations.positionKeys[key2].time;
+		vec3 scale2(animations.scalingKeys[key2].x, animations.scalingKeys[key2].y, animations.scalingKeys[key2].z);
+
+		float interp = 0.0f;
+		if (key1 != key2) {
+			interp = (animTime - time1) / (time2 - time1);
+		}
+
+		// TODO: allow interpolation curves other than linear... hermite, cubic, spring system, etc.
+		scale1 = mix(scale1, scale2, interp);
+		//nodeTransform[3].xyz = pos1;
+		// TODO: add to return
 	}
 }

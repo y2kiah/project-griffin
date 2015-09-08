@@ -169,7 +169,7 @@ namespace griffin {
 				glUniform1f(inverseFrustumDistanceLoc, viewportParams.inverseFrustumDistance);
 
 				// TEMP
-				animTime += 0.001667f;
+				animTime += 0.01667f;
 				if (animTime > 2.5f) {
 					animTime = 0.0f;
 				}

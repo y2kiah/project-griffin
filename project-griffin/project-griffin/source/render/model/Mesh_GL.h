@@ -103,7 +103,7 @@ namespace griffin {
 
 		struct RotationKeyFrame {
 			float		time;
-			float		x, y, z, w;
+			float		w, x, y, z;
 			uint8_t		_padding_end[4];
 		};
 
