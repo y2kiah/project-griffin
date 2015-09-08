@@ -10,7 +10,6 @@
 #include <memory>
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include <entity/ComponentStore.h>
 #include <entity/components.h>
 #include <utility/container/vector_queue.h>
 
@@ -59,21 +58,11 @@ namespace griffin {
 		)
 
 		/**
-		* The MeshInstanceContainer is a component that goes along with the SceneNode to make an
-		* entity represent a unique instance of a mesh in the scene. The materialOverrides id is
-		* normally NullId_T, and the mesh materials are taken from the default "shared" materials
-		* list stored within the Mesh_GL object itself. When a specific instance wants to override
-		* any of the default materials, the override is added to the Scene's overrides map as an
-		* embedded linked list, and the id of the first override is stored in this component. The
-		* renderer must look here for any material overrides first for each submesh, and fall back
-		* to the default values for any submesh where an override is not present.
-		* The animationId works the same way, it points to the first MeshAnimationComponent for
-		* mesh types that have animations.
+		* ModelInstanceContainer is a component that goes along with the SceneNode to make an
+		* entity represent a unique instance of a model in the scene.
 		*/
-		COMPONENT(MeshInstanceContainer,
-			(Id_T,			meshId,,			"resource id of the mesh"),
-			(Id_T,			materialOverrides,,	"id of first material override component"),
-			(Id_T,			animationId,,		"id of first mesh animation component")
+		COMPONENT(ModelInstanceContainer,
+			(Id_T,			modelId,,			"id of the referenced model")
 		)
 
 		/**
@@ -82,7 +71,7 @@ namespace griffin {
 		* calling createCamera.
 		*/
 		COMPONENT(CameraInstanceContainer,
-			(uint32_t,		cameraId,,			"camera id of the referenced camera"),
+			(uint32_t,		cameraId,,			"id of the referenced camera"),
 			(char,			name,[32],			"name of the camera")
 		)
 
@@ -132,7 +121,8 @@ namespace griffin {
 			~SceneGraph();
 
 			/**
-			*
+			* Traverse the scene graph starting at root node and calculate new world positions in
+			* breadth-first order. Progress down a branch only when a dirty flag is set.
 			*/
 			void updateNodeTransforms();
 

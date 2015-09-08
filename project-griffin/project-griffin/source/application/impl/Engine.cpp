@@ -8,6 +8,7 @@
 #include <script/ScriptManager_LuaJIT.h>
 #include <render/Render.h>
 #include <render/ShaderManager_GL.h>
+#include <render/ModelManager_GL.h>
 #include <scene/Scene.h>
 #include <tools/GriffinTools.h>
 #include <game/Game.h>
@@ -187,8 +188,11 @@ namespace griffin {
 			auto shaderManagerPtr = make_shared<ShaderManager_GL>();
 			shaderManagerPtr->loadUbershaderCode("shaders/ads.glsl");
 
+			//auto modelManagerPtr = make_shared<ModelManager_GL>();
+
 			engine.renderSystem = renderSystemPtr;
 			engine.shaderManager = shaderManagerPtr;
+			//engine.modelManager = modelManagerPtr;
 		}
 
 		/**

@@ -26,8 +26,10 @@ namespace griffin {
 	namespace render {
 		class RenderSystem;
 		class ShaderManager_GL;
+		//class ModelManager_GL;
 		typedef std::shared_ptr<RenderSystem>		RenderSystemPtr;
 		typedef std::shared_ptr<ShaderManager_GL>	ShaderManagerPtr;
+		//typedef std::shared_ptr<ModelManager_GL>	ModelManagerPtr;
 	}
 	namespace scene {
 		class SceneManager;

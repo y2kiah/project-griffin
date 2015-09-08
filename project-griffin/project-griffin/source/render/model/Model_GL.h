@@ -13,7 +13,14 @@ namespace griffin {
 
 	namespace render {
 
-		// the model is an in-engine wrapper for a mesh
+		/**
+		* Model_GL is the engine's wrapper for a mesh. The mesh contains all relevant data to be
+		* loaded from disk, and is constructed in a way that can be loaded and persisted quickly.
+		* This wrapper holds the mesh and shared_ptr's to required child resources like textures
+		* materials, and shader programs. Model_GL is the resource constructed by the resource
+		* loading system. The resource size refers to the "on disk" memory which is just the mesh
+		* and doesn't include space for the shared_ptr's and other flags.
+		*/
 		class Model_GL {
 		public:
 			typedef std::vector<ResourceHandle<Texture2D_GL>>		TextureList;
@@ -25,7 +32,8 @@ namespace griffin {
 
 			Mesh_GL		m_mesh;
 			TextureList	m_textures;
-			ShaderList	m_shaders;
+			ShaderList	m_shaderPrograms;
+			bool		m_childResourcesLoaded = false;	//<! true when all child resource asyncronous loading completed, model can be rendered
 
 		};
 

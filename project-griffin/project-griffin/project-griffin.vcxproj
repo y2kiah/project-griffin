@@ -44,11 +44,13 @@
     <ClCompile Include="source\render\geometry\impl\Geometry.cpp" />
     <ClCompile Include="source\render\geometry\impl\Intersection.cpp" />
     <ClCompile Include="source\render\impl\IndexBuffer_GL.cpp" />
+    <ClCompile Include="source\render\impl\ModelManager_GL.cpp" />
     <ClCompile Include="source\render\impl\Render.cpp" />
     <ClCompile Include="source\render\impl\RenderTarget_GL.cpp" />
     <ClCompile Include="source\render\impl\ShaderManager_GL.cpp" />
     <ClCompile Include="source\render\impl\ShaderProgram_GL.cpp" />
     <ClCompile Include="source\render\impl\VertexBuffer_GL.cpp" />
+    <ClCompile Include="source\render\model\impl\Animation.cpp" />
     <ClCompile Include="source\render\model\impl\Mesh_GL.cpp" />
     <ClCompile Include="source\render\model\impl\ModelImport_Assimp.cpp" />
     <ClCompile Include="source\render\texture\impl\Texture2D_GL.cpp" />
@@ -98,6 +100,7 @@
     <ClInclude Include="source\render\geometry\Intersection.h" />
     <ClInclude Include="source\render\IndexBuffer_GL.h" />
     <ClInclude Include="source\render\Material_GL.h" />
+    <ClInclude Include="source\render\ModelManager_GL.h" />
     <ClInclude Include="source\render\model\Mesh_GL.h" />
     <ClInclude Include="source\render\model\ModelImport_Assimp.h" />
     <ClInclude Include="source\render\model\Model_GL.h" />

@@ -280,6 +280,12 @@
     <ClCompile Include="source\render\geometry\impl\Intersection.cpp">
       <Filter>render\geometry\impl</Filter>
     </ClCompile>
+    <ClCompile Include="source\render\model\impl\Animation.cpp">
+      <Filter>render\model\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\impl\ModelManager_GL.cpp">
+      <Filter>render\system\impl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\application\main.h">
@@ -800,6 +806,9 @@
       <Filter>render\system</Filter>
     </ClInclude>
     <ClInclude Include="source\render\RenderComponents.h">
+      <Filter>render\system</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\ModelManager_GL.h">
       <Filter>render\system</Filter>
     </ClInclude>
   </ItemGroup>

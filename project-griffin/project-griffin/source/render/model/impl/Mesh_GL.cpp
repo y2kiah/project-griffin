@@ -83,8 +83,8 @@ namespace griffin {
 				if (m_animations.numAnimationTracks > 0) {
 					auto& anim = m_animations.animations[0];
 					for (uint32_t na = anim.nodeAnimationsIndexOffset; na < anim.nodeAnimationsIndexOffset + anim.numNodeAnimations; ++na) {
-						// TODO: move everything surrounding this out of the scene graph traversal, we should know the active animation
-						// ahead of time, no need to check on every node
+						// TODO: move some of this out of the scene graph traversal? We know the active animations
+						// ahead of time, do we need to check on every node?
 						auto& nodeAnim = m_animations.nodeAnimations[na];
 						if (nodeAnim.sceneNodeIndex == nodeIndex) {
 							if (nodeAnim.numPositionKeys > 0) {

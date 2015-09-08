@@ -145,10 +145,10 @@ extern "C" {
 				sceneId.value = scene;
 				auto& s = g_sceneMgrPtr->getScene(sceneId);
 
-				scene::MeshInstanceContainer mi{};
+				scene::ModelInstanceContainer mi{};
 				// TODO: request the meshId from resource system
 
-				s.entityManager->addComponentToEntity<scene::MeshInstanceContainer>(std::move(mi), entityId);
+				s.entityManager->addComponentToEntity<scene::ModelInstanceContainer>(std::move(mi), entityId);
 
 				return entityId.value;
 			}

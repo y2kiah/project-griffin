@@ -214,7 +214,10 @@ namespace griffin {
 
 			// Functions
 
+			// Accessors
 			size_t getSize() const { return m_sizeBytes; }
+			const MeshSceneGraph& getMeshSceneGraph() const { return m_meshScene; }
+			const MeshAnimations& getAnimations() const { return m_animations; }
 
 			/**
 			* Gets the animation track index by the animation name. Do this once after load and

@@ -190,7 +190,7 @@ namespace griffin {
 		*/
 		class RenderSystem {
 		public:
-			typedef std::vector<Viewport>	ViewportList;
+			//typedef std::vector<Viewport>	ViewportList;
 
 			explicit RenderSystem() {}
 

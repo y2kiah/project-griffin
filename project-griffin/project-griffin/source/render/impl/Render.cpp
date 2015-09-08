@@ -205,12 +205,12 @@ namespace griffin {
 				m_gbuffer.bind(RenderTarget_GL::Depth_Stencil, GL_TEXTURE3);
 
 				GLint normalNoiseLoc = glGetUniformLocation(ssaoId, "normalNoise"); // <-- uniform locations could be stored in shaderprogram structure
-				GLint colorMapLoc = glGetUniformLocation(ssaoId, "colorMap");
-				GLint normalMapLoc = glGetUniformLocation(ssaoId, "normalMap");
-				GLint depthMapLoc = glGetUniformLocation(ssaoId, "depthMap");
+				GLint colorMapLoc    = glGetUniformLocation(ssaoId, "colorMap");
+				GLint normalMapLoc   = glGetUniformLocation(ssaoId, "normalMap");
+				GLint depthMapLoc    = glGetUniformLocation(ssaoId, "depthMap");
 				
-				GLint cameraNearLoc = glGetUniformLocation(ssaoId, "cameraNear");
-				GLint cameraFarLoc = glGetUniformLocation(ssaoId, "cameraFar");
+				GLint cameraNearLoc  = glGetUniformLocation(ssaoId, "cameraNear");
+				GLint cameraFarLoc   = glGetUniformLocation(ssaoId, "cameraFar");
 				
 				glUniform1i(normalNoiseLoc, 0);
 				glUniform1i(colorMapLoc, 1);

@@ -24,6 +24,7 @@ namespace griffin {
 		resource::ResourceLoaderPtr		resourceLoader	= nullptr;
 		render::RenderSystemPtr			renderSystem	= nullptr;
 		render::ShaderManagerPtr		shaderManager	= nullptr;
+		//render::ModelManagerPtr			modelManager	= nullptr; // not sure I want this
 		scene::SceneManagerPtr			sceneManager	= nullptr;
 
 		Id_T							engineLuaState	= NullId_T;
