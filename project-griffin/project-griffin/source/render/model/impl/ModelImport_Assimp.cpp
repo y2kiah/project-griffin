@@ -22,6 +22,7 @@
 #include <queue>
 #include <limits>
 
+#include <render/RenderComponents.h>
 #include <render/Render.h>
 #include <render/RenderResources.h>
 #include <render/ShaderManager_GL.h>
@@ -198,7 +199,7 @@ namespace griffin {
 				drawSet.numColorChannels = assimpMesh.GetNumColorChannels();
 				drawSet.materialIndex = assimpMesh.mMaterialIndex;
 
-				assert(drawSet.numTexCoordChannels <= GRIFFIN_MAX_MATERIAL_TEXTURES && "too many uv channels in sub mesh");
+				assert(drawSet.numTexCoordChannels <= MAX_MATERIAL_TEXTURES && "too many uv channels in sub mesh");
 				assert(drawSet.numColorChannels <= 8 && "too many vertex color channels in sub mesh");
 
 				if (assimpMesh.mPrimitiveTypes == aiPrimitiveType_TRIANGLE) {
@@ -537,8 +538,8 @@ namespace griffin {
 					// for each texture of a type
 					for (uint32_t i = 0; i < assimpMat->GetTextureCount((aiTextureType)tt); ++i) {
 						// check for maximum samplers per material
-						if (samplerIndex == GRIFFIN_MAX_MATERIAL_TEXTURES) {
-							SDL_Log("Warning: more than %d textures in material, unsupported %u", GRIFFIN_MAX_MATERIAL_TEXTURES, tt);
+						if (samplerIndex == MAX_MATERIAL_TEXTURES) {
+							SDL_Log("Warning: more than %d textures in material, unsupported %u", MAX_MATERIAL_TEXTURES, tt);
 							break;
 						}
 						// only support texture stack for diffuse channel
@@ -580,8 +581,8 @@ namespace griffin {
 						aiString path;
 						assimpMat->GetTexture((aiTextureType)tt, i, &path); // get the name, ignore other attributes for now
 
-						if (path.length <= GRIFFIN_MAX_MATERIAL_TEXTURE_NAME_SIZE) {
-							strcpy_s(mat.textures[samplerIndex].name, GRIFFIN_MAX_MATERIAL_TEXTURE_NAME_SIZE, path.C_Str());
+						if (path.length <= MAX_MATERIAL_TEXTURE_NAME_SIZE) {
+							strcpy_s(mat.textures[samplerIndex].name, MAX_MATERIAL_TEXTURE_NAME_SIZE, path.C_Str());
 						}
 						else {
 							SDL_Log("Warning: texture name length %d too long, \"%s\"", static_cast<int>(path.length), path.C_Str());
@@ -773,7 +774,7 @@ namespace griffin {
 				}
 
 				// copy metadata
-				strncpy_s(thisMetaData.name, GRIFFIN_MAX_MESHSCENENODE_NAME_SIZE - 1,
+				strncpy_s(thisMetaData.name, MAX_MESHSCENENODE_NAME_SIZE - 1,
 						  assimpNode.mName.C_Str(), _TRUNCATE);
 
 				// advance the counters for the next node
@@ -791,7 +792,9 @@ namespace griffin {
 
 			anims.numAnimationTracks = scene.mNumAnimations;
 			totalSize += anims.numAnimationTracks * sizeof(AnimationTrack);
-			
+
+			assert(anims.numAnimationTracks <= MAX_MESH_ANIMATION_TRACKS && "too many animations in mesh");
+
 			uint32_t numNodeAnims = 0;
 			uint32_t numBoneAnims = 0;
 			uint32_t numPositionKeys = 0;
@@ -845,7 +848,7 @@ namespace griffin {
 				auto& anim = anims.animations[a];
 
 				// copy name into names buffer
-				strncpy_s(anims.trackNames[a].name, GRIFFIN_MAX_ANIMATION_NAME_SIZE - 1,
+				strncpy_s(anims.trackNames[a].name, MAX_ANIMATION_NAME_SIZE - 1,
 						  assimpAnim.mName.C_Str(), _TRUNCATE);
 
 				anim.nodeAnimationsIndexOffset = nodeAnimationsIndex;
@@ -863,7 +866,7 @@ namespace griffin {
 					for (uint32_t ni = 0; ni < meshScene.numNodes; ++ni) {
 						if (strncmp(meshScene.sceneNodeMetaData[ni].name,
 							na.mNodeName.C_Str(),
-							GRIFFIN_MAX_MESHSCENENODE_NAME_SIZE) == 0)
+							MAX_MESHSCENENODE_NAME_SIZE) == 0)
 						{
 							nodeIndex = ni;
 							break;

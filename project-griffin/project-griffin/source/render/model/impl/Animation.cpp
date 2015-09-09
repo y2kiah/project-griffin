@@ -16,18 +16,19 @@ using namespace griffin::render;
 static Model_GL g_tempModel;
 
 
-struct NodeTransformResult {
-	glm::vec3 translation;
-	glm::quat rotation;
-	glm::vec3 scaling;
+struct NodeAnimationTransform {
+	float		weight;
+	glm::vec3	translation;
+	glm::quat	rotation;
+	glm::vec3	scaling;
 };
 
 
-NodeTransformResult getNodeTransformForTrack(const MeshAnimations& animations, AnimationTrack& track, NodeAnimation& nodeAnim, float animTime)
+NodeAnimationTransform getNodeTransformForTrack(const MeshAnimations& animations, AnimationTrack& track, NodeAnimation& nodeAnim, float animTime)
 {
 	using namespace glm;
 
-	NodeTransformResult result{};
+	NodeAnimationTransform result{};
 
 	// This code requires at least one key from each of position, rotation and scaling so we avoid
 	// having to decompose the default node matrix. Luckily it appears that assimp always gives us
@@ -160,37 +161,77 @@ void updateMeshInstanceAnimations(entity::EntityManager& entityMgr)
 		auto& meshInst = entityMgr.getComponent<scene::ModelInstanceContainer>(animInst.entityId);
 		auto& mesh = g_tempModel.m_mesh; // TODO: don't use the global model, get model from resource system??
 
-		// we're handling a range of up to six animations, there may be more or less
-		uint32_t firstAnim = animInst.component.baseAnimationIndex;
-		uint32_t lastAnim = min(mesh.getAnimations().numAnimationTracks, firstAnim + 6);
-
 		// for all node animation components in this mesh instance
 		for (auto cmpId : entityMgr.getAllEntityComponents(animInst.entityId)) {
 			if (cmpId.typeId == MeshNodeAnimationComponent::componentType) {
 				auto& nodeAnimCmp = entityMgr.getComponent<MeshNodeAnimationComponent>(cmpId);
 
-				// for each animation track, and each node animation that targets this node
-				for (uint32_t a = firstAnim; a < lastAnim; ++a) {
-					float animTime = animInst.component.nextAnimationTime[a];
-					// if blend > 0
+				NodeAnimationTransform trackTransforms[MAX_MESH_ANIMATION_TRACKS] = {};
+				float totalWeight = 0.0f;
+				int numAnimationsBlended = 0;
+
+				// for each animation track
+				for (uint32_t a = 0; a < mesh.getAnimations().numAnimationTracks; ++a) {
+					float animTime = animInst.component.animation[a].nextAnimationTime;
+					float animWeight = animInst.component.animation[a].nextAnimationWeight;
+					
+					if (animWeight <= 0.0f) {
+						continue; // animation is disabled
+					}
 
 					auto& track = mesh.getAnimations().animations[a];
+					
+					// find the node animation that targets this node
 					for (uint32_t na = track.nodeAnimationsIndexOffset; na < track.nodeAnimationsIndexOffset + track.numNodeAnimations; ++na) {
 						auto& nodeAnim = mesh.getAnimations().nodeAnimations[na];
+
 						if (nodeAnim.sceneNodeIndex == nodeAnimCmp.nodeIndex) {
-							auto animTransform = getNodeTransformForTrack(mesh.getAnimations(), track, nodeAnim, animTime);
+							trackTransforms[numAnimationsBlended] = getNodeTransformForTrack(mesh.getAnimations(), track, nodeAnim, animTime);
+							trackTransforms[numAnimationsBlended].weight = animWeight;
+							++numAnimationsBlended;
+							totalWeight += animWeight;
+							break;
 						}
 					}
 				}
 
-				// blend this nodes's contributions from all animation tracks
-				//  if total weight < 1, contribute lerp the remainder from the default transform
-				//  if total weight > 1, normalize the individual weights by total weight and then blend
+				nodeAnimCmp.prevActive = nodeAnimCmp.nextActive;
+				if (nodeAnimCmp.prevActive == 1) {
+					nodeAnimCmp.prevTranslationLocal = nodeAnimCmp.nextTranslationLocal;
+					nodeAnimCmp.prevRotationLocal = nodeAnimCmp.nextRotationLocal;
+					nodeAnimCmp.prevScalingLocal = nodeAnimCmp.nextScalingLocal;
+				}
 
-				// after blending collecting all animation transforms
-				nodeAnimCmp.prevTranslationLocal = nodeAnimCmp.nextTranslationLocal;
-				//nodeAnimCmp.nextTranslationLocal = // new blended node transform, or default
-				
+				if (numAnimationsBlended == 0) {
+					nodeAnimCmp.nextActive = 0;
+				}
+				// blend this nodes's contributions from all animation tracks
+				else {
+					nodeAnimCmp.nextActive = 1;
+					
+					// TODO: how to blend the rotation? a bunch of slerps where we progressively add to the weights, and normalize at every step?
+
+					//  if total weight < 1, lerp the remainder from the default transform
+					if (1.0f - totalWeight > epsilon<float>()) {
+						float defaultWeight = 1.0f - totalWeight;
+						nodeAnimCmp.nextTranslationLocal = nodeAnimCmp.defaultTranslation * defaultWeight;
+						nodeAnimCmp.nextRotationLocal = nodeAnimCmp.defaultRotation * defaultWeight;
+						nodeAnimCmp.nextScalingLocal = nodeAnimCmp.defaultScaling * defaultWeight;
+					}
+					//  if total weight > 1, normalize the individual weights by total weight and then blend
+					else if (totalWeight - 1.0f > epsilon<float>()) {
+						float invWeight = 1.0f / totalWeight;
+						for (int t = 0; t < numAnimationsBlended; ++t) {
+							trackTransforms[t].weight *= invWeight;
+						}
+					}
+
+					for (int t = 0; t < numAnimationsBlended; ++t) {
+						trackTransforms[t].translation += trackTransforms[t].translation * trackTransforms[t].weight;
+						trackTransforms[t].rotation * trackTransforms[t].weight;
+						trackTransforms[t].scaling * trackTransforms[t].weight;
+					}
+				}
 				
 				// TODO: this should probably go into the render function???
 				/*

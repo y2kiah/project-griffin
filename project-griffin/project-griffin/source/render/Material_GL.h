@@ -8,8 +8,8 @@
 namespace griffin {
 	namespace render {
 
-		#define GRIFFIN_MAX_MATERIAL_TEXTURES			12
-		#define GRIFFIN_MAX_MATERIAL_TEXTURE_NAME_SIZE	64
+		#define MAX_MATERIAL_TEXTURES			12
+		#define MAX_MATERIAL_TEXTURE_NAME_SIZE	64
 
 
 		enum MaterialTextureType : uint16_t {
@@ -52,7 +52,7 @@ namespace griffin {
 			MaterialTextureMappingMode	textureMappingModeU = MaterialTextureMappingMode_None;
 			MaterialTextureMappingMode	textureMappingModeV = MaterialTextureMappingMode_None;
 			uint8_t						_padding_0[3] = {};
-			char						name[GRIFFIN_MAX_MATERIAL_TEXTURE_NAME_SIZE] = {};
+			char						name[MAX_MATERIAL_TEXTURE_NAME_SIZE] = {};
 		};
 
 
@@ -73,7 +73,7 @@ namespace griffin {
 			uint8_t		numTextures = 0;
 			uint8_t		_padding_0[7] = {};
 			// 88
-			MaterialTexture textures[GRIFFIN_MAX_MATERIAL_TEXTURES]; // 80 * 12 = 960
+			MaterialTexture textures[MAX_MATERIAL_TEXTURES]; // 80 * 12 = 960
 			// 1048
 		};
 

@@ -384,7 +384,7 @@ namespace griffin {
 		{
 			for (uint32_t a = 0; a < m_animations.numAnimationTracks; ++a) {
 				if (strncmp(m_animations.trackNames[a].name,
-							name, GRIFFIN_MAX_ANIMATION_NAME_SIZE) == 0)
+							name, MAX_ANIMATION_NAME_SIZE) == 0)
 				{
 					return a;
 				}

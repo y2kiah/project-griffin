@@ -14,8 +14,8 @@
 namespace griffin {
 	namespace render {
 		
-		#define GRIFFIN_MAX_MESHSCENENODE_NAME_SIZE		64
-		#define GRIFFIN_MAX_ANIMATION_NAME_SIZE			64
+		#define MAX_MESHSCENENODE_NAME_SIZE		64
+		#define MAX_ANIMATION_NAME_SIZE			64
 
 
 		// Type Declarations
@@ -64,7 +64,7 @@ namespace griffin {
 
 			uint8_t		numColorChannels = 0;		//<! how many 4-byte colors are there? Up to 8 supported.
 			uint8_t		numTexCoordChannels = 0;	//<! how many U, UV or UVW coordinate sets are there? Up to 8 supported.
-			uint8_t		numTexCoordComponents[GRIFFIN_MAX_MATERIAL_TEXTURES];	//<! indexed by channel, how many components in the channel?
+			uint8_t		numTexCoordComponents[MAX_MATERIAL_TEXTURES];	//<! indexed by channel, how many components in the channel?
 		};
 
 		struct MeshSceneNode {
@@ -78,7 +78,7 @@ namespace griffin {
 		};
 
 		struct MeshSceneNodeMetaData {
-			char		name[GRIFFIN_MAX_MESHSCENENODE_NAME_SIZE];	//<! name of the scene graph node
+			char		name[MAX_MESHSCENENODE_NAME_SIZE];	//<! name of the scene graph node
 		};
 
 		struct MeshSceneGraph {
@@ -141,7 +141,7 @@ namespace griffin {
 		};
 
 		struct AnimationTrackMetaData {
-			char		name[GRIFFIN_MAX_ANIMATION_NAME_SIZE];	//<! name of the animation track
+			char		name[MAX_ANIMATION_NAME_SIZE];	//<! name of the animation track
 		};
 
 		struct MeshAnimations {

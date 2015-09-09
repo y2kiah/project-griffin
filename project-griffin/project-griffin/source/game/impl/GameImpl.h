@@ -7,7 +7,7 @@
 #include <game/devCamera/DevCameraSystem.h>
 #include <utility/container/handle_map.h>
 
-#define GRIFFIN_MAX_GAME_COMPONENTS		32
+#define MAX_GAME_COMPONENTS		32
 
 namespace griffin {
 
@@ -26,7 +26,7 @@ namespace griffin {
 		game::PlayerControlSystem	player;
 		game::DevCameraSystem		devCamera;
 
-		uint16_t					gameComponentStoreIds[GRIFFIN_MAX_GAME_COMPONENTS] = {};
+		uint16_t					gameComponentStoreIds[MAX_GAME_COMPONENTS] = {};
 	};
 
 
