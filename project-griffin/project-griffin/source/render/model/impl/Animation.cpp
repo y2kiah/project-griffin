@@ -166,7 +166,7 @@ void updateMeshInstanceAnimations(entity::EntityManager& entityMgr)
 			if (cmpId.typeId == MeshNodeAnimationComponent::componentType) {
 				auto& nodeAnimCmp = entityMgr.getComponent<MeshNodeAnimationComponent>(cmpId);
 
-				NodeAnimationTransform trackTransforms[MAX_MESH_ANIMATION_TRACKS] = {};
+				NodeAnimationTransform trackTransforms[MAX_MESH_ANIMATION_TRACKS + 1] = {};
 				float totalWeight = 0.0f;
 				int numAnimationsBlended = 0;
 
@@ -209,27 +209,32 @@ void updateMeshInstanceAnimations(entity::EntityManager& entityMgr)
 				else {
 					nodeAnimCmp.nextActive = 1;
 					
-					// TODO: how to blend the rotation? a bunch of slerps where we progressively add to the weights, and normalize at every step?
-
-					//  if total weight < 1, lerp the remainder from the default transform
+					// if total weight < 1, get the remainder from the default transform
 					if (1.0f - totalWeight > epsilon<float>()) {
-						float defaultWeight = 1.0f - totalWeight;
-						nodeAnimCmp.nextTranslationLocal = nodeAnimCmp.defaultTranslation * defaultWeight;
-						nodeAnimCmp.nextRotationLocal = nodeAnimCmp.defaultRotation * defaultWeight;
-						nodeAnimCmp.nextScalingLocal = nodeAnimCmp.defaultScaling * defaultWeight;
-					}
-					//  if total weight > 1, normalize the individual weights by total weight and then blend
-					else if (totalWeight - 1.0f > epsilon<float>()) {
-						float invWeight = 1.0f / totalWeight;
-						for (int t = 0; t < numAnimationsBlended; ++t) {
-							trackTransforms[t].weight *= invWeight;
-						}
+						trackTransforms[numAnimationsBlended].translation = nodeAnimCmp.defaultTranslation;
+						trackTransforms[numAnimationsBlended].rotation = nodeAnimCmp.defaultRotation;
+						trackTransforms[numAnimationsBlended].scaling = nodeAnimCmp.defaultScaling;
+						trackTransforms[numAnimationsBlended].weight = 1.0f - totalWeight;
+						++numAnimationsBlended;
 					}
 
-					for (int t = 0; t < numAnimationsBlended; ++t) {
-						trackTransforms[t].translation += trackTransforms[t].translation * trackTransforms[t].weight;
-						trackTransforms[t].rotation * trackTransforms[t].weight;
-						trackTransforms[t].scaling * trackTransforms[t].weight;
+					if (numAnimationsBlended == 1) {
+						nodeAnimCmp.nextTranslationLocal = trackTransforms[0].translation;
+						nodeAnimCmp.nextRotationLocal = trackTransforms[0].rotation;
+						nodeAnimCmp.nextScalingLocal = trackTransforms[0].scaling;
+					}
+					else {
+						// blend all animations
+						for (int t = 1; t < numAnimationsBlended; ++t) {
+							float relativeWeight = trackTransforms[t - 1].weight / (trackTransforms[t - 1].weight + trackTransforms[t].weight);
+							trackTransforms[t].translation = mix(trackTransforms[t - 1].translation, trackTransforms[t].translation, relativeWeight);
+							trackTransforms[t].rotation = slerp(trackTransforms[t - 1].rotation, trackTransforms[t].rotation, relativeWeight);
+							trackTransforms[t].scaling = mix(trackTransforms[t - 1].scaling, trackTransforms[t].scaling, relativeWeight);
+							trackTransforms[t].weight = trackTransforms[t - 1].weight + trackTransforms[t].weight;
+						}
+						nodeAnimCmp.nextTranslationLocal = trackTransforms[numAnimationsBlended - 1].translation;
+						nodeAnimCmp.nextRotationLocal = trackTransforms[numAnimationsBlended - 1].rotation;
+						nodeAnimCmp.nextScalingLocal = trackTransforms[numAnimationsBlended - 1].scaling;
 					}
 				}
 				

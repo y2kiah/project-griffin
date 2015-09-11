@@ -3,6 +3,7 @@
 *.dds
 *.png
 *.bmp
+*.tga
 
 # Models
 *.gmd

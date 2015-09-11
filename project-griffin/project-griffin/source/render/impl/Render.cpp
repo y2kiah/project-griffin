@@ -294,11 +294,12 @@ namespace griffin {
 			// TEMP create some test resources
 			try {
 				//auto mesh = loadMesh(L"models/Spitfire/spitfire.gmd", CacheType::Cache_Models_T);
-				//auto mesh = loadMesh(L"models/landing_platform.gmd", CacheType::Cache_Models_T);
+				auto mesh = loadMesh(L"models/landing_platform.gmd", CacheType::Cache_Models_T);
 				//auto mesh = loadMesh(L"models/collision_test/collision_test.gmd", CacheType::Cache_Models_T);
-				auto mesh = loadMesh(L"models/gunship/gunship.gmd", CacheType::Cache_Models_T);
+				//auto mesh = loadMesh(L"models/gunship/gunship.gmd", CacheType::Cache_Models_T);
 				//auto mesh = loadMesh(L"models/A-10C Pit.gmd", CacheType::Cache_Models_T);
 				//auto mesh = loadMesh(L"models/other_pit.gmd", CacheType::Cache_Models_T);
+				//auto mesh = loadMesh(L"models/Bill/Bill.gmd", CacheType::Cache_Models_T);
 
 				using namespace resource;
 				auto loader = g_resourceLoader.lock();
