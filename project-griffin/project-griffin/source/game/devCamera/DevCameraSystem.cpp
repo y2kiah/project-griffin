@@ -46,8 +46,6 @@ void griffin::game::DevCameraSystem::updateFrameTick(Game* pGame, Engine& engine
 		auto camInstId = scene.entityManager->getEntityComponentId(devCameraId, scene::CameraInstanceContainer::componentType);
 		auto& camInst = scene.entityManager->getComponentStore<scene::CameraInstanceContainer>().getComponent(camInstId);
 		auto& cam = *scene.cameras[camInst.cameraId];
-		
-		const float speed = 10.0f; // in ft. per second
 
 		vec3 viewDir = cam.getViewDirection();
 		vec3 right = cam.getRightVector();//cross(cam.getViewDirection(), cam.getWorldUp());
@@ -89,7 +87,7 @@ void griffin::game::DevCameraSystem::init(Game* pGame, const Engine& engine, con
 
 	// create dev camera scene node
 	devCameraId = createCamera(game.sceneId, NullId_T, CameraParameters{
-		0.1f, 100000.0f,	// near/far clip
+		0.1f, 53000000.0f,	// near/far clip
 		app.getPrimaryWindow().width, app.getPrimaryWindow().height, // viewport
 		60.0f, Camera_Perspective
 	}, "devcamera");
@@ -145,6 +143,8 @@ void griffin::game::DevCameraSystem::init(Game* pGame, const Engine& engine, con
 		speedToggleId = engine.inputSystem->getInputMappingHandle("Speed", ctx);
 		lookXId       = engine.inputSystem->getInputMappingHandle("Mouse Look X", ctx);
 		lookYId       = engine.inputSystem->getInputMappingHandle("Mouse Look Y", ctx);
+		speedScrollIncreaseId = engine.inputSystem->getInputMappingHandle("Speed Scroll Increase", ctx);
+		speedScrollDecreaseId = engine.inputSystem->getInputMappingHandle("Speed Scroll Decrease", ctx);
 
 		assert(forwardId     != NullId_T && backId      != NullId_T &&
 			   leftId        != NullId_T && rightId     != NullId_T &&
@@ -152,6 +152,7 @@ void griffin::game::DevCameraSystem::init(Game* pGame, const Engine& engine, con
 			   rollLeftId    != NullId_T && rollRightId != NullId_T &&
 			   speedToggleId != NullId_T && lookXId     != NullId_T &&
 			   lookYId       != NullId_T && toggleId    != NullId_T &&
+			   speedScrollIncreaseId != NullId_T && speedScrollDecreaseId != NullId_T &&
 			   "devcamera input mappings changed");
 	}
 
@@ -230,6 +231,19 @@ void griffin::game::DevCameraSystem::init(Game* pGame, const Engine& engine, con
 
 			engine.inputSystem->handleInputState(speedToggleId, mi, [this](MappedState& ms, InputContext& c){
 				speedToggle = true;
+				return true;
+			});
+
+			/**
+			* Handle speed scroll with mousewheel
+			*/
+			engine.inputSystem->handleInputAction(speedScrollIncreaseId, mi, [this](MappedAction& ma, InputContext& c){
+				speed *= 2.0f;
+				return true;
+			});
+
+			engine.inputSystem->handleInputAction(speedScrollDecreaseId, mi, [this](MappedAction& ma, InputContext& c){
+				speed *= 0.5f;
 				return true;
 			});
 

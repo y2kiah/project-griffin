@@ -5,7 +5,9 @@
 		{ "context": "ingame",		"name": "Toggle Dev Camera","device": 0,	"keycode": 99,			"modifier": 64 },
 		{ "context": "playerfps",	"name": "Jump",				"device": 0,	"keycode": 32 },
 		{ "context": "playerfps",	"name": "Use",				"device": 0,	"keycode": 102 },
-		{ "context": "playerfps",	"name": "Reload",			"device": 0,	"keycode": 114 }
+		{ "context": "playerfps",	"name": "Reload",			"device": 0,	"keycode": 114 },
+		{ "context": "devcamera",	"name": "Speed Scroll Increase",	"mouseWheel": 1,	"device": 0,	"axis": 1 },
+		{ "context": "devcamera",	"name": "Speed Scroll Decrease",	"mouseWheel": 1,	"device": 0,	"axis": 1 }
 	],
 	"states": [
 		{ "context": "ingame",		"name": "Pause",			"device": 0,	"keycode": 112 },

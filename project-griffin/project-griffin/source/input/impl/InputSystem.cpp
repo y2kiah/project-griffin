@@ -124,8 +124,8 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 						}
 						else if (evt.evt.type == SDL_MOUSEWHEEL)
 						{
-							matched = (mapping.mouseWheel == 1 &&
-									   (mapping.axis == 0 && mapping.bindIn == Bind_Up_T   && evt.evt.wheel.x > 0) ||
+							matched = mapping.mouseWheel == 1 &&
+									  ((mapping.axis == 0 && mapping.bindIn == Bind_Up_T   && evt.evt.wheel.x > 0) ||
 									   (mapping.axis == 0 && mapping.bindIn == Bind_Down_T && evt.evt.wheel.x < 0) ||
 									   (mapping.axis == 1 && mapping.bindIn == Bind_Up_T   && evt.evt.wheel.y > 0) ||
 									   (mapping.axis == 1 && mapping.bindIn == Bind_Down_T && evt.evt.wheel.y < 0));

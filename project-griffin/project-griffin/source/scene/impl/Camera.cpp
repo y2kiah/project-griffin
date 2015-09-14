@@ -30,10 +30,10 @@ namespace griffin {
 			return eulerAngles(mViewRotationQuat);
 		}
 
-		void CameraPersp2::setTranslationYawPitchRoll(const vec3& position, float yaw, float pitch, float roll)
+		void CameraPersp2::setTranslationYawPitchRoll(const dvec3& position, double yaw, double pitch, double roll)
 		{
 			setEyePoint(position);
-			mat4 rotation = eulerAngleZ(roll);
+			dmat4 rotation = eulerAngleZ(roll);
 			rotation *= eulerAngleXY(pitch, yaw);
 			mViewRotationQuat = quat_cast(rotation);
 			
@@ -42,10 +42,10 @@ namespace griffin {
 			mViewProjectionMatrix = mProjectionMatrix * mViewMatrix;
 		}
 
-		void CameraPersp2::lookAt(const vec3 &position, const vec3 &target, const vec3 &worldUp)
+		void CameraPersp2::lookAt(const dvec3 &position, const dvec3 &target, const vec3 &worldUp)
 		{
 			setEyePoint(position);
-			mViewMatrix = glm::lookAt(mEyePoint, target, worldUp);
+			mViewMatrix = glm::lookAt(mEyePoint, target, dvec3(worldUp));
 			mViewRotationQuat = quat_cast(mViewMatrix);
 			
 			// could be delayed?
@@ -56,13 +56,13 @@ namespace griffin {
 		///////////////////////////////////////////////////////////////////////////////////////////
 		// Camera
 
-		void Camera::setEyePoint(const vec3 &aEyePoint)
+		void Camera::setEyePoint(const dvec3 &aEyePoint)
 		{
 			mEyePoint = aEyePoint;
 			mModelViewCached = false;
 		}
 
-		void Camera::setCenterOfInterestPoint(const vec3 &centerOfInterestPoint)
+		void Camera::setCenterOfInterestPoint(const dvec3 &centerOfInterestPoint)
 		{
 			mCenterOfInterest = distance(mEyePoint, centerOfInterestPoint);
 			lookAt(centerOfInterestPoint);
@@ -89,14 +89,14 @@ namespace griffin {
 			mModelViewCached = false;
 		}
 
-		void Camera::lookAt(const vec3 &target)
+		void Camera::lookAt(const dvec3 &target)
 		{
 			mViewDirection = normalize(target - mEyePoint);
 			mOrientation = normalize(quat(alignZAxisWithTarget(-mViewDirection, mWorldUp)));
 			mModelViewCached = false;
 		}
 
-		void Camera::lookAt(const vec3 &aEyePoint, const vec3 &target)
+		void Camera::lookAt(const dvec3 &aEyePoint, const dvec3 &target)
 		{
 			mEyePoint = aEyePoint;
 			mViewDirection = normalize(target - mEyePoint);
@@ -104,7 +104,7 @@ namespace griffin {
 			mModelViewCached = false;
 		}
 
-		void Camera::lookAt(const vec3 &aEyePoint, const vec3 &target, const vec3 &aWorldUp)
+		void Camera::lookAt(const dvec3 &aEyePoint, const dvec3 &target, const vec3 &aWorldUp)
 		{
 			mEyePoint = aEyePoint;
 			mWorldUp = normalize(aWorldUp);
@@ -113,19 +113,19 @@ namespace griffin {
 			mModelViewCached = false;
 		}
 
-		void Camera::getNearClipCoordinates(vec3 *topLeft, vec3 *topRight, vec3 *bottomLeft, vec3 *bottomRight)
+		void Camera::getNearClipCoordinates(dvec3 *topLeft, dvec3 *topRight, dvec3 *bottomLeft, dvec3 *bottomRight)
 		{
 			calcMatrices();
 
 			vec3 viewDirection(normalize(mViewDirection));
 
-			*topLeft = mEyePoint + (mNearClip * viewDirection) + (mFrustumTop * mV) + (mFrustumLeft * mU);
-			*topRight = mEyePoint + (mNearClip * viewDirection) + (mFrustumTop * mV) + (mFrustumRight * mU);
-			*bottomLeft = mEyePoint + (mNearClip * viewDirection) + (mFrustumBottom * mV) + (mFrustumLeft * mU);
-			*bottomRight = mEyePoint + (mNearClip * viewDirection) + (mFrustumBottom * mV) + (mFrustumRight * mU);
+			*topLeft = mEyePoint + dvec3((mNearClip * viewDirection) + (mFrustumTop * mV) + (mFrustumLeft * mU));
+			*topRight = mEyePoint + dvec3((mNearClip * viewDirection) + (mFrustumTop * mV) + (mFrustumRight * mU));
+			*bottomLeft = mEyePoint + dvec3((mNearClip * viewDirection) + (mFrustumBottom * mV) + (mFrustumLeft * mU));
+			*bottomRight = mEyePoint + dvec3((mNearClip * viewDirection) + (mFrustumBottom * mV) + (mFrustumRight * mU));
 		}
 
-		void Camera::getFarClipCoordinates(vec3 *topLeft, vec3 *topRight, vec3 *bottomLeft, vec3 *bottomRight)
+		void Camera::getFarClipCoordinates(dvec3 *topLeft, dvec3 *topRight, dvec3 *bottomLeft, dvec3 *bottomRight)
 		{
 			calcMatrices();
 
@@ -133,10 +133,10 @@ namespace griffin {
 
 			float ratio = mFarClip / mNearClip;
 
-			*topLeft = mEyePoint + (mFarClip * viewDirection) + (ratio * mFrustumTop * mV) + (ratio * mFrustumLeft * mU);
-			*topRight = mEyePoint + (mFarClip * viewDirection) + (ratio * mFrustumTop * mV) + (ratio * mFrustumRight * mU);
-			*bottomLeft = mEyePoint + (mFarClip * viewDirection) + (ratio * mFrustumBottom * mV) + (ratio * mFrustumLeft * mU);
-			*bottomRight = mEyePoint + (mFarClip * viewDirection) + (ratio * mFrustumBottom * mV) + (ratio * mFrustumRight * mU);
+			*topLeft = mEyePoint + dvec3((mFarClip * viewDirection) + (ratio * mFrustumTop * mV) + (ratio * mFrustumLeft * mU));
+			*topRight = mEyePoint + dvec3((mFarClip * viewDirection) + (ratio * mFrustumTop * mV) + (ratio * mFrustumRight * mU));
+			*bottomLeft = mEyePoint + dvec3((mFarClip * viewDirection) + (ratio * mFrustumBottom * mV) + (ratio * mFrustumLeft * mU));
+			*bottomRight = mEyePoint + dvec3((mFarClip * viewDirection) + (ratio * mFrustumBottom * mV) + (ratio * mFrustumRight * mU));
 		}
 
 		void Camera::getFrustum(float *left, float *top, float *right, float *bottom, float *near, float *far)
@@ -213,7 +213,7 @@ namespace griffin {
 			mU = mOrientation * c_xAxis;
 			mV = mOrientation * c_yAxis;
 
-			vec3 d(dot(-mEyePoint, mU), dot(-mEyePoint, mV), dot(-mEyePoint, mW));
+			dvec3 d(dot(-mEyePoint, dvec3(mU)), dot(-mEyePoint, dvec3(mV)), dot(-mEyePoint, dvec3(mW)));
 			auto& m = mModelViewMatrix;
 			m[0][0] = mU.x; m[1][0] = mU.y; m[2][0] = mU.z; m[3][0] = d.x;
 			m[0][1] = mV.x; m[1][1] = mV.y; m[2][1] = mV.z; m[3][1] = d.y;
@@ -386,15 +386,15 @@ namespace griffin {
 		////////////////////////////////////////////////////////////////////////////////////////
 		// CameraStereo
 
-		vec3 CameraStereo::getEyePointShifted() const
+		dvec3 CameraStereo::getEyePointShifted() const
 		{
 			if (!mIsStereo)
 				return mEyePoint;
 
 			if (mIsLeft)
-				return mEyePoint - mOrientation * c_xAxis * (0.5f * mEyeSeparation);
+				return mEyePoint - dvec3(mOrientation * c_xAxis * (0.5f * mEyeSeparation));
 			else
-				return mEyePoint + mOrientation * c_xAxis * (0.5f * mEyeSeparation);
+				return mEyePoint + dvec3(mOrientation * c_xAxis * (0.5f * mEyeSeparation));
 		}
 
 		void CameraStereo::getNearClipCoordinates(vec3 *topLeft, vec3 *topRight, vec3 *bottomLeft, vec3 *bottomRight)
@@ -484,15 +484,15 @@ namespace griffin {
 			mModelViewMatrixRight = mModelViewMatrix;
 
 			// calculate left matrix
-			vec3 eye = mEyePoint - mOrientation * c_xAxis * (0.5f * mEyeSeparation);
-			vec3 d = vec3(dot(-eye, mU), dot(-eye, mV), dot(-eye, mW));
+			dvec3 eye = mEyePoint - dvec3(mOrientation * c_xAxis * (0.5f * mEyeSeparation));
+			dvec3 d = dvec3(dot(-eye, dvec3(mU)), dot(-eye, dvec3(mV)), dot(-eye, dvec3(mW)));
 
 			auto& m = mModelViewMatrixLeft;
 			m[3][0] = d.x; m[3][1] = d.y; m[3][2] = d.z;
 
 			// calculate right matrix
-			eye = mEyePoint + mOrientation * c_xAxis * (0.5f * mEyeSeparation);
-			d = vec3(dot(-eye, mU), dot(-eye, mV), dot(-eye, mW));
+			eye = mEyePoint + dvec3(mOrientation * c_xAxis * (0.5f * mEyeSeparation));
+			d = dvec3(dot(-eye, dvec3(mU)), dot(-eye, dvec3(mV)), dot(-eye, dvec3(mW)));
 
 			m = mModelViewMatrixRight;
 			m[3][0] = d.x; m[3][1] = d.y; m[3][2] = d.z;

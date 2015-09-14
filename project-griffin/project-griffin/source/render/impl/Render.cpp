@@ -45,7 +45,7 @@ namespace griffin {
 		VertexBuffer_GL	g_fullScreenQuad;
 
 		// TEMP
-		ResourcePtr		g_tempMesh = nullptr;
+		ResourcePtr		g_tempModel = nullptr;
 
 
 		// class RenderQueue
@@ -135,13 +135,6 @@ namespace griffin {
 				program.useProgram();
 				auto programId = program.getProgramId();
 
-				/*camera->setTranslationYawPitchRoll({ 10.0f, 10.0f, 10.0f }, glm::radians(315.0f), glm::radians(45.0f), 0);
-				//camera->lookAt({ 10.0f, 10.0f, 10.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f });
-				camera->calcMatrices();
-				mat4 model(1.0f);
-				mat4 mvp(camera->getViewProjection() * model);
-				*/
-
 				//glUniformMatrix4fv(UniformLayout_ModelView, 1, GL_FALSE, &camera->getModelViewMatrix()[0][0]);
 				//glUniformMatrix4fv(UniformLayout_Projection, 1, GL_FALSE, &camera->getProjectionMatrix()[0][0]);
 				//glUniformMatrix4fv(UniformLayout_ModelViewProjection, 1, GL_FALSE, &mvp[0][0]);
@@ -175,12 +168,12 @@ namespace griffin {
 				}
 
 				// draw the test mesh
-				if (g_tempMesh) {
-					auto& mesh = g_tempMesh->getResource<Mesh_GL>();
-					mesh.draw(modelMatLoc, modelViewMatLoc, mvpMatLoc, normalMatLoc,
-							  ambientLoc, diffuseLoc, specularLoc, shininessLoc,
-							  diffuseMapLoc, animTime,
-							  viewportParams.viewMat, viewportParams.viewProjMat); // temporarily passing in the modelMatLoc
+				if (g_tempModel) {
+					auto& mdl = g_tempModel->getResource<Model_GL>();
+					mdl.m_mesh.draw(modelMatLoc, modelViewMatLoc, mvpMatLoc, normalMatLoc,
+									ambientLoc, diffuseLoc, specularLoc, shininessLoc,
+									diffuseMapLoc, animTime,
+									viewportParams.viewMat, viewportParams.viewProjMat); // temporarily passing in the modelMatLoc
 				}
 
 				glDisable(GL_DEPTH_TEST);
@@ -293,20 +286,21 @@ namespace griffin {
 
 			// TEMP create some test resources
 			try {
-				//auto mesh = loadMesh(L"models/Spitfire/spitfire.gmd", CacheType::Cache_Models_T);
-				auto mesh = loadMesh(L"models/landing_platform.gmd", CacheType::Cache_Models_T);
-				//auto mesh = loadMesh(L"models/collision_test/collision_test.gmd", CacheType::Cache_Models_T);
-				//auto mesh = loadMesh(L"models/gunship/gunship.gmd", CacheType::Cache_Models_T);
-				//auto mesh = loadMesh(L"models/A-10C Pit.gmd", CacheType::Cache_Models_T);
-				//auto mesh = loadMesh(L"models/other_pit.gmd", CacheType::Cache_Models_T);
-				//auto mesh = loadMesh(L"models/Bill/Bill.gmd", CacheType::Cache_Models_T);
+				//auto mdl = loadModel(L"models/Spitfire/spitfire.gmd", CacheType::Cache_Models_T);
+				//auto mdl = loadModel(L"models/landing_platform.gmd", CacheType::Cache_Models_T);
+				//auto mdl = loadModel(L"models/collision_test/collision_test.gmd", CacheType::Cache_Models_T);
+				//auto mdl = loadModel(L"models/gunship/gunship.gmd", CacheType::Cache_Models_T);
+				//auto mdl = loadModel(L"models/A-10C Pit.gmd", CacheType::Cache_Models_T);
+				//auto mdl = loadModel(L"models/other_pit.gmd", CacheType::Cache_Models_T);
+				//auto mdl = loadModel(L"models/Bill/Bill.gmd", CacheType::Cache_Models_T);
+				auto mdl = loadModel(L"models/ring/ring.gmd", CacheType::Cache_Models_T);
 
 				using namespace resource;
 				auto loader = g_resourceLoader.lock();
 				if (!loader) {
 					throw std::runtime_error("no resource loader");
 				}
-				g_tempMesh = loader->getResource(mesh).get();
+				g_tempModel = loader->getResource(mdl).get();
 				loader->executeCallbacks();
 			}
 			catch (std::exception ex) {
@@ -398,7 +392,7 @@ namespace griffin {
 		}
 
 
-		ResourceHandle<Mesh_GL> loadMesh(wstring modelFilePath, CacheType cache)
+		ResourceHandle<Model_GL> loadModel(wstring modelFilePath, CacheType cache)
 		{
 			using namespace resource;
 
@@ -409,15 +403,15 @@ namespace griffin {
 			}
 
 			auto meshResourceBuilder = [](DataPtr data, size_t size) {
-				return Mesh_GL(std::move(data), size);
+				return Model_GL(Mesh_GL(std::move(data), size));
 			};
 
 			auto meshResourceCallback = [modelFilePath](const ResourcePtr& resourcePtr, Id_T handle, size_t size) {
-				Mesh_GL& mesh = resourcePtr->getResource<Mesh_GL>();
-				mesh.createResourcesFromInternalMemory(modelFilePath);
+				Model_GL& mdl = resourcePtr->getResource<Model_GL>();
+				mdl.m_mesh.createResourcesFromInternalMemory(modelFilePath);
 			};
 
-			return loader->load<Mesh_GL>(modelFilePath, cache, meshResourceBuilder, meshResourceCallback);
+			return loader->load<Model_GL>(modelFilePath, cache, meshResourceBuilder, meshResourceCallback);
 		}
 
 

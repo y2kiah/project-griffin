@@ -194,7 +194,7 @@ function initInputSystem()
 				if binding.device ~= nil then		mapping.device = binding.device end
 				if binding.keycode ~= nil then		mapping.keycode = binding.keycode end
 				if binding.modifier ~= nil then		mapping.modifier = binding.modifier end
-
+				if binding.mouseWheel ~= nil then	mapping.mouseWheel = binding.mouseWheel end
 				if binding.axis ~= nil then			mapping.axis = binding.axis end
 				if binding.sensitivity ~= nil then	mapping.sensitivity = binding.sensitivity end
 			end
