@@ -10,6 +10,7 @@
 
 using glm::vec2;
 using glm::vec3;
+using glm::dvec3;
 using glm::mat4;
 using glm::quat;
 
@@ -21,21 +22,21 @@ namespace griffin {
 			Camera() : mModelViewCached(false), mProjectionCached(false), mInverseModelViewCached(false), mWorldUp(0.0f, 1.0f, 0.0f) {}
 			virtual ~Camera() {}
 
-			vec3	getEyePoint() const { return mEyePoint; }
-			void	setEyePoint(const vec3 &aEyePoint);
+			dvec3	getEyePoint() const { return mEyePoint; }
+			void	setEyePoint(const dvec3 &aEyePoint);
 
-			float	getCenterOfInterest() const { return mCenterOfInterest; }
-			void	setCenterOfInterest(float aCenterOfInterest) { mCenterOfInterest = aCenterOfInterest; }
+			double	getCenterOfInterest() const { return mCenterOfInterest; }
+			void	setCenterOfInterest(double aCenterOfInterest) { mCenterOfInterest = aCenterOfInterest; }
 
-			vec3	getCenterOfInterestPoint() const { return mEyePoint + mViewDirection * mCenterOfInterest; }
-			void	setCenterOfInterestPoint(const vec3 &centerOfInterestPoint);
+			dvec3	getCenterOfInterestPoint() const { return mEyePoint + dvec3(mViewDirection) * mCenterOfInterest; }
+			void	setCenterOfInterestPoint(const dvec3 &centerOfInterestPoint);
 
 			vec3	getWorldUp() const { return mWorldUp; }
 			void	setWorldUp(const vec3 &aWorldUp);
 
-			void	lookAt(const vec3 &target);
-			void	lookAt(const vec3 &aEyePoint, const vec3 &target);
-			void	lookAt(const vec3 &aEyePoint, const vec3 &target, const vec3 &aUp);
+			void	lookAt(const dvec3 &target);
+			void	lookAt(const dvec3 &aEyePoint, const dvec3 &target);
+			void	lookAt(const dvec3 &aEyePoint, const dvec3 &target, const vec3 &aUp);
 			vec3	getViewDirection() const { return mViewDirection; }
 			void	setViewDirection(const vec3 &aViewDirection);
 
@@ -54,8 +55,8 @@ namespace griffin {
 			float	getFarClip() const { return mFarClip; }
 			void	setFarClip(float aFarClip) { mFarClip = aFarClip; mProjectionCached = false; }
 
-			virtual void	getNearClipCoordinates(vec3 *topLeft, vec3 *topRight, vec3 *bottomLeft, vec3 *bottomRight);
-			virtual void	getFarClipCoordinates(vec3 *topLeft, vec3 *topRight, vec3 *bottomLeft, vec3 *bottomRight);
+			virtual void	getNearClipCoordinates(dvec3 *topLeft, dvec3 *topRight, dvec3 *bottomLeft, dvec3 *bottomRight);
+			virtual void	getFarClipCoordinates(dvec3 *topLeft, dvec3 *topRight, dvec3 *bottomLeft, dvec3 *bottomRight);
 
 			//! Returns the coordinates of the camera's frustum, suitable for passing to \c glFrustum
 			void	getFrustum(float *left, float *top, float *right, float *bottom, float *near, float *far);
@@ -95,10 +96,10 @@ namespace griffin {
 			const vec3&	getUpVector() const	{ return mV; }
 
 		protected:
-			vec3	mEyePoint;
+			dvec3	mEyePoint;
 			vec3	mViewDirection;
 			quat	mOrientation;
-			float	mCenterOfInterest;
+			double	mCenterOfInterest;
 			vec3	mWorldUp;
 
 			float	mFov;
@@ -176,8 +177,8 @@ namespace griffin {
 			const mat4&	getViewProjection() const;
 			vec3		getEulerAngles() const;
 
-			void	setTranslationYawPitchRoll(const vec3& position, float yaw, float pitch, float roll);
-			void	lookAt(const vec3 &position, const vec3 &target, const vec3 &worldUp);
+			void	setTranslationYawPitchRoll(const dvec3& position, double yaw, double pitch, double roll);
+			void	lookAt(const dvec3 &position, const dvec3 &target, const vec3 &worldUp);
 			void	extractFrustumPlanes();
 
 		protected:
@@ -227,7 +228,7 @@ namespace griffin {
 			//! Sets the distance between the camera's for the left and right eyes. This affects the parallax effect. 
 			void			setEyeSeparation(float distance) { mEyeSeparation = distance; mModelViewCached = false; mProjectionCached = false; }
 			//! Returns the location of the currently enabled eye camera.
-			vec3			getEyePointShifted() const;
+			dvec3			getEyePointShifted() const;
 
 			//! Enables the left eye camera.
 			void			enableStereoLeft() { mIsStereo = true; mIsLeft = true; }
