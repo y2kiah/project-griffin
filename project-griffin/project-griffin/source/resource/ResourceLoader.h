@@ -131,7 +131,7 @@ Goals:
 	1. asynchronous in nature, non-blocking API
 	2. handle multiple simultaneous requests for the same resource without duplication
 	4. allow resources of various types to be loaded maintaining type safety
-	5. allow clients to implement a caching algorithm independant of the internal LRU cache
+	5. allow clients to implement a caching algorithm independent of the internal LRU cache
 	6. allow a single container to store many different resource types
 	7. don't be intrusive, resource implementers don't inherit from a common base class, prefer
 		duck typing over polymorphism
@@ -155,17 +155,17 @@ Loading:
 		loader checks vector to see if name has already been requested {
 			yes {
 				get the stored shared_future<Id_T> and see if it's ready {
-					yes {
+					ready {
 						see if the Id_T is valid in the cache { -- use the typeId contained in the Id_T to identify the cache index
 							is valid { -- resource is still in the cache
-
+								return the ResourceHandle
 							}
 							not valid { -- resource has fallen out of the cache, needs to be reloaded
-
+								load from source (same as below)
 							}
 						}
 					}
-					no { -- already requested but not loaded yet
+					not ready { -- already requested but not loaded yet
 						return a ResourceHandle containing the existing shared_future<Id_T>
 					}
 				}

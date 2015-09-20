@@ -6,7 +6,7 @@
 #include <resource/Resource.h>
 #include <render/texture/Texture2D_GL.h>
 #include <render/ShaderProgram_GL.h>
-#include <render/model/Mesh_GL.h>
+#include <render/model/Model_GL.h>
 
 namespace griffin {
 	using std::wstring;
@@ -21,7 +21,7 @@ namespace griffin {
 
 		ResourceHandle<ShaderProgram_GL>	loadShaderProgram(wstring programPath, CacheType cache = CacheType::Cache_Materials_T);
 
-		ResourceHandle<Mesh_GL>				loadMesh(wstring modelFilePath, CacheType cache = CacheType::Cache_Models_T);
+		ResourceHandle<Model_GL>			loadModel(wstring modelFilePath, CacheType cache = CacheType::Cache_Models_T);
 
 	}
 }

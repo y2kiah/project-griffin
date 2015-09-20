@@ -7,6 +7,7 @@
 #include <resource/Resource.h>
 #include <render/texture/Texture2D_GL.h>
 #include <render/ShaderProgram_GL.h>
+#include <render/model/Mesh_GL.h>
 
 namespace griffin {
 	using namespace resource;
@@ -30,6 +31,29 @@ namespace griffin {
 			// OR vector<uint16_t> ???
 			// and how do we relate the textures/shaders stored here back to the relevant material texture / material, or do we even need to??
 
+			// Constructors
+			explicit Model_GL() {}
+
+			/**
+			* Constructor used by resource builder callback
+			*/
+			explicit Model_GL(Mesh_GL&& mesh) :
+				m_mesh(std::forward<Mesh_GL>(mesh))
+			{}
+
+			Model_GL(Model_GL&& other) :
+				m_mesh(std::move(other.m_mesh)),
+				m_textures(std::move(other.m_textures)),
+				m_shaderPrograms(std::move(other.m_shaderPrograms)),
+				m_childResourcesLoaded{ other.m_childResourcesLoaded }
+			{
+				other.m_childResourcesLoaded = false;
+			}
+
+			Model_GL(const Model_GL&) = delete;
+
+			
+			// Variables
 			Mesh_GL		m_mesh;
 			TextureList	m_textures;
 			ShaderList	m_shaderPrograms;

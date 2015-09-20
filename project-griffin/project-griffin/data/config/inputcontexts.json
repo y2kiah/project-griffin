@@ -19,6 +19,8 @@
         "visible": false,
         "eatsMouseInput": true,
 		"actions": [
+			{ "name": "Speed Scroll Increase",	"bind": "up" },
+			{ "name": "Speed Scroll Decrease",	"bind": "down" }
 		],
 		"states": [
 			{ "name": "Move Forward",	"bind": "down" },
