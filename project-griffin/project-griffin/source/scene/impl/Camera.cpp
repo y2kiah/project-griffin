@@ -161,7 +161,7 @@ namespace griffin {
 		//	return Ray(mEyePoint, (mU * s + mV * t - (mW * viewDistance)).normalized());
 		//}
 
-		void Camera::getBillboardVectors(vec3 *right, vec3 *up) const
+		void Camera::getBillboardVectors(dvec3 *right, dvec3 *up) const
 		{
 			auto& m = getModelViewMatrix();
 			right->x = m[0][0];
@@ -172,30 +172,30 @@ namespace griffin {
 			up->z    = m[2][1];
 		}
 
-		vec2 Camera::worldToScreen(const vec3 &worldCoord, float screenWidth, float screenHeight) const
+		vec2 Camera::worldToScreen(const dvec3 &worldCoord, float screenWidth, float screenHeight) const
 		{
-			vec3 eyeCoord = (vec4(worldCoord, 1.0f) * getModelViewMatrix()).xyz;
-			vec3 ndc = (vec4(eyeCoord, 1.0f) * getProjectionMatrix()).xyz;
+			auto eye = dvec4(worldCoord, 1.0f) * getModelViewMatrix();
+			auto ndc = vec3(eye * getProjectionMatrix());
 
 			return vec2((ndc.x + 1.0f) / 2.0f * screenWidth, (1.0f - (ndc.y + 1.0f) / 2.0f) * screenHeight);
 		}
 
-		vec3 Camera::worldToEye(const vec3 &worldCoord)
+		vec3 Camera::worldToEye(const dvec3 &worldCoord)
 		{
-			return vec4(vec4(worldCoord, 1.0f) * getModelViewMatrix()).xyz;
+			return vec3(dvec4(worldCoord, 1.0f) * getModelViewMatrix());
 		}
 
-		float Camera::worldToEyeDepth(const vec3 &worldCoord) const
+		float Camera::worldToEyeDepth(const dvec3 &worldCoord) const
 		{
 			auto &m = getModelViewMatrix();
-			float d = m[0][2] * worldCoord.x + m[1][2] * worldCoord.y + m[2][2] * worldCoord.z + m[3][2];
-			return d;
+			double d = m[0][2] * worldCoord.x + m[1][2] * worldCoord.y + m[2][2] * worldCoord.z + m[3][2];
+			return static_cast<float>(d);
 		}
 
-		vec3 Camera::worldToNdc(const vec3 &worldCoord)
+		vec3 Camera::worldToNdc(const dvec3 &worldCoord)
 		{
-			vec4 eye = vec4(worldCoord, 1.0f) * getModelViewMatrix();
-			return vec4(eye * getProjectionMatrix()).xyz;
+			auto eye = dvec4(worldCoord, 1.0f) * getModelViewMatrix();
+			return vec3(eye * getProjectionMatrix());
 		}
 
 		//* This only mostly works
@@ -226,7 +226,9 @@ namespace griffin {
 
 		void Camera::calcInverseModelView()
 		{
-			if (!mModelViewCached) calcModelView();
+			if (!mModelViewCached) {
+				calcModelView();
+			}
 
 			mInverseModelViewMatrix = affineInverse(mModelViewMatrix);
 			mInverseModelViewCached = true;
@@ -235,8 +237,9 @@ namespace griffin {
 		////////////////////////////////////////////////////////////////////////////////////////
 		// CameraPersp
 
-		CameraPersp::CameraPersp(int pixelWidth, int pixelHeight, float fovDegrees)
-			: Camera(), mLensShift(0.0f)
+		CameraPersp::CameraPersp(int pixelWidth, int pixelHeight, float fovDegrees) :
+			Camera(),
+			mLensShift(0.0f)
 		{
 			float eyeX = pixelWidth / 2.0f;
 			float eyeY = pixelHeight / 2.0f;
@@ -251,8 +254,9 @@ namespace griffin {
 			lookAt(vec3(eyeX, eyeY, dist), vec3(eyeX, eyeY, 0.0f));
 		}
 
-		CameraPersp::CameraPersp(int pixelWidth, int pixelHeight, float fovDegrees, float nearPlane, float farPlane)
-			: Camera(), mLensShift(0.0f)
+		CameraPersp::CameraPersp(int pixelWidth, int pixelHeight, float fovDegrees, float nearPlane, float farPlane) :
+			Camera(),
+			mLensShift(0.0f)
 		{
 			float halfFov, theTan, aspect;
 
@@ -268,8 +272,9 @@ namespace griffin {
 		}
 
 		// Creates a default camera resembling Maya Persp
-		CameraPersp::CameraPersp()
-			: Camera(), mLensShift(0.0f)
+		CameraPersp::CameraPersp() :
+			Camera(),
+			mLensShift(0.0f)
 		{
 			lookAt(vec3(28.0f, 21.0f, 28.0f), vec3(0.0f), c_yAxis);
 			setCenterOfInterest(44.822f);
@@ -388,22 +393,21 @@ namespace griffin {
 
 		dvec3 CameraStereo::getEyePointShifted() const
 		{
-			if (!mIsStereo)
+			if (!mIsStereo) {
 				return mEyePoint;
-
-			if (mIsLeft)
-				return mEyePoint - dvec3(mOrientation * c_xAxis * (0.5f * mEyeSeparation));
-			else
-				return mEyePoint + dvec3(mOrientation * c_xAxis * (0.5f * mEyeSeparation));
+			}
+			if (mIsLeft) {
+				return mEyePoint - (dquat(mOrientation) * dvec3(c_xAxis) * (0.5 * mEyeSeparation));
+			}
+			return mEyePoint + (dquat(mOrientation) * dvec3(c_xAxis) * (0.5 * mEyeSeparation));
 		}
 
-		void CameraStereo::getNearClipCoordinates(vec3 *topLeft, vec3 *topRight, vec3 *bottomLeft, vec3 *bottomRight)
+		void CameraStereo::getNearClipCoordinates(dvec3 *topLeft, dvec3 *topRight, dvec3 *bottomLeft, dvec3 *bottomRight)
 		{
 			calcMatrices();
 
-			vec3 viewDirection(normalize(mViewDirection));
-
-			vec3 eye(getEyePointShifted());
+			auto viewDirection = normalize(mViewDirection);
+			auto eye = getEyePointShifted();
 
 			float shift = 0.5f * mEyeSeparation * (mNearClip / mConvergence);
 			shift *= (mIsStereo ? (mIsLeft ? 1.0f : -1.0f) : 0.0f);
@@ -411,13 +415,13 @@ namespace griffin {
 			float left = mFrustumLeft + shift;
 			float right = mFrustumRight + shift;
 
-			*topLeft = eye + (mNearClip * viewDirection) + (mFrustumTop * mV) + (left * mU);
-			*topRight = eye + (mNearClip * viewDirection) + (mFrustumTop * mV) + (right * mU);
-			*bottomLeft = eye + (mNearClip * viewDirection) + (mFrustumBottom * mV) + (left * mU);
-			*bottomRight = eye + (mNearClip * viewDirection) + (mFrustumBottom * mV) + (right * mU);
+			*topLeft = eye + dvec3((mNearClip * viewDirection) + (mFrustumTop * mV) + (left * mU));
+			*topRight = eye + dvec3((mNearClip * viewDirection) + (mFrustumTop * mV) + (right * mU));
+			*bottomLeft = eye + dvec3((mNearClip * viewDirection) + (mFrustumBottom * mV) + (left * mU));
+			*bottomRight = eye + dvec3((mNearClip * viewDirection) + (mFrustumBottom * mV) + (right * mU));
 		}
 
-		void CameraStereo::getFarClipCoordinates(vec3 *topLeft, vec3 *topRight, vec3 *bottomLeft, vec3 *bottomRight)
+		void CameraStereo::getFarClipCoordinates(dvec3 *topLeft, dvec3 *topRight, dvec3 *bottomLeft, dvec3 *bottomRight)
 		{
 			calcMatrices();
 
@@ -443,36 +447,39 @@ namespace griffin {
 		{
 			assert(mProjectionCached);
 
-			if (!mIsStereo)
+			if (!mIsStereo) {
 				return mProjectionMatrix;
-			else if (mIsLeft)
+			}
+			else if (mIsLeft) {
 				return mProjectionMatrixLeft;
-			else
-				return mProjectionMatrixRight;
+			}
+			return mProjectionMatrixRight;
 		}
 
-		const mat4& CameraStereo::getModelViewMatrix() const
+		const dmat4& CameraStereo::getModelViewMatrix() const
 		{
 			assert(mModelViewCached);
 
-			if (!mIsStereo)
+			if (!mIsStereo) {
 				return mModelViewMatrix;
-			else if (mIsLeft)
+			}
+			else if (mIsLeft) {
 				return mModelViewMatrixLeft;
-			else
-				return mModelViewMatrixRight;
+			}
+			return mModelViewMatrixRight;
 		}
 
-		const mat4& CameraStereo::getInverseModelViewMatrix() const
+		const dmat4& CameraStereo::getInverseModelViewMatrix() const
 		{
 			assert(mInverseModelViewCached);
 
-			if (!mIsStereo)
+			if (!mIsStereo) {
 				return mInverseModelViewMatrix;
-			else if (mIsLeft)
+			}
+			else if (mIsLeft) {
 				return mInverseModelViewMatrixLeft;
-			else
-				return mInverseModelViewMatrixRight;
+			}
+			return mInverseModelViewMatrixRight;
 		}
 
 		void CameraStereo::calcModelView()
@@ -503,7 +510,9 @@ namespace griffin {
 
 		void CameraStereo::calcInverseModelView()
 		{
-			if (!mModelViewCached) calcModelView();
+			if (!mModelViewCached) {
+				calcModelView();
+			}
 
 			mInverseModelViewMatrix = affineInverse(mModelViewMatrix);
 			mInverseModelViewMatrixLeft = affineInverse(mModelViewMatrixLeft);

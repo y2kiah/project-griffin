@@ -173,7 +173,7 @@ namespace griffin {
 					mdl.m_mesh.draw(modelMatLoc, modelViewMatLoc, mvpMatLoc, normalMatLoc,
 									ambientLoc, diffuseLoc, specularLoc, shininessLoc,
 									diffuseMapLoc, animTime,
-									viewportParams.viewMat, viewportParams.viewProjMat); // temporarily passing in the modelMatLoc
+									viewportParams.viewMat, viewportParams.projMat); // temporarily passing in the modelMatLoc
 				}
 
 				glDisable(GL_DEPTH_TEST);
@@ -270,13 +270,13 @@ namespace griffin {
 			defaultView.farClipPlane  = 100000.0f; //1.0f;
 			defaultView.frustumDistance = defaultView.farClipPlane - defaultView.nearClipPlane;
 			defaultView.inverseFrustumDistance = 1.0f / defaultView.frustumDistance;
-			defaultView.viewMat = glm::lookAt(glm::vec3{ 120.0f, 40.0f, 0 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 0, 0, 1.0f });
+			defaultView.viewMat = glm::lookAt(glm::dvec3{ 120.0, 40.0, 0 }, glm::dvec3{ 0, 0, 0 }, glm::dvec3{ 0, 0, 1.0 });
 								  //glm::lookAt(glm::vec3{ 0, 0, 2.0f }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 0, 0, 1.0f });
 			defaultView.projMat = glm::perspective(glm::radians(60.0f),
 												   static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight),
 												   defaultView.nearClipPlane, defaultView.farClipPlane);
 												   //glm::ortho(0.0f, static_cast<float>(viewportWidth), static_cast<float>(viewportHeight), 0.0f, -1.0f, 1.0f);
-			defaultView.viewProjMat = defaultView.projMat * defaultView.viewMat;
+			defaultView.viewProjMat = defaultView.projMat * glm::mat4(defaultView.viewMat);
 
 			m_viewports[0].left = 0;
 			m_viewports[0].top = 0;

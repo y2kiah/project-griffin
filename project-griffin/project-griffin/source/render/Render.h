@@ -123,7 +123,7 @@ namespace griffin {
 		#define MAX_VIEWPORTS	16
 
 		struct ViewportParameters {
-			glm::mat4	viewMat;
+			glm::dmat4	viewMat;
 			glm::mat4	projMat;
 			glm::mat4	viewProjMat;
 			float		nearClipPlane;

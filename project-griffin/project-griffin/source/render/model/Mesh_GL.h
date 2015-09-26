@@ -248,7 +248,7 @@ namespace griffin {
 			void draw(int modelMatLoc, int modelViewMatLoc, int mvpMatLoc, int normalMatLoc,
 					  int ambientLoc, int diffuseLoc, int specularLoc, int shininessLoc,
 					  int diffuseMapLoc, float animTime, // TODO: should take an Entity Id instead, to get animation times and blends and material overrides
-					  const glm::mat4& viewMat, const glm::mat4& viewProjMat/*All TEMP*/) const;
+					  const glm::dmat4& viewMat, const glm::mat4& projMat/*All TEMP*/) const;
 
 			/**
 			* Creates the Vertex Buffer Object with OpenGL for each draw set

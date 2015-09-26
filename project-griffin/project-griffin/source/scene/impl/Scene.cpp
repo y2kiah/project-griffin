@@ -120,7 +120,7 @@ void SceneManager::renderActiveScenes(float interpolation)
 					cam.calcModelView();
 
 					// set the renderer viewport to the active camera
-					glm::mat4 viewProjMat(cam.getProjectionMatrix() * cam.getModelViewMatrix());
+					mat4 viewProjMat(cam.getProjectionMatrix() * mat4(cam.getModelViewMatrix()));
 					float frustumDistance = cam.getFarClip() - cam.getNearClip();
 
 					// set viewport 0 which is the main view viewport
@@ -225,7 +225,7 @@ void interpolateSceneNodes(entity::EntityManager& entityMgr, float interpolation
 		if (move.component.translationDirty == 1) {
 			node.translationLocal = glm::mix(move.component.prevTranslation,
 											 move.component.nextTranslation,
-											 interpolation);
+											 static_cast<double>(interpolation));
 			node.positionDirty = 1;
 		}
 	}

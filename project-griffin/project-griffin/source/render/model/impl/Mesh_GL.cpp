@@ -46,22 +46,22 @@ namespace griffin {
 		void Mesh_GL::draw(int modelMatLoc, int modelViewMatLoc, int mvpMatLoc, int normalMatLoc,
 						   int ambientLoc, int diffuseLoc, int specularLoc, int shininessLoc,
 						   int diffuseMapLoc, float animTime,
-						   const glm::mat4& viewMat, const glm::mat4& viewProjMat/*All TEMP*/) const
+						   const glm::dmat4& viewMat, const glm::mat4& projMat/*All TEMP*/) const
 		{
 			using namespace glm;
 			
-			mat4 modelToWorld;
-			mat4 nodeTransform;
+			dmat4 modelToWorld;
+			dmat4 nodeTransform;
 			
 			// temp
-			modelToWorld = rotate(translate(modelToWorld, vec3(0.0f, -50.0f, 0.0f)),
-								  radians(90.0f),
-								  vec3(1.0f, 0, 0));
-			modelToWorld = scale(modelToWorld, vec3(Meters_to_Feet));
+			modelToWorld = rotate(translate(modelToWorld, dvec3(0.0, 1000000.0, 0.0)),
+								  radians(90.0),
+								  dvec3(1.0, 0, 0));
+			modelToWorld = scale(modelToWorld, dvec3(Meters_to_Feet));
 
 			struct BFSQueueItem {
 				uint32_t nodeIndex;
-				mat4     toWorld;
+				dmat4    toWorld;
 			};
 			// TODO: lot of memory being created and destroyed every frame, should all be pre-calculated and stored for non-animated meshes?
 			vector_queue<BFSQueueItem> bfsQueue;
@@ -200,18 +200,27 @@ namespace griffin {
 							}
 							nodeTransform = mat4_cast(nodeRotation);
 							nodeTransform[3].xyz = nodeTranslation;
-							nodeTransform = scale(nodeTransform, nodeScale);
+							nodeTransform = scale(nodeTransform, dvec3(nodeScale));
 						}
 					}
 				}
 
 				modelToWorld = thisItem.toWorld * nodeTransform;
-				mat4 modelView(viewMat * modelToWorld);
-				mat4 mvp(viewProjMat * modelToWorld);
-				mat4 normalMat(transpose(inverse(mat3(modelView))));
+				
+				// transform world space to eye space on CPU in double precision, then send single to GPU
+				// see http://blogs.agi.com/insight3d/index.php/2008/09/03/precisions-precisions/
+				dmat4 modelViewWorld(viewMat * modelToWorld);
+				dvec4 nodeTranslationWorld(nodeTransform[3].xyz, 1.0);
+				vec3 nodeTranslationEye(modelViewWorld * nodeTranslationWorld);
 
-				glUniformMatrix4fv(modelMatLoc, 1, GL_FALSE, &modelToWorld[0][0]);
-				glUniformMatrix4fv(modelViewMatLoc, 1, GL_FALSE, &modelView[0][0]);
+				mat4 modelViewEye(modelViewWorld);
+				modelViewEye[3].xyz = nodeTranslationEye;
+
+				mat4 mvp(projMat * modelViewEye);
+				mat4 normalMat(transpose(inverse(modelViewEye)));
+
+				glUniformMatrix4fv(modelMatLoc, 1, GL_FALSE, &mat3(modelToWorld)[0][0]);
+				glUniformMatrix4fv(modelViewMatLoc, 1, GL_FALSE, &modelViewEye[0][0]);
 				glUniformMatrix4fv(mvpMatLoc, 1, GL_FALSE, &mvp[0][0]);
 				glUniformMatrix4fv(normalMatLoc, 1, GL_FALSE, &normalMat[0][0]);
 

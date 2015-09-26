@@ -12,6 +12,7 @@ using glm::vec2;
 using glm::vec3;
 using glm::dvec3;
 using glm::mat4;
+using glm::dmat4;
 using glm::quat;
 
 namespace griffin {
@@ -63,21 +64,21 @@ namespace griffin {
 			//! Returns whether the camera represents a perspective projection instead of an orthographic
 			virtual bool isPersp() const = 0;
 
-			virtual const mat4&	getProjectionMatrix() const { assert(mProjectionCached); return mProjectionMatrix; }
-			virtual const mat4&	getModelViewMatrix() const { assert(mModelViewCached); return mModelViewMatrix; }
-			virtual const mat4&	getInverseModelViewMatrix() const { assert(mInverseModelViewCached); return mInverseModelViewMatrix; }
+			virtual const mat4&		getProjectionMatrix() const { assert(mProjectionCached); return mProjectionMatrix; }
+			virtual const dmat4&	getModelViewMatrix() const { assert(mModelViewCached); return mModelViewMatrix; }
+			virtual const dmat4&	getInverseModelViewMatrix() const { assert(mInverseModelViewCached); return mInverseModelViewMatrix; }
 
 			//Ray		generateRay(float u, float v, float imagePlaneAspectRatio) const;
-			void	getBillboardVectors(vec3 *right, vec3 *up) const;
+			void	getBillboardVectors(dvec3 *right, dvec3 *up) const;
 
 			//! Converts a world-space coordinate \a worldCoord to screen coordinates as viewed by the camera, based ona s screen which is \a screenWidth x \a screenHeight pixels.
-			vec2	worldToScreen(const vec3 &worldCoord, float screenWidth, float screenHeight) const;
+			vec2	worldToScreen(const dvec3 &worldCoord, float screenWidth, float screenHeight) const;
 			//! Converts a world-space coordinate \a worldCoord to eye-space, also known as camera-space. -Z is along the view direction.
-			vec3	worldToEye(const vec3 &worldCoord);
+			vec3	worldToEye(const dvec3 &worldCoord);
 			//! Converts a world-space coordinate \a worldCoord to the z axis of eye-space, also known as camera-space. -Z is along the view direction. Suitable for depth sorting.
-			float	worldToEyeDepth(const vec3 &worldCoord) const;
+			float	worldToEyeDepth(const dvec3 &worldCoord) const;
 			//! Converts a world-space coordinate \a worldCoord to normalized device coordinates
-			vec3	worldToNdc(const vec3 &worldCoord);
+			vec3	worldToNdc(const dvec3 &worldCoord);
 
 			//float	getScreenRadius(const class Sphere &sphere, float screenWidth, float screenHeight) const;
 
@@ -113,9 +114,9 @@ namespace griffin {
 
 			mat4	mProjectionMatrix, mInverseProjectionMatrix;
 			bool	mProjectionCached;
-			mat4	mModelViewMatrix;
+			dmat4	mModelViewMatrix;
 			bool	mModelViewCached;
-			mat4	mInverseModelViewMatrix;
+			dmat4	mInverseModelViewMatrix;
 			bool	mInverseModelViewCached;
 
 			float	mFrustumLeft, mFrustumRight, mFrustumTop, mFrustumBottom;
@@ -204,15 +205,15 @@ namespace griffin {
 
 		class CameraStereo : public CameraPersp {
 		public:
-			CameraStereo()
-				: mConvergence(1.0f), mEyeSeparation(0.05f), mIsStereo(false), mIsLeft(true)
+			CameraStereo() :
+				mConvergence(1.0f), mEyeSeparation(0.05f), mIsStereo(false), mIsLeft(true)
 			{}
-			CameraStereo(int pixelWidth, int pixelHeight, float fov)
-				: CameraPersp(pixelWidth, pixelHeight, fov),
+			CameraStereo(int pixelWidth, int pixelHeight, float fov) :
+				CameraPersp(pixelWidth, pixelHeight, fov),
 				mConvergence(1.0f), mEyeSeparation(0.05f), mIsStereo(false), mIsLeft(true) // constructs screen-aligned camera
 			{}
-			CameraStereo(int pixelWidth, int pixelHeight, float fov, float nearPlane, float farPlane)
-				: CameraPersp(pixelWidth, pixelHeight, fov, nearPlane, farPlane),
+			CameraStereo(int pixelWidth, int pixelHeight, float fov, float nearPlane, float farPlane) :
+				CameraPersp(pixelWidth, pixelHeight, fov, nearPlane, farPlane),
 				mConvergence(1.0f), mEyeSeparation(0.05f), mIsStereo(false), mIsLeft(true) // constructs screen-aligned camera
 			{}
 
@@ -240,12 +241,12 @@ namespace griffin {
 			void			disableStereo() { mIsStereo = false; }
 			bool			isStereoEnabled() const { return mIsStereo; }
 
-			virtual void	getNearClipCoordinates(vec3 *topLeft, vec3 *topRight, vec3 *bottomLeft, vec3 *bottomRight);
-			virtual void	getFarClipCoordinates(vec3 *topLeft, vec3 *topRight, vec3 *bottomLeft, vec3 *bottomRight);
+			virtual void	getNearClipCoordinates(dvec3 *topLeft, dvec3 *topRight, dvec3 *bottomLeft, dvec3 *bottomRight);
+			virtual void	getFarClipCoordinates(dvec3 *topLeft, dvec3 *topRight, dvec3 *bottomLeft, dvec3 *bottomRight);
 
-			virtual const mat4&	getProjectionMatrix() const;
-			virtual const mat4&	getModelViewMatrix() const;
-			virtual const mat4&	getInverseModelViewMatrix() const;
+			virtual const mat4&		getProjectionMatrix() const;
+			virtual const dmat4&	getModelViewMatrix() const;
+			virtual const dmat4&	getInverseModelViewMatrix() const;
 
 			virtual void	calcModelView();
 			virtual void	calcInverseModelView();
@@ -254,8 +255,8 @@ namespace griffin {
 		protected:
 			mat4			mProjectionMatrixLeft, mInverseProjectionMatrixLeft;
 			mat4			mProjectionMatrixRight, mInverseProjectionMatrixRight;
-			mat4			mModelViewMatrixLeft, mInverseModelViewMatrixLeft;
-			mat4			mModelViewMatrixRight, mInverseModelViewMatrixRight;
+			dmat4			mModelViewMatrixLeft, mInverseModelViewMatrixLeft;
+			dmat4			mModelViewMatrixRight, mInverseModelViewMatrixRight;
 
 		private:
 			bool			mIsStereo;
