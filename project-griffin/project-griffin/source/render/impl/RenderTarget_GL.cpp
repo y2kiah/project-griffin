@@ -162,7 +162,11 @@ namespace griffin {
 			glViewport(0, 0, m_width, m_height);
 
 			// Clear color of the render targets
-			glClearColor(0.2f, 0.4f, 0.8f, 1.0f);
+			#ifdef _DEBUG
+			glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
+			#else
+			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+			#endif
 
 			if (m_type == Color) {
 				glClear(GL_COLOR_BUFFER_BIT);

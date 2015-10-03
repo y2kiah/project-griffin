@@ -162,7 +162,7 @@ namespace griffin {
 				glUniform1f(inverseFrustumDistanceLoc, viewportParams.inverseFrustumDistance);
 
 				// TEMP
-				animTime += 0.01667f;
+				animTime += 0.001667f;
 				if (animTime > 2.5f) {
 					animTime = 0.0f;
 				}
@@ -184,9 +184,6 @@ namespace griffin {
 			// Start post-processing
 			m_colorBuffer.start();
 			{
-				//glClearColor(0.2f, 0.4f, 0.8f, 1.0f); // temp
-				//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 				// SSAO
 				auto& ssao = m_ssaoProgram.get()->getResource<ShaderProgram_GL>();
 				ssao.useProgram();
@@ -293,7 +290,8 @@ namespace griffin {
 				//auto mdl = loadModel(L"models/A-10C Pit.gmd", CacheType::Cache_Models_T);
 				//auto mdl = loadModel(L"models/other_pit.gmd", CacheType::Cache_Models_T);
 				//auto mdl = loadModel(L"models/Bill/Bill.gmd", CacheType::Cache_Models_T);
-				auto mdl = loadModel(L"models/ring/ring.gmd", CacheType::Cache_Models_T);
+				//auto mdl = loadModel(L"models/ring/ring.gmd", CacheType::Cache_Models_T);
+				auto mdl = loadModel(L"models/building_001.gmd", CacheType::Cache_Models_T);
 
 				using namespace resource;
 				auto loader = g_resourceLoader.lock();

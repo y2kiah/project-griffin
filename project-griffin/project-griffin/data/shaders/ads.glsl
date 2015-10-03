@@ -220,9 +220,9 @@
 
 		// Diffuse surface color
 		//#ifdef _HAS_DIFFUSE_MAP
-			vec3 surfaceColor = texture(diffuseMap, uv).rgb;
+		//	vec3 surfaceColor = texture(diffuseMap, uv).rgb;
 		//#else
-		//	vec3 surfaceColor = materialKd;
+			vec3 surfaceColor = materialKd;
 		//#endif
 		/////
 
@@ -277,7 +277,7 @@
 		vec3 lightIntensity = blinnPhongSpotlight(positionViewspace, normalViewspace);
 
 		//outColor = (texture(diffuse, uv).rgb * color.rgb);
-		albedoDisplacement = vec4(lightIntensity, luma(lightIntensity));
+		albedoDisplacement = vec4(lightIntensity, 1.0);
 		eyeSpacePosition = positionViewspace.xyz;
 		normalReflectance = vec4(normalViewspace.xyz, 0.0);// vec4((normalViewspace + 1.0) * 0.5, 0.0);
 		gl_FragDepth = linearDepth;

@@ -18,6 +18,7 @@
 
 namespace griffin {
 	namespace render {
+		using glm::dmat4;
 
 		void Mesh_GL::bind(int drawSetIndex) const
 		{
@@ -54,9 +55,9 @@ namespace griffin {
 			dmat4 nodeTransform;
 			
 			// temp
-			modelToWorld = rotate(translate(modelToWorld, dvec3(0.0, 1000000.0, 0.0)),
+			modelToWorld = rotate(translate(modelToWorld, dvec3(0.0, -50.0, 0.0)),
 								  radians(90.0),
-								  dvec3(1.0, 0, 0));
+								  dvec3(1.0, 0.0, 0.0));
 			modelToWorld = scale(modelToWorld, dvec3(Meters_to_Feet));
 
 			struct BFSQueueItem {
@@ -207,19 +208,27 @@ namespace griffin {
 
 				modelToWorld = thisItem.toWorld * nodeTransform;
 				
+				// original code, jitters far from origin
+				//mat4 modelView(viewMat * modelToWorld);
+				//mat4 mvp(projMat * modelView);
+				//mat4 normalMat(transpose(inverse(mat3(modelView))));
+
 				// transform world space to eye space on CPU in double precision, then send single to GPU
 				// see http://blogs.agi.com/insight3d/index.php/2008/09/03/precisions-precisions/
 				dmat4 modelViewWorld(viewMat * modelToWorld);
-				dvec4 nodeTranslationWorld(nodeTransform[3].xyz, 1.0);
-				vec3 nodeTranslationEye(modelViewWorld * nodeTranslationWorld);
+				
+				dvec4 nodeTranslationWorld(modelToWorld[0][3], modelToWorld[1][3], modelToWorld[2][3], 1.0);
+				vec3 nodeTranslationEye(nodeTranslationWorld * modelViewWorld);
 
 				mat4 modelViewEye(modelViewWorld);
-				modelViewEye[3].xyz = nodeTranslationEye;
+				modelViewEye[0][3] = nodeTranslationEye.x;
+				modelViewEye[1][3] = nodeTranslationEye.y;
+				modelViewEye[2][3] = nodeTranslationEye.z;
 
 				mat4 mvp(projMat * modelViewEye);
-				mat4 normalMat(transpose(inverse(modelViewEye)));
+				mat4 normalMat(transpose(inverse(mat3(modelViewEye))));
 
-				glUniformMatrix4fv(modelMatLoc, 1, GL_FALSE, &mat3(modelToWorld)[0][0]);
+				glUniformMatrix4fv(modelMatLoc, 1, GL_FALSE, &mat4(modelToWorld)[0][0]);
 				glUniformMatrix4fv(modelViewMatLoc, 1, GL_FALSE, &modelViewEye[0][0]);
 				glUniformMatrix4fv(mvpMatLoc, 1, GL_FALSE, &mvp[0][0]);
 				glUniformMatrix4fv(normalMatLoc, 1, GL_FALSE, &normalMat[0][0]);

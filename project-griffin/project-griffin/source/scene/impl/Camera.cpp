@@ -174,7 +174,7 @@ namespace griffin {
 
 		vec2 Camera::worldToScreen(const dvec3 &worldCoord, float screenWidth, float screenHeight) const
 		{
-			auto eye = dvec4(worldCoord, 1.0f) * getModelViewMatrix();
+			auto eye = dvec4(worldCoord, 1.0) * getModelViewMatrix();
 			auto ndc = vec3(eye * getProjectionMatrix());
 
 			return vec2((ndc.x + 1.0f) / 2.0f * screenWidth, (1.0f - (ndc.y + 1.0f) / 2.0f) * screenHeight);
@@ -182,7 +182,7 @@ namespace griffin {
 
 		vec3 Camera::worldToEye(const dvec3 &worldCoord)
 		{
-			return vec3(dvec4(worldCoord, 1.0f) * getModelViewMatrix());
+			return vec3(dvec4(worldCoord, 1.0) * getModelViewMatrix());
 		}
 
 		float Camera::worldToEyeDepth(const dvec3 &worldCoord) const
@@ -194,7 +194,7 @@ namespace griffin {
 
 		vec3 Camera::worldToNdc(const dvec3 &worldCoord)
 		{
-			auto eye = dvec4(worldCoord, 1.0f) * getModelViewMatrix();
+			auto eye = dvec4(worldCoord, 1.0) * getModelViewMatrix();
 			return vec3(eye * getProjectionMatrix());
 		}
 
@@ -218,7 +218,7 @@ namespace griffin {
 			m[0][0] = mU.x; m[1][0] = mU.y; m[2][0] = mU.z; m[3][0] = d.x;
 			m[0][1] = mV.x; m[1][1] = mV.y; m[2][1] = mV.z; m[3][1] = d.y;
 			m[0][2] = mW.x; m[1][2] = mW.y; m[2][2] = mW.z; m[3][2] = d.z;
-			m[0][3] = 0.0f; m[1][3] = 0.0f; m[2][3] = 0.0f; m[3][3] = 1.0f;
+			m[0][3] = 0.0;  m[1][3] = 0.0;  m[2][3] = 0.0;  m[3][3] = 1.0;
 
 			mModelViewCached = true;
 			mInverseModelViewCached = false;
