@@ -51,7 +51,7 @@ namespace griffin {
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depthBufferId);
 			*/
 
-			if (m_type != Depth) {
+			if (m_type != TypeDepthStencil) {
 				unsigned int albedo = m_textureIds[Albedo_Displacement];
 
 				if (albedo != 0) {
@@ -70,7 +70,7 @@ namespace griffin {
 				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, albedo, 0);
 			}
 
-			if (m_type == GBuffer) {
+			if (m_type == TypeGBuffer) {
 				unsigned int position = m_textureIds[Position];
 				unsigned int normal = m_textureIds[Normal_Reflectance];
 
@@ -105,7 +105,7 @@ namespace griffin {
 				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, normal, 0);
 			}
 
-			if (m_type != Color) {
+			if (m_type != TypeColor) {
 				unsigned int depth = m_textureIds[Depth_Stencil];
 
 				if (depth != 0) {
@@ -123,17 +123,21 @@ namespace griffin {
 				//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 				//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
 				// Attach the texture to the FBO
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth, 0);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depth, 0);
 			}
 
-			if (m_type == Color) {
+			if (m_type == TypeColor) {
 				GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
 				glDrawBuffers(1, buffers);
 			}
-			else if (m_type == Depth) {
+			else if (m_type == TypeDepthStencil) {
 				glDrawBuffer(GL_NONE); // no color buffer
 			}
-			else if (m_type == GBuffer) {
+			else if (m_type == TypeColorDepthStencil) {
+				GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
+				glDrawBuffers(1, buffers);
+			}
+			else if (m_type == TypeGBuffer) {
 				GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 				glDrawBuffers(3, buffers);
 			}
@@ -156,27 +160,12 @@ namespace griffin {
 		*/
 		void RenderTarget_GL::start()
 		{
+			// TODO: use gl shadow state to avoid these calls when possible
+
 			// Bind our FBO and set the viewport to the proper size
 			glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
 			//glPushAttrib(GL_VIEWPORT_BIT);
 			glViewport(0, 0, m_width, m_height);
-
-			// Clear color of the render targets
-			#ifdef _DEBUG
-			glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
-			#else
-			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-			#endif
-
-			if (m_type == Color) {
-				glClear(GL_COLOR_BUFFER_BIT);
-			}
-			else if (m_type == Depth) {
-				glClear(GL_DEPTH_BUFFER_BIT);
-			}
-			else if (m_type == GBuffer) {
-				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			}
 		}
 
 		/**

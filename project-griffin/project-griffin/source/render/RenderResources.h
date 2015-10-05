@@ -5,6 +5,7 @@
 #include <string>
 #include <resource/Resource.h>
 #include <render/texture/Texture2D_GL.h>
+#include <render/texture/TextureCubeMap_GL.h>
 #include <render/ShaderProgram_GL.h>
 #include <render/model/Model_GL.h>
 
@@ -17,11 +18,13 @@ namespace griffin {
 	namespace render {
 
 		// Resource Loading Functions
-		ResourceHandle<Texture2D_GL>		loadTexture(wstring texturePath, CacheType cache = CacheType::Cache_Materials_T);
+		ResourceHandle<Texture2D_GL>		loadTexture2D(wstring texturePath, CacheType cache = CacheType::Cache_Materials);
 
-		ResourceHandle<ShaderProgram_GL>	loadShaderProgram(wstring programPath, CacheType cache = CacheType::Cache_Materials_T);
+		ResourceHandle<TextureCubeMap_GL>	loadTextureCubeMap(wstring texturePath, CacheType cache = CacheType::Cache_Materials);
 
-		ResourceHandle<Model_GL>			loadModel(wstring modelFilePath, CacheType cache = CacheType::Cache_Models_T);
+		ResourceHandle<ShaderProgram_GL>	loadShaderProgram(wstring programPath, CacheType cache = CacheType::Cache_Materials);
+
+		ResourceHandle<Model_GL>			loadModel(wstring modelFilePath, CacheType cache = CacheType::Cache_Models);
 
 	}
 }

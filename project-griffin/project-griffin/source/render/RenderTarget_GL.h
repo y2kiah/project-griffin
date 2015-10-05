@@ -11,9 +11,10 @@ namespace griffin {
 		class RenderTarget_GL {
 		public:
 			enum RenderTargetType : uint8_t {
-				Color = 0,		//<! builds only the diffuse render target texture
-				Depth = 1,		//<! builds only the depth render target texture
-				GBuffer = 2		//<! builds diffuse, position, normals, and depth render target textures
+				TypeColor = 0,				//<! builds only the color render target texture
+				TypeDepthStencil = 1,		//<! builds only the depth32f_stencil8 render target texture
+				TypeColorDepthStencil = 2,	//<! builds color, depth/stencil render target textures
+				TypeGBuffer = 3				//<! builds albedo, position, normals, and depth/stencil render target textures
 			};
 
 			enum RenderTargetTexture : uint8_t {
@@ -23,7 +24,7 @@ namespace griffin {
 				Depth_Stencil = 3			//<! depth (rgb) + stencil (a) render target
 			};
 
-			explicit RenderTarget_GL(RenderTargetType type = Color) :
+			explicit RenderTarget_GL(RenderTargetType type = TypeColor) :
 				m_type{ type }
 			{
 				memset(&m_textureIds, 0, sizeof(m_textureIds));
@@ -56,7 +57,7 @@ namespace griffin {
 
 		private:
 			// Variables
-			RenderTargetType	m_type = Color;
+			RenderTargetType	m_type = TypeColor;
 			int					m_width = 0;
 			int					m_height = 0;
 			unsigned int		m_fboId = 0;	//<! frame buffer object handle

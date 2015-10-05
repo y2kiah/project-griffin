@@ -61,7 +61,7 @@
 	}
 
 
-	// the next two functions could be used for position channel of g-buffer in referred rendering
+	// the next two functions could be used for position channel of g-buffer in deferred rendering
 	// http://www.beyond3d.com/content/articles/19/2
 	/*
 	vec3 packPositionForGBuffer(vec4 inp)

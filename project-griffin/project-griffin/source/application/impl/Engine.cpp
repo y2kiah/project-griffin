@@ -148,16 +148,20 @@ namespace griffin {
 			using namespace resource;
 
 			// Build resource caches
+			//   Permanent Cache
+			auto permanentCachePtr = make_shared<ResourceCache>(Cache_Permanent, RESERVE_RESOURCECACHE_PERMANENT, 0 /* Infinite */);
+			loaderPtr->registerCache(permanentCachePtr, (CacheType)permanentCachePtr->getItemTypeId());
+
 			//   Materials Cache
-			auto materialsCachePtr = make_shared<ResourceCache>(Cache_Materials_T, RESERVE_RESOURCECACHE_MATERIALS, 256 * 1024 * 1024 /* 256 MB */);
+			auto materialsCachePtr = make_shared<ResourceCache>(Cache_Materials, RESERVE_RESOURCECACHE_MATERIALS, 256 * 1024 * 1024 /* 256 MB */);
 			loaderPtr->registerCache(materialsCachePtr, (CacheType)materialsCachePtr->getItemTypeId());
 			
 			//   Models Cache
-			auto modelsCachePtr = make_shared<ResourceCache>(Cache_Models_T, RESERVE_RESOURCECACHE_MODELS, 256 * 1024 * 1024 /* 256 MB */);
+			auto modelsCachePtr = make_shared<ResourceCache>(Cache_Models, RESERVE_RESOURCECACHE_MODELS, 256 * 1024 * 1024 /* 256 MB */);
 			loaderPtr->registerCache(modelsCachePtr, (CacheType)modelsCachePtr->getItemTypeId());
 
 			//   Scripts Cache
-			auto scriptsCachePtr = make_shared<ResourceCache>(Cache_Scripts_T, RESERVE_RESOURCECACHE_SCRIPTS, 16 * 1024 * 1024 /* 16 MB */);
+			auto scriptsCachePtr = make_shared<ResourceCache>(Cache_Scripts, RESERVE_RESOURCECACHE_SCRIPTS, 16 * 1024 * 1024 /* 16 MB */);
 			loaderPtr->registerCache(scriptsCachePtr, (CacheType)scriptsCachePtr->getItemTypeId());
 
 			// Build resource sources

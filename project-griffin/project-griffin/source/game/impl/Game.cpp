@@ -10,6 +10,7 @@
 #include <entity/EntityManager.h>
 #include <script/ScriptManager_LuaJIT.h>
 #include <input/InputSystem.h>
+#include <render/Render.h>
 #include <utility/container/handle_map.h>
 #include <SDL_log.h>
 
@@ -34,6 +35,10 @@ namespace griffin {
 		game.player.updateFrameTick(pGame, engine, ui);
 
 		game.devCamera.updateFrameTick(pGame, engine, ui);
+
+		// TODO: consider running this less frequently, and spread the load with other systems that
+		//	don't run every frame by offsetting the frame that it runs on
+		game.sky.updateFrameTick(pGame, engine, ui);
 	}
 
 
@@ -72,7 +77,15 @@ namespace griffin {
 
 			game.sceneId = engine.sceneManager->createScene("Game World", true);
 			auto& scene = engine.sceneManager->getScene(game.sceneId);
+			
+			// set up sky system
+			game.sky.init(gamePtr.get(), engine, app);
+			// TODO: scene should have a setSkybox convenience function or something like that
+			//scene.setSkybox(game.sky.skyBoxCubeMap);
+			// temp, will be part of scene as above
+			engine.renderSystem->setSkyboxTexture(game.sky.skyBoxCubeMap);
 
+			// set up player and devCamera control systems
 			game.player.init(gamePtr.get(), engine, app);
 			game.devCamera.init(gamePtr.get(), engine, app);
 			

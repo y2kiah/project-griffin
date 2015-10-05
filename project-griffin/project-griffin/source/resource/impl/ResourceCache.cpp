@@ -4,6 +4,7 @@
 */
 #include "../ResourceCache.h"
 #include "../Resource.h"
+#include <SDL_log.h>
 
 namespace griffin {
 	namespace resource {
@@ -20,7 +21,10 @@ namespace griffin {
 			});
 			m_usedSizeBytes += sizeBytes;
 
-			setLRUMostRecent(handle);
+			if (m_maxSizeBytes != 0) {
+				// if max size is not infinite, maintain the LRU list
+				setLRUMostRecent(handle);
+			}
 
 			return handle;
 		}
@@ -63,12 +67,14 @@ namespace griffin {
 
 		void ResourceCache::ensureRoomForBytes(size_t sizeBytes)
 		{
-			assert(sizeBytes <= m_maxSizeBytes);
+			assert(sizeBytes <= m_maxSizeBytes || m_maxSizeBytes == 0);
 
-			while (m_maxSizeBytes - m_usedSizeBytes < sizeBytes) {
-				// remove the least recently used resource
-				auto handle = m_lruFront;
-				removeResource(handle);
+			if (m_maxSizeBytes != 0) { // zero max size means infinite size
+				while (m_maxSizeBytes - m_usedSizeBytes < sizeBytes) {
+					// remove the least recently used resource
+					auto handle = m_lruFront;
+					removeResource(handle);
+				}
 			}
 		}
 
@@ -95,5 +101,14 @@ namespace griffin {
 				m_lruFront = handle;
 			}
 		}
+
+
+		ResourceCache::~ResourceCache()
+		{
+			if (m_resourceCache.capacity() > m_initialReserve) {
+				SDL_Log("check ResourceCache %d RESERVE: original=%d, highest=%d", m_resourceCache.getItemTypeId(), m_initialReserve, m_resourceCache.capacity());
+			}
+		}
+
 	}
 }

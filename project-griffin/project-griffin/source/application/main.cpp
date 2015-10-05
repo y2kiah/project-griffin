@@ -272,6 +272,9 @@ void SDLApplication::initOpenGL()
 	// Enable depth testing
 	glEnable(GL_DEPTH_TEST);
 
+	// Enable seamless filtering across cubemap faces to avoid edge seams
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
 	// Set the clear color to black and clear the screen
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

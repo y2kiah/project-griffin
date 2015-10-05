@@ -6,6 +6,8 @@
 #ifndef GRIFFIN_RESOURCE_CACHE_H_
 #define GRIFFIN_RESOURCE_CACHE_H_
 
+#pragma warning(disable:4003)	// not enough actual parameters for macro 'BOOST_PP_EXPAND_I' 
+
 #include <memory>
 #include <utility/container/handle_map.h>
 #include <utility/enum.h>
@@ -20,10 +22,11 @@ namespace griffin {
 		typedef shared_ptr<Resource_T> ResourcePtr;
 
 		MakeEnum(CacheType, uint16_t,
+				 (Cache_Permanent)
 				 (Cache_Materials)
 				 (Cache_Models)
 				 (Cache_Scripts)
-				 , _T);
+				 , );
 
 		/**
 		*
@@ -38,13 +41,20 @@ namespace griffin {
 			typedef handle_map<ResourceLRUItem> ResourceMap;
 
 
+			/**
+			* @param	maxSizeBytes	pass 0 for infinite size, or max bytes before resources
+			*	start falling off the back of the LRU list
+			*/
 			explicit ResourceCache(uint16_t itemTypeId, size_t reserveCount, size_t maxSizeBytes) :
 				m_maxSizeBytes{ maxSizeBytes },
 				m_usedSizeBytes{ 0 },
 				m_lruBack{},
 				m_lruFront{},
-				m_resourceCache(itemTypeId, reserveCount)
+				m_resourceCache(itemTypeId, reserveCount),
+				m_initialReserve{ reserveCount }
 			{}
+
+			~ResourceCache();
 
 			/**
 			* @returns true if the cache contains the resource identified by handle
@@ -70,6 +80,8 @@ namespace griffin {
 			Id_T		m_lruBack;	// most recent
 
 			ResourceMap	m_resourceCache;
+
+			size_t		m_initialReserve;
 		};
 
 		typedef shared_ptr<ResourceCache>	ResourceCachePtr;
@@ -85,7 +97,10 @@ namespace griffin {
 
 		inline ResourcePtr& ResourceCache::getResource(Id_T handle)
 		{
-			setLRUMostRecent(handle);
+			if (m_maxSizeBytes != 0) {
+				// if max size is not infinite, maintain the LRU list
+				setLRUMostRecent(handle);
+			}
 			return m_resourceCache[handle].resourcePtr;
 		}
 	}

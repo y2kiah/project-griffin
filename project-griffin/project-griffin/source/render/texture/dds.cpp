@@ -411,6 +411,8 @@ bool DDSImage::upload_texture1D()
 //              default: GL_TEXTURE_2D
 bool DDSImage::upload_texture2D(int imageIndex, GLenum target)
 {
+	// TODO: use glTexStorage2D and glTexSubImage2D / glCompressedTexSubImage2D for performance
+
 	assert(valid && imageIndex >= 0 && imageIndex < (int)images.size());
 	assert(images[imageIndex] && images[imageIndex].height > 0 && images[imageIndex].width > 0);
 	assert(target == GL_TEXTURE_2D || (target >= GL_TEXTURE_CUBE_MAP_POSITIVE_X && target <= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z));
@@ -470,6 +472,8 @@ bool DDSImage::upload_textureRectangle()
 // uploads a compressed/uncompressed cubemap texture
 bool DDSImage::upload_textureCubemap()
 {
+	// TODO: use glTexStorage2D and glTexSubImage2D / glCompressedTexSubImage2D for performance
+
 	assert(valid && cubemap && images.size() == 6);
 
 	GLenum target;

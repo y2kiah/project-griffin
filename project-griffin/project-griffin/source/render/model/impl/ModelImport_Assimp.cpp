@@ -597,7 +597,7 @@ namespace griffin {
 						string aName = meshFilename.substr(pathStart, pathEnd - pathStart) + '/' + mat.textures[samplerIndex].name;
 						wstring wName;
 						wName.assign(aName.begin(), aName.end());
-						auto resHandle = render::loadTexture(wName);
+						auto resHandle = render::loadTexture2D(wName);
 
 						auto resPtr = g_resourceLoader.lock()->getResource(resHandle);
 						auto& tex = resPtr.get()->getResource<Texture2D_GL>();

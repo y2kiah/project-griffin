@@ -61,30 +61,33 @@ namespace griffin {
 			glBindTexture(GL_TEXTURE_2D, m_glTexture);
 			DDSImage image;
 			bool ok = image.loadFromMemory(data, true) &&
+					  !image.is_cubemap() && !image.is_volume() &&
 					  image.upload_texture2D();
 
-			setFilteringMode(image.get_num_mipmaps() > 0);
+			if (ok) {
+				setFilteringMode(image.get_num_mipmaps() > 0);
 
-			/*
-			m_glTexture = SOIL_load_OGL_texture_from_memory(
+				/*
+				m_glTexture = SOIL_load_OGL_texture_from_memory(
 				data, static_cast<int>(size),
 				SOIL_LOAD_AUTO,
 				SOIL_CREATE_NEW_ID,
 				SOIL_FLAG_INVERT_Y | SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_MIPMAPS | SOIL_FLAG_DDS_LOAD_DIRECT | SOIL_FLAG_COMPRESS_TO_DXT);
-			*/
+				*/
 
-			m_sizeBytes = size;
-			m_width = image.get_width();
-			m_height = image.get_height();
-			m_numMipmaps = image.get_num_mipmaps();
-			m_components = image.get_components();
+				m_sizeBytes = size;
+				m_width = image.get_width();
+				m_height = image.get_height();
+				m_numMipmaps = image.get_num_mipmaps();
+				m_components = image.get_components();
 
-			// check for an error during the load process
-			//if (m_glTexture == 0) {
-			//	SDL_Log("SOIL loading error: %s\n", SOIL_last_result());
-			//}
+				// check for an error during the load process
+				//if (m_glTexture == 0) {
+				//	SDL_Log("SOIL loading error: %s\n", SOIL_last_result());
+				//}
 
-			if (!ok) {
+			}
+			else {
 				SDL_Log("texture loading error\n");
 			}
 
@@ -109,27 +112,33 @@ namespace griffin {
 			glBindTexture(GL_TEXTURE_2D, m_glTexture);
 			DDSImage image;
 			bool ok = image.load(filename, true) &&
+					  !image.is_cubemap() && !image.is_volume() &&
 					  image.upload_texture2D();
 
-			setFilteringMode(image.get_num_mipmaps() > 0);
+			if (ok) {
+				setFilteringMode(image.get_num_mipmaps() > 0);
 
-			m_sizeBytes = image.get_size();
-			m_width = image.get_width();
-			m_height = image.get_height();
-			m_numMipmaps = image.get_num_mipmaps();
-			m_components = image.get_components();
+				m_sizeBytes = image.get_size();
+				m_width = image.get_width();
+				m_height = image.get_height();
+				m_numMipmaps = image.get_num_mipmaps();
+				m_components = image.get_components();
 
-			/*m_glTexture = SOIL_load_OGL_texture(
-				name.c_str(),
-				SOIL_LOAD_AUTO,
-				SOIL_CREATE_NEW_ID,
-				SOIL_FLAG_INVERT_Y | SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_MIPMAPS | SOIL_FLAG_DDS_LOAD_DIRECT | SOIL_FLAG_COMPRESS_TO_DXT);
-			*/
+				/*m_glTexture = SOIL_load_OGL_texture(
+					name.c_str(),
+					SOIL_LOAD_AUTO,
+					SOIL_CREATE_NEW_ID,
+					SOIL_FLAG_INVERT_Y | SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_MIPMAPS | SOIL_FLAG_DDS_LOAD_DIRECT | SOIL_FLAG_COMPRESS_TO_DXT);
+					*/
 
-			// check for an error during the load process
-			//if (m_glTexture == 0) {
-			//	SDL_Log("SOIL loading error: %s\n", SOIL_last_result());
-			//}
+				// check for an error during the load process
+				//if (m_glTexture == 0) {
+				//	SDL_Log("SOIL loading error: %s\n", SOIL_last_result());
+				//}
+			}
+			else {
+				SDL_Log("texture loading error\n");
+			}
 
 			return ok;// (m_glTexture != 0);
 		}

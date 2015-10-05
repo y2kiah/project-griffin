@@ -50,7 +50,7 @@ extern "C" {
 
 				ResourcePtr meshResPtr = std::make_shared<Resource_T>(std::move(*mesh), mesh->getSize());
 
-				auto res = loader->addResourceToCache<Mesh_GL>(meshResPtr, CacheType::Cache_Models_T);
+				auto res = loader->addResourceToCache<Mesh_GL>(meshResPtr, CacheType::Cache_Models);
 				res.resourceId.wait();
 
 				return res.resourceId.get().value;
@@ -77,7 +77,7 @@ extern "C" {
 			Id_T handle;
 			handle.value = mesh;
 
-			auto res = loader->getResource<Mesh_GL>(handle, CacheType::Cache_Models_T);
+			auto res = loader->getResource<Mesh_GL>(handle, CacheType::Cache_Models);
 
 			std::ofstream ofs;
 			SDL_Log("saving mesh %llu to %s", mesh, filename);

@@ -8,7 +8,6 @@
 #include <glm/gtc/quaternion.hpp>
 #include <resource/ResourceLoader.h>
 #include <utility/memory_reserve.h>
-#include "VertexBuffer_GL.h"
 #include "RenderTarget_GL.h"
 
 
@@ -148,8 +147,8 @@ namespace griffin {
 		class DeferredRenderer_GL {
 		public:
 			explicit DeferredRenderer_GL() :
-				m_gbuffer(RenderTarget_GL::GBuffer),
-				m_colorBuffer(RenderTarget_GL::Color)
+				m_gbuffer(RenderTarget_GL::TypeGBuffer),
+				m_colorBuffer(RenderTarget_GL::TypeColor)
 			{}
 			~DeferredRenderer_GL();
 
@@ -160,16 +159,25 @@ namespace griffin {
 
 			void renderViewport(ViewportParameters& viewportParams);
 
+			// temp, will be part of render queue in its own layer
+			void setSkyboxTexture(const ResourcePtr& textureCubeMap) {
+				m_skyboxTexture = textureCubeMap;
+			}
+
 		private:
 			RenderTarget_GL		m_gbuffer;							//<! g-buffer for deferred rendering
 
 			ResourcePtr			m_mrtProgram = nullptr;				//<! multiple render target geometry pass, renders the g-buffer
+			ResourcePtr			m_skyboxProgram = nullptr;			//<! skybox render from cubemap texture
 			ResourcePtr			m_fullScreenQuadProgram = nullptr;	//<! fullscreen quad program for deferred lighting and post-processing
 			ResourcePtr			m_ssaoProgram = nullptr;			//<! post-process screen space ambient occlusion shader
 			ResourcePtr			m_atmosphereProgram = nullptr;		//<! post-process atmospheric scattering shader
 			ResourcePtr			m_fxaaProgram = nullptr;			//<! post-process FXAA shader
 
 			ResourcePtr			m_normalsTexture = nullptr;			//<! random normal noise texture for ssao
+			
+			// temp, will be part of render queue in its own layer
+			ResourcePtr			m_skyboxTexture = nullptr;			//<! optional skybox cubemap passed in from external source
 
 			RenderTarget_GL		m_colorBuffer;						//<! color buffer for FXAA
 		};
@@ -211,6 +219,11 @@ namespace griffin {
 			}
 
 			void renderFrame(float interpolation);
+
+			// temp, will be part of render queue in its own layer
+			void setSkyboxTexture(const ResourcePtr& textureCubeMap) {
+				m_deferredRenderer.setSkyboxTexture(textureCubeMap);
+			}
 
 		private:
 			Viewport			m_viewports[MAX_VIEWPORTS];

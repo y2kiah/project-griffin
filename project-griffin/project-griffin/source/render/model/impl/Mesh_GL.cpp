@@ -250,7 +250,7 @@ namespace griffin {
 						// should NOT use this method to get the resource, it serializes to the worker thread
 						// this part of the render is a time-critical section, should have the resourcePtr directly by now
 						// store resourcePtr's within the model containing this mesh, render from the model file
-						auto tex = g_resourceLoader.lock()->getResource<Texture2D_GL>(mat.textures[0].textureResourceHandle, CacheType::Cache_Materials_T);
+						auto tex = g_resourceLoader.lock()->getResource<Texture2D_GL>(mat.textures[0].textureResourceHandle, CacheType::Cache_Materials);
 						if (tex) {
 							tex->bind(GL_TEXTURE4);
 							glUniform1i(diffuseMapLoc, 4);
@@ -669,13 +669,13 @@ namespace griffin {
 						wName = filePath.substr(0, filePath.find_last_of(L'/')) + L'/' + wName;
 						SDL_Log("trying to load %s", aName.assign(wName.begin(),wName.end()).c_str());
 
-						auto resHandle = render::loadTexture(wName, resource::CacheType::Cache_Materials_T);
+						auto resHandle = render::loadTexture2D(wName, resource::CacheType::Cache_Materials);
 						// TEMP, blocking call, need to make this async, use task system
 						// BUT, the continuation must update this handle, assuming "this" pointer is captured by reference,
 						// the material may move in memory, since the resource system is free to move it, potential bug
 						// use the resource id to look up by handle to get its current memory location from the task
 						tex.textureResourceHandle = resHandle.handle();
-						auto pTex = render::g_resourceLoader.lock()->getResource<Texture2D_GL>(tex.textureResourceHandle, resource::CacheType::Cache_Materials_T);
+						auto pTex = render::g_resourceLoader.lock()->getResource<Texture2D_GL>(tex.textureResourceHandle, resource::CacheType::Cache_Materials);
 						pTex->bind(GL_TEXTURE0);
 						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);

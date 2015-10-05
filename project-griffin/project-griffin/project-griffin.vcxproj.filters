@@ -164,6 +164,9 @@
     <Filter Include="render\system\impl">
       <UniqueIdentifier>{f7ea8796-9ecd-42e7-b442-89d192fe733c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="game\sky">
+      <UniqueIdentifier>{eca12828-3246-4413-8d5e-54d8e6002484}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">
@@ -284,6 +287,15 @@
       <Filter>render\model\impl</Filter>
     </ClCompile>
     <ClCompile Include="source\render\impl\ModelManager_GL.cpp">
+      <Filter>render\system\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\texture\impl\TextureCubeMap_GL.cpp">
+      <Filter>render\texture\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\sky\SkySystem.cpp">
+      <Filter>game\sky</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\impl\RenderHelpers.cpp">
       <Filter>render\system\impl</Filter>
     </ClCompile>
   </ItemGroup>
@@ -811,6 +823,12 @@
     <ClInclude Include="source\render\ModelManager_GL.h">
       <Filter>render\system</Filter>
     </ClInclude>
+    <ClInclude Include="source\render\texture\TextureCubeMap_GL.h">
+      <Filter>render\texture</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\sky\SkySystem.h">
+      <Filter>game\sky</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="vendor\glm\glm\gtc\constants.inl">
@@ -1265,6 +1283,9 @@
     </None>
     <None Include="source\lua\game\initGame.lua">
       <Filter>lua\game</Filter>
+    </None>
+    <None Include="source\render\shaders\skybox.glsl">
+      <Filter>render\shaders</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

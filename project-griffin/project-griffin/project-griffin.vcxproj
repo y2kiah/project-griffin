@@ -37,6 +37,7 @@
     <ClCompile Include="source\game\devCamera\DevCameraSystem.cpp" />
     <ClCompile Include="source\game\impl\Game.cpp" />
     <ClCompile Include="source\game\player\PlayerControlSystem.cpp" />
+    <ClCompile Include="source\game\sky\SkySystem.cpp" />
     <ClCompile Include="source\input\impl\InputSystem.cpp" />
     <ClCompile Include="source\input\impl\InputSystemApi.cpp" />
     <ClCompile Include="source\render\font\FreeType.cpp" />
@@ -46,6 +47,7 @@
     <ClCompile Include="source\render\impl\IndexBuffer_GL.cpp" />
     <ClCompile Include="source\render\impl\ModelManager_GL.cpp" />
     <ClCompile Include="source\render\impl\Render.cpp" />
+    <ClCompile Include="source\render\impl\RenderHelpers.cpp" />
     <ClCompile Include="source\render\impl\RenderTarget_GL.cpp" />
     <ClCompile Include="source\render\impl\ShaderManager_GL.cpp" />
     <ClCompile Include="source\render\impl\ShaderProgram_GL.cpp" />
@@ -55,6 +57,7 @@
     <ClCompile Include="source\render\model\impl\ModelImport_Assimp.cpp" />
     <ClCompile Include="source\render\texture\impl\Texture2D_GL.cpp" />
     <ClCompile Include="source\render\texture\dds.cpp" />
+    <ClCompile Include="source\render\texture\impl\TextureCubeMap_GL.cpp" />
     <ClCompile Include="source\resource\impl\ResourceCache.cpp" />
     <ClCompile Include="source\resource\impl\ResourceLoader.cpp" />
     <ClCompile Include="source\resource\impl\ResourceLoader-inl.h" />
@@ -93,6 +96,7 @@
     <ClInclude Include="source\game\Game.h" />
     <ClInclude Include="source\game\impl\GameImpl.h" />
     <ClInclude Include="source\game\player\PlayerControlSystem.h" />
+    <ClInclude Include="source\game\sky\SkySystem.h" />
     <ClInclude Include="source\input\InputSystem.h" />
     <ClInclude Include="source\render\font\FreeType.h" />
     <ClInclude Include="source\render\geometry\Cube.h" />
@@ -114,6 +118,7 @@
     <ClInclude Include="source\render\ShaderProgram_GL.h" />
     <ClInclude Include="source\render\texture\dds.h" />
     <ClInclude Include="source\render\texture\Texture2D_GL.h" />
+    <ClInclude Include="source\render\texture\TextureCubeMap_GL.h" />
     <ClInclude Include="source\render\VertexBuffer_GL.h" />
     <ClInclude Include="source\resource\Resource.h" />
     <ClInclude Include="source\resource\ResourceCache.h" />
@@ -319,6 +324,7 @@
     <None Include="source\render\shaders\layout.glsli" />
     <None Include="source\render\shaders\linearDepth.glsl" />
     <None Include="source\render\shaders\SimpleShader.glsl" />
+    <None Include="source\render\shaders\skybox.glsl" />
     <None Include="source\render\shaders\SkyFromSpace.glsl" />
     <None Include="source\render\shaders\ssao.glsl" />
     <None Include="source\render\shaders\ssao2.glsl" />

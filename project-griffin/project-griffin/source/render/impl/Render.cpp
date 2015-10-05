@@ -33,19 +33,16 @@ namespace griffin {
 
 		weak_ptr<resource::ResourceLoader> g_resourceLoader;
 
-		const float g_fullScreenQuadBufferData[] = {
-			-1.0f, -1.0f, 0.0f,
-			 1.0f, -1.0f, 0.0f,
-			-1.0f,  1.0f, 0.0f,
-			-1.0f,  1.0f, 0.0f,
-			 1.0f, -1.0f, 0.0f,
-			 1.0f,  1.0f, 0.0f
-		};
-		uint32_t		g_glQuadVAO = 0;	//<! Vertex Array Object for fullScreenQuad
-		VertexBuffer_GL	g_fullScreenQuad;
-
 		// TEMP
 		ResourcePtr		g_tempModel = nullptr;
+
+		// defined in RenderHelpers.cpp
+		extern float			g_fullScreenQuadBufferData[3 * 6];
+		extern uint32_t			g_glQuadVAO;
+		extern VertexBuffer_GL	g_fullScreenQuad;
+		extern float			g_cubeBufferData[3 * 36];
+		extern uint32_t			g_glCubeVAO;
+		extern VertexBuffer_GL	g_cubeBuffer;
 
 
 		// class RenderQueue
@@ -100,6 +97,7 @@ namespace griffin {
 
 			//auto fsq  = loadShaderProgram(L"shaders/fullscreenQuad.glsl");
 			auto mrt  = loadShaderProgram(L"shaders/ads.glsl"); // temporarily ads.glsl
+			auto sky  = loadShaderProgram(L"shaders/skybox.glsl");
 			auto ssao = loadShaderProgram(L"shaders/ssao.glsl");
 			auto atms = loadShaderProgram(L"shaders/atmosphere/atmosphere.glsl");
 			auto fxaa = loadShaderProgram(L"shaders/fxaa.glsl");
@@ -108,15 +106,29 @@ namespace griffin {
 			//L"shaders/atmosphere/atmosphere.glsl"
 			//L"shaders/SimpleShader.glsl"
 
-			auto nrml = loadTexture(L"textures/normal-noise.dds");
+			auto nrml = loadTexture2D(L"textures/normal-noise.dds", CacheType::Cache_Permanent);
 
 			//m_fullScreenQuadProgram = loader->getResource(fsq).get(); // wait on the futures and assign shared_ptrs
 			m_mrtProgram = loader->getResource(mrt).get();
+			m_skyboxProgram = loader->getResource(sky).get();
 			m_ssaoProgram = loader->getResource(ssao).get();
 			m_atmosphereProgram = loader->getResource(atms).get();
 			m_fxaaProgram = loader->getResource(fxaa).get();
 
 			m_normalsTexture = loader->getResource(nrml).get();
+
+			// Clear color of the render targets
+			#ifdef _DEBUG
+			glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
+			#else
+			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+			#endif
+
+			// Enable stencil testing
+			glEnable(GL_STENCIL_TEST);
+			glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+			glStencilFunc(GL_ALWAYS, 1, 0xFF);
+			glStencilMask(0x00); // writing turned off to start
 		}
 
 
@@ -129,7 +141,12 @@ namespace griffin {
 			// Start g-buffer rendering
 			m_gbuffer.start();
 			{
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+				
 				glEnable(GL_DEPTH_TEST);
+
+				glStencilFunc(GL_ALWAYS, 1, 0xFF);
+				glStencilMask(0xFF);
 
 				auto& program = m_mrtProgram.get()->getResource<ShaderProgram_GL>();
 				program.useProgram();
@@ -138,29 +155,29 @@ namespace griffin {
 				//glUniformMatrix4fv(UniformLayout_ModelView, 1, GL_FALSE, &camera->getModelViewMatrix()[0][0]);
 				//glUniformMatrix4fv(UniformLayout_Projection, 1, GL_FALSE, &camera->getProjectionMatrix()[0][0]);
 				//glUniformMatrix4fv(UniformLayout_ModelViewProjection, 1, GL_FALSE, &mvp[0][0]);
-				GLint modelMatLoc = glGetUniformLocation(programId, "modelToWorld");
+				GLint modelMatLoc     = glGetUniformLocation(programId, "modelToWorld");
 				GLint modelViewMatLoc = glGetUniformLocation(programId, "modelView");
-				GLint viewProjMatLoc = glGetUniformLocation(programId, "viewProjection");
-				GLint mvpMatLoc = glGetUniformLocation(programId, "modelViewProjection");
-				GLint normalMatLoc = glGetUniformLocation(programId, "normalMatrix");
+				GLint viewProjMatLoc  = glGetUniformLocation(programId, "viewProjection");
+				GLint mvpMatLoc       = glGetUniformLocation(programId, "modelViewProjection");
+				GLint normalMatLoc    = glGetUniformLocation(programId, "normalMatrix");
 
-				GLint frustumNearLoc = glGetUniformLocation(programId, "frustumNear");
-				GLint frustumFarLoc = glGetUniformLocation(programId, "frustumFar");
+				GLint frustumNearLoc  = glGetUniformLocation(programId, "frustumNear");
+				GLint frustumFarLoc   = glGetUniformLocation(programId, "frustumFar");
 				GLint inverseFrustumDistanceLoc = glGetUniformLocation(programId, "inverseFrustumDistance");
 
-				GLint ambientLoc = glGetUniformLocation(programId, "materialKa");
-				GLint diffuseLoc = glGetUniformLocation(programId, "materialKd");
-				GLint specularLoc = glGetUniformLocation(programId, "materialKs");
-				GLint shininessLoc = glGetUniformLocation(programId, "materialShininess");
+				GLint ambientLoc      = glGetUniformLocation(programId, "materialKa");
+				GLint diffuseLoc      = glGetUniformLocation(programId, "materialKd");
+				GLint specularLoc     = glGetUniformLocation(programId, "materialKs");
+				GLint shininessLoc    = glGetUniformLocation(programId, "materialShininess");
 
-				GLint diffuseMapLoc = glGetUniformLocation(programId, "diffuseMap");
+				GLint diffuseMapLoc   = glGetUniformLocation(programId, "diffuseMap");
 
 				glUniformMatrix4fv(viewProjMatLoc, 1, GL_FALSE, &viewportParams.viewProjMat[0][0]);
 
 				glUniform1f(frustumNearLoc, viewportParams.nearClipPlane);
 				glUniform1f(frustumFarLoc, viewportParams.farClipPlane);
 				glUniform1f(inverseFrustumDistanceLoc, viewportParams.inverseFrustumDistance);
-
+				
 				// TEMP
 				animTime += 0.001667f;
 				if (animTime > 2.5f) {
@@ -177,6 +194,34 @@ namespace griffin {
 				}
 
 				glDisable(GL_DEPTH_TEST);
+				
+				// Render Skybox
+				if (m_skyboxTexture) {
+					auto& program = m_skyboxProgram.get()->getResource<ShaderProgram_GL>();
+					program.useProgram();
+					auto programId = program.getProgramId();
+
+					auto& skybox = m_skyboxTexture.get()->getResource<TextureCubeMap_GL>();
+					skybox.bind(GL_TEXTURE0);
+
+					GLint mvpMatLoc = glGetUniformLocation(programId, "modelViewProjection");
+					GLint cubemapLoc = glGetUniformLocation(programId, "cubemap");
+
+					glm::mat4 inverseViewMat = glm::inverse(viewportParams.viewMat);
+					inverseViewMat[3].xyz = 0.0f;
+					glm::mat4 skyboxMVP = viewportParams.projMat * inverseViewMat;
+
+					glUniformMatrix4fv(mvpMatLoc, 1, GL_FALSE, &skyboxMVP[0][0]);
+					glUniform1i(cubemapLoc, 0);
+
+					glStencilFunc(GL_EQUAL, 0, 0xFF); // Pass test if stencil value is 0
+					//glEnable(GL_BLEND);
+					//glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+					//glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+					drawCube();
+					//glDisable(GL_BLEND);
+					glStencilFunc(GL_ALWAYS, 1, 0xFF);
+				}
 			}
 			m_gbuffer.stop();
 			// End g-buffer rendering
@@ -184,6 +229,8 @@ namespace griffin {
 			// Start post-processing
 			m_colorBuffer.start();
 			{
+				glClear(GL_COLOR_BUFFER_BIT);
+
 				// SSAO
 				auto& ssao = m_ssaoProgram.get()->getResource<ShaderProgram_GL>();
 				ssao.useProgram();
@@ -215,9 +262,7 @@ namespace griffin {
 			m_colorBuffer.stop();
 
 			{
-				// start call above clears these
-				glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				glClear(GL_COLOR_BUFFER_BIT);
 
 				// FXAA
 				auto& fxaa = m_fxaaProgram.get()->getResource<ShaderProgram_GL>();
@@ -258,6 +303,17 @@ namespace griffin {
 			glEnableVertexAttribArray(VertexLayout_Position);
 			glVertexAttribPointer(VertexLayout_Position, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
+			// build cube vertex buffer
+			g_cubeBuffer.loadFromMemory(reinterpret_cast<const unsigned char*>(g_cubeBufferData),
+										sizeof(g_cubeBufferData));
+
+			// build VAO for cube
+			glGenVertexArrays(1, &g_glCubeVAO);
+			glBindVertexArray(g_glCubeVAO);
+			g_cubeBuffer.bind();
+			glEnableVertexAttribArray(VertexLayout_Position);
+			glVertexAttribPointer(VertexLayout_Position, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
 			// init the renderers
 			m_deferredRenderer.init(viewportWidth, viewportHeight);
 
@@ -283,15 +339,15 @@ namespace griffin {
 
 			// TEMP create some test resources
 			try {
-				//auto mdl = loadModel(L"models/Spitfire/spitfire.gmd", CacheType::Cache_Models_T);
-				//auto mdl = loadModel(L"models/landing_platform.gmd", CacheType::Cache_Models_T);
-				//auto mdl = loadModel(L"models/collision_test/collision_test.gmd", CacheType::Cache_Models_T);
-				//auto mdl = loadModel(L"models/gunship/gunship.gmd", CacheType::Cache_Models_T);
-				//auto mdl = loadModel(L"models/A-10C Pit.gmd", CacheType::Cache_Models_T);
-				//auto mdl = loadModel(L"models/other_pit.gmd", CacheType::Cache_Models_T);
-				//auto mdl = loadModel(L"models/Bill/Bill.gmd", CacheType::Cache_Models_T);
-				//auto mdl = loadModel(L"models/ring/ring.gmd", CacheType::Cache_Models_T);
-				auto mdl = loadModel(L"models/building_001.gmd", CacheType::Cache_Models_T);
+				//auto mdl = loadModel(L"models/Spitfire/spitfire.gmd", CacheType::Cache_Models);
+				auto mdl = loadModel(L"models/landing_platform.gmd", CacheType::Cache_Models);
+				//auto mdl = loadModel(L"models/collision_test/collision_test.gmd", CacheType::Cache_Models);
+				//auto mdl = loadModel(L"models/gunship/gunship.gmd", CacheType::Cache_Models);
+				//auto mdl = loadModel(L"models/A-10C Pit.gmd", CacheType::Cache_Models);
+				//auto mdl = loadModel(L"models/other_pit.gmd", CacheType::Cache_Models);
+				//auto mdl = loadModel(L"models/Bill/Bill.gmd", CacheType::Cache_Models);
+				//auto mdl = loadModel(L"models/ring/ring.gmd", CacheType::Cache_Models);
+				//auto mdl = loadModel(L"models/building_001.gmd", CacheType::Cache_Models);
 
 				using namespace resource;
 				auto loader = g_resourceLoader.lock();
@@ -329,12 +385,15 @@ namespace griffin {
 			if (g_glQuadVAO != 0) {
 				glDeleteVertexArrays(1, &g_glQuadVAO);
 			}
+			if (g_glCubeVAO != 0) {
+				glDeleteVertexArrays(1, &g_glCubeVAO);
+			}
 		}
 
 
 		// Free Functions, RenderResources.h
 
-		ResourceHandle<Texture2D_GL> loadTexture(wstring texturePath, CacheType cache)
+		ResourceHandle<Texture2D_GL> loadTexture2D(wstring texturePath, CacheType cache)
 		{
 			using namespace resource;
 
@@ -360,6 +419,35 @@ namespace griffin {
 			};
 
 			return loader->load<Texture2D_GL>(texturePath, cache, textureResourceBuilder, textureResourceCallback);
+		}
+
+
+		ResourceHandle<TextureCubeMap_GL> loadTextureCubeMap(wstring texturePath, CacheType cache)
+		{
+			using namespace resource;
+
+			auto loader = g_resourceLoader.lock();
+
+			if (!loader) {
+				throw std::runtime_error("no resource loader");
+			}
+
+			auto textureResourceBuilder = [](DataPtr data, size_t size) {
+				TextureCubeMap_GL tex(move(data), size);
+				SDL_Log("building texture of size %d", size);
+				return tex;
+			};
+
+			// need a way to specify thread affinity for the callback so it knows to run on update or render thread
+			auto textureResourceCallback = [](const ResourcePtr& resourcePtr, Id_T handle, size_t size) {
+				TextureCubeMap_GL& tex = resourcePtr->getResource<TextureCubeMap_GL>();
+				SDL_Log("callback texture of size %d", size);
+				// the unique_ptr of data is stored within the texture, this call deletes the data after
+				// sending texture to OpenGL
+				tex.loadFromInternalMemory();
+			};
+
+			return loader->load<TextureCubeMap_GL>(texturePath, cache, textureResourceBuilder, textureResourceCallback);
 		}
 
 
@@ -412,22 +500,5 @@ namespace griffin {
 			return loader->load<Model_GL>(modelFilePath, cache, meshResourceBuilder, meshResourceCallback);
 		}
 
-
-		// Free Functions, RenderHelpers.h
-
-		void drawFullscreenQuad()
-		{
-			glBindVertexArray(g_glQuadVAO);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-		}
-		
-		void drawPixelPerfectQuad(float leftPx, float topPx, uint32_t widthPx, uint32_t heightPx)
-		{
-
-		}
-
-		void drawScaledQuad(float left, float top, float width, float height)
-		{
-		}
 	}
 }
