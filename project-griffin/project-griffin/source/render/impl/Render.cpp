@@ -215,11 +215,7 @@ namespace griffin {
 					glUniform1i(cubemapLoc, 0);
 
 					glStencilFunc(GL_EQUAL, 0, 0xFF); // Pass test if stencil value is 0
-					//glEnable(GL_BLEND);
-					//glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-					//glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
 					drawCube();
-					//glDisable(GL_BLEND);
 					glStencilFunc(GL_ALWAYS, 1, 0xFF);
 				}
 			}
@@ -273,11 +269,6 @@ namespace griffin {
 				//m_gbuffer.bind(RenderTarget_GL::Albedo_Displacement, GL_TEXTURE0);		// when SSAO off, alpha channel must contain luma
 				GLint colorMapLoc = glGetUniformLocation(fxaaId, "colorMap");
 				glUniform1i(colorMapLoc, 0);
-
-				// TEMP show texture
-//				auto& tex = g_tex->getResource<Texture2D_GL>();
-//				tex.bind(GL_TEXTURE0);
-				// TEMP
 
 				drawFullscreenQuad();
 			}

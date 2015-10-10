@@ -17,11 +17,12 @@
 #endif
 
 #ifdef _FRAGMENT_
+
 	uniform samplerCube cubemap; // 0
 	
 	vec3 uvw;
 
-	out vec4 outColor;
+	layout(location = 0) out vec4 outColor;
 
 	float luma(vec3 color) {
 		return dot(color, vec3(0.299, 0.587, 0.114));
