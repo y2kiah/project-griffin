@@ -1287,6 +1287,9 @@
     <None Include="source\render\shaders\skybox.glsl">
       <Filter>render\shaders</Filter>
     </None>
+    <None Include="source\render\shaders\ssao3.glsl">
+      <Filter>render\shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="project-griffin.rc">

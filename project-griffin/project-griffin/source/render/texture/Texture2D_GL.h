@@ -37,6 +37,7 @@ namespace griffin {
 			int getHeight() const { return m_height; }
 			int getNumMipmaps() const { return m_numMipmaps; }
 			int getComponents() const { return m_components; }
+			unsigned int getGLTexture() { return m_glTexture; }
 
 		private:
 			void setFilteringMode(bool mipmaps);

@@ -328,6 +328,7 @@
     <None Include="source\render\shaders\SkyFromSpace.glsl" />
     <None Include="source\render\shaders\ssao.glsl" />
     <None Include="source\render\shaders\ssao2.glsl" />
+    <None Include="source\render\shaders\ssao3.glsl" />
     <None Include="source\render\shaders\terrain.glsl" />
     <None Include="source\utility\container\impl\bitwise_quadtree-inl.h" />
     <None Include="source\utility\container\impl\concurrent_queue-inl.h" />
