@@ -1,0 +1,47 @@
+{
+	"models":[
+		{
+			"id":1,
+			"mesh":"models/Spitfire/spitfire.gmd"
+		},
+		{
+			"id":2,
+			"mesh":"models/landing_platform.gmd"
+		},
+		{
+			"id":3,
+			"mesh":"models/collision_test/collision_test.gmd"
+		},
+		{
+			"id":4,
+			"mesh":"models/gunship/gunship.gmd"
+		},
+		{
+			"id":5,
+			"mesh":"models/A-10C Pit.gmd"
+		},
+		{
+			"id":6,
+			"mesh":"models/other_pit.gmd"
+		},
+		{
+			"id":7,
+			"mesh":"models/Bill/Bill.gmd"
+		},
+		{
+			"id":8,
+			"mesh":"models/ring/ring.gmd"
+		}
+	],
+	"entities":[
+		{
+			"components":[
+
+			],
+			"model_id":8
+			"position":[0.0, 0.0, 0.0],
+			"orientation":[0.0, 0.0, 0.0],
+			"scale":[1.0, 1.0, 1.0]
+		}
+	]
+}

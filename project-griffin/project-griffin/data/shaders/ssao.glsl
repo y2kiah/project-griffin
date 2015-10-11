@@ -102,8 +102,8 @@ uniform float rad = 0.000000113208;/*for 53M*/   //0.000006; /*for 1M*/   //0.00
 		}
 
 		// output the result
-		//float ao = 1.0-totStrength*bl*invSamples;
-		outColor.rgb = texture(colorMap,uv).rgb;// * ao;
+		float ao = 1.0-totStrength*bl*invSamples;
+		outColor.rgb = texture(colorMap,uv).rgb * ao;
 		outColor.a = luma(outColor.rgb);
 		//outColor.rgb = currentPixelSample.rgb;
 		//outColor = vec4(ao,ao,ao,0.0);

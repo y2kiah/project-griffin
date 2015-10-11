@@ -103,7 +103,6 @@ namespace griffin {
 			auto fxaa = loadShaderProgram(L"shaders/fxaa.glsl");
 			//L"shaders/linearDepth.glsl"
 			//L"shaders/atmosphere/earth.glsl"
-			//L"shaders/atmosphere/atmosphere.glsl"
 			//L"shaders/SimpleShader.glsl"
 
 			auto nrml = loadTexture2D(L"textures/normal-noise.dds", CacheType::Cache_Permanent);
@@ -115,7 +114,13 @@ namespace griffin {
 			m_atmosphereProgram = loader->getResource(atms).get();
 			m_fxaaProgram = loader->getResource(fxaa).get();
 
+			// set up normal noise texture for ssao
 			m_normalsTexture = loader->getResource(nrml).get();
+			glBindTexture(GL_TEXTURE_2D, m_normalsTexture->getResource<Texture2D_GL>().getGLTexture());
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 			// Clear color of the render targets
 			#ifdef _DEBUG
@@ -236,11 +241,13 @@ namespace griffin {
 				m_gbuffer.bind(RenderTarget_GL::Albedo_Displacement, GL_TEXTURE1);
 				m_gbuffer.bind(RenderTarget_GL::Normal_Reflectance, GL_TEXTURE2);
 				m_gbuffer.bind(RenderTarget_GL::Depth_Stencil, GL_TEXTURE3);
+				m_gbuffer.bind(RenderTarget_GL::Position, GL_TEXTURE4);
 
 				GLint normalNoiseLoc = glGetUniformLocation(ssaoId, "normalNoise"); // <-- uniform locations could be stored in shaderprogram structure
 				GLint colorMapLoc    = glGetUniformLocation(ssaoId, "colorMap");
 				GLint normalMapLoc   = glGetUniformLocation(ssaoId, "normalMap");
 				GLint depthMapLoc    = glGetUniformLocation(ssaoId, "depthMap");
+				GLint positionMapLoc = glGetUniformLocation(ssaoId, "positionMap");
 				
 				GLint cameraNearLoc  = glGetUniformLocation(ssaoId, "cameraNear");
 				GLint cameraFarLoc   = glGetUniformLocation(ssaoId, "cameraFar");
@@ -249,6 +256,7 @@ namespace griffin {
 				glUniform1i(colorMapLoc, 1);
 				glUniform1i(normalMapLoc, 2);
 				glUniform1i(depthMapLoc, 3);
+				glUniform1i(positionMapLoc, 4);
 				
 				glUniform1f(cameraNearLoc, viewportParams.nearClipPlane);
 				glUniform1f(cameraFarLoc, viewportParams.farClipPlane);
@@ -265,8 +273,13 @@ namespace griffin {
 				fxaa.useProgram();
 				auto fxaaId = fxaa.getProgramId();
 
+				// requires bilinear filter on the sampler
 				m_colorBuffer.bind(RenderTarget_GL::Albedo_Displacement, GL_TEXTURE0);	// when SSAO on
+				
 				//m_gbuffer.bind(RenderTarget_GL::Albedo_Displacement, GL_TEXTURE0);		// when SSAO off, alpha channel must contain luma
+				//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
 				GLint colorMapLoc = glGetUniformLocation(fxaaId, "colorMap");
 				glUniform1i(colorMapLoc, 0);
 
