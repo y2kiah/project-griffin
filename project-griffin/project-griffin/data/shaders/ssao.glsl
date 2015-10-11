@@ -12,11 +12,11 @@
 
 #define SAMPLES 16 // 10 is good
 
-uniform float totStrength = 0.35; //1.38;
+uniform float totStrength = 1.0;//1.38;
 uniform float strength = 0.07;
 uniform float offset = 18.0;
-uniform float falloff = 0.000000002; //0.000002;
-uniform float rad = 0.000006; //0.006;
+uniform float falloff = 0.0000002;
+uniform float rad = 0.000000113208;/*for 53M*/   //0.000006; /*for 1M*/   //0.006; /*for 10K*/
 
 #ifdef _VERTEX_
 
@@ -105,8 +105,9 @@ uniform float rad = 0.000006; //0.006;
 		//float ao = 1.0-totStrength*bl*invSamples;
 		outColor.rgb = texture(colorMap,uv).rgb;// * ao;
 		outColor.a = luma(outColor.rgb);
+		//outColor.rgb = currentPixelSample.rgb;
 		//outColor = vec4(ao,ao,ao,0.0);
-		//outColor = vec4(currentPixelDepth,currentPixelDepth,currentPixelDepth,0.0);
+		//outColor = vec4(currentPixelSample,0.0);
 	}
 
 /*

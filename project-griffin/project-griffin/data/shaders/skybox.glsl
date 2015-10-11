@@ -30,7 +30,7 @@
 
 	uniform samplerCube cubemap; // 0
 	
-	vec3 uvw;
+	in vec3 uvw;
 
 	layout(location = 0) out vec4 outColor;
 

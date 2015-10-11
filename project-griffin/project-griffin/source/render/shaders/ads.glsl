@@ -269,7 +269,7 @@
 		//outColor = (texture(diffuse, uv).rgb * color.rgb);
 		albedoDisplacement = vec4(lightIntensity, 1.0);
 		eyeSpacePosition = positionViewspace.xyz;
-		normalReflectance = vec4((normalViewspace + 1.0) * 0.5, 0.0); // vec4(normalViewspace, 0.0);
+		normalReflectance = vec4(normalViewspace, 0.0);
 		gl_FragDepth = linearDepth;
 	}
 

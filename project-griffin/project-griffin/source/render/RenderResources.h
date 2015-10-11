@@ -20,7 +20,7 @@ namespace griffin {
 		// Resource Loading Functions
 		ResourceHandle<Texture2D_GL>		loadTexture2D(wstring texturePath, CacheType cache = CacheType::Cache_Materials);
 
-		ResourceHandle<TextureCubeMap_GL>	loadTextureCubeMap(wstring texturePath, CacheType cache = CacheType::Cache_Materials);
+		ResourceHandle<TextureCubeMap_GL>	loadTextureCubeMap(wstring texturePath, CacheType cache = CacheType::Cache_Materials, bool swapY = false);
 
 		ResourceHandle<ShaderProgram_GL>	loadShaderProgram(wstring programPath, CacheType cache = CacheType::Cache_Materials);
 

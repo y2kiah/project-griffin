@@ -244,7 +244,7 @@ namespace griffin {
 			bool upload_texture2D(int imageIndex = 0, unsigned int glTarget = 0x0DE1); // GLenum = GL_TEXTURE_2D
 			bool upload_textureRectangle();
 			bool upload_texture3D();
-			bool upload_textureCubemap();
+			bool upload_textureCubemap(bool swapY = false);
 
 			int get_width()
 			{

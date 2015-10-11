@@ -470,7 +470,7 @@ bool DDSImage::upload_textureRectangle()
 }
 
 // uploads a compressed/uncompressed cubemap texture
-bool DDSImage::upload_textureCubemap()
+bool DDSImage::upload_textureCubemap(bool swapY)
 {
 	// TODO: use glTexStorage2D and glTexSubImage2D / glCompressedTexSubImage2D for performance
 
@@ -482,6 +482,14 @@ bool DDSImage::upload_textureCubemap()
 	for (int n = 0; n < 6; ++n) {
 		// specify cubemap face
 		target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + n;
+
+		if (swapY && target == GL_TEXTURE_CUBE_MAP_POSITIVE_Y) {
+			target = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y;
+		}
+		else if (swapY && target == GL_TEXTURE_CUBE_MAP_NEGATIVE_Y) {
+			target = GL_TEXTURE_CUBE_MAP_POSITIVE_Y;
+		}
+
 		if (!upload_texture2D(n, target)) {
 			return false;
 		}

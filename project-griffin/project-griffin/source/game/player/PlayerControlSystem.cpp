@@ -191,7 +191,7 @@ void griffin::game::PlayerControlSystem::init(Game* pGame, const Engine& engine,
 
 	// create player scene node
 	playerId = createCamera(game.sceneId, NullId_T, CameraParameters{
-		0.1f, 100000.0f,	// near/far clip
+		0.1f, 53000000.0f,	// near/far clip
 		app.getPrimaryWindow().width, app.getPrimaryWindow().height, // viewport
 		60.0f, Camera_Perspective
 	}, "player");

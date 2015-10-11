@@ -13,7 +13,7 @@ void griffin::game::SkySystem::init(Game* pGame, const Engine& engine, const SDL
 	using namespace render;
 	using namespace resource;
 
-	auto skyTex = loadTextureCubeMap(L"textures/skybox.dds", CacheType::Cache_Permanent);
+	auto skyTex = loadTextureCubeMap(L"textures/skybox.dds", CacheType::Cache_Permanent, true);
 	skyBoxCubeMap = engine.resourceLoader->getResource(skyTex).get();
 
 }

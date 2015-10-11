@@ -57,7 +57,7 @@ namespace griffin {
 			}
 		}
 
-		bool TextureCubeMap_GL::loadFromMemory(unsigned char* data, size_t size)
+		bool TextureCubeMap_GL::loadFromMemory(unsigned char* data, size_t size, bool swapY)
 		{
 			// if image is already loaded, do some cleanup?
 
@@ -66,7 +66,7 @@ namespace griffin {
 			DDSImage image;
 			bool ok = image.loadFromMemory(data, true) &&
 					  image.is_cubemap() &&
-					  image.upload_textureCubemap();
+					  image.upload_textureCubemap(swapY);
 
 			if (ok) {
 				setFilteringMode(image.get_num_mipmaps() > 0);
@@ -97,9 +97,9 @@ namespace griffin {
 			return ok;// (m_glTexture != 0);
 		}
 
-		bool TextureCubeMap_GL::loadFromInternalMemory(bool discard)
+		bool TextureCubeMap_GL::loadFromInternalMemory(bool discard, bool swapY)
 		{
-			bool result = loadFromMemory(m_tmpData.get(), m_sizeBytes);
+			bool result = loadFromMemory(m_tmpData.get(), m_sizeBytes, swapY);
 			if (discard) {
 				m_tmpData.reset();
 			}
@@ -107,7 +107,7 @@ namespace griffin {
 			return result;
 		}
 
-		bool TextureCubeMap_GL::loadFromFile(const char* filename)
+		bool TextureCubeMap_GL::loadFromFile(const char* filename, bool swapY)
 		{
 			// if image is already loaded, do some cleanup?
 
@@ -116,7 +116,7 @@ namespace griffin {
 			DDSImage image;
 			bool ok = image.load(filename, true) &&
 					  image.is_cubemap() &&
-					  image.upload_textureCubemap();
+					  image.upload_textureCubemap(swapY);
 
 			if (ok) {
 				setFilteringMode(image.get_num_mipmaps() > 0);

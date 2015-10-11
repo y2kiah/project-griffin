@@ -207,9 +207,9 @@ namespace griffin {
 					GLint mvpMatLoc = glGetUniformLocation(programId, "modelViewProjection");
 					GLint cubemapLoc = glGetUniformLocation(programId, "cubemap");
 
-					glm::mat4 inverseViewMat = glm::inverse(viewportParams.viewMat);
-					inverseViewMat[3].xyz = 0.0f;
-					glm::mat4 skyboxMVP = viewportParams.projMat * inverseViewMat;
+					glm::mat4 skyboxViewMat = viewportParams.viewMat;
+					skyboxViewMat[3].xyz = 0.0f;
+					glm::mat4 skyboxMVP = viewportParams.projMat * skyboxViewMat;
 
 					glUniformMatrix4fv(mvpMatLoc, 1, GL_FALSE, &skyboxMVP[0][0]);
 					glUniform1i(cubemapLoc, 0);
@@ -413,7 +413,7 @@ namespace griffin {
 		}
 
 
-		ResourceHandle<TextureCubeMap_GL> loadTextureCubeMap(wstring texturePath, CacheType cache)
+		ResourceHandle<TextureCubeMap_GL> loadTextureCubeMap(wstring texturePath, CacheType cache, bool swapY)
 		{
 			using namespace resource;
 
@@ -435,7 +435,7 @@ namespace griffin {
 				SDL_Log("callback texture of size %d", size);
 				// the unique_ptr of data is stored within the texture, this call deletes the data after
 				// sending texture to OpenGL
-				tex.loadFromInternalMemory();
+				tex.loadFromInternalMemory(true, true);
 			};
 
 			return loader->load<TextureCubeMap_GL>(texturePath, cache, textureResourceBuilder, textureResourceCallback);
