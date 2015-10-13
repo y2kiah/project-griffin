@@ -1,6 +1,7 @@
 #include <GL/glew.h>
 #include <render/RenderHelpers.h>
 #include <render/VertexBuffer_GL.h>
+#include <cmath>
 
 namespace griffin {
 	namespace render {
@@ -79,7 +80,7 @@ namespace griffin {
 		VertexBuffer_GL	g_cubeBuffer;
 
 
-		// Free Functions
+		// Draw shapes and volumes
 
 		void drawFullscreenQuad()
 		{
@@ -102,5 +103,38 @@ namespace griffin {
 		{
 		}
 
+
+		// Lighting
+
+		/**
+		* Solve light attenuation for 5/256 to get light radius
+		* 5/256 = Imax / (Kc + Kl*d + Kq*d*d)
+		*	where Imax is 
+		*
+		* @Imax	light's brightest color component
+		* @Kc	attenuation base constant
+		* @Kl	attenuation linear constant
+		* @Kq	attenuation quadratic constant
+		* @see	http://learnopengl.com/#!Advanced-Lighting/Deferred-Shading
+		*
+		* Table to help choose values:
+		*	Distance	Constant	Linear	Quadratic
+		*	7			1.0			0.7		1.8
+		*	13			1.0			0.35	0.44
+		*	20			1.0			0.22	0.20
+		*	32			1.0			0.14	0.07
+		*	50			1.0			0.09	0.032
+		*	65			1.0			0.07	0.017
+		*	100			1.0			0.045	0.0075
+		*	160			1.0			0.027	0.0028
+		*	200			1.0			0.022	0.0019
+		*	325			1.0			0.014	0.0007
+		*	600			1.0			0.007	0.0002
+		*	3250		1.0			0.0014	0.000007
+		*/
+		float getLightVolumeRadius(float Imax, float Kc, float Kl, float Kq)
+		{
+			return (-Kl + std::sqrtf(Kl * Kl - 4.0f * Kq * (Kc - (256.0f / 5.0f) * Imax))) / (2.0f * Kq);
+		}
 	}
 }

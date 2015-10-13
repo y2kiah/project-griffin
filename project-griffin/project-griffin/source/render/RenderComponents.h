@@ -29,7 +29,7 @@ namespace griffin {
 		* Tracks time and blend factor of all animation tracks for a mesh instance. The prev/next
 		* values are interpolated for rendering.
 		*/
-		COMPONENT(MeshAnimationTrackComponent,
+		COMPONENT(MeshAnimationTrack,
 			(bitset<MAX_MESH_ANIMATION_TRACKS>, playing,,					"bitset indicating animation is currently playing"),
 			(bitset<MAX_MESH_ANIMATION_TRACKS>, looped,,					"bitset indicating animation loops when played"),
 			(int8_t,					queuedAnimations,[8],				"queued animation indices"),
@@ -42,7 +42,7 @@ namespace griffin {
 		* the mesh. The prev/next values are written in the update loop and interpolated in the
 		* render loop.
 		*/
-		COMPONENT(MeshNodeAnimationComponent,
+		COMPONENT(MeshNodeAnimation,
 			(uint32_t,		nodeIndex,,				"MeshSceneNode index"),
 			(uint8_t,		prevActive,,			"1 = use this previous transform, 0 = use default transform"),
 			(uint8_t,		nextActive,,			"1 = use this next transform, 0 = use default transform"),
@@ -61,7 +61,7 @@ namespace griffin {
 		/**
 		*
 		*/
-		COMPONENT(MaterialOverrideComponent,
+		COMPONENT(MaterialOverride,
 			(float,			todo,,							"")
 		)
 	}

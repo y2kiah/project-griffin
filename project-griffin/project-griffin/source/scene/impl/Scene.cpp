@@ -110,7 +110,7 @@ void SceneManager::renderActiveScenes(float interpolation)
 
 			// update position/orientation of active camera from the scene graph
 			//	only supports one active camera now, but the active cameras could be extended into a list to support several views
-			for (auto& camInstance : s.entityManager->getComponentStore<CameraInstanceContainer>().getComponents().getItems()) {
+			for (auto& camInstance : s.entityManager->getComponentStore<CameraInstance>().getComponents().getItems()) {
 				if (camInstance.component.cameraId == s.activeRenderCamera) {
 					auto& node = *s.entityManager->getEntityComponent<SceneNode>(camInstance.entityId);
 					auto& cam = *s.cameras[s.activeRenderCamera];

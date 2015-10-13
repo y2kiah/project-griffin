@@ -65,17 +65,18 @@
 #ifdef _FRAGMENT_
 	// Uniform Variables
 
-	/*struct LightInfo {
-		vec4 positionViewspace; // Light position in eye coords.
-		vec3 La; // Ambient light intensity
-		vec3 Ld; // Diffuse light intensity
-		vec3 Ls; // Specular light intensity
+	struct Light {
+		vec4 positionViewspace;		// Light position in viewspace
+		vec3 directionViewspace;	// Light spot direction in viewspace
+		vec3 La;					// light color ambient
+		vec3 Lds;					// light color diffuse and specular
+		float Kc;					// attenuation base constant
+		float Kl;					// attenuation linear constant
+		float Kq;					// attenuation quadratic constant
+		float spotAngleCutoff;		// spotlight angle cutoff, dot product comparison (% from 90deg)
+		float spotEdgeBlendPct;		// spotlight edge blend, in % of spot radius
 	};
-	uniform LightInfo light;*/
-	const vec3 lightLa = { 0.6, 0.7, 0.8 };
-	//const vec3 lightLa = { 0.1, 0.2, 0.3 };
-	const vec3 lightLd = { 0.8, 0.6, 0.3 };
-	const vec3 lightLs = lightLd;
+	uniform Light light;
 
 	/*struct MaterialInfo {
 		vec3 Ka; // Ambient reflectivity
@@ -96,9 +97,6 @@
 
 	vec3 materialKa = materialKd; // temp
 
-	const vec4 lightPosition = { 0.0, 0.0, 0.0, 1.0 }; // temp
-	float lightDistanceSquared = 5000.0; // falloff distance of light squared, temp
-
 	//uniform vec3 diffuseColor;
 	uniform sampler2D diffuseMap;	// 4
 
@@ -112,6 +110,8 @@
 	//
 	//uniform int diffuseVertexColorChannel = 0;
 	
+	// Globals
+	vec3 surfaceColor;
 
 	// Input Variables
 
@@ -131,137 +131,114 @@
 	
 	// Functions
 
-	vec3 phongPointLight(vec4 positionViewspace, vec3 normalViewspace)
-	{
-		vec3 normal = normalize(normalViewspace);
-		vec3 lightDir = normalize(vec3(lightPosition - positionViewspace));
-		
-		float lambertian = max(dot(lightDir, normal), 0.0);
-
-		vec3 specular = vec3(0.0);
-		if (lambertian > 0.0) {
-			vec3 viewDir = normalize(vec3(-positionViewspace));
-			vec3 reflectDir = normalize(reflect(-lightDir, normalViewspace));
-
-			float specAngle = max(dot(reflectDir,viewDir), 0.0);
-			specular = lightLs * materialKs * pow(specAngle, materialShininess);
-		}
-
-		vec3 ambient = lightLa * materialKa;
-		vec3 emissive = materialKe;
-		vec3 diffuse = lightLd * materialKd * lambertian;
-
-		return ambient + emissive + diffuse + specular;
-	}
-
 	vec3 blinnPhongDirectionalLight(vec4 positionViewspace, vec3 normalViewspace)
 	{
-		vec3 normal = normalize(normalViewspace);
-		vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0)); // temp
+		vec3 toLight = normalize(vec3(light.positionViewspace));
 
 		vec3 specular = vec3(0.0);
 		
-		float lambertian = max(dot(lightDir,normal), 0.0);
+		vec3 normal = normalize(normalViewspace);
+		float lambertian = max(dot(toLight,normal), 0.0);
 
 		if (lambertian > 0.0) {
 			vec3 viewDir = normalize(vec3(-positionViewspace));
-			vec3 halfDir = normalize(lightDir + viewDir);
+			vec3 halfDir = normalize(toLight + viewDir);
 
 			float specAngle = max(dot(halfDir, normal), 0.0);
-			specular = lightLs * materialKs * pow(specAngle, materialShininess * 4.0);
+
+			// determines the specular highlight color with a "metallic" property
+			// specular highlight of plastics is light * specular reflectivity, metallic is mostly surface * specular reflectivity
+			vec3 specColor = mix(light.Lds * materialKs,
+								 materialKs * surfaceColor,
+								 materialMetallic);
+
+			specular = specColor * pow(specAngle, materialShininess * 4.0);
 		}
 
-		vec3 ambient = lightLa * materialKa;
+		vec3 ambient = light.La * surfaceColor * materialKa;
 		vec3 emissive = materialKe;
-		vec3 diffuse = lightLd * materialKd * lambertian;
+		vec3 diffuse = light.Lds * surfaceColor * materialKd * lambertian;
 
 		return ambient + emissive + diffuse + specular;
 	}
 
 	vec3 blinnPhongPointLight(vec4 positionViewspace, vec3 normalViewspace)
 	{
-		vec4 positionToLight = lightPosition - positionViewspace;
-		vec3 lightDir = normalize(vec3(positionToLight));
-
-		vec3 specular = vec3(0.0);
+		vec4 positionToLight = light.positionViewspace - positionViewspace;
+		float distanceToLight = length(positionToLight);
+		vec3 toLight = normalize(vec3(positionToLight));
 		
-		float distanceFalloff = (lightDistanceSquared / dot(positionToLight, positionToLight));
+		float attenuation = 1.0 / (light.Kc + light.Kl * distanceToLight + light.Kq * distanceToLight * distanceToLight);
 
 		vec3 normal = normalize(normalViewspace);
-		float lambertian = max(dot(lightDir,normal), 0.0) * distanceFalloff;
+		float lambertian = max(dot(toLight,normal), 0.0) * attenuation;
+
+		vec3 specular = vec3(0.0);
 
 		if (lambertian > 0.0) {
 			vec3 viewDir = normalize(vec3(-positionViewspace));
-			vec3 halfDir = normalize(lightDir + viewDir);
+			vec3 halfDir = normalize(toLight + viewDir);
 
 			float specAngle = max(dot(halfDir, normal), 0.0);
-			specular = lightLs * materialKs * pow(specAngle, materialShininess * 4.0) * distanceFalloff;
+
+			// determines the specular highlight color with a "metallic" property
+			// specular highlight of plastics is light * specular reflectivity, metallic is mostly surface * specular reflectivity
+			vec3 specColor = mix(light.Lds * materialKs,
+								 materialKs * surfaceColor,
+								 materialMetallic);
+
+			specular = specColor * pow(specAngle, materialShininess * 4.0) * attenuation;
 		}
 
-		vec3 ambient = lightLa * materialKa;
+		vec3 ambient = light.La * materialKa;
 		vec3 emissive = materialKe;
-		vec3 diffuse = lightLd * materialKd * lambertian;
+		vec3 diffuse = light.Lds * materialKd * lambertian;
 		
 		return ambient + emissive + diffuse + specular;
 	}
 
 	vec3 blinnPhongSpotlight(vec4 positionViewspace, vec3 normalViewspace)
 	{
-		vec4 positionToLight = lightPosition - positionViewspace;
-		vec3 lightDir = normalize(vec3(positionToLight));
+		vec4 positionToLight = light.positionViewspace - positionViewspace;
+		float distanceToLight = length(positionToLight);
+		vec3 toLight = normalize(vec3(positionToLight));
 
-		// temp spotlight stuff
-		vec4 spotlightDirection = { 0.0, 0.0, -1.0, 0.0 };
-		float spotlightCutoff = 0.96;
-		float spotlightEdgeFalloff = (1.0 - spotlightCutoff) * 0.4;
-		vec3 sd = normalize(vec3(-spotlightDirection));
-		float spotlightPower = 1.5; // does this make sense?? used to clamp the distance falloff
-		/////
-
-		// Diffuse surface color
-		//#ifdef _HAS_DIFFUSE_MAP
-		//	vec3 surfaceColor = texture(diffuseMap, uv).rgb;
-		//#else
-			vec3 surfaceColor = materialKd;
-		//#endif
-		/////
+		float spotlightEdgeFalloff = (1.0 - light.spotAngleCutoff) * light.spotEdgeBlendPct;
 
 		float lambertian = 0.0;
 		vec3 specular = vec3(0.0);
 
-		float lightAngle = max(dot(sd,lightDir), 0.0);
-		if (lightAngle > spotlightCutoff) {
-			float angleFalloff = smoothstep(spotlightCutoff, spotlightCutoff + spotlightEdgeFalloff, lightAngle);
-			float distanceFalloff = clamp((lightDistanceSquared / dot(positionToLight, positionToLight)), 0.0, spotlightPower);
+		float lightAngle = max(-dot(normalize(light.directionViewspace), toLight), 0.0);
+
+		if (lightAngle > light.spotAngleCutoff) {
+			float angleFalloff = smoothstep(light.spotAngleCutoff, light.spotAngleCutoff + spotlightEdgeFalloff, lightAngle);
+			
+			float attenuation = 1.0 / (light.Kc + light.Kl * distanceToLight + light.Kq * distanceToLight * distanceToLight);
 
 			vec3 normal = normalize(normalViewspace);
-			lambertian = max(dot(lightDir,normal), 0.0) * angleFalloff * distanceFalloff;
+			lambertian = max(dot(toLight,normal), 0.0) * angleFalloff * attenuation;
 
 			if (lambertian > 0.0) {
 				vec3 viewDir = normalize(vec3(-positionViewspace));
-				vec3 halfDir = normalize(lightDir + viewDir);
+				vec3 halfDir = normalize(toLight + viewDir);
 
 				float specAngle = max(dot(halfDir, normal), 0.0);
 
 				// determines the specular highlight color with a "metallic" property
 				// specular highlight of plastics is light * specular reflectivity, metallic is mostly surface * specular reflectivity
-				vec3 specColor = mix(lightLs * materialKs,
+				vec3 specColor = mix(light.Lds * materialKs,
 									 materialKs * surfaceColor,
 									 materialMetallic);
 
-				specular = specColor * pow(specAngle, materialShininess * 4.0) * angleFalloff * distanceFalloff;
+				specular = specColor * pow(specAngle, materialShininess * 4.0) * angleFalloff * attenuation;
 			}
 		}
 
-		vec3 ambient = lightLa * surfaceColor * materialKa;
+		vec3 ambient = light.La * surfaceColor * materialKa;
 		vec3 emissive = materialKe;
-
-		vec3 diffuse = lightLd * surfaceColor * materialKd * lambertian;
+		vec3 diffuse = light.Lds * surfaceColor * materialKd * lambertian;
 
 		return ambient + emissive + diffuse + specular;
-		//return texture(diffuseMap, uv).rgb;
-		//return vec3(uv.x, uv.y, 0.0);
-		//return normalViewspace;
 	}
 
 	float luma(vec3 color) {
@@ -269,14 +246,18 @@
 	}
 
 	void main() {
-		// Evaluate the lighting equation
-		//vec3 lightIntensity = phongPointLight(positionViewspace, normalViewspace);
-		
-		//vec3 lightIntensity = blinnPhongDirectionalLight(positionViewspace, normalViewspace);
-		//vec3 lightIntensity = blinnPhongPointLight(positionViewspace, normalViewspace);
-		vec3 lightIntensity = blinnPhongSpotlight(positionViewspace, normalViewspace);
+		// get diffuse surface color
+		//#ifdef _HAS_DIFFUSE_MAP
+		//	surfaceColor = texture(diffuseMap, uv).rgb;
+		//#else
+			surfaceColor = materialKd;
+		//#endif
+		/////
 
-		//outColor = (texture(diffuse, uv).rgb * color.rgb);
+		vec3 lightIntensity = blinnPhongDirectionalLight(positionViewspace, normalViewspace);
+		//vec3 lightIntensity = blinnPhongPointLight(positionViewspace, normalViewspace);
+		//vec3 lightIntensity = blinnPhongSpotlight(positionViewspace, normalViewspace);
+
 		albedoDisplacement = vec4(lightIntensity, 1.0);
 		eyeSpacePosition = positionViewspace.xyz;
 		normalReflectance = vec4(normalViewspace, 0.0);

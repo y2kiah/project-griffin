@@ -170,19 +170,48 @@ namespace griffin {
 				GLint frustumFarLoc   = glGetUniformLocation(programId, "frustumFar");
 				GLint inverseFrustumDistanceLoc = glGetUniformLocation(programId, "inverseFrustumDistance");
 
+				glUniformMatrix4fv(viewProjMatLoc, 1, GL_FALSE, &viewportParams.viewProjMat[0][0]);
+
+				glUniform1f(frustumNearLoc, viewportParams.nearClipPlane);
+				glUniform1f(frustumFarLoc, viewportParams.farClipPlane);
+				glUniform1f(inverseFrustumDistanceLoc, viewportParams.inverseFrustumDistance);
+
+				// TEMP get material uniform locations
 				GLint ambientLoc      = glGetUniformLocation(programId, "materialKa");
 				GLint diffuseLoc      = glGetUniformLocation(programId, "materialKd");
 				GLint specularLoc     = glGetUniformLocation(programId, "materialKs");
 				GLint shininessLoc    = glGetUniformLocation(programId, "materialShininess");
 
 				GLint diffuseMapLoc   = glGetUniformLocation(programId, "diffuseMap");
-
-				glUniformMatrix4fv(viewProjMatLoc, 1, GL_FALSE, &viewportParams.viewProjMat[0][0]);
-
-				glUniform1f(frustumNearLoc, viewportParams.nearClipPlane);
-				glUniform1f(frustumFarLoc, viewportParams.farClipPlane);
-				glUniform1f(inverseFrustumDistanceLoc, viewportParams.inverseFrustumDistance);
 				
+				// TEMP set light uniforms
+				GLint lightPosLoc = glGetUniformLocation(programId, "light.positionViewspace");
+				GLint lightDirLoc = glGetUniformLocation(programId, "light.directionViewspace");
+				GLint lightLaLoc = glGetUniformLocation(programId, "light.La");
+				GLint lightLdsLoc = glGetUniformLocation(programId, "light.Lds");
+				GLint lightKcLoc = glGetUniformLocation(programId, "light.Kc");
+				GLint lightKlLoc = glGetUniformLocation(programId, "light.Kl");
+				GLint lightKqLoc = glGetUniformLocation(programId, "light.Kq");
+				GLint lightAngleLoc = glGetUniformLocation(programId, "light.spotAngleCutoff");
+				GLint lightEdgeLoc = glGetUniformLocation(programId, "light.spotEdgeBlendPct");
+
+				glm::vec4 lightPos{ 0.1, 1.0, 1.0, 0.0 };
+				glm::vec4 lightPosViewspace = viewportParams.viewMat * lightPos;
+				glm::vec3 lightDirViewspace = -glm::vec3(lightPosViewspace);
+				//glm::vec4 lightPosViewspace{ 0.0, 0.0, 0.0, 1.0 };
+				//glm::vec3 lightDirViewspace{ 0.0, 0.0, -1.0 };
+				glm::vec3 lightLa{ 0.1, 0.2, 0.3 };
+				glm::vec3 lightLds{ 0.8, 0.6, 0.3 };
+				glUniform4fv(lightPosLoc, 1, &lightPosViewspace[0]);
+				glUniform3fv(lightDirLoc, 1, &lightDirViewspace[0]);
+				glUniform3fv(lightLaLoc, 1, &lightLa[0]);
+				glUniform3fv(lightLdsLoc, 1, &lightLds[0]);
+				glUniform1f(lightKcLoc, 1.0f);
+				glUniform1f(lightKlLoc, 0.014f);
+				glUniform1f(lightKqLoc, 0.0007f);
+				glUniform1f(lightAngleLoc, 0.96f);
+				glUniform1f(lightEdgeLoc, 0.4f);
+
 				// TEMP
 				animTime += 0.001667f;
 				if (animTime > 2.5f) {

@@ -72,8 +72,8 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& en
 		vec3 targetV = { 0, 0, 0 };
 
 		if (moveForward != 0 || moveSide != 0) {
-			auto camInstId = scene.entityManager->getEntityComponentId(playerId, scene::CameraInstanceContainer::componentType);
-			auto& camInst = scene.entityManager->getComponentStore<scene::CameraInstanceContainer>().getComponent(camInstId);
+			auto camInstId = scene.entityManager->getEntityComponentId(playerId, scene::CameraInstance::componentType);
+			auto& camInst = scene.entityManager->getComponentStore<scene::CameraInstance>().getComponent(camInstId);
 			auto& cam = *scene.cameras[camInst.cameraId];
 
 			// determine target velocity
@@ -200,7 +200,7 @@ void griffin::game::PlayerControlSystem::init(Game* pGame, const Engine& engine,
 
 	// set up camera position and orientation
 	auto pNode    = scene.entityManager->getEntityComponent<scene::SceneNode>(playerId);
-	auto pCamInst = scene.entityManager->getEntityComponent<scene::CameraInstanceContainer>(playerId);
+	auto pCamInst = scene.entityManager->getEntityComponent<scene::CameraInstance>(playerId);
 	
 	assert(pNode != nullptr && pCamInst != nullptr && movementComponentId != NullId_T);
 	auto &node = *pNode;

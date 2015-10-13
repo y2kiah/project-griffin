@@ -58,21 +58,47 @@ namespace griffin {
 		)
 
 		/**
-		* ModelInstanceContainer is a component that goes along with the SceneNode to make an
+		* ModelInstance is a component that goes along with the SceneNode to make an
 		* entity represent a unique instance of a model in the scene.
 		*/
-		COMPONENT(ModelInstanceContainer,
+		COMPONENT(ModelInstance,
 			(Id_T,			modelId,,			"id of the referenced model")
 		)
 
 		/**
-		* The CameraInstanceContainer is a component that goes along with the SceneNode to make an
+		* The CameraInstance is a component that goes along with the SceneNode to make an
 		* entity represent a camera in the scene. The cameraId is obtained from the scene by
 		* calling createCamera.
 		*/
-		COMPONENT(CameraInstanceContainer,
+		COMPONENT(CameraInstance,
 			(uint32_t,		cameraId,,			"id of the referenced camera"),
 			(char,			name,[32],			"name of the camera")
+		)
+
+		/**
+		* The LightInstance component that goes along with the SceneNode to make a light in the
+		* scene. A CameraInstance component is also created for the entity when the shadowCaster
+		* flag is set. If positionViewspace.w is 1.0, it is a position so the light is treated as
+		* a point light or spot light. If positionViewspace.w is 0.0, it is a directional light at
+		* infinite distance, and the position represents to direction from the scene to the light
+		* (in viewspace coordinates). The spot direction is set in worldspace coordinates from the
+		* light to the scene for directional lights and spot lights. The distinction between point
+		* light and spot light is made with the isSpotLight flag. 
+		*/
+		COMPONENT(LightInstance,
+			(glm::vec4,		positionViewspace,,		"position of light in viewSpace"),
+			(glm::vec3,		directionViewspace,,	"direction spotlight is pointing"),
+			(glm::vec3,		ambient,,				"ambient light color"),
+			(glm::vec3,		diffuseSpecular,,		"diffuse/specular light color"),
+			(float,			attenuationConstant,,	"constant added to denominator, usually 1.0"),
+			(float,			linearAttenuation,,		"constant multiplied by inverse distance"),
+			(float,			quadraticAttenuation,,	"constant multiplied by inverse square of distance"),
+			(float,			spotAngleCutoff,,		"spotlight angle cutoff, dot product comparison (% from 90deg)"),
+			(float,			spotEdgeBlendPct,,		"spotlight edge blend, in % of spot radius"),
+			(uint8_t,		isSpotLight,,			"1 if spot light"),
+			(uint8_t,		isPointLight,,			"1 if point light"),
+			(uint8_t,		isDirectionalLight,,	"1 if directional light"),
+			(uint8_t,		isShadowCaster,,		"1 if light casts shadow")
 		)
 
 		/**

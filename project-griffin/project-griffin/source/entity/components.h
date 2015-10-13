@@ -27,15 +27,16 @@ namespace griffin {
 		* its id. This does not actually define the component, that's done using the COMPONENT macro.
 		*/
 		COMPONENT_LIST(
-			SceneNode,					//<! System: SceneGraph, all entities that exist at a position in the scene get this
-			ModelInstanceContainer,		//<! System: SceneGraph, model instance, submitted to renderer if visible
-			CameraInstanceContainer,	//<! System: SceneGraph, camera instance, submitted to renderer if active
-			MovementComponent,			//<! System: SceneGraph, all entities that can move in the scene with auto interpolation
-			RenderCullInfo,				//<! System: SceneGraph, all entitied that can be rendered to the screen
+			SceneNode,				//<! System: SceneGraph, all entities that exist at a position in the scene get this
+			ModelInstance,			//<! System: SceneGraph, model instance, submitted to renderer if visible
+			CameraInstance,			//<! System: SceneGraph, camera instance, submitted to renderer if active
+			LightInstance,			//<! System: SceneGraph, light instance, submitted to renderer if visible
+			MovementComponent,		//<! System: SceneGraph, all entities that can move in the scene with auto interpolation
+			RenderCullInfo,			//<! System: SceneGraph, all entitied that can be rendered to the screen
 
-			MeshAnimationTrackComponent,//<! System: Animation, mesh instance animation times and blends
-			MeshNodeAnimationComponent,	//<! System: Animation, mesh instance interpolated and blended node transform
-			MaterialOverrideComponent	//<! System: Render, mesh instance material overrides
+			MeshAnimationTrack,		//<! System: Animation, mesh instance animation times and blends
+			MeshNodeAnimation,		//<! System: Animation, mesh instance interpolated and blended node transform
+			MaterialOverride		//<! System: Render, mesh instance material overrides
 		)
 
 	}

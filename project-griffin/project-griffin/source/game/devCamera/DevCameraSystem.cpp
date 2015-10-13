@@ -43,8 +43,8 @@ void griffin::game::DevCameraSystem::updateFrameTick(Game* pGame, Engine& engine
 
 	// Camera movement
 	if (moveForward != 0 || moveSide != 0 || moveVertical != 0) {
-		auto camInstId = scene.entityManager->getEntityComponentId(devCameraId, scene::CameraInstanceContainer::componentType);
-		auto& camInst = scene.entityManager->getComponentStore<scene::CameraInstanceContainer>().getComponent(camInstId);
+		auto camInstId = scene.entityManager->getEntityComponentId(devCameraId, scene::CameraInstance::componentType);
+		auto& camInst = scene.entityManager->getComponentStore<scene::CameraInstance>().getComponent(camInstId);
 		auto& cam = *scene.cameras[camInst.cameraId];
 
 		vec3 viewDir = cam.getViewDirection();
@@ -104,7 +104,7 @@ void griffin::game::DevCameraSystem::init(Game* pGame, const Engine& engine, con
 
 	// look at the origin
 	auto pNode    = scene.entityManager->getEntityComponent<scene::SceneNode>(devCameraId);
-	auto pCamInst = scene.entityManager->getEntityComponent<scene::CameraInstanceContainer>(devCameraId);
+	auto pCamInst = scene.entityManager->getEntityComponent<scene::CameraInstance>(devCameraId);
 
 	assert(pNode != nullptr && pCamInst != nullptr && movementComponentId != NullId_T);
 	auto &node = *pNode;
@@ -177,7 +177,7 @@ void griffin::game::DevCameraSystem::init(Game* pGame, const Engine& engine, con
 
 				if (active) {
 					toggleActiveCamera = scene.getActiveCamera(); // save the camera to go back to
-					auto pCamInst = scene.entityManager->getEntityComponent<scene::CameraInstanceContainer>(devCameraId);
+					auto pCamInst = scene.entityManager->getEntityComponent<scene::CameraInstance>(devCameraId);
 					scene.setActiveCamera(pCamInst->cameraId);
 				}
 				else {

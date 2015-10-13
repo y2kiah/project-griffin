@@ -33,7 +33,7 @@ namespace griffin {
 		if (entityId != NullId_T) {
 			auto& s = g_sceneMgrPtr->getScene(sceneId);
 
-			scene::CameraInstanceContainer ci{};
+			scene::CameraInstance ci{};
 			bool makePrimary = (s.cameras.size() == 0); // if this the first camera in the scene, make it primary
 			ci.cameraId = s.createCamera(cameraParams, makePrimary);
 			strcpy_s(ci.name, 32, name);
@@ -145,10 +145,10 @@ extern "C" {
 				sceneId.value = scene;
 				auto& s = g_sceneMgrPtr->getScene(sceneId);
 
-				scene::ModelInstanceContainer mi{};
+				scene::ModelInstance mi{};
 				// TODO: request the meshId from resource system
 
-				s.entityManager->addComponentToEntity<scene::ModelInstanceContainer>(std::move(mi), entityId);
+				s.entityManager->addComponentToEntity<scene::ModelInstance>(std::move(mi), entityId);
 
 				return entityId.value;
 			}
@@ -182,12 +182,12 @@ extern "C" {
 				cp.verticalFieldOfViewDegrees = inCp.verticalFieldOfViewDegrees;
 				cp.cameraType		= inCp.cameraType;
 
-				scene::CameraInstanceContainer ci{};
+				scene::CameraInstance ci{};
 				bool makePrimary = (s.cameras.size() == 0); // if this the first camera in the scene, make it primary
 				ci.cameraId = s.createCamera(cp, makePrimary);
 				strcpy_s(ci.name, 32, name);
 				
-				s.entityManager->addComponentToEntity<scene::CameraInstanceContainer>(std::move(ci), entityId);
+				s.entityManager->addComponentToEntity<scene::CameraInstance>(std::move(ci), entityId);
 
 				return entityId.value;
 			}

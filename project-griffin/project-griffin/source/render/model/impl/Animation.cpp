@@ -154,17 +154,17 @@ void updateMeshInstanceAnimations(entity::EntityManager& entityMgr)
 {
 	using namespace glm;
 
-	auto& animationStore = entityMgr.getComponentStore<MeshAnimationTrackComponent>();
+	auto& animationStore = entityMgr.getComponentStore<MeshAnimationTrack>();
 
 	// for each animated mesh instance
 	for (auto& animInst : animationStore.getComponents().getItems()) {
-		auto& meshInst = entityMgr.getComponent<scene::ModelInstanceContainer>(animInst.entityId);
+		auto& meshInst = entityMgr.getComponent<scene::ModelInstance>(animInst.entityId);
 		auto& mesh = g_tempModel.m_mesh; // TODO: don't use the global model, get model from resource system??
 
 		// for all node animation components in this mesh instance
 		for (auto cmpId : entityMgr.getAllEntityComponents(animInst.entityId)) {
-			if (cmpId.typeId == MeshNodeAnimationComponent::componentType) {
-				auto& nodeAnimCmp = entityMgr.getComponent<MeshNodeAnimationComponent>(cmpId);
+			if (cmpId.typeId == MeshNodeAnimation::componentType) {
+				auto& nodeAnimCmp = entityMgr.getComponent<MeshNodeAnimation>(cmpId);
 
 				NodeAnimationTransform trackTransforms[MAX_MESH_ANIMATION_TRACKS + 1] = {};
 				float totalWeight = 0.0f;
