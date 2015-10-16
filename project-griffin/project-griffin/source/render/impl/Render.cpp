@@ -177,31 +177,33 @@ namespace griffin {
 				glUniform1f(inverseFrustumDistanceLoc, viewportParams.inverseFrustumDistance);
 
 				// TEMP get material uniform locations
-				GLint ambientLoc      = glGetUniformLocation(programId, "materialKa");
-				GLint diffuseLoc      = glGetUniformLocation(programId, "materialKd");
-				GLint specularLoc     = glGetUniformLocation(programId, "materialKs");
-				GLint shininessLoc    = glGetUniformLocation(programId, "materialShininess");
+				GLint ambientLoc      = glGetUniformLocation(programId, "material.Ma");
+				GLint diffuseLoc      = glGetUniformLocation(programId, "material.Md");
+				GLint specularLoc     = glGetUniformLocation(programId, "material.Ms");
+				GLint emissiveLoc     = glGetUniformLocation(programId, "material.Me");
+				GLint shininessLoc    = glGetUniformLocation(programId, "material.shininess");
+				GLint metallicLoc     = glGetUniformLocation(programId, "material.metallic");
 
 				GLint diffuseMapLoc   = glGetUniformLocation(programId, "diffuseMap");
 				
 				// TEMP set light uniforms
-				GLint lightPosLoc = glGetUniformLocation(programId, "light.positionViewspace");
-				GLint lightDirLoc = glGetUniformLocation(programId, "light.directionViewspace");
-				GLint lightLaLoc = glGetUniformLocation(programId, "light.La");
-				GLint lightLdsLoc = glGetUniformLocation(programId, "light.Lds");
-				GLint lightKcLoc = glGetUniformLocation(programId, "light.Kc");
-				GLint lightKlLoc = glGetUniformLocation(programId, "light.Kl");
-				GLint lightKqLoc = glGetUniformLocation(programId, "light.Kq");
-				GLint lightAngleLoc = glGetUniformLocation(programId, "light.spotAngleCutoff");
-				GLint lightEdgeLoc = glGetUniformLocation(programId, "light.spotEdgeBlendPct");
+				GLint lightPosLoc     = glGetUniformLocation(programId, "light.positionViewspace");
+				GLint lightDirLoc     = glGetUniformLocation(programId, "light.directionViewspace");
+				GLint lightLaLoc      = glGetUniformLocation(programId, "light.La");
+				GLint lightLdsLoc     = glGetUniformLocation(programId, "light.Lds");
+				GLint lightKcLoc      = glGetUniformLocation(programId, "light.Kc");
+				GLint lightKlLoc      = glGetUniformLocation(programId, "light.Kl");
+				GLint lightKqLoc      = glGetUniformLocation(programId, "light.Kq");
+				GLint lightAngleLoc   = glGetUniformLocation(programId, "light.spotAngleCutoff");
+				GLint lightEdgeLoc    = glGetUniformLocation(programId, "light.spotEdgeBlendPct");
 
-				glm::vec4 lightPos{ 0.1, 1.0, 1.0, 0.0 };
+				glm::vec4 lightPos{ 0.1f, 1.0f, 1.0f, 0.0f };
 				glm::vec4 lightPosViewspace = viewportParams.viewMat * lightPos;
 				glm::vec3 lightDirViewspace = -glm::vec3(lightPosViewspace);
-				//glm::vec4 lightPosViewspace{ 0.0, 0.0, 0.0, 1.0 };
-				//glm::vec3 lightDirViewspace{ 0.0, 0.0, -1.0 };
-				glm::vec3 lightLa{ 0.1, 0.2, 0.3 };
-				glm::vec3 lightLds{ 0.8, 0.6, 0.3 };
+				//glm::vec4 lightPosViewspace{ 0.0f, 0.0f, 0.0f, 1.0f };
+				//glm::vec3 lightDirViewspace{ 0.0f, 0.0f, -1.0f };
+				glm::vec3 lightLa{ 0.1f, 0.2f, 0.3f };
+				glm::vec3 lightLds{ 0.8f, 0.6f, 0.3f };
 				glUniform4fv(lightPosLoc, 1, &lightPosViewspace[0]);
 				glUniform3fv(lightDirLoc, 1, &lightDirViewspace[0]);
 				glUniform3fv(lightLaLoc, 1, &lightLa[0]);
@@ -238,7 +240,7 @@ namespace griffin {
 					auto& skybox = m_skyboxTexture.get()->getResource<TextureCubeMap_GL>();
 					skybox.bind(GL_TEXTURE0);
 
-					GLint mvpMatLoc = glGetUniformLocation(programId, "modelViewProjection");
+					GLint mvpMatLoc  = glGetUniformLocation(programId, "modelViewProjection");
 					GLint cubemapLoc = glGetUniformLocation(programId, "cubemap");
 
 					glm::mat4 skyboxViewMat = viewportParams.viewMat;

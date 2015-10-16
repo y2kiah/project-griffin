@@ -78,24 +78,15 @@
 	};
 	uniform Light light;
 
-	/*struct MaterialInfo {
-		vec3 Ka; // Ambient reflectivity
-		vec3 Kd; // Diffuse reflectivity
-		vec3 Ks; // Specular reflectivity
-		float shininess; // Specular shininess factor
-		float metallic;
+	struct Material {
+		vec3 Ma;					// Ambient reflectivity
+		vec3 Md;					// Diffuse reflectivity
+		vec3 Ms;					// Specular reflectivity
+		vec3 Me;					// Emissive reflectivity
+		float shininess;			// Specular shininess factor
+		float metallic;				// Metallic determines color of specular highlight
 	};
-	uniform MaterialInfo material;*/
-	// temp
-	//uniform vec3 materialKa; // ambient color
-	uniform vec3 materialKe; // emissive color
-	uniform vec3 materialKd; // diffuse color
-	uniform vec3 materialKs; // specular color
-	//uniform float materialShininess;
-	const float materialShininess = 30.0; // temp
-	const float materialMetallic = 0.85; // temp
-
-	vec3 materialKa = materialKd; // temp
+	uniform Material material;
 
 	//uniform vec3 diffuseColor;
 	uniform sampler2D diffuseMap;	// 4
@@ -148,16 +139,16 @@
 
 			// determines the specular highlight color with a "metallic" property
 			// specular highlight of plastics is light * specular reflectivity, metallic is mostly surface * specular reflectivity
-			vec3 specColor = mix(light.Lds * materialKs,
-								 materialKs * surfaceColor,
-								 materialMetallic);
+			vec3 specColor = mix(material.Ms * light.Lds,
+								 material.Ms * surfaceColor,
+								 material.metallic);
 
-			specular = specColor * pow(specAngle, materialShininess * 4.0);
+			specular = specColor * pow(specAngle, material.shininess * 4.0);
 		}
 
-		vec3 ambient = light.La * surfaceColor * materialKa;
-		vec3 emissive = materialKe;
-		vec3 diffuse = light.Lds * surfaceColor * materialKd * lambertian;
+		vec3 ambient = light.La * surfaceColor * material.Ma;
+		vec3 emissive = material.Me;
+		vec3 diffuse = light.Lds * surfaceColor * material.Md * lambertian;
 
 		return ambient + emissive + diffuse + specular;
 	}
@@ -183,16 +174,16 @@
 
 			// determines the specular highlight color with a "metallic" property
 			// specular highlight of plastics is light * specular reflectivity, metallic is mostly surface * specular reflectivity
-			vec3 specColor = mix(light.Lds * materialKs,
-								 materialKs * surfaceColor,
-								 materialMetallic);
+			vec3 specColor = mix(material.Ms * light.Lds,
+								 material.Ms * surfaceColor,
+								 material.metallic);
 
-			specular = specColor * pow(specAngle, materialShininess * 4.0) * attenuation;
+			specular = specColor * pow(specAngle, material.shininess * 4.0) * attenuation;
 		}
 
-		vec3 ambient = light.La * materialKa;
-		vec3 emissive = materialKe;
-		vec3 diffuse = light.Lds * materialKd * lambertian;
+		vec3 ambient = light.La * material.Ma;
+		vec3 emissive = material.Me;
+		vec3 diffuse = light.Lds * material.Md * lambertian;
 		
 		return ambient + emissive + diffuse + specular;
 	}
@@ -226,17 +217,17 @@
 
 				// determines the specular highlight color with a "metallic" property
 				// specular highlight of plastics is light * specular reflectivity, metallic is mostly surface * specular reflectivity
-				vec3 specColor = mix(light.Lds * materialKs,
-									 materialKs * surfaceColor,
-									 materialMetallic);
+				vec3 specColor = mix(material.Ms * light.Lds,
+									 material.Ms * surfaceColor,
+									 material.metallic);
 
-				specular = specColor * pow(specAngle, materialShininess * 4.0) * angleFalloff * attenuation;
+				specular = specColor * pow(specAngle, material.shininess * 4.0) * angleFalloff * attenuation;
 			}
 		}
 
-		vec3 ambient = light.La * surfaceColor * materialKa;
-		vec3 emissive = materialKe;
-		vec3 diffuse = light.Lds * surfaceColor * materialKd * lambertian;
+		vec3 ambient = light.La * surfaceColor * material.Ma;
+		vec3 emissive = material.Me;
+		vec3 diffuse = light.Lds * surfaceColor * material.Md * lambertian;
 
 		return ambient + emissive + diffuse + specular;
 	}
@@ -250,7 +241,7 @@
 		//#ifdef _HAS_DIFFUSE_MAP
 		//	surfaceColor = texture(diffuseMap, uv).rgb;
 		//#else
-			surfaceColor = materialKd;
+			surfaceColor = material.Md;
 		//#endif
 		/////
 
