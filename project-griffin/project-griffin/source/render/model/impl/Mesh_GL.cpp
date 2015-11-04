@@ -3,7 +3,7 @@
 * @author Jeff Kiah
 */
 #include <render/model/Mesh_GL.h>
-#include <gl/glew.h>
+#include <GL/glew.h>
 #include <utility>
 #include <cassert>
 #include <render/ShaderProgramLayouts_GL.h>

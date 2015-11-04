@@ -1,5 +1,5 @@
 #include "../ShaderProgram_GL.h"
-#include <gl/glew.h>
+#include <GL/glew.h>
 #include <vector>
 #include <cassert>
 #include <memory>

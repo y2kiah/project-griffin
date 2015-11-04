@@ -10,6 +10,7 @@ namespace griffin {
 		// Drawing shapes and volumes
 		void drawFullscreenQuad();
 		void drawCube();
+		void drawSphere();
 		void drawPixelPerfectQuad(float leftPx, float topPx, uint32_t widthPx, uint32_t heightPx);
 		void drawScaledQuad(float left, float top, float width, float height);
 

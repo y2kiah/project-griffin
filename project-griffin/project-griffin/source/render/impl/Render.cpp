@@ -383,6 +383,7 @@ namespace griffin {
 				//auto mdl = loadModel(L"models/Bill/Bill.gmd", CacheType::Cache_Models);
 				//auto mdl = loadModel(L"models/ring/ring.gmd", CacheType::Cache_Models);
 				//auto mdl = loadModel(L"models/building_001.gmd", CacheType::Cache_Models);
+				//auto mdl = loadModel(L"models/scene/scene.gmd", CacheType::Cache_Models);
 
 				using namespace resource;
 				auto loader = g_resourceLoader.lock();

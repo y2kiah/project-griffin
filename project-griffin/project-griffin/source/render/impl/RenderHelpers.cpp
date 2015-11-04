@@ -2,6 +2,9 @@
 #include <render/RenderHelpers.h>
 #include <render/VertexBuffer_GL.h>
 #include <cmath>
+#include <glm/gtc/constants.hpp>
+#include <glm/vec3.hpp>
+#include <glm/geometric.hpp>
 
 namespace griffin {
 	namespace render {
@@ -94,6 +97,12 @@ namespace griffin {
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
+		void drawSphere()
+		{
+			glBindVertexArray(g_glCubeVAO);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+
 		void drawPixelPerfectQuad(float leftPx, float topPx, uint32_t widthPx, uint32_t heightPx)
 		{
 
@@ -101,6 +110,53 @@ namespace griffin {
 
 		void drawScaledQuad(float left, float top, float width, float height)
 		{
+		}
+
+
+		/**
+		* Tesselates a section of a cube, spacing the vertices according to the tangent of the
+		*	vertex normal. This will minimize spacing error after the vertices of the cube are
+		*	projected into a sphere by normalizing.
+		*
+		* @xStartRads	starting x radian of sphere section
+		* @yStartRads	starting y radian of sphere section
+		* @radiansSpan	radians of sphere surface, should be no more than pi/4 (45 degrees)
+		* @numVertices	number of vertices per side to tesselate
+		* @xStride		byte distance between start of vertices in the data buffer
+		* @yStride		byte distance between start of rows in the data buffer
+		* @data			location of first vertex in data buffer to be written
+		*/
+		void tesselateCubeSectionByTangent(float xStartRads, float yStartRads, float radiansSpan,
+										   int numVertices, int xStride, int yStride, float* data)
+		{
+			assert(radianSpan >= 0.0f && radianSpan <= glm::pi<float> / 4.0f); // radian span for one section should be no more than 45 degrees
+			assert(numVertices >= 2 && xStartRads >= 0.0f && yStartRads >= 0.0f);
+			assert(xStride >= 3 && yStride >= numVertices * 3);
+
+			float radianInc = radiansSpan / (numVertices - 1);
+
+			float currentYRad = yStartRads;
+
+			for (int y = 0; y < numVertices; ++y) {
+				float valueY = tanf(currentYRad);
+				
+				float currentXRad = xStartRads;
+
+				for (int x = 0; x < numVertices; ++x) {
+					float valueX = tanf(currentXRad);
+
+					glm::vec3 v = glm::normalize(glm::vec3(valueX, valueY, -1.0f));
+					//v *= radius; // 6378000.0f;
+
+					float *vert = data + (y * yStride) + (x * xStride);
+					vert[0] = v.x;
+					vert[1] = v.y;
+					vert[2] = v.z;
+
+					currentXRad += radianInc;
+				}
+				currentYRad += radianInc;
+			}
 		}
 
 

@@ -1,5 +1,5 @@
 #include "../RenderTarget_GL.h"
-#include <gl/glew.h>
+#include <GL/glew.h>
 #include <SDL_log.h>
 
 namespace griffin {
@@ -135,6 +135,7 @@ namespace griffin {
 			}
 			else if (m_type == TypeDepthStencil) {
 				glDrawBuffer(GL_NONE); // no color buffer
+				glReadBuffer(GL_NONE);
 			}
 			else if (m_type == TypeColorDepthStencil) {
 				GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };

@@ -7,7 +7,7 @@
 #pragma comment( lib, "assimp.lib" )
 
 #include <render/model/ModelImport_Assimp.h>
-#include <gl/glew.h>
+#include <GL/glew.h>
 
 #include <assimp/Importer.hpp>	// C++ importer interface
 #include <assimp/scene.h>		// Output data structure

@@ -2,7 +2,7 @@
 #include <memory>
 #include <string>
 #include <sstream>
-#include <gl/glew.h>
+#include <GL/glew.h>
 //#include <gl/glcorearb.h>
 //#include <SOIL.h>
 #include "main.h"

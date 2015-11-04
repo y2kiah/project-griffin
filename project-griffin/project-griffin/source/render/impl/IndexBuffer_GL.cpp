@@ -1,5 +1,5 @@
 #include "../IndexBuffer_GL.h"
-#include <gl/glew.h>
+#include <GL/glew.h>
 
 
 namespace griffin {
