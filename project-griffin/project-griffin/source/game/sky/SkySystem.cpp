@@ -27,15 +27,23 @@ void precomputeSky()
 {
 	using namespace griffin::render;
 
-	RenderTarget_GL transmittanceTexture;
-	transmittanceTexture.bind(RenderTarget_GL::Albedo_Displacement, GL_TEXTURE0);
+	RenderTarget_GL transmittanceTexture(RenderTarget_GL::RenderTargetType::TypeFloat16);
+	transmittanceTexture.bind(RenderTarget_GL::RenderTargetTexture::Float16, GL_TEXTURE0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	RenderTarget_GL irradianceTexture;
+	
 	RenderTarget_GL inscatterTexture;
+	
 	RenderTarget_GL deltaETexture;
+	
 	RenderTarget_GL deltaSRTexture;
+	
 	RenderTarget_GL deltaSMTexture;
+	
 	RenderTarget_GL deltaJTexture;
+	/*
 
 	glActiveTexture(GL_TEXTURE0 + transmittanceUnit);
 	glGenTextures(1, &transmittanceTexture);
@@ -300,4 +308,5 @@ void precomputeSky()
 	glFinish();
 	cout << "ready." << endl;
 	glUseProgram(drawProg);
+	*/
 }

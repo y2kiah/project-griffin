@@ -117,7 +117,7 @@
 	// Output Variables
 
 	layout(location = 0) out vec4 albedoDisplacement;
-	layout(location = 1) out vec3 eyeSpacePosition;
+	layout(location = 1) out vec4 eyeSpacePosition;
 	layout(location = 2) out vec4 normalReflectance;
 	
 	// Functions
@@ -250,7 +250,7 @@
 		//vec3 lightIntensity = blinnPhongSpotlight(positionViewspace, normalViewspace);
 
 		albedoDisplacement = vec4(surfaceColor, 0.0); //vec4(lightIntensity, 1.0);
-		eyeSpacePosition = positionViewspace.xyz;
+		eyeSpacePosition = vec4(positionViewspace.xyz, 0.0);
 		normalReflectance = vec4(normalViewspace, 0.0);
 		gl_FragDepth = linearDepth;
 	}

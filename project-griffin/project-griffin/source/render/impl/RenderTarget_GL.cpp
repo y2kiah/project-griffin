@@ -70,9 +70,8 @@ namespace griffin {
 				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, albedo, 0);
 			}
 
-			if (m_type == TypeGBuffer) {
+			if (m_type == TypeGBuffer || m_type == TypeFloat16) {
 				unsigned int position = m_textureIds[Position];
-				unsigned int normal = m_textureIds[Normal_Reflectance];
 
 				if (position != 0) {
 					glDeleteTextures(1, &position);
@@ -88,6 +87,10 @@ namespace griffin {
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 				// Attach the texture to the FBO
 				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, position, 0);
+			}
+
+			if (m_type == TypeGBuffer) {
+				unsigned int normal = m_textureIds[Normal_Reflectance];
 
 				if (normal != 0) {
 					glDeleteTextures(1, &normal);

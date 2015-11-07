@@ -14,14 +14,16 @@ namespace griffin {
 				TypeColor = 0,				//<! builds only the color render target texture
 				TypeDepthStencil = 1,		//<! builds only the depth32f_stencil8 render target texture
 				TypeColorDepthStencil = 2,	//<! builds color, depth/stencil render target textures
-				TypeGBuffer = 3				//<! builds albedo, position, normals, and depth/stencil render target textures
+				TypeGBuffer = 3,			//<! builds albedo, position, normals, and depth/stencil render target textures
+				TypeFloat16 = 4				//<! builds only a 16bit floating point render target texture
 			};
 
 			enum RenderTargetTexture : uint8_t {
 				Albedo_Displacement = 0,	//<! diffuse albedo (rgb) + displacement (a) render target
 				Position = 1,				//<! the eye-space position render target
 				Normal_Reflectance = 2,		//<! normal (rgb) + reflectance (a) render target
-				Depth_Stencil = 3			//<! depth (rgb) + stencil (a) render target
+				Depth_Stencil = 3,			//<! depth (rgb) + stencil (a) render target
+				Float16 = 1					//<! 16-bit float texture, not part of g-buffer
 			};
 
 			explicit RenderTarget_GL(RenderTargetType type = TypeColor) :

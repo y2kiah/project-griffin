@@ -107,7 +107,7 @@
 	// Output Variables
 
 	layout(location = 0) out vec4 albedoDisplacement;
-	layout(location = 1) out vec3 eyeSpacePosition;
+	layout(location = 1) out vec4 eyeSpacePosition;
 	layout(location = 2) out vec4 normalReflectance;
 	
 	// Functions
