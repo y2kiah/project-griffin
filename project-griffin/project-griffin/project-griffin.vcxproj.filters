@@ -298,6 +298,9 @@
     <ClCompile Include="source\render\impl\RenderHelpers.cpp">
       <Filter>render\system\impl</Filter>
     </ClCompile>
+    <ClCompile Include="source\render\impl\RenderTarget3D_GL.cpp">
+      <Filter>render\system\impl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\application\main.h">
@@ -828,6 +831,12 @@
     </ClInclude>
     <ClInclude Include="source\game\sky\SkySystem.h">
       <Filter>game\sky</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\sky\atmosphere.h">
+      <Filter>game\sky</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\RenderTarget3D_GL.h">
+      <Filter>render\system</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

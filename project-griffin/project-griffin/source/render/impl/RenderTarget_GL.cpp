@@ -1,6 +1,7 @@
 #include "../RenderTarget_GL.h"
 #include <GL/glew.h>
 #include <SDL_log.h>
+#include <cassert>
 
 namespace griffin {
 	namespace render {
@@ -32,6 +33,7 @@ namespace griffin {
 			m_width = width;
 			m_height = height;
 
+			// TEMP, move this to capabilities check, outside of real-time code path
 			int maxDrawBuffers = 0;
 			glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxDrawBuffers);
 			if (maxDrawBuffers < 4) {
@@ -132,15 +134,11 @@ namespace griffin {
 				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depth, 0);
 			}
 
-			if (m_type == TypeColor) {
-				GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
-				glDrawBuffers(1, buffers);
-			}
-			else if (m_type == TypeDepthStencil) {
+			if (m_type == TypeDepthStencil) {
 				glDrawBuffer(GL_NONE); // no color buffer
 				glReadBuffer(GL_NONE);
 			}
-			else if (m_type == TypeColorDepthStencil) {
+			else if (m_type == TypeColor || m_type == TypeColorDepthStencil || m_type == TypeFloat16) {
 				GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
 				glDrawBuffers(1, buffers);
 			}
@@ -187,7 +185,9 @@ namespace griffin {
 
 		void RenderTarget_GL::bind(RenderTargetTexture renderTarget, unsigned int textureSlot) const
 		{
-			glActiveTexture(textureSlot);
+			assert(textureSlot >= 0 && textureSlot < 32 && "textureSlot must be in 0-31 range");
+
+			glActiveTexture(GL_TEXTURE0 + textureSlot);
 			glBindTexture(GL_TEXTURE_2D, m_textureIds[renderTarget]);
 		}
 	}

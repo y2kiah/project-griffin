@@ -14,7 +14,8 @@ namespace griffin {
 	namespace game {
 
 		struct SkySystem {
-			ResourcePtr		skyBoxCubeMap = nullptr;	//<! space skybox cubemap texture
+			ResourcePtr		skyBoxCubeMap = nullptr;		//<! space skybox cubemap texture
+			ResourcePtr		atmosphereProgram = nullptr;	//<! post-process atmospheric scattering shader
 
 			void updateFrameTick(Game* pGame, Engine& engine, const UpdateInfo& ui);
 			void init(Game* pGame, const Engine& engine, const SDLApplication& app);

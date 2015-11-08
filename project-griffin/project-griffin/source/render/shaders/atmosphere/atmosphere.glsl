@@ -1,5 +1,5 @@
 #include "source/render/shaders/layout.glsli"
-#include "source/render/atmosphere/Main.h"
+#include "source/game/sky/atmosphere.h"
 #include "source/render/shaders/atmosphere/common.glsli"
 
 const float EPSILON_ATMOSPHERE = 0.002;

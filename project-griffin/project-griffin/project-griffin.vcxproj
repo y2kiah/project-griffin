@@ -48,6 +48,7 @@
     <ClCompile Include="source\render\impl\ModelManager_GL.cpp" />
     <ClCompile Include="source\render\impl\Render.cpp" />
     <ClCompile Include="source\render\impl\RenderHelpers.cpp" />
+    <ClCompile Include="source\render\impl\RenderTarget3D_GL.cpp" />
     <ClCompile Include="source\render\impl\RenderTarget_GL.cpp" />
     <ClCompile Include="source\render\impl\ShaderManager_GL.cpp" />
     <ClCompile Include="source\render\impl\ShaderProgram_GL.cpp" />
@@ -96,6 +97,7 @@
     <ClInclude Include="source\game\Game.h" />
     <ClInclude Include="source\game\impl\GameImpl.h" />
     <ClInclude Include="source\game\player\PlayerControlSystem.h" />
+    <ClInclude Include="source\game\sky\atmosphere.h" />
     <ClInclude Include="source\game\sky\SkySystem.h" />
     <ClInclude Include="source\input\InputSystem.h" />
     <ClInclude Include="source\render\font\FreeType.h" />
@@ -112,6 +114,7 @@
     <ClInclude Include="source\render\RenderComponents.h" />
     <ClInclude Include="source\render\RenderHelpers.h" />
     <ClInclude Include="source\render\RenderResources.h" />
+    <ClInclude Include="source\render\RenderTarget3D_GL.h" />
     <ClInclude Include="source\render\RenderTarget_GL.h" />
     <ClInclude Include="source\render\ShaderManager_GL.h" />
     <ClInclude Include="source\render\ShaderProgramLayouts_GL.h" />

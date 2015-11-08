@@ -146,9 +146,11 @@ namespace griffin {
 			return ok;// (m_glTexture != 0);
 		}
 
-		void TextureCubeMap_GL::bind(unsigned int textureSlot = GL_TEXTURE0) const
+		void TextureCubeMap_GL::bind(unsigned int textureSlot) const
 		{
-			glActiveTexture(textureSlot);
+			assert(textureSlot >= 0 && textureSlot < 32 && "textureSlot must be in 0-31 range");
+
+			glActiveTexture(GL_TEXTURE0 + textureSlot);
 			glBindTexture(GL_TEXTURE_CUBE_MAP, m_glTexture);
 		}
 

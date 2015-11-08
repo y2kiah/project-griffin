@@ -171,7 +171,6 @@ namespace griffin {
 			ResourcePtr			m_skyboxProgram = nullptr;			//<! skybox render from cubemap texture
 			ResourcePtr			m_fullScreenQuadProgram = nullptr;	//<! fullscreen quad program for deferred lighting and post-processing
 			ResourcePtr			m_ssaoProgram = nullptr;			//<! post-process screen space ambient occlusion shader
-			ResourcePtr			m_atmosphereProgram = nullptr;		//<! post-process atmospheric scattering shader
 			ResourcePtr			m_fxaaProgram = nullptr;			//<! post-process FXAA shader
 
 			ResourcePtr			m_normalsTexture = nullptr;			//<! random normal noise texture for ssao

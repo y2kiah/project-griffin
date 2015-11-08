@@ -4,6 +4,7 @@
 #include <cassert>
 #include <memory>
 #include <SDL_log.h>
+#include <utility/enum.h>
 
 namespace griffin {
 	namespace render {
@@ -28,7 +29,8 @@ namespace griffin {
 			int infoLogLength = 0;
 
 			// Compile Shader
-			SDL_Log("Compiling shader");
+			SDL_Log("Compiling shader %u", shaderType);
+
 			GLuint shaderId = glCreateShader(shaderType);
 			
 			glShaderSource(shaderId, 1, &shaderSource, nullptr);
@@ -58,7 +60,8 @@ namespace griffin {
 		ShaderProgram_GL::ShaderProgram_GL(ShaderProgram_GL&& other) :
 			m_programId{ other.m_programId },
 			m_numShaders{ other.m_numShaders },
-			m_shaderCode(std::move(other.m_shaderCode))
+			m_shaderCode(std::move(other.m_shaderCode)),
+			m_programPath(std::move(other.m_programPath))
 		{
 			SDL_Log("moving shader program with m_programId = %d", m_programId);
 			other.m_programId = 0;
@@ -88,6 +91,9 @@ namespace griffin {
 				m_shaderCode = shaderCode;
 			}
 			
+			string programPath(m_programPath.begin(), m_programPath.end());
+			SDL_Log("compiling program %s", programPath.c_str());
+
 			bool hasGeometryStage    = (m_shaderCode.find("_GEOMETRY_", 0) != string::npos);
 			bool hasTessControlStage = (m_shaderCode.find("_TESS_CONTROL_", 0) != string::npos);
 			bool hasTessEvalStage    = (m_shaderCode.find("_TESS_EVAL_", 0) != string::npos);
@@ -128,7 +134,7 @@ namespace griffin {
 
 			// Link the program
 			if (ok) {
-				SDL_Log("Linking program");
+				SDL_Log("Linking program %s", programPath.c_str());
 				GLuint programId = glCreateProgram();
 				for (const auto& s : m_shaders) {
 					glAttachShader(programId, s.getShaderId());

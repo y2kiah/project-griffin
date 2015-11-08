@@ -31,7 +31,11 @@ namespace griffin {
 			*/
 			bool loadFromFile(const char *filename);
 
-			void bind(unsigned int textureSlot) const;
+			/**
+			* Bind to an active texture slot (0 - 31) to be sampled from a shader
+			* @var	textureSlot		which texture slot to bind into, added to GL_TEXTURE0
+			*/
+			void bind(unsigned int textureSlot = 0) const;
 
 			int getWidth() const { return m_width; }
 			int getHeight() const { return m_height; }

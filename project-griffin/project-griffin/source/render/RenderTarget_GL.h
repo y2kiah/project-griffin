@@ -51,9 +51,9 @@ namespace griffin {
 			void stop();
 
 			/**
-			* Bind a render target to an active texture slot (GL_TEXTURE0 - GL_TEXTURE31) to be
-			* sampled from a shader program.
-			* @
+			* Bind a render target to an active texture slot (0 - 31) to be sampled from a shader
+			* @var	renderTarget	which render target texture to bind
+			* @var	textureSlot		which texture slot to bind into, added to GL_TEXTURE0
 			*/
 			void bind(RenderTargetTexture renderTarget, unsigned int textureSlot) const;
 

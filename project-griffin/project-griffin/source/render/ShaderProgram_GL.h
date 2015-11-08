@@ -12,6 +12,7 @@ namespace griffin {
 	namespace render {
 		
 		using std::string;
+		using std::wstring;
 		using std::vector;
 		using std::shared_ptr;
 
@@ -46,8 +47,9 @@ namespace griffin {
 		public:
 			explicit ShaderProgram_GL() = default;
 
-			explicit ShaderProgram_GL(string shaderCode) :
-				m_shaderCode(std::move(shaderCode))
+			explicit ShaderProgram_GL(string shaderCode, wstring programPath = L"") :
+				m_shaderCode(std::move(shaderCode)),
+				m_programPath(std::move(programPath))
 			{
 				m_preprocessorMacros.reserve(RESERVE_SHADER_PROGRAM_PREPROCESSORS);
 			}
@@ -87,6 +89,7 @@ namespace griffin {
 			Shader_GL			m_shaders[5] = {};
 			string				m_shaderCode;
 			string				m_preprocessorMacros = "";
+			wstring				m_programPath;
 		};
 
 

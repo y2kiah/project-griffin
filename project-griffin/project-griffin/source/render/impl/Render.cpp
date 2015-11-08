@@ -88,7 +88,7 @@ namespace griffin {
 			if (!m_colorBuffer.init(viewportWidth, viewportHeight)) {
 				throw std::runtime_error("Connot initialize color buffer");
 			}
-			m_colorBuffer.bind(RenderTarget_GL::Albedo_Displacement, GL_TEXTURE0);
+			m_colorBuffer.bind(RenderTarget_GL::Albedo_Displacement, 0);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // fxaa sampler requires bilinear filtering
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -99,10 +99,8 @@ namespace griffin {
 			auto mrt  = loadShaderProgram(L"shaders/ads.glsl"); // temporarily ads.glsl
 			auto sky  = loadShaderProgram(L"shaders/skybox.glsl");
 			auto ssao = loadShaderProgram(L"shaders/ssao.glsl");
-			auto atms = loadShaderProgram(L"shaders/atmosphere/atmosphere.glsl");
 			auto fxaa = loadShaderProgram(L"shaders/fxaa.glsl");
 			//L"shaders/linearDepth.glsl"
-			//L"shaders/atmosphere/earth.glsl"
 			//L"shaders/SimpleShader.glsl"
 
 			auto nrml = loadTexture2D(L"textures/normal-noise.dds", CacheType::Cache_Permanent);
@@ -111,7 +109,6 @@ namespace griffin {
 			m_mrtProgram = loader->getResource(mrt).get();
 			m_skyboxProgram = loader->getResource(sky).get();
 			m_ssaoProgram = loader->getResource(ssao).get();
-			m_atmosphereProgram = loader->getResource(atms).get();
 			m_fxaaProgram = loader->getResource(fxaa).get();
 
 			// set up normal noise texture for ssao
@@ -238,7 +235,7 @@ namespace griffin {
 					auto programId = program.getProgramId();
 
 					auto& skybox = m_skyboxTexture.get()->getResource<TextureCubeMap_GL>();
-					skybox.bind(GL_TEXTURE0);
+					skybox.bind();
 
 					GLint mvpMatLoc  = glGetUniformLocation(programId, "modelViewProjection");
 					GLint cubemapLoc = glGetUniformLocation(programId, "cubemap");
@@ -268,11 +265,11 @@ namespace griffin {
 				ssao.useProgram();
 				auto ssaoId = ssao.getProgramId();
 
-				m_normalsTexture.get()->getResource<Texture2D_GL>().bind(GL_TEXTURE0);
-				m_gbuffer.bind(RenderTarget_GL::Albedo_Displacement, GL_TEXTURE1);
-				m_gbuffer.bind(RenderTarget_GL::Normal_Reflectance, GL_TEXTURE2);
-				m_gbuffer.bind(RenderTarget_GL::Depth_Stencil, GL_TEXTURE3);
-				m_gbuffer.bind(RenderTarget_GL::Position, GL_TEXTURE4);
+				m_normalsTexture.get()->getResource<Texture2D_GL>().bind(0);
+				m_gbuffer.bind(RenderTarget_GL::Albedo_Displacement, 1);
+				m_gbuffer.bind(RenderTarget_GL::Normal_Reflectance, 2);
+				m_gbuffer.bind(RenderTarget_GL::Depth_Stencil, 3);
+				m_gbuffer.bind(RenderTarget_GL::Position, 4);
 
 				GLint normalNoiseLoc = glGetUniformLocation(ssaoId, "normalNoise"); // <-- uniform locations could be stored in shaderprogram structure
 				GLint colorMapLoc    = glGetUniformLocation(ssaoId, "colorMap");
@@ -305,9 +302,9 @@ namespace griffin {
 				auto fxaaId = fxaa.getProgramId();
 
 				// requires bilinear filter on the sampler
-				m_colorBuffer.bind(RenderTarget_GL::Albedo_Displacement, GL_TEXTURE0);	// when SSAO on
+				m_colorBuffer.bind(RenderTarget_GL::Albedo_Displacement, 0);	// when SSAO on
 				
-				//m_gbuffer.bind(RenderTarget_GL::Albedo_Displacement, GL_TEXTURE0);		// when SSAO off, alpha channel must contain luma
+				//m_gbuffer.bind(RenderTarget_GL::Albedo_Displacement, 0);		// when SSAO off, alpha channel must contain luma
 				//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -497,9 +494,9 @@ namespace griffin {
 				throw std::runtime_error("no resource loader");
 			}
 
-			auto shaderResourceBuilder = [](DataPtr data, size_t size) {
+			auto shaderResourceBuilder = [programPath](DataPtr data, size_t size) {
 				string shaderCode(reinterpret_cast<char*>(data.get()), size);
-				return ShaderProgram_GL(shaderCode);
+				return ShaderProgram_GL(shaderCode, programPath);
 			};
 
 			auto shaderResourceCallback = [](const ResourcePtr& resourcePtr, Id_T handle, size_t size) {
