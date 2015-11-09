@@ -5,14 +5,20 @@
 // computes transmittance table T using Eq (5)
 
 #ifdef _VERTEX_
+	
+	// Input Variables
+
+	layout(location = VertexLayout_Position) in vec3 vertexPosition;
 
 	void main() {
-		gl_Position = gl_Vertex;
+		gl_Position = vec4(vertexPosition, 1.0);
 	}
 
 #endif
 
 #ifdef _FRAGMENT_
+	
+	out vec4 outColor;
 
 	/*
 	// original
@@ -79,7 +85,7 @@
 		vec3 depth = beta_rayleigh * opticalDepth(H_rayleigh, r, muS) +
 					 beta_mieEx * opticalDepth(H_mie, r, muS);
 				 
-		gl_FragColor = vec4(exp(-depth), 0.0);
+		outColor = vec4(exp(-depth), 0.0);
 	}
 
 #endif

@@ -1,3 +1,7 @@
+#ifdef _GEOMETRY_
+#extension GL_EXT_geometry_shader4 : enable
+#endif
+
 //#define UniformLayout_ModelToWorld        0
 //#define UniformLayout_ViewProjection      1
 //#define UniformLayout_ModelViewProjection 2
@@ -338,14 +342,17 @@ uniform int layer;
 
 #ifdef _VERTEX_
 
+	// Input Variables
+
+	layout(location = VertexLayout_Position) in vec3 vertexPosition;
+
 	void main() {
-		gl_Position = gl_Vertex;
+		gl_Position = vec4(vertexPosition, 1.0);
 	}
 
 #endif
 
 #ifdef _GEOMETRY_
-#extension GL_EXT_geometry_shader4 : enable
 
 	void main() {
 		gl_Position = gl_PositionIn[0];
@@ -363,6 +370,11 @@ uniform int layer;
 #endif
 
 #ifdef _FRAGMENT_
+	
+	// Output Variables
+
+	layout(location = 0) out vec4 outDeltaSR;
+	layout(location = 1) out vec4 outDeltaSM;
 
 	void integrand(float r, float mu, float muS, float nu, float t, out vec3 ray, out vec3 mie) {
 		ray = vec3(0.0);
@@ -408,8 +420,8 @@ uniform int layer;
 		inscatter(r, mu, muS, nu, ray, mie);
 		// store separately Rayleigh and Mie contributions, WITHOUT the phase function factor
 		// (cf "Angular precision")
-		gl_FragData[0].rgb = ray;
-		gl_FragData[1].rgb = mie;
+		outDeltaSR.rgb = ray;
+		outDeltaSM.rgb = mie;
 	}
 
 #endif

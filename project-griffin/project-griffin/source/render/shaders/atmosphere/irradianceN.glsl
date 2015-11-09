@@ -10,13 +10,19 @@ uniform float first;
 
 #ifdef _VERTEX_
 
+	// Input Variables
+
+	layout(location = VertexLayout_Position) in vec3 vertexPosition;
+
 	void main() {
-		gl_Position = gl_Vertex;
+		gl_Position = vec4(vertexPosition, 1.0);
 	}
 
 #endif
 
 #ifdef _FRAGMENT_
+	
+	out vec4 outColor;
 
 	const float dphi = M_PI / float(IRRADIANCE_INTEGRAL_SAMPLES);
 	const float dtheta = M_PI / float(IRRADIANCE_INTEGRAL_SAMPLES);
@@ -49,7 +55,7 @@ uniform float first;
 			}
 		}
 
-		gl_FragColor = vec4(result, 0.0);
+		outColor = vec4(result, 0.0);
 	}
 
 #endif

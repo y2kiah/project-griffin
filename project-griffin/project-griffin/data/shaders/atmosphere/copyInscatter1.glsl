@@ -1,3 +1,7 @@
+#ifdef _GEOMETRY_
+#extension GL_EXT_geometry_shader4 : enable
+#endif
+
 //#define UniformLayout_ModelToWorld        0
 //#define UniformLayout_ViewProjection      1
 //#define UniformLayout_ModelViewProjection 2
@@ -341,14 +345,17 @@ uniform sampler3D deltaSMSampler;
 
 #ifdef _VERTEX_
 
+	// Input Variables
+
+	layout(location = VertexLayout_Position) in vec3 vertexPosition;
+
 	void main() {
-		gl_Position = gl_Vertex;
+		gl_Position = vec4(vertexPosition, 1.0);
 	}
 
 #endif
 
 #ifdef _GEOMETRY_
-#extension GL_EXT_geometry_shader4 : enable
 
 	void main() {
 		gl_Position = gl_PositionIn[0];
@@ -366,12 +373,14 @@ uniform sampler3D deltaSMSampler;
 #endif
 
 #ifdef _FRAGMENT_
+	
+	out vec4 outColor;
 
 	void main() {
 		vec3 uvw = vec3(gl_FragCoord.xy, float(layer) + 0.5) / vec3(ivec3(RES_MU_S * RES_NU, RES_MU, RES_R));
-		vec4 ray = texture3D(deltaSRSampler, uvw);
-		vec4 mie = texture3D(deltaSMSampler, uvw);
-		gl_FragColor = vec4(ray.rgb, mie.r); // store only red component of single Mie scattering (cf. "Angular precision")
+		vec4 ray = texture(deltaSRSampler, uvw);
+		vec4 mie = texture(deltaSMSampler, uvw);
+		outColor = vec4(ray.rgb, mie.r); // store only red component of single Mie scattering (cf. "Angular precision")
 	}
 
 #endif

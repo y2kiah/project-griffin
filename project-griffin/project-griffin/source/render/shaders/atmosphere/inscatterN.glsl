@@ -1,3 +1,7 @@
+#ifdef _GEOMETRY_
+#extension GL_EXT_geometry_shader4 : enable
+#endif
+
 #include "source/render/shaders/layout.glsli"
 #include "source/game/sky/atmosphere.h"
 #include "source/render/shaders/atmosphere/common.glsli"
@@ -12,14 +16,17 @@ uniform sampler3D deltaJSampler;
 
 #ifdef _VERTEX_
 
+	// Input Variables
+
+	layout(location = VertexLayout_Position) in vec3 vertexPosition;
+
 	void main() {
-		gl_Position = gl_Vertex;
+		gl_Position = vec4(vertexPosition, 1.0);
 	}
 
 #endif
 
 #ifdef _GEOMETRY_
-#extension GL_EXT_geometry_shader4 : enable
 
 	void main() {
 		gl_Position = gl_PositionIn[0];
@@ -37,6 +44,8 @@ uniform sampler3D deltaJSampler;
 #endif
 
 #ifdef _FRAGMENT_
+	
+	out vec4 outColor;
 
 	vec3 integrand(float r, float mu, float muS, float nu, float t) {
 		float ri = sqrt(r * r + t * t + 2.0 * r * mu * t);
@@ -63,7 +72,7 @@ uniform sampler3D deltaJSampler;
 	void main() {
 		float mu, muS, nu;
 		getMuMuSNu(r, dhdH, mu, muS, nu);
-		gl_FragColor.rgb = inscatter(r, mu, muS, nu);
+		outColor.rgb = inscatter(r, mu, muS, nu);
 	}
 
 #endif

@@ -1,3 +1,7 @@
+#ifdef _GEOMETRY_
+#extension GL_EXT_geometry_shader4 : enable
+#endif
+
 #include "source/render/shaders/layout.glsli"
 #include "source/game/sky/atmosphere.h"
 #include "source/render/shaders/atmosphere/common.glsli"
@@ -12,14 +16,20 @@ uniform sampler3D deltaSSampler;
 
 #ifdef _VERTEX_
 
+	const vec2 madd = vec2(0.5, 0.5);
+
+	layout(location = VertexLayout_Position) in vec3 vertexPosition;
+
+	out vec2 uv;
+
 	void main() {
-		gl_Position = gl_Vertex;
+		gl_Position = vec4(vertexPosition, 1.0);
+		uv = vertexPosition.xy * madd + madd;
 	}
 
 #endif
 
 #ifdef _GEOMETRY_
-#extension GL_EXT_geometry_shader4 : enable
 
 	void main() {
 		gl_Position = gl_PositionIn[0];
@@ -37,12 +47,16 @@ uniform sampler3D deltaSSampler;
 #endif
 
 #ifdef _FRAGMENT_
+	
+	out vec4 outColor;
+
+	in vec2 uv;
 
 	void main() {
 		float mu, muS, nu;
 		getMuMuSNu(r, dhdH, mu, muS, nu);
-		vec3 uvw = vec3(gl_FragCoord.xy, float(layer) + 0.5) / vec3(ivec3(RES_MU_S * RES_NU, RES_MU, RES_R));
-		gl_FragColor = vec4(texture3D(deltaSSampler, uvw).rgb / phaseFunctionR(nu), 0.0);
+		vec3 uvw = vec3(uv, float(layer) + 0.5) / vec3(ivec3(RES_MU_S * RES_NU, RES_MU, RES_R));
+		outColor = vec4(texture(deltaSSampler, uvw).rgb / phaseFunctionR(nu), 0.0);
 	}
 
 #endif

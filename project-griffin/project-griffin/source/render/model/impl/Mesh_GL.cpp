@@ -766,5 +766,40 @@ namespace griffin {
 				glDeleteVertexArrays(1, &m_drawSets[ds].glVAO);
 			}
 		}
+
+
+		void skinning() {
+			//Parameters
+
+			const glm::mat4 * poseMatrix;
+			uint8_t const * vertexData;
+			size_t posStride;
+			size_t blendIndexStride;
+			size_t blendWeightStride;
+			size_t numVertices;
+			size_t bytesPerVertex;
+			int numWeightsPerVertex;
+
+			glm::vec3 max(-std::numeric_limits<float>::max());
+			glm::vec3 min(std::numeric_limits<float>::min());
+
+			for (size_t i = 0; i < numVertices; ++i) {
+				const glm::vec3 *vPos = reinterpret_cast<const glm::vec3 *>(vertexData + posStride);
+				const uint8_t *blendIndex = reinterpret_cast<const uint8_t *>(vertexData + blendIndexStride);
+				const float *blendWeight = reinterpret_cast<const float *>(vertexData + blendWeightStride);
+
+				for (int j = 0; j < numWeightsPerVertex; ++j) {
+					const glm::vec4 translatedPos = poseMatrix[blendIndex[j]] * glm::vec4(*vPos, 1.0f);
+
+					max.x = std::max(max.x, translatedPos.x);
+					max.y = std::max(max.y, translatedPos.y);
+					max.z = std::max(max.z, translatedPos.z);
+					min.x = std::min(min.x, translatedPos.x);
+					min.y = std::min(min.y, translatedPos.y);
+					min.z = std::min(min.z, translatedPos.z);
+				}
+				vertexData += bytesPerVertex;
+			}
+		}
 	}
 }
