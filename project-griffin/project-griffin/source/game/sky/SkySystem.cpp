@@ -105,15 +105,15 @@ void precomputeAtmosphere(griffin::game::SkySystem& sky)
 	auto cpInN = loadShaderProgram(L"shaders/atmosphere/copyInscatterN.glsl");
 	auto atms = loadShaderProgram(L"shaders/atmosphere/atmosphere.glsl");
 
-	ResourcePtr transmittanceProgram = loader->getResource(trans).get();
-	ResourcePtr irradiance1Program = loader->getResource(irr1).get();
-	ResourcePtr irradianceNProgram = loader->getResource(irrN).get();
-	ResourcePtr inscatter1Program = loader->getResource(insc1).get();
-	ResourcePtr inscatterNProgram = loader->getResource(inscN).get();
-	ResourcePtr inscatterSProgram = loader->getResource(inscS).get();
-	ResourcePtr copyIrradianceProgram = loader->getResource(cpIr).get();
-	ResourcePtr copyInscatter1Program = loader->getResource(cpIn1).get();
-	ResourcePtr copyInscatterNProgram = loader->getResource(cpInN).get();
+	sky.transmittanceProgram = loader->getResource(trans).get();
+	sky.irradiance1Program = loader->getResource(irr1).get();
+	sky.irradianceNProgram = loader->getResource(irrN).get();
+	sky.inscatter1Program = loader->getResource(insc1).get();
+	sky.inscatterNProgram = loader->getResource(inscN).get();
+	sky.inscatterSProgram = loader->getResource(inscS).get();
+	sky.copyIrradianceProgram = loader->getResource(cpIr).get();
+	sky.copyInscatter1Program = loader->getResource(cpIn1).get();
+	sky.copyInscatterNProgram = loader->getResource(cpInN).get();
 	sky.atmosphereProgram = loader->getResource(atms).get();
 
 	/*
@@ -135,7 +135,7 @@ void precomputeAtmosphere(griffin::game::SkySystem& sky)
 	// computes transmittance texture T (line 1 in algorithm 4.1)
 	transmittanceTexture.start();
 	{
-		auto& prg = transmittanceProgram.get()->getResource<ShaderProgram_GL>();
+		auto& prg = sky.transmittanceProgram.get()->getResource<ShaderProgram_GL>();
 		prg.useProgram();
 		drawFullscreenQuad();
 	}
@@ -144,7 +144,7 @@ void precomputeAtmosphere(griffin::game::SkySystem& sky)
 	// computes irradiance texture deltaE (line 2 in algorithm 4.1)
 	deltaETexture.start();
 	{
-		auto& prg = irradiance1Program.get()->getResource<ShaderProgram_GL>();
+		auto& prg = sky.irradiance1Program.get()->getResource<ShaderProgram_GL>();
 		prg.useProgram();
 		glUniform1i(glGetUniformLocation(prg.getProgramId(), "transmittanceSampler"), transmittanceUnit);
 		drawFullscreenQuad();
@@ -155,7 +155,7 @@ void precomputeAtmosphere(griffin::game::SkySystem& sky)
 	// Rayleigh and Mie separated in deltaSR + deltaSM
 	deltaSR_SMTexture.start();
 	{
-		auto& prg = inscatter1Program.get()->getResource<ShaderProgram_GL>();
+		auto& prg = sky.inscatter1Program.get()->getResource<ShaderProgram_GL>();
 		prg.useProgram();
 		glUniform1i(glGetUniformLocation(prg.getProgramId(), "transmittanceSampler"), transmittanceUnit);
 		for (int layer = 0; layer < RES_R; ++layer) {
@@ -168,7 +168,7 @@ void precomputeAtmosphere(griffin::game::SkySystem& sky)
 	// copies deltaE into irradiance texture E (line 4 in algorithm 4.1)
 	irradianceTexture.start();
 	{
-		auto& prg = copyIrradianceProgram.get()->getResource<ShaderProgram_GL>();
+		auto& prg = sky.copyIrradianceProgram.get()->getResource<ShaderProgram_GL>();
 		prg.useProgram();
 		glUniform1f(glGetUniformLocation(prg.getProgramId(), "k"), 0.0f);
 		glUniform1i(glGetUniformLocation(prg.getProgramId(), "deltaESampler"), deltaEUnit);
@@ -179,7 +179,7 @@ void precomputeAtmosphere(griffin::game::SkySystem& sky)
 	// copies deltaS into inscatter texture S (line 5 in algorithm 4.1)
 	inscatterTexture.start();
 	{
-		auto& prg = copyInscatter1Program.get()->getResource<ShaderProgram_GL>();
+		auto& prg = sky.copyInscatter1Program.get()->getResource<ShaderProgram_GL>();
 		prg.useProgram();
 		glUniform1i(glGetUniformLocation(prg.getProgramId(), "deltaSRSampler"), deltaSRUnit);
 		glUniform1i(glGetUniformLocation(prg.getProgramId(), "deltaSMSampler"), deltaSMUnit);
@@ -196,7 +196,7 @@ void precomputeAtmosphere(griffin::game::SkySystem& sky)
 		// computes deltaJ (line 7 in algorithm 4.1)
 		deltaJTexture.start();
 		{
-			auto& prg = inscatterSProgram.get()->getResource<ShaderProgram_GL>();
+			auto& prg = sky.inscatterSProgram.get()->getResource<ShaderProgram_GL>();
 			prg.useProgram();
 			glUniform1f(glGetUniformLocation(prg.getProgramId(), "first"), order == 2 ? 1.0f : 0.0f);
 			glUniform1i(glGetUniformLocation(prg.getProgramId(), "transmittanceSampler"), transmittanceUnit);
@@ -213,7 +213,7 @@ void precomputeAtmosphere(griffin::game::SkySystem& sky)
 		// computes deltaE (line 8 in algorithm 4.1)
 		deltaETexture.start();
 		{
-			auto& prg = irradianceNProgram.get()->getResource<ShaderProgram_GL>();
+			auto& prg = sky.irradianceNProgram.get()->getResource<ShaderProgram_GL>();
 			prg.useProgram();
 			glUniform1f(glGetUniformLocation(prg.getProgramId(), "first"), order == 2 ? 1.0f : 0.0f);
 			glUniform1i(glGetUniformLocation(prg.getProgramId(), "transmittanceSampler"), transmittanceUnit);
@@ -230,7 +230,7 @@ void precomputeAtmosphere(griffin::game::SkySystem& sky)
 			//glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_3D, 0, 0, 0);
 			//glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
-			auto& prg = inscatterNProgram.get()->getResource<ShaderProgram_GL>();
+			auto& prg = sky.inscatterNProgram.get()->getResource<ShaderProgram_GL>();
 			prg.useProgram();
 			glUniform1f(glGetUniformLocation(prg.getProgramId(), "first"), order == 2 ? 1.0f : 0.0f);
 			glUniform1i(glGetUniformLocation(prg.getProgramId(), "transmittanceSampler"), transmittanceUnit);
@@ -249,7 +249,7 @@ void precomputeAtmosphere(griffin::game::SkySystem& sky)
 		// adds deltaE into irradiance texture E (line 10 in algorithm 4.1)
 		irradianceTexture.start();
 		{
-			auto& prg = copyIrradianceProgram.get()->getResource<ShaderProgram_GL>();
+			auto& prg = sky.copyIrradianceProgram.get()->getResource<ShaderProgram_GL>();
 			prg.useProgram();
 			glUniform1f(glGetUniformLocation(prg.getProgramId(), "k"), 1.0);
 			glUniform1i(glGetUniformLocation(prg.getProgramId(), "deltaESampler"), deltaEUnit);
@@ -260,7 +260,7 @@ void precomputeAtmosphere(griffin::game::SkySystem& sky)
 		// adds deltaS into inscatter texture S (line 11 in algorithm 4.1)
 		inscatterTexture.start();
 		{
-			auto& prg = copyInscatterNProgram.get()->getResource<ShaderProgram_GL>();
+			auto& prg = sky.copyInscatterNProgram.get()->getResource<ShaderProgram_GL>();
 			prg.useProgram();
 			glUniform1i(glGetUniformLocation(prg.getProgramId(), "deltaSSampler"), deltaSRUnit);
 			for (int layer = 0; layer < RES_R; ++layer) {

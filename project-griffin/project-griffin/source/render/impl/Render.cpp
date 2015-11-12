@@ -47,9 +47,9 @@ namespace griffin {
 
 		// class RenderQueue
 
-		void RenderQueue::addRenderEntry(RenderQueueKey sortKey, RenderEntry entry)
+		void RenderQueue::addRenderEntry(RenderQueueKey sortKey, RenderEntry&& entry)
 		{
-			m_entries.push_back(std::move(entry));
+			m_entries.push_back(std::forward<RenderEntry>(entry));
 			m_keys.push_back({ sortKey, static_cast<int>(m_entries.size()) });
 		}
 
@@ -521,16 +521,16 @@ namespace griffin {
 				throw std::runtime_error("no resource loader");
 			}
 
-			auto meshResourceBuilder = [](DataPtr data, size_t size) {
+			auto modelResourceBuilder = [](DataPtr data, size_t size) {
 				return Model_GL(Mesh_GL(std::move(data), size));
 			};
 
-			auto meshResourceCallback = [modelFilePath](const ResourcePtr& resourcePtr, Id_T handle, size_t size) {
+			auto modelResourceCallback = [modelFilePath](const ResourcePtr& resourcePtr, Id_T handle, size_t size) {
 				Model_GL& mdl = resourcePtr->getResource<Model_GL>();
 				mdl.m_mesh.createResourcesFromInternalMemory(modelFilePath);
 			};
 
-			return loader->load<Model_GL>(modelFilePath, cache, meshResourceBuilder, meshResourceCallback);
+			return loader->load<Model_GL>(modelFilePath, cache, modelResourceBuilder, modelResourceCallback);
 		}
 
 	}

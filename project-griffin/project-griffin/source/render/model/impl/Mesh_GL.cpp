@@ -771,14 +771,14 @@ namespace griffin {
 		void skinning() {
 			//Parameters
 
-			const glm::mat4 * poseMatrix;
-			uint8_t const * vertexData;
-			size_t posStride;
-			size_t blendIndexStride;
-			size_t blendWeightStride;
-			size_t numVertices;
-			size_t bytesPerVertex;
-			int numWeightsPerVertex;
+			const glm::mat4 * poseMatrix = nullptr;
+			uint8_t const * vertexData = nullptr;
+			size_t posStride = 0;
+			size_t blendIndexStride = 0;
+			size_t blendWeightStride = 0;
+			size_t numVertices = 0;
+			size_t bytesPerVertex = 0;
+			int numWeightsPerVertex = 0;
 
 			glm::vec3 max(-std::numeric_limits<float>::max());
 			glm::vec3 min(std::numeric_limits<float>::min());

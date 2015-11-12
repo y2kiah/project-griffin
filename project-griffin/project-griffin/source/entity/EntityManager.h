@@ -43,6 +43,13 @@ namespace griffin {
 			}
 
 			/**
+			* @return	ComponentMask of the entity
+			*/
+			ComponentMask getEntityComponentMask(EntityId entityId) const {
+				return m_entityStore[entityId].componentMask;
+			}
+
+			/**
 			* Creates a new empty entity
 			* @return	entity id
 			*/

@@ -59,10 +59,10 @@ namespace griffin {
 
 		/**
 		* ModelInstance is a component that goes along with the SceneNode to make an
-		* entity represent a unique instance of a model in the scene.
+		* entity represent a unique instance of a model object in the scene.
 		*/
 		COMPONENT(ModelInstance,
-			(Id_T,			modelId,,			"id of the referenced model")
+			(Id_T,			modelId,,			"resource id of the model")
 		)
 
 		/**
@@ -95,6 +95,7 @@ namespace griffin {
 			(float,			quadraticAttenuation,,	"constant multiplied by inverse square of distance"),
 			(float,			spotAngleCutoff,,		"spotlight angle cutoff, dot product comparison (% from 90deg)"),
 			(float,			spotEdgeBlendPct,,		"spotlight edge blend, in % of spot radius"),
+			(float,			volumeRadius,,			"radius from light origin of containing geometry"),
 			(uint8_t,		isSpotLight,,			"1 if spot light"),
 			(uint8_t,		isPointLight,,			"1 if point light"),
 			(uint8_t,		isDirectionalLight,,	"1 if directional light"),
@@ -125,14 +126,12 @@ namespace griffin {
 		)
 		
 		/**
-		* All entities that can be rendered has a RenderCullInfo component. This stores the data
-		* needed for keeping track of its indexing in the space partitioning structure, the data
-		* needed to perform frustum culling, and the data needed to submit the entity to the
-		* renderer to be rendered in a frame.
+		* All entities that can be rendered have a RenderCullInfo component. This stores the data
+		* needed to keep track of its indexing in the space partitioning structure, and the data
+		* needed to perform frustum culling.
 		*/
 		COMPONENT(RenderCullInfo,
-			(uint64_t,		renderQueueKey,,		"value of the RenderQueueKey for rendering"),
-			(uint32_t,		visibleFrustumBits,,	"resource id of the mesh"),
+			(uint32_t,		visibleFrustumBits,,	"bits representing visibility in frustums"),
 			(uint32_t,		minWorldAABB,[3],		"AABB integer lower coords in worldspace"),
 			(uint32_t,		maxWorldAABB,[3],		"AABB integer upper coords in worldspace"),
 			(float,			viewspaceBSphere,[4],	"bounding sphere x,y,z,r in viewspace")

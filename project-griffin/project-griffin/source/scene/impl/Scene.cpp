@@ -100,6 +100,8 @@ void SceneManager::renderActiveScenes(float interpolation)
 {
 	auto& render = *g_renderPtr.lock();
 
+	int8_t activeViewport = 0; // TEMP, hard coded to one viewport
+
 	for (auto& s : m_scenes.getItems()) {
 		if (s.active) {
 			// run the movement system to interpolate all moving nodes in the scene
@@ -124,7 +126,7 @@ void SceneManager::renderActiveScenes(float interpolation)
 					float frustumDistance = cam.getFarClip() - cam.getNearClip();
 
 					// set viewport 0 which is the main view viewport
-					render.setViewportParameters(0, render::ViewportParameters{
+					render.setViewportParameters(activeViewport, render::ViewportParameters{
 						cam.getModelViewMatrix(),
 						cam.getProjectionMatrix(),
 						viewProjMat,
@@ -138,12 +140,48 @@ void SceneManager::renderActiveScenes(float interpolation)
 				}
 			}
 
+			// TODO: hard-coded to one frustum, need to support > 1 to get shadow mapping
+			uint32_t activeFrustum = 0;
+			uint32_t frustumMask = 1;
+
 			// run the frustum culling system to determine visible objects
 			frustumCullActiveScenes();
 
 			// render all visible mesh instances
+			auto& rciStore = s.entityManager->getComponentStore<RenderCullInfo>();
+			
+			// TODO: should we really loop through all components AGAIN? Frustum culling could build a list of entityids instead
+			using namespace entity;
+			for (auto& rci : rciStore.getComponents().getItems()) {
+				// TODO: uncomment this once frustum culling is working
+				//if (rci.component.visibleFrustumBits & frustumMask != 0) {
+				
+				ComponentMask mask = s.entityManager->getEntityComponentMask(rci.entityId);
+				
+				// if it's a Model_GL
+				if (mask[ModelInstance::componentType]) {
+					auto modelCmp = *s.entityManager->getEntityComponent<ModelInstance>(rci.entityId);
+					// use modelCmp.modelId to render
+					
+					
+				}
+					//auto& node = *s.entityManager->getEntityComponent<SceneNode>(rci.entityId);
+					
+					// call "render" function which should only add render entries to the viewport's queue
+					// the renderer will sort the queue and call the object's "draw" function with a callback function pointer
+					/*
+					RenderQueueKey key;
+					key.value = rci.component.renderQueueKey;
 
+					RenderEntry re{};
+					re.entityId = rci.entityId;
+					re.positionWorld = node.positionWorld;
+					re.orientationWorld = node.orientationWorld;
+					*/
 
+					//render.addRenderEntry(activeViewport, key, std::move(re));
+				//}
+			}
 		}
 	}
 }
@@ -164,7 +202,7 @@ void SceneManager::frustumCullActiveScenes()
 	using namespace geometry;
 
 	for (auto& scene : m_scenes) {
-		auto& reStore = scene.entityManager->getComponentStore<RenderCullInfo>();
+		auto& rciStore = scene.entityManager->getComponentStore<RenderCullInfo>();
 
 		//for (int activeFrustum = 0; activeFrustum < numActiveFrustums; frustumMask <<= 1; ++activeFrustum) {
 			// To do the frustum index, we need an active cameras list, take index into that list for the camera.
@@ -176,9 +214,9 @@ void SceneManager::frustumCullActiveScenes()
 			Plane frustumPlanes[6] = {};
 			// TODO: code to get frustum
 
-			for (auto& re : reStore.getComponents().getItems()) {
-				auto inside = intersect(frustumPlanes, *reinterpret_cast<Sphere*>(&re.component.viewspaceBSphere));
-				re.component.visibleFrustumBits |= frustumMask & (inside != Outside);
+			for (auto& rci : rciStore.getComponents().getItems()) {
+				auto inside = intersect(frustumPlanes, *reinterpret_cast<Sphere*>(&rci.component.viewspaceBSphere));
+				rci.component.visibleFrustumBits |= frustumMask & (inside != Outside);
 			}
 		//}
 

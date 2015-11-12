@@ -41,7 +41,7 @@ namespace griffin {
 		* @var	instanced	0=no, 1=yes mesh is instanced
 		* @var	translucencyType	0=opaque, 1=back-to-front translucent, 2=additive, 3=subtractive
 		* @var	sceneLayer	0=skybox, 1=scene geometry, etc.
-		* @var	fullscreenLayer	0=light pre-pass, 1=game scene, 2=post filter, 3=HUD, 4=UI
+		* @var	fullscreenLayer	0=light pre-pass, 1=game scene, 2=post filter, 3=HUD, 4=UI, 5=debug
 		* @var	value		unioned with the above four vars, used for sorting
 		*/
 		struct RenderQueueKey {
@@ -73,7 +73,7 @@ namespace griffin {
 
 
 		struct RenderEntry {
-			glm::dvec3	translationWorld;
+			glm::dvec3	positionWorld;
 			glm::quat	orientationWorld;
 			Id_T		entityId;
 			// render callback function
@@ -83,9 +83,14 @@ namespace griffin {
 
 		class RenderQueue {
 		public:
-			typedef struct { RenderQueueKey key; int entryIndex; } KeyType;
+			typedef struct {
+				RenderQueueKey key;
+				int entryIndex;
+				int _pad_end;
+			} KeyType;
 			typedef std::vector<KeyType>		KeyList;
 			typedef std::vector<RenderEntry>	EntryList;
+			typedef std::vector<std::function<void(Id_T, int)>>	DrawCallbackList;
 
 			explicit RenderQueue() {
 				m_keys.reserve(RESERVE_RENDER_QUEUE);
@@ -94,7 +99,8 @@ namespace griffin {
 
 			~RenderQueue();
 
-			void addRenderEntry(RenderQueueKey sortKey, RenderEntry entry);
+			template <typename F>
+			void addRenderEntry(RenderQueueKey sortKey, RenderEntry&& entry, F drawFunc);
 
 			/**
 			* Sorts the keys, will be the traversal order for rendering
@@ -141,6 +147,7 @@ namespace griffin {
 			RenderQueue			renderQueue;
 			bool				display = false;
 			RendererType		rendererType = RendererType_Deferred;
+			//RenderTarget ?? optional fbo, for rendering viewport to texture
 		};
 
 
@@ -215,6 +222,16 @@ namespace griffin {
 
 				m_viewports[viewport].params = std::forward<ViewportParameters>(viewportParams);
 				m_viewports[viewport].display = true;
+			}
+
+			/**
+			* Adds a render entry into the viewport's render queue.
+			*/
+			void addRenderEntry(uint8_t viewport, RenderQueueKey sortKey, RenderEntry&& renderEntry)
+			{
+				assert(viewport < MAX_VIEWPORTS && "viewport out of range");
+
+				m_viewports[viewport].renderQueue.addRenderEntry(sortKey, std::forward<RenderEntry>(renderEntry));
 			}
 
 			void renderFrame(float interpolation);

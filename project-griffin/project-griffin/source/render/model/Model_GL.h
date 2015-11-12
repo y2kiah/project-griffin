@@ -7,7 +7,6 @@
 #include <resource/Resource.h>
 #include <render/texture/Texture2D_GL.h>
 #include <render/ShaderProgram_GL.h>
-#include <render/model/Mesh_GL.h>
 
 namespace griffin {
 	using namespace resource;
@@ -52,9 +51,11 @@ namespace griffin {
 
 			Model_GL(const Model_GL&) = delete;
 
+			void render(entity::EntityId entityId);
+			void draw(entity::EntityId entityId, int drawSetIndex);
 			
 			// Variables
-			Mesh_GL		m_mesh;
+			Mesh_GL		m_mesh; // should models have a collection of meshes here?
 			TextureList	m_textures;
 			ShaderList	m_shaderPrograms;
 			bool		m_childResourcesLoaded = false;	//<! true when all child resource asyncronous loading completed, model can be rendered

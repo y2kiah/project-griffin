@@ -129,7 +129,7 @@ namespace griffin {
 		void tesselateCubeSectionByTangent(float xStartRads, float yStartRads, float radiansSpan,
 										   int numVertices, int xStride, int yStride, float* data)
 		{
-			assert(radianSpan >= 0.0f && radianSpan <= glm::pi<float> / 4.0f); // radian span for one section should be no more than 45 degrees
+			assert(radiansSpan >= 0.0f && radiansSpan <= glm::pi<float>() / 4.0f); // radian span for one section should be no more than 45 degrees
 			assert(numVertices >= 2 && xStartRads >= 0.0f && yStartRads >= 0.0f);
 			assert(xStride >= 3 && yStride >= numVertices * 3);
 
