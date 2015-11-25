@@ -10,13 +10,13 @@
 #include <utility/memory_reserve.h>
 #include "RenderTarget_GL.h"
 
+// Forward Declarations
+typedef struct NVGcontext NVGcontext;
 
 namespace griffin {
-	// Forward Declarations
 	namespace resource { class ResourceLoader; }
 
 	namespace render {
-
 		using std::unique_ptr;
 		using std::weak_ptr;
 		using std::shared_ptr;
@@ -31,7 +31,8 @@ namespace griffin {
 
 		enum RendererType {
 			RendererType_Deferred = 0,
-			RendererType_Forward = 1
+			RendererType_Forward = 1,
+			RendererType_Vector = 2
 		};
 
 		/**
@@ -155,6 +156,9 @@ namespace griffin {
 		};
 
 
+		/**
+		*
+		*/
 		class DeferredRenderer_GL {
 		public:
 			explicit DeferredRenderer_GL() :
@@ -168,7 +172,7 @@ namespace griffin {
 			*/
 			void init(int viewportWidth, int viewportHeight);
 
-			void renderViewport(ViewportParameters& viewportParams);
+			void renderViewport(Viewport& viewport);
 
 			// temp, will be part of render queue in its own layer
 			void setSkyboxTexture(const ResourcePtr& textureCubeMap) {
@@ -191,6 +195,28 @@ namespace griffin {
 
 			RenderTarget_GL		m_colorBuffer;						//<! color buffer for FXAA
 		};
+
+
+		/**
+		*
+		*/
+		class VectorRenderer_GL {
+		public:
+			explicit VectorRenderer_GL() {}
+			~VectorRenderer_GL();
+
+			/**
+			* Initialize the renderer
+			*/
+			void init(int viewportWidth, int viewportHeight);
+
+			void renderViewport(Viewport& viewport);
+
+		private:
+			NVGcontext *	m_nvgContext = nullptr;
+			int				m_font = -1;
+		};
+
 
 		/**
 		* need the systems to
@@ -248,6 +274,7 @@ namespace griffin {
 		private:
 			Viewport			m_viewports[MAX_VIEWPORTS];
 			DeferredRenderer_GL	m_deferredRenderer;
+			VectorRenderer_GL	m_vectorRenderer;
 		};
 
 

@@ -136,7 +136,7 @@ namespace griffin {
 
 		// class DeferredRenderer_GL
 
-		void DeferredRenderer_GL::renderViewport(ViewportParameters& viewportParams)
+		void DeferredRenderer_GL::renderViewport(Viewport& viewport)
 		{
 			static float animTime = 0.0f; // TEMP
 
@@ -167,11 +167,11 @@ namespace griffin {
 				GLint frustumFarLoc   = glGetUniformLocation(programId, "frustumFar");
 				GLint inverseFrustumDistanceLoc = glGetUniformLocation(programId, "inverseFrustumDistance");
 
-				glUniformMatrix4fv(viewProjMatLoc, 1, GL_FALSE, &viewportParams.viewProjMat[0][0]);
+				glUniformMatrix4fv(viewProjMatLoc, 1, GL_FALSE, &viewport.params.viewProjMat[0][0]);
 
-				glUniform1f(frustumNearLoc, viewportParams.nearClipPlane);
-				glUniform1f(frustumFarLoc, viewportParams.farClipPlane);
-				glUniform1f(inverseFrustumDistanceLoc, viewportParams.inverseFrustumDistance);
+				glUniform1f(frustumNearLoc, viewport.params.nearClipPlane);
+				glUniform1f(frustumFarLoc, viewport.params.farClipPlane);
+				glUniform1f(inverseFrustumDistanceLoc, viewport.params.inverseFrustumDistance);
 
 				// TEMP get material uniform locations
 				GLint ambientLoc      = glGetUniformLocation(programId, "material.Ma");
@@ -195,7 +195,7 @@ namespace griffin {
 				GLint lightEdgeLoc    = glGetUniformLocation(programId, "light.spotEdgeBlendPct");
 
 				glm::vec4 lightPos{ 0.1f, 1.0f, 1.0f, 0.0f };
-				glm::vec4 lightPosViewspace = viewportParams.viewMat * lightPos;
+				glm::vec4 lightPosViewspace = viewport.params.viewMat * lightPos;
 				glm::vec3 lightDirViewspace = -glm::vec3(lightPosViewspace);
 				//glm::vec4 lightPosViewspace{ 0.0f, 0.0f, 0.0f, 1.0f };
 				//glm::vec3 lightDirViewspace{ 0.0f, 0.0f, -1.0f };
@@ -223,7 +223,7 @@ namespace griffin {
 					mdl.m_mesh.draw(modelMatLoc, modelViewMatLoc, mvpMatLoc, normalMatLoc,
 									ambientLoc, diffuseLoc, specularLoc, shininessLoc,
 									diffuseMapLoc, animTime,
-									viewportParams.viewMat, viewportParams.projMat); // temporarily passing in the modelMatLoc
+									viewport.params.viewMat, viewport.params.projMat); // temporarily passing in the modelMatLoc
 				}
 
 				glDisable(GL_DEPTH_TEST);
@@ -240,9 +240,9 @@ namespace griffin {
 					GLint mvpMatLoc  = glGetUniformLocation(programId, "modelViewProjection");
 					GLint cubemapLoc = glGetUniformLocation(programId, "cubemap");
 
-					glm::mat4 skyboxViewMat = viewportParams.viewMat;
+					glm::mat4 skyboxViewMat = viewport.params.viewMat;
 					skyboxViewMat[3].xyz = 0.0f;
-					glm::mat4 skyboxMVP = viewportParams.projMat * skyboxViewMat;
+					glm::mat4 skyboxMVP = viewport.params.projMat * skyboxViewMat;
 
 					glUniformMatrix4fv(mvpMatLoc, 1, GL_FALSE, &skyboxMVP[0][0]);
 					glUniform1i(cubemapLoc, 0);
@@ -286,8 +286,8 @@ namespace griffin {
 				glUniform1i(depthMapLoc, 3);
 				glUniform1i(positionMapLoc, 4);
 				
-				glUniform1f(cameraNearLoc, viewportParams.nearClipPlane);
-				glUniform1f(cameraFarLoc, viewportParams.farClipPlane);
+				glUniform1f(cameraNearLoc, viewport.params.nearClipPlane);
+				glUniform1f(cameraFarLoc, viewport.params.farClipPlane);
 
 				drawFullscreenQuad();
 			}
@@ -348,6 +348,7 @@ namespace griffin {
 
 			// init the renderers
 			m_deferredRenderer.init(viewportWidth, viewportHeight);
+			m_vectorRenderer.init(viewportWidth, viewportHeight);
 
 			// set up default viewport matrices
 			ViewportParameters defaultView{};
@@ -355,8 +356,8 @@ namespace griffin {
 			defaultView.farClipPlane  = 100000.0f; //1.0f;
 			defaultView.frustumDistance = defaultView.farClipPlane - defaultView.nearClipPlane;
 			defaultView.inverseFrustumDistance = 1.0f / defaultView.frustumDistance;
-			defaultView.viewMat = glm::lookAt(glm::dvec3{ 120.0, 40.0, 0 }, glm::dvec3{ 0, 0, 0 }, glm::dvec3{ 0, 0, 1.0 });
-								  //glm::lookAt(glm::vec3{ 0, 0, 2.0f }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 0, 0, 1.0f });
+			defaultView.viewMat = glm::lookAt(glm::dvec3{ 120.0, 40.0, 0.0 }, glm::dvec3{ 0.0, 0.0, 0.0 }, glm::dvec3{ 0.0, 0.0, 1.0 });
+								  //glm::lookAt(glm::dvec3{ 0.0, 0.0, 2.0 }, glm::dvec3{ 0.0, 0.0, 0.0 }, glm::dvec3{ 0.0, 0.0, 1.0 });
 			defaultView.projMat = glm::perspective(glm::radians(60.0f),
 												   static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight),
 												   defaultView.nearClipPlane, defaultView.farClipPlane);
@@ -367,7 +368,25 @@ namespace griffin {
 			m_viewports[0].top = 0;
 			m_viewports[0].width = viewportWidth;
 			m_viewports[0].height = viewportHeight;
+			m_viewports[0].rendererType = RendererType_Deferred;
 			setViewportParameters(0, std::move(defaultView));
+
+			ViewportParameters guiView{};
+			guiView.nearClipPlane = -1.0f;
+			guiView.farClipPlane = 1.0f;
+			guiView.frustumDistance = guiView.farClipPlane - guiView.nearClipPlane;
+			guiView.inverseFrustumDistance = 1.0f / guiView.frustumDistance;
+			guiView.viewMat = glm::lookAt(glm::dvec3{ 0.0, 0.0, 0.0 }, glm::dvec3{ 0.0, 0.0, 0.0 }, glm::dvec3{ 0.0, 0.0, 1.0 });
+			guiView.projMat = glm::ortho(0.0f, static_cast<float>(viewportWidth), static_cast<float>(viewportHeight), 0.0f,
+										 guiView.nearClipPlane, guiView.farClipPlane);
+			guiView.viewProjMat = guiView.projMat * glm::mat4(guiView.viewMat);
+
+			m_viewports[1].left = 0;
+			m_viewports[1].top = 0;
+			m_viewports[1].width = viewportWidth;
+			m_viewports[1].height = viewportHeight;
+			m_viewports[1].rendererType = RendererType_Vector;
+			setViewportParameters(1, std::move(guiView));
 
 			// TEMP create some test resources
 			try {
@@ -403,8 +422,15 @@ namespace griffin {
 				if (viewport.display) {
 					viewport.renderQueue.sortRenderQueue();
 
-					if (viewport.rendererType == RendererType_Deferred) {
-						m_deferredRenderer.renderViewport(viewport.params);
+					switch (viewport.rendererType) {
+						case RendererType_Deferred:
+							m_deferredRenderer.renderViewport(viewport);
+							break;
+						case RendererType_Forward:
+							break;
+						case RendererType_Vector:
+							m_vectorRenderer.renderViewport(viewport);
+							break;
 					}
 
 					viewport.renderQueue.clearRenderEntries();
@@ -472,6 +498,7 @@ namespace griffin {
 			};
 
 			// need a way to specify thread affinity for the callback so it knows to run on update or render thread
+			// TODO: switch to using task system, take advantage of thread affinity in that system
 			auto textureResourceCallback = [](const ResourcePtr& resourcePtr, Id_T handle, size_t size) {
 				TextureCubeMap_GL& tex = resourcePtr->getResource<TextureCubeMap_GL>();
 				SDL_Log("callback texture of size %d", size);

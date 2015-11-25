@@ -52,6 +52,7 @@
     <ClCompile Include="source\render\impl\RenderTarget_GL.cpp" />
     <ClCompile Include="source\render\impl\ShaderManager_GL.cpp" />
     <ClCompile Include="source\render\impl\ShaderProgram_GL.cpp" />
+    <ClCompile Include="source\render\impl\VectorRenderer_GL.cpp" />
     <ClCompile Include="source\render\impl\VertexBuffer_GL.cpp" />
     <ClCompile Include="source\render\model\impl\Animation.cpp" />
     <ClCompile Include="source\render\model\impl\Mesh_GL.cpp" />
@@ -252,6 +253,12 @@
     <ClInclude Include="vendor\glm\glm\vec3.hpp" />
     <ClInclude Include="vendor\glm\glm\vec4.hpp" />
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp" />
+    <ClInclude Include="vendor\nanovg\src\fontstash.h" />
+    <ClInclude Include="vendor\nanovg\src\nanovg.h" />
+    <ClInclude Include="vendor\nanovg\src\nanovg_gl.h" />
+    <ClInclude Include="vendor\nanovg\src\nanovg_gl_utils.h" />
+    <ClInclude Include="vendor\nanovg\src\stb_image.h" />
+    <ClInclude Include="vendor\nanovg\src\stb_truetype.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="data\config\inputcontexts.json" />
@@ -486,8 +493,8 @@
     <LibraryPath>$(ProjectDir)\vendor\SDL2\lib\x64\</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)\source\;$(ProjectDir)\vendor\glew-1.12.0\include\;$(ProjectDir)\vendor\SDL2-2.0.3\include\;$(ProjectDir)\vendor\soil\include\;$(ProjectDir)\vendor\glm\;$(ProjectDir)\vendor\boost_1_57_0\;$(ProjectDir)\vendor\assimp\include\;$(ProjectDir)\vendor\luajit-2.0\src\;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)\vendor\SDL2-2.0.3\lib\x64\;$(ProjectDir)\vendor\soil\lib\;$(ProjectDir)\vendor\glew-1.12.0\lib\Debug\x64\;$(ProjectDir)\vendor\assimp\lib64\;$(ProjectDir)\vendor\luajit-2.0\src\;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)\source\;$(ProjectDir)\vendor\glew-1.12.0\include\;$(ProjectDir)\vendor\SDL2-2.0.3\include\;$(ProjectDir)\vendor\soil\include\;$(ProjectDir)\vendor\glm\;$(ProjectDir)\vendor\boost_1_57_0\;$(ProjectDir)\vendor\assimp\include\;$(ProjectDir)\vendor\luajit-2.0\src\;$(ProjectDir)\vendor\nanovg\src\;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\vendor\SDL2-2.0.3\lib\x64\;$(ProjectDir)\vendor\soil\lib\;$(ProjectDir)\vendor\glew-1.12.0\lib\Debug\x64\;$(ProjectDir)\vendor\assimp\lib64\;$(ProjectDir)\vendor\luajit-2.0\src\;$(ProjectDir)\vendor\nanovg\lib\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(ProjectDir)\vendor\SDL2\include\;$(IncludePath)</IncludePath>
@@ -498,12 +505,12 @@
     <LibraryPath>$(ProjectDir)\vendor\SDL2\lib\x64\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir)\source\;$(ProjectDir)\vendor\glew-1.12.0\include\;$(ProjectDir)\vendor\SDL2-2.0.3\include\;$(ProjectDir)\vendor\soil\include\;$(ProjectDir)\vendor\glm\;$(ProjectDir)\vendor\boost_1_57_0\;$(ProjectDir)\vendor\assimp\include\;$(ProjectDir)\vendor\luajit-2.0\src\;$(ProjectDir)\vendor\sparsehash\;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)\vendor\SDL2-2.0.3\lib\x64\;$(ProjectDir)\vendor\soil\lib\;$(ProjectDir)\vendor\glew-1.12.0\lib\Release\x64\;$(ProjectDir)\vendor\assimp\lib64\;$(ProjectDir)\vendor\luajit-2.0\src\;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)\source\;$(ProjectDir)\vendor\glew-1.12.0\include\;$(ProjectDir)\vendor\SDL2-2.0.3\include\;$(ProjectDir)\vendor\soil\include\;$(ProjectDir)\vendor\glm\;$(ProjectDir)\vendor\boost_1_57_0\;$(ProjectDir)\vendor\assimp\include\;$(ProjectDir)\vendor\luajit-2.0\src\;$(ProjectDir)\vendor\nanovg\src\;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\vendor\SDL2-2.0.3\lib\x64\;$(ProjectDir)\vendor\soil\lib\;$(ProjectDir)\vendor\glew-1.12.0\lib\Release\x64\;$(ProjectDir)\vendor\assimp\lib64\;$(ProjectDir)\vendor\luajit-2.0\src\;$(ProjectDir)\vendor\nanovg\lib\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseCTP|x64'">
-    <IncludePath>$(ProjectDir)\source\;$(ProjectDir)\vendor\glew-1.12.0\include\;$(ProjectDir)\vendor\SDL2-2.0.3\include\;$(ProjectDir)\vendor\soil\include\;$(ProjectDir)\vendor\glm\;$(ProjectDir)\vendor\boost_1_57_0\;$(ProjectDir)\vendor\assimp\include\;$(ProjectDir)\vendor\luajit-2.0\src\;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)\vendor\SDL2-2.0.3\lib\x64\;$(ProjectDir)\vendor\soil\lib\;$(ProjectDir)\vendor\glew-1.12.0\lib\Release\x64\;$(ProjectDir)\vendor\assimp\lib64\;$(ProjectDir)\vendor\luajit-2.0\src\;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)\source\;$(ProjectDir)\vendor\glew-1.12.0\include\;$(ProjectDir)\vendor\SDL2-2.0.3\include\;$(ProjectDir)\vendor\soil\include\;$(ProjectDir)\vendor\glm\;$(ProjectDir)\vendor\boost_1_57_0\;$(ProjectDir)\vendor\assimp\include\;$(ProjectDir)\vendor\luajit-2.0\src\;$(ProjectDir)\vendor\nanovg\src\;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\vendor\SDL2-2.0.3\lib\x64\;$(ProjectDir)\vendor\soil\lib\;$(ProjectDir)\vendor\glew-1.12.0\lib\Release\x64\;$(ProjectDir)\vendor\assimp\lib64\;$(ProjectDir)\vendor\luajit-2.0\src\;$(ProjectDir)\vendor\nanovg\lib\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -522,7 +529,7 @@
       <Optimization>
       </Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GRIFFIN_TOOLS_BUILD=1;WIN32_LEAN_AND_MEAN;GLM_FORCE_RADIANS;GLM_MESSAGES;GLM_FORCE_SSE3;GLM_FORCE_INLINE;GLM_SWIZZLE;GL_GLEXT_PROTOTYPES;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GRIFFIN_TOOLS_BUILD=1;WIN32_LEAN_AND_MEAN;GLM_FORCE_RADIANS;GLM_MESSAGES;GLM_FORCE_SSE3;GLM_FORCE_INLINE;GLM_SWIZZLE;GL_GLEXT_PROTOTYPES;GLEW_STATIC;NANOVG_GL3_IMPLEMENTATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <PreprocessKeepComments>false</PreprocessKeepComments>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -577,7 +584,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GRIFFIN_PROFILE=1;GRIFFIN_TOOLS_BUILD=1;_ITERATOR_DEBUG_LEVEL=0;NDEBUG;WIN32_LEAN_AND_MEAN;GLM_FORCE_RADIANS;GLM_FORCE_SSE3;GLM_FORCE_INLINE;GLM_SWIZZLE;GL_GLEXT_PROTOTYPES;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GRIFFIN_PROFILE=1;GRIFFIN_TOOLS_BUILD=1;_ITERATOR_DEBUG_LEVEL=0;NDEBUG;WIN32_LEAN_AND_MEAN;GLM_FORCE_RADIANS;GLM_FORCE_SSE3;GLM_FORCE_INLINE;GLM_SWIZZLE;GL_GLEXT_PROTOTYPES;GLEW_STATIC;NANOVG_GL3_IMPLEMENTATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
@@ -614,7 +621,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GRIFFIN_PROFILE=1;GRIFFIN_TOOLS_BUILD=1;_ITERATOR_DEBUG_LEVEL=0;NDEBUG;WIN32_LEAN_AND_MEAN;GLM_FORCE_RADIANS;GLM_FORCE_SSE3;GLM_FORCE_INLINE;GLM_SWIZZLE;GL_GLEXT_PROTOTYPES;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GRIFFIN_PROFILE=1;GRIFFIN_TOOLS_BUILD=1;_ITERATOR_DEBUG_LEVEL=0;NDEBUG;WIN32_LEAN_AND_MEAN;GLM_FORCE_RADIANS;GLM_FORCE_SSE3;GLM_FORCE_INLINE;GLM_SWIZZLE;GL_GLEXT_PROTOTYPES;GLEW_STATIC;NANOVG_GL3_IMPLEMENTATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>

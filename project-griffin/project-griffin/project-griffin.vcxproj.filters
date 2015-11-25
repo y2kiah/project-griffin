@@ -167,6 +167,9 @@
     <Filter Include="game\sky">
       <UniqueIdentifier>{eca12828-3246-4413-8d5e-54d8e6002484}</UniqueIdentifier>
     </Filter>
+    <Filter Include="vendor\nanovg">
+      <UniqueIdentifier>{99dfae87-8112-45f8-a69e-0f358f0598a0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">
@@ -299,6 +302,9 @@
       <Filter>render\system\impl</Filter>
     </ClCompile>
     <ClCompile Include="source\render\impl\RenderTarget3D_GL.cpp">
+      <Filter>render\system\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\impl\VectorRenderer_GL.cpp">
       <Filter>render\system\impl</Filter>
     </ClCompile>
   </ItemGroup>
@@ -837,6 +843,24 @@
     </ClInclude>
     <ClInclude Include="source\render\RenderTarget3D_GL.h">
       <Filter>render\system</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\nanovg\src\fontstash.h">
+      <Filter>vendor\nanovg</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\nanovg\src\nanovg.h">
+      <Filter>vendor\nanovg</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\nanovg\src\nanovg_gl.h">
+      <Filter>vendor\nanovg</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\nanovg\src\nanovg_gl_utils.h">
+      <Filter>vendor\nanovg</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\nanovg\src\stb_image.h">
+      <Filter>vendor\nanovg</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\nanovg\src\stb_truetype.h">
+      <Filter>vendor\nanovg</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
