@@ -19,7 +19,7 @@ namespace griffin {
 		* This wrapper holds the mesh and shared_ptr's to required child resources like textures
 		* materials, and shader programs. Model_GL is the resource constructed by the resource
 		* loading system. The resource size refers to the "on disk" memory which is just the mesh
-		* and doesn't include space for the shared_ptr's and other flags.
+		* and doesn't include space for the shared_ptr's and other fields.
 		*/
 		class Model_GL {
 		public:
@@ -51,8 +51,8 @@ namespace griffin {
 
 			Model_GL(const Model_GL&) = delete;
 
-			void render(entity::EntityId entityId);
-			void draw(entity::EntityId entityId, int drawSetIndex);
+			void render(Id_T entityId);
+			void draw(Id_T entityId, int drawSetIndex);
 			
 			// Variables
 			Mesh_GL		m_mesh; // should models have a collection of meshes here?

@@ -73,10 +73,16 @@ namespace griffin {
 
 
 		struct RenderEntry {
-			glm::dvec3	positionWorld;
-			glm::quat	orientationWorld;
-			Id_T		entityId;
-			// render callback function
+			/**
+			* @param Id_T	entity id
+			* @param int	drawset/submesh index to render
+			*/
+			typedef std::function<void(Id_T, int)>	DrawCallback;
+
+			glm::dvec3		positionWorld;
+			glm::quat		orientationWorld;
+			Id_T			entityId;
+			DrawCallback	drawCallback;
 			// render flags?
 		};
 
@@ -90,7 +96,6 @@ namespace griffin {
 			} KeyType;
 			typedef std::vector<KeyType>		KeyList;
 			typedef std::vector<RenderEntry>	EntryList;
-			typedef std::vector<std::function<void(Id_T, int)>>	DrawCallbackList;
 
 			explicit RenderQueue() {
 				m_keys.reserve(RESERVE_RENDER_QUEUE);
@@ -99,8 +104,7 @@ namespace griffin {
 
 			~RenderQueue();
 
-			template <typename F>
-			void addRenderEntry(RenderQueueKey sortKey, RenderEntry&& entry, F drawFunc);
+			void addRenderEntry(RenderQueueKey sortKey, RenderEntry&& entry);
 
 			/**
 			* Sorts the keys, will be the traversal order for rendering
