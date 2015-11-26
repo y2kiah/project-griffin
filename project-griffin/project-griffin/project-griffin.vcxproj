@@ -72,6 +72,7 @@
     <ClCompile Include="source\tools\impl\GriffinTools.cpp" />
     <ClCompile Include="source\tools\impl\GriffinToolsApi.cpp" />
     <ClCompile Include="source\utility\profile\impl\Profile.cpp" />
+    <ClCompile Include="vendor\nanovg\src\nanovg.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -521,6 +522,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -545,6 +547,7 @@
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib</IgnoreSpecificDefaultLibraries>
       <EmbedManagedResourceFile>
       </EmbedManagedResourceFile>
+      <Profile>false</Profile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

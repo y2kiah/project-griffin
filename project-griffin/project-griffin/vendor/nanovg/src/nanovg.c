@@ -22,6 +22,9 @@
 #define FONTSTASH_IMPLEMENTATION
 #include "fontstash.h"
 #define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_STATIC
+#define STBI_SIMD
+#define STBI_NO_HDR
 #include "stb_image.h"
 
 #ifdef _MSC_VER

@@ -213,7 +213,7 @@ namespace griffin {
 			void renderViewport(Viewport& viewport);
 
 		private:
-			NVGcontext *	m_nvgContext = nullptr;
+			NVGcontext *	m_nvg = nullptr;
 			int				m_font = -1;
 		};
 

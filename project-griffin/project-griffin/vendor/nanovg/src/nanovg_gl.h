@@ -1098,7 +1098,7 @@ static void glnvg__renderFlush(void* uptr)
 #if NANOVG_GL_USE_UNIFORMBUFFER
 		// Upload ubo for frag shaders
 		glBindBuffer(GL_UNIFORM_BUFFER, gl->fragBuf);
-		glBufferData(GL_UNIFORM_BUFFER, gl->nuniforms * gl->fragSize, gl->uniforms, GL_STREAM_DRAW);
+		glBufferData(GL_UNIFORM_BUFFER, gl->nuniforms * gl->fragSize, gl->uniforms, GL_DYNAMIC_DRAW);//GL_STREAM_DRAW);
 #endif
 
 		// Upload vertex data
@@ -1106,7 +1106,7 @@ static void glnvg__renderFlush(void* uptr)
 		glBindVertexArray(gl->vertArr);
 #endif
 		glBindBuffer(GL_ARRAY_BUFFER, gl->vertBuf);
-		glBufferData(GL_ARRAY_BUFFER, gl->nverts * sizeof(NVGvertex), gl->verts, GL_STREAM_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, gl->nverts * sizeof(NVGvertex), gl->verts, GL_DYNAMIC_DRAW);//GL_STREAM_DRAW);
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
 		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(NVGvertex), (const GLvoid*)(size_t)0);
@@ -1122,14 +1122,20 @@ static void glnvg__renderFlush(void* uptr)
 
 		for (i = 0; i < gl->ncalls; i++) {
 			GLNVGcall* call = &gl->calls[i];
-			if (call->type == GLNVG_FILL)
-				glnvg__fill(gl, call);
-			else if (call->type == GLNVG_CONVEXFILL)
-				glnvg__convexFill(gl, call);
-			else if (call->type == GLNVG_STROKE)
-				glnvg__stroke(gl, call);
-			else if (call->type == GLNVG_TRIANGLES)
-				glnvg__triangles(gl, call);
+			switch (call->type) {
+				case GLNVG_FILL:
+					glnvg__fill(gl, call);
+					break;
+				case GLNVG_CONVEXFILL:
+					glnvg__convexFill(gl, call);
+					break;
+				case GLNVG_STROKE:
+					glnvg__stroke(gl, call);
+					break;
+				case GLNVG_TRIANGLES:
+					glnvg__triangles(gl, call);
+					break;
+			}
 		}
 
 		glDisableVertexAttribArray(0);

@@ -307,6 +307,9 @@
     <ClCompile Include="source\render\impl\VectorRenderer_GL.cpp">
       <Filter>render\system\impl</Filter>
     </ClCompile>
+    <ClCompile Include="vendor\nanovg\src\nanovg.c">
+      <Filter>vendor\nanovg</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\application\main.h">
