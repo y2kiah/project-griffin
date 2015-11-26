@@ -193,4 +193,6 @@ namespace griffin {
 			return (-Kl + std::sqrtf(Kl * Kl - 4.0f * Kq * (Kc - (256.0f / 5.0f) * Imax))) / (2.0f * Kq);
 		}
 	}
+
+
 }

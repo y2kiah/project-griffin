@@ -8,7 +8,9 @@
 #include <glm/gtc/quaternion.hpp>
 #include <resource/ResourceLoader.h>
 #include <utility/memory_reserve.h>
+#include <utility/enum.h>
 #include "RenderTarget_GL.h"
+
 
 // Forward Declarations
 typedef struct NVGcontext NVGcontext;
@@ -24,16 +26,37 @@ namespace griffin {
 		using resource::ResourcePtr;
 		using resource::CacheType;
 
-		// Variables
-		extern weak_ptr<resource::ResourceLoader> g_resourceLoader;
-
-		// Types
+		// Enums
 
 		enum RendererType {
 			RendererType_Deferred = 0,
 			RendererType_Forward = 1,
 			RendererType_Vector = 2
 		};
+
+		MakeEnum(FontFace, uint8_t,
+			(Sans)
+			(SansBold)
+			(SansItalic)
+		,);
+
+
+		// Variables
+		
+		extern weak_ptr<resource::ResourceLoader> g_resourceLoader;
+
+		extern int g_fonts[FontFaceCount];
+
+
+		// Functions
+
+		/**
+		* Helper to get a font face id
+		*/
+		inline int getFontId(FontFace face) { return g_fonts[face]; }
+
+
+		// Types
 
 		/**
 		* @struct RenderQueueKey
@@ -212,9 +235,10 @@ namespace griffin {
 
 			void renderViewport(Viewport& viewport);
 
+			static void loadGlobalFonts(VectorRenderer_GL& inst);
+
 		private:
 			NVGcontext *	m_nvg = nullptr;
-			int				m_font = -1;
 		};
 
 
@@ -241,6 +265,14 @@ namespace griffin {
 			~RenderSystem();
 
 			void init(int viewportWidth, int viewportHeight);
+
+			/**
+			* Separate call to initialize fonts since they are global state. Must be called after
+			* init, uses the vector renderer instance.
+			*/
+			void loadGlobalFonts() {
+				VectorRenderer_GL::loadGlobalFonts(m_vectorRenderer);
+			}
 
 			/**
 			* Sets the camera matrices and clip planes. Needs to be set for each viewport rendered

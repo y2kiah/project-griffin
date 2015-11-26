@@ -11,56 +11,63 @@
 #include <nanovg_gl.h>
 
 
-// free functions
+// Global Variables
 
-void drawWindow(NVGcontext* vg, const char* title, float x, float y, float w, float h)
+int griffin::render::g_fonts[griffin::render::FontFaceCount] = {};
+
+
+// free functions, TEMP, some of these will go into a game-specific file for drawing GUI
+
+void drawWindow(NVGcontext* nvg, const char* title, float x, float y, float w, float h)
 {
+	using namespace griffin::render;
+
 	float cornerRadius = 3.0f;
 	
-	nvgSave(vg);
+	nvgSave(nvg);
 	//	nvgClearState(vg);
 
 	// Window
-	nvgBeginPath(vg);
-	nvgRoundedRect(vg, x, y, w, h, cornerRadius);
-	nvgFillColor(vg, nvgRGBA(28, 30, 34, 192));
+	nvgBeginPath(nvg);
+	nvgRoundedRect(nvg, x, y, w, h, cornerRadius);
+	nvgFillColor(nvg, nvgRGBA(28, 30, 34, 192));
 	//	nvgFillColor(vg, nvgRGBA(0,0,0,128));
-	nvgFill(vg);
+	nvgFill(nvg);
 
 	// Drop shadow
-	NVGpaint shadowPaint = nvgBoxGradient(vg, x, y + 2, w, h, cornerRadius * 2, 10, nvgRGBA(0, 0, 0, 128), nvgRGBA(0, 0, 0, 0));
-	nvgBeginPath(vg);
-	nvgRect(vg, x - 10, y - 10, w + 20, h + 30);
-	nvgRoundedRect(vg, x, y, w, h, cornerRadius);
-	nvgPathWinding(vg, NVG_HOLE);
-	nvgFillPaint(vg, shadowPaint);
-	nvgFill(vg);
+	NVGpaint shadowPaint = nvgBoxGradient(nvg, x, y + 2, w, h, cornerRadius * 2, 10, nvgRGBA(0, 0, 0, 128), nvgRGBA(0, 0, 0, 0));
+	nvgBeginPath(nvg);
+	nvgRect(nvg, x - 10, y - 10, w + 20, h + 30);
+	nvgRoundedRect(nvg, x, y, w, h, cornerRadius);
+	nvgPathWinding(nvg, NVG_HOLE);
+	nvgFillPaint(nvg, shadowPaint);
+	nvgFill(nvg);
 
 	// Header
-	NVGpaint headerPaint = nvgLinearGradient(vg, x, y, x, y + 15, nvgRGBA(255, 255, 255, 8), nvgRGBA(0, 0, 0, 16));
-	nvgBeginPath(vg);
-	nvgRoundedRect(vg, x + 1, y + 1, w - 2, 30, cornerRadius - 1);
-	nvgFillPaint(vg, headerPaint);
-	nvgFill(vg);
-	nvgBeginPath(vg);
-	nvgMoveTo(vg, x + 0.5f, y + 0.5f + 30);
-	nvgLineTo(vg, x + 0.5f + w - 1, y + 0.5f + 30);
-	nvgStrokeColor(vg, nvgRGBA(0, 0, 0, 32));
-	nvgStroke(vg);
+	NVGpaint headerPaint = nvgLinearGradient(nvg, x, y, x, y + 15, nvgRGBA(255, 255, 255, 8), nvgRGBA(0, 0, 0, 16));
+	nvgBeginPath(nvg);
+	nvgRoundedRect(nvg, x + 1, y + 1, w - 2, 30, cornerRadius - 1);
+	nvgFillPaint(nvg, headerPaint);
+	nvgFill(nvg);
+	nvgBeginPath(nvg);
+	nvgMoveTo(nvg, x + 0.5f, y + 0.5f + 30);
+	nvgLineTo(nvg, x + 0.5f + w - 1, y + 0.5f + 30);
+	nvgStrokeColor(nvg, nvgRGBA(0, 0, 0, 32));
+	nvgStroke(nvg);
 
-	nvgFontSize(vg, 18.0f);
-	nvgFontFace(vg, "sans"); //"sans-bold"
-	nvgTextAlign(vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
+	nvgFontSize(nvg, 18.0f);
+	nvgFontFaceId(nvg, getFontId(SansBold));
+	nvgTextAlign(nvg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
 
-	nvgFontBlur(vg, 2);
-	nvgFillColor(vg, nvgRGBA(0, 0, 0, 128));
-	nvgText(vg, x + w / 2, y + 16 + 1, title, NULL);
+	nvgFontBlur(nvg, 2);
+	nvgFillColor(nvg, nvgRGBA(0, 0, 0, 128));
+	nvgText(nvg, x + w / 2, y + 16 + 1, title, NULL);
 
-	nvgFontBlur(vg, 0);
-	nvgFillColor(vg, nvgRGBA(220, 220, 220, 160));
-	nvgText(vg, x + w / 2, y + 16, title, NULL);
+	nvgFontBlur(nvg, 0);
+	nvgFillColor(nvg, nvgRGBA(220, 220, 220, 160));
+	nvgText(nvg, x + w / 2, y + 16, title, NULL);
 
-	nvgRestore(vg);
+	nvgRestore(nvg);
 }
 
 
@@ -76,7 +83,7 @@ void griffin::render::VectorRenderer_GL::renderViewport(Viewport& viewport)
 	// vector rendering here
 	// TEMP
 	nvgFontSize(m_nvg, 24.0f);
-	nvgFontFace(m_nvg, "sans");
+	nvgFontFaceId(m_nvg, getFontId(Sans));
 	nvgFillColor(m_nvg, nvgRGBAf(1.0f, 1.0f, 1.0f, 1.0f));
 
 	nvgTextAlign(m_nvg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
@@ -126,15 +133,34 @@ void griffin::render::VectorRenderer_GL::renderViewport(Viewport& viewport)
 void griffin::render::VectorRenderer_GL::init(int viewportWidth, int viewportHeight)
 {
 	m_nvg = nvgCreateGL3(NVG_STENCIL_STROKES/* | NVG_ANTIALIAS | NVG_DEBUG*/);
-	
+
 	if (m_nvg == nullptr) {
 		throw std::runtime_error("nanovg initialization failed");
 	}
+}
 
-	m_font = nvgCreateFont(m_nvg, "sans", "data/fonts/OpenSans-Regular.ttf");
-	if (m_font == -1) {
-		throw std::runtime_error("failed to load font");
+void griffin::render::VectorRenderer_GL::loadGlobalFonts(VectorRenderer_GL& inst) {
+	// Load fonts
+	struct FontDefinition {
+		FontFace	face;
+		const char*	file;
+	};
+	FontDefinition fontDefs[] = {
+		{ Sans,			"data/fonts/open-sans/OpenSans-Regular.ttf" },
+		{ SansBold,		"data/fonts/open-sans/OpenSans-Bold.ttf" },
+		{ SansItalic,	"data/fonts/open-sans/OpenSans-Italic.ttf" }
+	};
+
+	const int numFonts = sizeof(fontDefs) / sizeof(FontDefinition);
+	static_assert(numFonts <= FontFaceCount, "too many fonts defined");
+
+	for (int f = 0; f < numFonts; ++f) {
+		g_fonts[fontDefs[f].face] = nvgCreateFont(inst.m_nvg, FontFaceToString(fontDefs[f].face), fontDefs[f].file);
+		if (g_fonts[fontDefs[f].face] == -1) {
+			throw std::runtime_error(std::string("failed to load font ") + std::string(fontDefs[f].file));
+		}
 	}
+	
 }
 
 

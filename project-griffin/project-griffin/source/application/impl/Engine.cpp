@@ -188,6 +188,7 @@ namespace griffin {
 
 			auto renderSystemPtr = make_shared<RenderSystem>();
 			renderSystemPtr->init(app.getPrimaryWindow().width, app.getPrimaryWindow().height);
+			renderSystemPtr->loadGlobalFonts();
 
 			auto shaderManagerPtr = make_shared<ShaderManager_GL>();
 			shaderManagerPtr->loadUbershaderCode("shaders/ads.glsl");
