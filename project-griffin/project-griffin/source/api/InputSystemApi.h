@@ -12,13 +12,16 @@ extern "C" {
 // begin inclusion in lua FFI declaration
 #define ffi
 #ifdef ffi
+	/**
+	* Flags for building the context options mask
+	*/
 	enum {
-		CONTEXT_OPTION_CAPTURE_TEXT_INPUT  = 0,		//<! true if text input events should be captured by this context
-		CONTEXT_OPTION_RELATIVE_MOUSE_MODE = 1,		//<! true for relative mouse mode vs. regular "GUI" mode
-		CONTEXT_OPTION_SHOW_MOUSE_CURSOR   = 2,		//<! true to show cursor specified by m_cursorIndex
-		CONTEXT_OPTION_EAT_KEYBOARD_EVENTS = 4,		//<! true to eat all keyboard events, preventing pass-down to lower contexts
-		CONTEXT_OPTION_EAT_MOUSE_EVENTS    = 8,		//<! prevent mouse events from passing down
-		CONTEXT_OPTION_EAT_JOYSTICK_EVENTS = 16		//<! prevent joystick events from passing down
+		CONTEXT_OPTION_CAPTURE_TEXT_INPUT  = 1,		//<! true if text input events should be captured by this context
+		CONTEXT_OPTION_RELATIVE_MOUSE_MODE = 2,		//<! **Currently Unused** true for relative mouse mode vs. regular "GUI" mode
+		CONTEXT_OPTION_SHOW_MOUSE_CURSOR   = 4,		//<! **Currently Unused** true to show cursor specified by m_cursorIndex
+		CONTEXT_OPTION_EAT_KEYBOARD_EVENTS = 8,		//<! true to eat all keyboard events, preventing pass-down to lower contexts
+		CONTEXT_OPTION_EAT_MOUSE_EVENTS    = 16,	//<! prevent mouse events from passing down
+		CONTEXT_OPTION_EAT_JOYSTICK_EVENTS = 32		//<! prevent joystick events from passing down
 	};
 
 	enum {

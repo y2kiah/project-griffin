@@ -43,7 +43,7 @@ namespace griffin {
 			(ExoBold)
 			(ExoItalic)
 			(ExoBoldItalic)
-		,);
+			,);
 
 
 		// Variables

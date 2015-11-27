@@ -58,7 +58,7 @@ namespace griffin {
 	{
 		engine.resourceLoader->executeCallbacks();
 
-		gameRenderFrameTick(pGame, engine, interpolation);
+		gameRenderFrameTick(pGame, engine, interpolation, realTime, countsPassed);
 
 		engine.sceneManager->renderActiveScenes(interpolation);
 

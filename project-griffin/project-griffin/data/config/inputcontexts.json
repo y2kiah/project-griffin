@@ -6,18 +6,30 @@
 		"actions": [
 			{ "name": "Exit",			"bind": "down" },
 			{ "name": "Capture Mouse",	"bind": "down" },
-			{ "name": "Toggle Dev Camera", "bind": "down",  "visible": false }
+			{ "name": "Toggle Dev Camera", "bind": "down",  "visible": false },
+			{ "name": "Show/Hide Dev Console", "bind": "down", "visible": false }
 		],
 		"states": [
 			{ "name": "Pause",			"bind": "toggle" }
 		],
 		"axes": []
 	},
+	"devconsole": {
+		"name": "Dev Console Controls",
+		"priority": 1,
+		"visible": false,
+		"captureTextInput": true,
+		"eatMouseEvents": true,
+		"eatKeyboardEvents": true,
+		"eatJoystickEvents": true,
+		"actions": [],
+		"states": [],
+		"axes": []
+	},
     "devcamera": {
 		"name": "Dev Camera Controls",
-		"priority": 1,
+		"priority": 2,
         "visible": false,
-        "eatsMouseInput": true,
 		"actions": [
 			{ "name": "Speed Scroll Increase",	"bind": "up" },
 			{ "name": "Speed Scroll Decrease",	"bind": "down" }
@@ -40,9 +52,8 @@
 	},
 	"playerfps": {
 		"name": "First Person Controls",
-		"priority": 1,
+		"priority": 2,
 		"visible": true,
-		"eatsMouseInput": true,
 		"actions": [
 			{ "name": "Use",			"bind": "down" }
 		],

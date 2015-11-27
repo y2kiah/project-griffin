@@ -47,11 +47,12 @@ namespace griffin {
 	* smooth animation, state must be kept from the two most recent update ticks, and interpolated
 	* in this loop for final rendering.
 	*/
-	void gameRenderFrameTick(Game* pGame, Engine& engine, float interpolation)
+	void gameRenderFrameTick(Game* pGame, Engine& engine, float interpolation,
+							 const int64_t realTime, const int64_t countsPassed)
 	{
 		Game& game = *pGame;
 
-
+		game.devConsole.renderFrameTick(pGame, engine, interpolation, realTime, countsPassed);
 	}
 
 
@@ -85,9 +86,10 @@ namespace griffin {
 			// temp, will be part of scene as above
 			engine.renderSystem->setSkyboxTexture(game.sky.skyBoxCubeMap);
 
-			// set up player and devCamera control systems
+			// set up game systems
 			game.player.init(gamePtr.get(), engine, app);
 			game.devCamera.init(gamePtr.get(), engine, app);
+			game.devConsole.init(gamePtr.get(), engine, app);
 			
 			// ...
 		}

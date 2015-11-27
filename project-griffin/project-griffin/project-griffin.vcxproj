@@ -497,7 +497,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(ProjectDir)\source\;$(ProjectDir)\vendor\glew-1.13.0\include\;$(ProjectDir)\vendor\SDL2-2.0.3\include\;$(ProjectDir)\vendor\soil\include\;$(ProjectDir)\vendor\glm\;$(ProjectDir)\vendor\boost_1_57_0\;$(ProjectDir)\vendor\assimp\include\;$(ProjectDir)\vendor\luajit-2.0\src\;$(ProjectDir)\vendor\nanovg\src\;$(ProjectDir)\vendor\freetype-2.6.1\include\;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)\vendor\SDL2-2.0.3\lib\x64\;$(ProjectDir)\vendor\soil\lib\;$(ProjectDir)\vendor\glew-1.13.0\lib\Debug\x64\;$(ProjectDir)\vendor\assimp\lib64\;$(ProjectDir)\vendor\luajit-2.0\src\;$(ProjectDir)\vendor\nanovg\lib\;$(ProjectDir)\vendor\freetype-2.6.1\lib\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(ProjectDir)\vendor\SDL2-2.0.3\lib\x64\;$(ProjectDir)\vendor\soil\lib\;$(ProjectDir)\vendor\glew-1.13.0\lib\;$(ProjectDir)\vendor\assimp\lib64\;$(ProjectDir)\vendor\luajit-2.0\src\;$(ProjectDir)\vendor\nanovg\lib\;$(ProjectDir)\vendor\freetype-2.6.1\lib\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(ProjectDir)\vendor\SDL2\include\;$(IncludePath)</IncludePath>
@@ -509,11 +509,11 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(ProjectDir)\source\;$(ProjectDir)\vendor\glew-1.13.0\include\;$(ProjectDir)\vendor\SDL2-2.0.3\include\;$(ProjectDir)\vendor\soil\include\;$(ProjectDir)\vendor\glm\;$(ProjectDir)\vendor\boost_1_57_0\;$(ProjectDir)\vendor\assimp\include\;$(ProjectDir)\vendor\luajit-2.0\src\;$(ProjectDir)\vendor\nanovg\src\;$(ProjectDir)\vendor\freetype-2.6.1\include\;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)\vendor\SDL2-2.0.3\lib\x64\;$(ProjectDir)\vendor\soil\lib\;$(ProjectDir)\vendor\glew-1.13.0\lib\Release\x64\;$(ProjectDir)\vendor\assimp\lib64\;$(ProjectDir)\vendor\luajit-2.0\src\;$(ProjectDir)\vendor\nanovg\lib\;$(ProjectDir)\vendor\freetype-2.6.1\lib\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(ProjectDir)\vendor\SDL2-2.0.3\lib\x64\;$(ProjectDir)\vendor\soil\lib\;$(ProjectDir)\vendor\glew-1.13.0\lib\;$(ProjectDir)\vendor\assimp\lib64\;$(ProjectDir)\vendor\luajit-2.0\src\;$(ProjectDir)\vendor\nanovg\lib\;$(ProjectDir)\vendor\freetype-2.6.1\lib\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseCTP|x64'">
     <IncludePath>$(ProjectDir)\source\;$(ProjectDir)\vendor\glew-1.13.0\include\;$(ProjectDir)\vendor\SDL2-2.0.3\include\;$(ProjectDir)\vendor\soil\include\;$(ProjectDir)\vendor\glm\;$(ProjectDir)\vendor\boost_1_57_0\;$(ProjectDir)\vendor\assimp\include\;$(ProjectDir)\vendor\luajit-2.0\src\;$(ProjectDir)\vendor\nanovg\src\;$(ProjectDir)\vendor\freetype-2.6.1\include\;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)\vendor\SDL2-2.0.3\lib\x64\;$(ProjectDir)\vendor\soil\lib\;$(ProjectDir)\vendor\glew-1.13.0\lib\Release\x64\;$(ProjectDir)\vendor\assimp\lib64\;$(ProjectDir)\vendor\luajit-2.0\src\;$(ProjectDir)\vendor\nanovg\lib\;$(ProjectDir)\vendor\freetype-2.6.1\lib\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(ProjectDir)\vendor\SDL2-2.0.3\lib\x64\;$(ProjectDir)\vendor\soil\lib\;$(ProjectDir)\vendor\glew-1.13.0\lib\;$(ProjectDir)\vendor\assimp\lib64\;$(ProjectDir)\vendor\luajit-2.0\src\;$(ProjectDir)\vendor\nanovg\lib\;$(ProjectDir)\vendor\freetype-2.6.1\lib\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

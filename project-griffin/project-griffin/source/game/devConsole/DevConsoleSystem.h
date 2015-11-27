@@ -11,13 +11,16 @@ namespace griffin {
 	namespace game {
 
 		struct DevConsoleSystem {
-			bool		visible = false;
+			bool		visible = false;				//<! whether console is shown or not
+			bool		wasRelativeMouseMode = false;	//<! true if relative mouse mode was active when console shown
 			uint32_t	toggleVisible = 0;
 
-			Id_T		devCameraInputContextId;				//<! handle for the devconsole input context
-			Id_T		toggleId;								//<! input to turn devconsole on/off
+			Id_T		devConsoleInputContextId;		//<! handle for the devconsole input context
+			Id_T		toggleId;						//<! input to show/hide devconsole
 
-			void updateFrameTick(Game* pGame, Engine& engine, const UpdateInfo& ui);
+			void renderFrameTick(Game* pGame, Engine& engine, float interpolation,
+								 const int64_t realTime, const int64_t countsPassed);
+
 			void init(Game* pGame, const Engine& engine, const SDLApplication& app);
 
 		};

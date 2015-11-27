@@ -423,8 +423,8 @@ namespace griffin {
 		*/
 		MakeEnum(InputContextOptions, uint8_t,
 				 (CaptureTextInput)		//<! true if text input events should be captured by this context
-				 (RelativeMouseMode)	//<! true for relative mouse mode vs. regular "GUI" mode
-				 (ShowMouseCursor)		//<! true to show cursor specified by m_cursorIndex
+				 (RelativeMouseMode)	//<! **Currently Unused** true for relative mouse mode vs. regular "GUI" mode
+				 (ShowMouseCursor)		//<! **Currently Unused** true to show cursor specified by m_cursorIndex
 				 (EatKeyboardEvents)	//<! true to eat all keyboard events, preventing pass-down to lower contexts
 				 (EatMouseEvents)		//<! prevent mouse events from passing down
 				 (EatJoystickEvents)	//<! prevent joystick events from passing down

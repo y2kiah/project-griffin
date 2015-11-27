@@ -2,13 +2,16 @@ local ffi = require("ffi")
 
 ffi.cdef[[
 
+	/**
+	* Flags for building the context options mask
+	*/
 	enum {
-		CONTEXT_OPTION_CAPTURE_TEXT_INPUT  = 0,		//<! true if text input events should be captured by this context
-		CONTEXT_OPTION_RELATIVE_MOUSE_MODE = 1,		//<! true for relative mouse mode vs. regular "GUI" mode
-		CONTEXT_OPTION_SHOW_MOUSE_CURSOR   = 2,		//<! true to show cursor specified by m_cursorIndex
-		CONTEXT_OPTION_EAT_KEYBOARD_EVENTS = 4,		//<! true to eat all keyboard events, preventing pass-down to lower contexts
-		CONTEXT_OPTION_EAT_MOUSE_EVENTS    = 8,		//<! prevent mouse events from passing down
-		CONTEXT_OPTION_EAT_JOYSTICK_EVENTS = 16		//<! prevent joystick events from passing down
+		CONTEXT_OPTION_CAPTURE_TEXT_INPUT  = 1,		//<! true if text input events should be captured by this context
+		CONTEXT_OPTION_RELATIVE_MOUSE_MODE = 2,		//<! **Currently Unused** true for relative mouse mode vs. regular "GUI" mode
+		CONTEXT_OPTION_SHOW_MOUSE_CURSOR   = 4,		//<! **Currently Unused** true to show cursor specified by m_cursorIndex
+		CONTEXT_OPTION_EAT_KEYBOARD_EVENTS = 8,		//<! true to eat all keyboard events, preventing pass-down to lower contexts
+		CONTEXT_OPTION_EAT_MOUSE_EVENTS    = 16,	//<! prevent mouse events from passing down
+		CONTEXT_OPTION_EAT_JOYSTICK_EVENTS = 32		//<! prevent joystick events from passing down
 	};
 
 	enum {
@@ -205,7 +208,20 @@ function initInputSystem()
 
 	-- create contexts from inputcontexts.json
 	for contextName,context in pairs(config.inputContexts) do
+		print(contextName .. " options")
+		print((context.captureTextInput and C.CONTEXT_OPTION_CAPTURE_TEXT_INPUT or 0))
+		print((context.eatKeyboardEvents and C.CONTEXT_OPTION_EAT_KEYBOARD_EVENTS or 0))
+		print((context.eatMouseEvents and C.CONTEXT_OPTION_EAT_MOUSE_EVENTS or 0))
+		print((context.eatJoystickEvents and C.CONTEXT_OPTION_EAT_JOYSTICK_EVENTS or 0))
+		
 		local contextOptions = 0
+		contextOptions = bit.bor((context.captureTextInput and C.CONTEXT_OPTION_CAPTURE_TEXT_INPUT or 0),
+								 (context.eatKeyboardEvents and C.CONTEXT_OPTION_EAT_KEYBOARD_EVENTS or 0),
+								 (context.eatMouseEvents and C.CONTEXT_OPTION_EAT_MOUSE_EVENTS or 0),
+								 (context.eatJoystickEvents and C.CONTEXT_OPTION_EAT_JOYSTICK_EVENTS or 0))
+
+		print(contextOptions)
+
 		local contextId = C.griffin_input_createContext(contextOptions, context.priority, contextName, false)
 		
 		contextMap[contextName] = {
