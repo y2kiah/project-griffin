@@ -170,6 +170,9 @@
     <Filter Include="vendor\nanovg">
       <UniqueIdentifier>{99dfae87-8112-45f8-a69e-0f358f0598a0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="game\devConsole">
+      <UniqueIdentifier>{b6621f3e-6076-4885-b000-eeabf85b45e8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">
@@ -309,6 +312,9 @@
     </ClCompile>
     <ClCompile Include="vendor\nanovg\src\nanovg.c">
       <Filter>vendor\nanovg</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\devConsole\DevConsoleSystem.cpp">
+      <Filter>game\devConsole</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -864,6 +870,9 @@
     </ClInclude>
     <ClInclude Include="vendor\nanovg\src\stb_truetype.h">
       <Filter>vendor\nanovg</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\devConsole\DevConsoleSystem.h">
+      <Filter>game\devConsole</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

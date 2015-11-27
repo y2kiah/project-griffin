@@ -10,6 +10,11 @@
 #endif
 #include <nanovg_gl.h>
 
+#ifdef _DEBUG
+#	pragma comment(lib, "freetype261d.lib")
+#else
+#	pragma comment(lib, "freetype261.lib")
+#endif
 
 // Global Variables
 
@@ -56,16 +61,16 @@ void drawWindow(NVGcontext* nvg, const char* title, float x, float y, float w, f
 	nvgStroke(nvg);
 
 	nvgFontSize(nvg, 18.0f);
-	nvgFontFaceId(nvg, getFontId(SansBold));
-	nvgTextAlign(nvg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
+	nvgFontFaceId(nvg, getFontId(ExoBold));
+	nvgTextAlign(nvg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
 
 	nvgFontBlur(nvg, 2);
 	nvgFillColor(nvg, nvgRGBA(0, 0, 0, 128));
-	nvgText(nvg, x + w / 2, y + 16 + 1, title, NULL);
+	nvgText(nvg, x + 9, y + 16 + 1, title, NULL);
 
 	nvgFontBlur(nvg, 0);
 	nvgFillColor(nvg, nvgRGBA(220, 220, 220, 160));
-	nvgText(nvg, x + w / 2, y + 16, title, NULL);
+	nvgText(nvg, x + 9, y + 16, title, NULL);
 
 	nvgRestore(nvg);
 }
@@ -83,16 +88,11 @@ void griffin::render::VectorRenderer_GL::renderViewport(Viewport& viewport)
 	// vector rendering here
 	// TEMP
 	nvgFontSize(m_nvg, 24.0f);
-	nvgFontFaceId(m_nvg, getFontId(Sans));
-	nvgFillColor(m_nvg, nvgRGBAf(1.0f, 1.0f, 1.0f, 1.0f));
+	nvgFontFaceId(m_nvg, getFontId(Exo));
+	nvgFillColor(m_nvg, nvgRGBAf(1.0f, 0.0f, 1.0f, 1.0f));
 
-	nvgTextAlign(m_nvg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
-	nvgText(m_nvg, 50, 50, "Hello World", nullptr);
-
-	nvgBeginPath(m_nvg);
-	nvgRect(m_nvg, 100, 100, 120, 30);
-	nvgFillColor(m_nvg, nvgRGBAf(0.1f, 0.3f, 0.85f, 0.8f));
-	nvgFill(m_nvg);
+	nvgTextAlign(m_nvg, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
+	nvgText(m_nvg, 7, 4, "FPS:", nullptr);
 	
 	float cx = 800.0f;
 	float cy = 450.0f;
@@ -121,7 +121,7 @@ void griffin::render::VectorRenderer_GL::renderViewport(Viewport& viewport)
 		nvgRestore(m_nvg);
 	}
 
-	drawWindow(m_nvg, "Window Title", 50, 50, 300, 400);
+	drawWindow(m_nvg, "Dev Console", 50, 50, 300, 400);
 
 	nvgEndFrame(m_nvg);
 
@@ -132,7 +132,7 @@ void griffin::render::VectorRenderer_GL::renderViewport(Viewport& viewport)
 
 void griffin::render::VectorRenderer_GL::init(int viewportWidth, int viewportHeight)
 {
-	m_nvg = nvgCreateGL3(NVG_STENCIL_STROKES/* | NVG_ANTIALIAS | NVG_DEBUG*/);
+	m_nvg = nvgCreateGL3(NVG_STENCIL_STROKES | NVG_ANTIALIAS/* | NVG_DEBUG*/);
 
 	if (m_nvg == nullptr) {
 		throw std::runtime_error("nanovg initialization failed");
@@ -146,9 +146,14 @@ void griffin::render::VectorRenderer_GL::loadGlobalFonts(VectorRenderer_GL& inst
 		const char*	file;
 	};
 	FontDefinition fontDefs[] = {
-		{ Sans,			"data/fonts/open-sans/OpenSans-Regular.ttf" },
-		{ SansBold,		"data/fonts/open-sans/OpenSans-Bold.ttf" },
-		{ SansItalic,	"data/fonts/open-sans/OpenSans-Italic.ttf" }
+		{ Sans,				"data/fonts/open-sans/OpenSans-Regular.ttf" },
+		{ SansBold,			"data/fonts/open-sans/OpenSans-Bold.ttf" },
+		{ SansItalic,		"data/fonts/open-sans/OpenSans-Italic.ttf" },
+		{ SansBoldItalic,	"data/fonts/open-sans/OpenSans-BoldItalic.ttf" },
+		{ Exo,				"data/fonts/exo/Exo-Regular.otf" },
+		{ ExoBold,			"data/fonts/exo/Exo-Bold.otf" },
+		{ ExoItalic,		"data/fonts/exo/Exo-Italic.otf" },
+		{ ExoBoldItalic,	"data/fonts/exo/Exo-BoldItalic.otf" }
 	};
 
 	const int numFonts = sizeof(fontDefs) / sizeof(FontDefinition);

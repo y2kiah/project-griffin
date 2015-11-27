@@ -53,7 +53,8 @@ namespace griffin {
 	/**
 	*
 	*/
-	void engineRenderFrameTick(Engine& engine, Game* pGame, float interpolation)
+	void engineRenderFrameTick(Engine& engine, Game* pGame, float interpolation,
+							   const int64_t realTime, const int64_t countsPassed)
 	{
 		engine.resourceLoader->executeCallbacks();
 

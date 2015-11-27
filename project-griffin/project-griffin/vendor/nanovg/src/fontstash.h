@@ -214,8 +214,8 @@ void fons__tt_renderGlyphBitmap(FONSttFontImpl *font, unsigned char *output, int
 								float scaleX, float scaleY, int glyph)
 {
 	FT_GlyphSlot ftGlyph = font->font->glyph;
-	int ftGlyphOffset = 0;
-	int x, y;
+	unsigned int ftGlyphOffset = 0;
+	unsigned int x, y;
 	FONS_NOTUSED(outWidth);
 	FONS_NOTUSED(outHeight);
 	FONS_NOTUSED(scaleX);

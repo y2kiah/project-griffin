@@ -31,11 +31,11 @@ namespace griffin {
 		static void		assertInitialized(); // asserts when NDEBUG is not defined
 
 		// Functions
-		int64_t			startCounts() const			{ return m_startCounts; }
-		int64_t			stopCounts() const			{ return m_stopCounts; }
-		int64_t			countsPassed() const		{ return m_countsPassed; }
-		double			millisPassed() const		{ return m_millisPassed; }
-		double			secondsPassed() const		{ return m_secondsPassed; }
+		int64_t			getStartCounts() const		{ return m_startCounts; }
+		int64_t			getStopCounts() const		{ return m_stopCounts; }
+		int64_t			getCountsPassed() const		{ return m_countsPassed; }
+		double			getMillisPassed() const		{ return m_millisPassed; }
+		double			getSecondsPassed() const	{ return m_secondsPassed; }
 
 		int64_t			start();
 		int64_t			stop();

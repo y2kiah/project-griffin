@@ -4,7 +4,6 @@
 #include <sstream>
 #include <GL/glew.h>
 //#include <gl/glcorearb.h>
-//#include <SOIL.h>
 #include "main.h"
 #include <application/Timer.h>
 #include <application/platform.h>
@@ -46,7 +45,7 @@ int main(int argc, char *argv[])
 		* Game Update-Render Thread, runs the main rendering frame loop and the inner
 		* fixed-timestep game update loop
 		*/
-		// move this a Game class instead of having a lambda??
+		// move this to a Game class instead of having a lambda??
 		auto gameProcess = [&](){
 			SDL_GL_MakeCurrent(app.getPrimaryWindow().window, app.getPrimaryWindow().glContext); // gl context made current on the main loop thread
 			Timer timer;
@@ -73,9 +72,9 @@ int main(int argc, char *argv[])
 				PROFILE_BLOCK("render loop", frame, ThreadAffinity::Thread_OpenGL_Render);
 
 				int64_t countsPassed = timer.queryCountsPassed();
-				realTime = timer.stopCounts();
+				realTime = timer.getStopCounts();
 
-				float interpolation = update.tick(realTime, countsPassed, 1.0);
+				float interpolation = update.tick(realTime, countsPassed, 1.0f);
 				
 				//SDL_Delay(1000);
 				/*SDL_Log("Render realTime=%lu: interpolation=%0.3f: threadIdHash=%lu\n",
@@ -83,7 +82,7 @@ int main(int argc, char *argv[])
 				
 				engine.threadPool->executeFixedThreadTasks(ThreadAffinity::Thread_OpenGL_Render);
 				
-				engineRenderFrameTick(engine, game.get(), interpolation);
+				engineRenderFrameTick(engine, game.get(), interpolation, realTime, countsPassed);
 
 				SDL_GL_SwapWindow(app.getPrimaryWindow().window);
 				platform::yieldThread();
@@ -185,14 +184,14 @@ void SDLApplication::initWindow(const char* appName)
 	//WGL_NV_gpu_affinity
 	//AMD_gpu_association
 
-	// Turn on double buffering with a 24bit Z buffer.
-	// You may need to change this to 16 or 32 for your system
+	// Turn on double buffering, Z buffer, and stencil buffer
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24); // make 32 optional for newer systems
+	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
 	// Turn on antialiasing
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
+	//SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+	//SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
 
 	int width = 1600;
 	int height = 900;
@@ -277,7 +276,7 @@ void SDLApplication::initOpenGL()
 
 	// Set the clear color to black and clear the screen
 	glClearColor(0.0, 0.0, 0.0, 1.0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	SDL_GL_SwapWindow(getPrimaryWindow().window);
 }
 

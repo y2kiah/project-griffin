@@ -5,6 +5,7 @@
 #include <game/Game.h>
 #include <game/player/PlayerControlSystem.h>
 #include <game/devCamera/DevCameraSystem.h>
+#include <game/devConsole/DevConsoleSystem.h>
 #include <game/sky/SkySystem.h>
 #include <utility/container/handle_map.h>
 
@@ -13,7 +14,7 @@
 namespace griffin {
 
 	enum {
-		DevCameraMovementComponentTypeId = 0
+		DevCameraMovementComponentTypeId = 0 // TEMP, not really needed
 	};
 
 
@@ -25,8 +26,9 @@ namespace griffin {
 	struct Game {
 		Id_T						sceneId = NullId_T;
 		game::PlayerControlSystem	player;
-		game::DevCameraSystem		devCamera;
 		game::SkySystem				sky;
+		game::DevCameraSystem		devCamera;
+		game::DevConsoleSystem		devConsole;
 
 		uint16_t					gameComponentStoreIds[MAX_GAME_COMPONENTS] = {};
 	};

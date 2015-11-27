@@ -36,7 +36,8 @@ namespace griffin {
 	};
 
 	void engineUpdateFrameTick(Engine& engine, Game* pGgame, UpdateInfo& ui);
-	void engineRenderFrameTick(Engine& engine, Game* pGame, float interpolation);
+	void engineRenderFrameTick(Engine& engine, Game* pGame, float interpolation,
+							   const int64_t realTime, const int64_t countsPassed);
 
 	Engine make_engine(const SDLApplication& app);
 	void destroy_engine(Engine& engine);

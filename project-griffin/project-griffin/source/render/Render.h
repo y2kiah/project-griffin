@@ -38,6 +38,11 @@ namespace griffin {
 			(Sans)
 			(SansBold)
 			(SansItalic)
+			(SansBoldItalic)
+			(Exo)
+			(ExoBold)
+			(ExoItalic)
+			(ExoBoldItalic)
 		,);
 
 

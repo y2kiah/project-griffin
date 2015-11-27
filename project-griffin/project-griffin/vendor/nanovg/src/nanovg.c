@@ -15,11 +15,13 @@
 //    misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
 //
+// Modified by Jeff Kiah for griffin engine
 
 #include <stdio.h>
 #include <math.h>
 #include "nanovg.h"
 #define FONTSTASH_IMPLEMENTATION
+#define FONS_USE_FREETYPE
 #include "fontstash.h"
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_STATIC
