@@ -49,11 +49,12 @@ void griffin::game::DevConsoleSystem::init(Game* pGame, const Engine& engine, co
 			   "devconsole input mappings changed");
 	}
 
-	// devcamera input handlers
+	// devconsole input handlers
 	{
 		using namespace input;
 
-		int priority = 0;
+		// set the callback priority to the same as input context priority
+		int priority = engine.inputSystem->getContext(devConsoleInputContextId).priority;
 
 		engine.inputSystem->registerCallback(priority, [&engine, &game, this](FrameMappedInput& mi){
 
@@ -74,6 +75,15 @@ void griffin::game::DevConsoleSystem::init(Game* pGame, const Engine& engine, co
 					engine.inputSystem->startRelativeMouseMode();
 				}
 
+				return true;
+			});
+
+			/**
+			* Handle text input
+			* TODO: should instead pass this event along to a resusable GUI textbox handler
+			*/
+			engine.inputSystem->handleTextInput(devConsoleInputContextId, mi, [this](FrameMappedInput& mi, InputContext& c){
+				// use mi.textInput
 				return true;
 			});
 

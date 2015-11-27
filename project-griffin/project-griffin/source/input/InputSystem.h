@@ -17,6 +17,7 @@
 #include <utility/concurrency.h>
 #include <utility/memory_reserve.h>
 
+#pragma warning(disable: 4003)	// not enough actual parameters for macro 'BOOST_PP_EXPAND_I'
 
 using std::vector;
 using std::bitset;
@@ -54,7 +55,7 @@ namespace griffin {
 				 (Event_Mouse)
 				 (Event_Joystick)
 				 (Event_TextInput)
-				 , _T);
+				 ,);
 
 		/**
 		* Input Cursor types
@@ -65,16 +66,16 @@ namespace griffin {
 				 (Cursor_Wait)
 				 (Cursor_IBeam)
 				 (Cursor_Crosshair)
-				 , _T);
+				 ,);
 
 		/**
 		* Input Mapping types
 		*/
 		MakeEnum(InputMappingType, uint8_t,
-				 (Action)		//<! Actions are single-time events
-				 (State)		//<! States are on/off
-				 (Axis)			//<! Axis are ranges of motion normalized to [-1,1]
-				 , _T);
+				 (Type_Action)		//<! Actions are single-time events
+				 (Type_State)		//<! States are on/off
+				 (Type_Axis)		//<! Axis are ranges of motion normalized to [-1,1]
+				 ,);
 
 		/**
 		* Input Mapping Binding types
@@ -82,7 +83,7 @@ namespace griffin {
 		MakeEnum(InputMappingBindEvent, uint8_t,
 				 (Bind_Down)	//<! Bind to DOWN event of keyboard key, mouse or joystick button
 				 (Bind_Up)		//<! Bind to UP event of keyboard key, mouse or joystick button
-				 , _T);
+				 ,);
 
 		/**
 		* Input Mapping Axis Curve types
@@ -90,7 +91,7 @@ namespace griffin {
 		MakeEnum(InputMappingAxisCurve, uint8_t,
 				 (Curve_Linear)
 				 (Curve_SCurve)
-				 , _T);
+				 ,);
 
 		/**
 		* Input mappings map raw input events or position data to Actions, States or Ranges. These
@@ -104,10 +105,10 @@ namespace griffin {
 		*			 tracking gear, even mouse movement if desired.
 		*/
 		struct InputMapping {
-			InputMappingType		type = Action_T;		//<! type of this mapping
-			InputMappingBindEvent	bindIn = Bind_Down_T;	//<! event to start the action or state
-			InputMappingBindEvent	bindOut = Bind_Up_T;	//<! event to end the state
-			InputMappingAxisCurve	curve = Curve_SCurve_T;	//<! curve type of axis
+			InputMappingType		type = Type_Action;		//<! type of this mapping
+			InputMappingBindEvent	bindIn = Bind_Down;		//<! event to start the action or state
+			InputMappingBindEvent	bindOut = Bind_Up;		//<! event to end the state
+			InputMappingAxisCurve	curve = Curve_SCurve;	//<! curve type of axis
 			uint32_t				device = 0;				//<! instanceID of the device, comes through event "which"
 			// keyboard, mouse button, joystick button, mouse wheel events
 			uint32_t				keycode = 0;			//<! keyboard virtual key code, mouse or joystick button
@@ -187,14 +188,15 @@ namespace griffin {
 		* Container holding all mapped input for a frame, plus text input
 		*/
 		struct FrameMappedInput {
-			vector<MappedAction>	actions;				//<! Actions mapped to an active InputMapping for the frame
-			vector<MappedState>		states;					//<! States mapped to an active InputMapping for the frame
-			vector<MappedAxis>		axes;					//<! Axes mapped to an active InputMapping for the frame
-			vector<AxisMotion>		motion;					//<! Holds accumulated motion for the mouse and joysticks
-			std::wstring			textInput;				//<! Text input buffer
-			/*std::wstring			textComposition;		//<! Text editing buffer
-			int						cursorPos = 0;			//<! Text editing cursor position
-			int						selectionLength = 0;*/	//<! Text editing selection length (if any)
+			vector<MappedAction>	actions;					//<! actions mapped to an active InputMapping for the frame
+			vector<MappedState>		states;						//<! states mapped to an active InputMapping for the frame
+			vector<MappedAxis>		axes;						//<! axes mapped to an active InputMapping for the frame
+			vector<AxisMotion>		motion;						//<! holds accumulated motion for the mouse and joysticks
+			std::wstring			textInput;					//<! text input buffer
+			std::wstring			textComposition;			//<! text editing buffer
+			int32_t					cursorPos = 0;				//<! text editing cursor position
+			int32_t					selectionLength = 0;		//<! text editing selection length (if any)
+			bool					textInputHandled = false;	//<! flag set to true when text input has been handled by a callback
 		};
 
 		/**
@@ -362,6 +364,18 @@ namespace griffin {
 			bool handleInputAxis(Id_T mappingId, FrameMappedInput& mappedInput,
 								 std::function<bool(MappedAxis&, InputContext&)> callback);
 
+			/**
+			* Convenience function for handling text input events. Returns false if the context
+			*	asked for is not active or does not capture text input.
+			*	Otherwise returns the result of callback.
+			* @param	contextId	which input context you are capturing text for
+			* @param	mappedInput	member wstring textInput contains the input text
+			* @param	callback	returns true if text input was consumed, false if not consumed
+			* @return	true if text input was consumed by the callback
+			*/
+			bool handleTextInput(Id_T contextId, FrameMappedInput& mappedInput,
+								 std::function<bool(FrameMappedInput&, InputContext&)> callback);
+
 
 			// Input Modes
 
@@ -404,7 +418,7 @@ namespace griffin {
 			//struct ThreadSafeState {
 			handle_map<InputMapping>		m_inputMappings;		//<! collection of input mappings (actions,states,axes)
 			handle_map<InputContext>		m_inputContexts;		//<! collection of input contexts
-			vector<ActiveInputContext>		m_activeInputContexts;	//<! active input contexts sorted by priority ascending
+			vector<ActiveInputContext>		m_activeInputContexts;	//<! active input contexts sorted by priority
 			handle_map<CallbackFunc_T>		m_callbacks;			//<! map storing all registered callbacks
 			vector<CallbackPriority>		m_callbackPriorityList;	//<! callback order sorted by priority
 			FrameMappedInput				m_frameMappedInput;		//<! per-frame mapped input buffer
@@ -428,7 +442,7 @@ namespace griffin {
 				 (EatKeyboardEvents)	//<! true to eat all keyboard events, preventing pass-down to lower contexts
 				 (EatMouseEvents)		//<! prevent mouse events from passing down
 				 (EatJoystickEvents)	//<! prevent joystick events from passing down
-				 , _T);
+				 ,);
 
 		/**
 		* Input Context
@@ -440,8 +454,9 @@ namespace griffin {
 			*/
 			explicit InputContext() {}
 
-			explicit InputContext(uint16_t optionsMask) :
-				options{ optionsMask }
+			explicit InputContext(uint16_t _optionsMask, uint8_t _priority) :
+				options{ _optionsMask },
+				priority{ _priority }
 			{
 				inputMappings.reserve(RESERVE_INPUTCONTEXT_MAPPINGS);
 			}
@@ -474,6 +489,7 @@ namespace griffin {
 			char			name[32];						//<! display name of the context
 			//uint32_t		cursorIndex;					//<! lookup into input system's cursor table
 			vector<Id_T>	inputMappings = {};				//<! stores input mapping to actions, states, axes
+			uint8_t			priority = 0;					//<! input context priority
 		};
 
 	}

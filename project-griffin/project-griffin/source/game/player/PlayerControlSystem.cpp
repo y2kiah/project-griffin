@@ -245,7 +245,8 @@ void griffin::game::PlayerControlSystem::init(Game* pGame, const Engine& engine,
 	{
 		using namespace input;
 
-		int priority = 0;
+		// set the callback priority to the same as input context priority
+		int priority = engine.inputSystem->getContext(playerfpsInputContextId).priority;
 
 		engine.inputSystem->registerCallback(priority, [&engine, &game, this](FrameMappedInput& mi){
 

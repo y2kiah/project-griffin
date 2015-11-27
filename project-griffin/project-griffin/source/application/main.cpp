@@ -154,12 +154,16 @@ SDLApplication::SDLApplication()
 
 void SDLApplication::initWindow(const char* appName)
 {
-	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
+	// initialize all subsystems except audio
+	if (SDL_Init(SDL_INIT_EVERYTHING & ~SDL_INIT_AUDIO) < 0) {
 		throw std::runtime_error(SDL_GetError());
 	}
 
 	// enable logging
 	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_INFO);
+
+	// turn off text input to start
+	SDL_StopTextInput();
 
 	// get number of displays
 	int displayNum = SDL_GetNumVideoDisplays();

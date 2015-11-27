@@ -139,11 +139,16 @@ extern "C" {
 		int16_t						axesSize;
 		int16_t						axisMotionSize;
 		int32_t						textInputLength;
-		griffin_MappedAction *		actions;			//<! Actions mapped to an active InputMapping for the frame
-		griffin_MappedState	*		states;				//<! States mapped to an active InputMapping for the frame
-		griffin_MappedAxis *		axes;				//<! Axes mapped to an active InputMapping for the frame
-		griffin_AxisMotion *		axisMotion;			//<! Holds accumulated motion for the mouse and joysticks
-		const wchar_t *				textInput;			//<! Text input buffer
+		int32_t						textCompositionLength;
+		griffin_MappedAction *		actions;			//<! actions mapped to an active InputMapping for the frame
+		griffin_MappedState	*		states;				//<! states mapped to an active InputMapping for the frame
+		griffin_MappedAxis *		axes;				//<! axes mapped to an active InputMapping for the frame
+		griffin_AxisMotion *		axisMotion;			//<! holds accumulated motion for the mouse and joysticks
+		const wchar_t *				textInput;			//<! text input buffer
+		const wchar_t *				textComposition;	//<! text editing buffer
+		int32_t						cursorPos;			//<! text editing cursor position
+		int32_t						selectionLength;	//<! text editing selection length (if any)
+		bool						textInputHandled;	//<! flag set to true when text input has been handled by a callback
 	} griffin_FrameMappedInput;
 
 

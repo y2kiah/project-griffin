@@ -2,6 +2,7 @@
 #include <application/main.h>
 #include <application/Timer.h>
 #include <SDL_log.h>
+#include <codecvt>
 
 using namespace griffin;
 using namespace griffin::input;
@@ -28,6 +29,9 @@ void InputSystem::updateFrameTick(const UpdateInfo& ui)
 	m_frameMappedInput.actions.clear();
 	m_frameMappedInput.axes.clear();
 
+	// clear handled flag of frame's text input, the input string itself may persist many frames
+	m_frameMappedInput.textInputHandled = false;
+
 	// remove active states that are no longer mappings in any active context
 	auto newEnd = std::remove_if(m_frameMappedInput.states.begin(), m_frameMappedInput.states.end(),
 				   [&](const MappedState& state) {
@@ -38,7 +42,7 @@ void InputSystem::updateFrameTick(const UpdateInfo& ui)
 			// Apply this filter to states where keypress down is active. Don't apply it to toggles
 			// or bindings where the key being unpressed is active. Also don't filter states where
 			// the mappingId is found in the active context.
-			bool hasDownUpBinding = (state.inputMapping->bindIn == Bind_Down_T && state.inputMapping->bindOut == Bind_Up_T);
+			bool hasDownUpBinding = (state.inputMapping->bindIn == Bind_Down && state.inputMapping->bindOut == Bind_Up);
 			if (!hasDownUpBinding ||
 				std::find(context.inputMappings.begin(), context.inputMappings.end(), state.mappingId) != context.inputMappings.end())
 			{
@@ -89,25 +93,25 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 			auto& context = m_inputContexts[ac.contextId];
 			
 			// handle key and button events
-			if (evt.eventType == Event_Keyboard_T ||
-				evt.eventType == Event_Joystick_T ||
-				evt.eventType == Event_Mouse_T)
+			if (evt.eventType == Event_Keyboard ||
+				evt.eventType == Event_Joystick ||
+				evt.eventType == Event_Mouse)
 			{
 				for (Id_T mappingId : context.inputMappings) {	// check all input mappings for a match
 					const auto& mapping = m_inputMappings[mappingId];
 
 					// check for action mappings
-					if (mapping.type == Action_T) {
+					if (mapping.type == Type_Action) {
 						MappedAction ma{};
 
-						if ((mapping.bindIn == Bind_Down_T && evt.evt.type == SDL_KEYDOWN) ||
-							(mapping.bindIn == Bind_Up_T   && evt.evt.type == SDL_KEYUP))
+						if ((mapping.bindIn == Bind_Down && evt.evt.type == SDL_KEYDOWN) ||
+							(mapping.bindIn == Bind_Up   && evt.evt.type == SDL_KEYUP))
 						{
 							matched = (evt.evt.key.keysym.sym == mapping.keycode &&
 									   evt.evt.key.keysym.mod == mapping.modifier);
 						}
-						else if ((mapping.bindIn == Bind_Down_T && evt.evt.type == SDL_MOUSEBUTTONDOWN) ||
-								 (mapping.bindIn == Bind_Up_T   && evt.evt.type == SDL_MOUSEBUTTONUP))
+						else if ((mapping.bindIn == Bind_Down && evt.evt.type == SDL_MOUSEBUTTONDOWN) ||
+								 (mapping.bindIn == Bind_Up   && evt.evt.type == SDL_MOUSEBUTTONUP))
 						{
 							matched = (evt.evt.button.button == mapping.keycode &&
 									   evt.evt.button.clicks == mapping.clicks);
@@ -116,8 +120,8 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 								ma.yRaw = evt.evt.button.y;
 							}
 						}
-						else if ((mapping.bindIn == Bind_Down_T && evt.evt.type == SDL_JOYBUTTONDOWN) ||
-								 (mapping.bindIn == Bind_Up_T   && evt.evt.type == SDL_JOYBUTTONUP))
+						else if ((mapping.bindIn == Bind_Down && evt.evt.type == SDL_JOYBUTTONDOWN) ||
+								 (mapping.bindIn == Bind_Up   && evt.evt.type == SDL_JOYBUTTONUP))
 						{
 							matched = (evt.evt.jbutton.which == mapping.device &&
 									   evt.evt.jbutton.button == mapping.keycode);
@@ -125,10 +129,10 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 						else if (evt.evt.type == SDL_MOUSEWHEEL)
 						{
 							matched = mapping.mouseWheel == 1 &&
-									  ((mapping.axis == 0 && mapping.bindIn == Bind_Up_T   && evt.evt.wheel.x > 0) ||
-									   (mapping.axis == 0 && mapping.bindIn == Bind_Down_T && evt.evt.wheel.x < 0) ||
-									   (mapping.axis == 1 && mapping.bindIn == Bind_Up_T   && evt.evt.wheel.y > 0) ||
-									   (mapping.axis == 1 && mapping.bindIn == Bind_Down_T && evt.evt.wheel.y < 0));
+									  ((mapping.axis == 0 && mapping.bindIn == Bind_Up   && evt.evt.wheel.x > 0) ||
+									   (mapping.axis == 0 && mapping.bindIn == Bind_Down && evt.evt.wheel.x < 0) ||
+									   (mapping.axis == 1 && mapping.bindIn == Bind_Up   && evt.evt.wheel.y > 0) ||
+									   (mapping.axis == 1 && mapping.bindIn == Bind_Down && evt.evt.wheel.y < 0));
 						}
 
 						// found a matching action mapping for the event
@@ -142,13 +146,13 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 					}
 
 					// check for state mappings
-					else if (mapping.type == State_T) {
+					else if (mapping.type == Type_State) {
 						auto stateIndex = findActiveState(mappingId);
 						bool stateActive = (stateIndex != -1);
 
 						if (!stateActive) {
-							if ((mapping.bindIn == Bind_Down_T && evt.evt.type == SDL_KEYDOWN) ||
-								(mapping.bindIn == Bind_Up_T   && evt.evt.type == SDL_KEYUP) &&
+							if ((mapping.bindIn == Bind_Down && evt.evt.type == SDL_KEYDOWN) ||
+								(mapping.bindIn == Bind_Up   && evt.evt.type == SDL_KEYUP) &&
 								(mapping.bindIn != mapping.bindOut || !evt.evt.key.repeat)) // prevent repeat key events from changing toggle states
 							{
 								matched = (evt.evt.key.keysym.sym == mapping.keycode/* &&
@@ -157,34 +161,34 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 								// might want to support modifiers but check whether modifier "matters" or not - if there is a matching key mapping
 								// with the modifier, then it matters, otherwise it doesn't
 							}
-							else if ((mapping.bindIn == Bind_Down_T && evt.evt.type == SDL_MOUSEBUTTONDOWN) ||
-									 (mapping.bindIn == Bind_Up_T   && evt.evt.type == SDL_MOUSEBUTTONUP))
+							else if ((mapping.bindIn == Bind_Down && evt.evt.type == SDL_MOUSEBUTTONDOWN) ||
+									 (mapping.bindIn == Bind_Up   && evt.evt.type == SDL_MOUSEBUTTONUP))
 							{
 								matched = (evt.evt.button.button == mapping.keycode);
 							}
-							else if ((mapping.bindIn == Bind_Down_T && evt.evt.type == SDL_JOYBUTTONDOWN) ||
-									 (mapping.bindIn == Bind_Up_T   && evt.evt.type == SDL_JOYBUTTONUP))
+							else if ((mapping.bindIn == Bind_Down && evt.evt.type == SDL_JOYBUTTONDOWN) ||
+									 (mapping.bindIn == Bind_Up   && evt.evt.type == SDL_JOYBUTTONUP))
 							{
 								matched = (evt.evt.jbutton.which == mapping.device &&
 										   evt.evt.jbutton.button == mapping.keycode);
 							}
 						}
 						else { // stateActive
-							if ((mapping.bindOut == Bind_Down_T && evt.evt.type == SDL_KEYDOWN) ||
-								(mapping.bindOut == Bind_Up_T   && evt.evt.type == SDL_KEYUP))
+							if ((mapping.bindOut == Bind_Down && evt.evt.type == SDL_KEYDOWN) ||
+								(mapping.bindOut == Bind_Up   && evt.evt.type == SDL_KEYUP))
 							{
 								matched = (evt.evt.key.keysym.sym == mapping.keycode/* &&
 										   evt.evt.key.keysym.mod == mapping.modifier*/);
 								// TODO: maybe need to look for sym and mod keys separately here and make state inactive for either one
 								// if the modifier OR the key is lifted in either order, the state should be deactivated
 							}
-							else if ((mapping.bindOut == Bind_Down_T && evt.evt.type == SDL_MOUSEBUTTONDOWN) ||
-									 (mapping.bindOut == Bind_Up_T   && evt.evt.type == SDL_MOUSEBUTTONUP))
+							else if ((mapping.bindOut == Bind_Down && evt.evt.type == SDL_MOUSEBUTTONDOWN) ||
+									 (mapping.bindOut == Bind_Up   && evt.evt.type == SDL_MOUSEBUTTONUP))
 							{
 								matched = (evt.evt.button.button == mapping.keycode);
 							}
-							else if ((mapping.bindOut == Bind_Down_T && evt.evt.type == SDL_JOYBUTTONDOWN) ||
-									 (mapping.bindOut == Bind_Up_T   && evt.evt.type == SDL_JOYBUTTONUP))
+							else if ((mapping.bindOut == Bind_Down && evt.evt.type == SDL_JOYBUTTONDOWN) ||
+									 (mapping.bindOut == Bind_Up   && evt.evt.type == SDL_JOYBUTTONUP))
 							{
 								matched = (evt.evt.jbutton.which == mapping.device &&
 										   evt.evt.jbutton.button == mapping.keycode);
@@ -218,18 +222,26 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 				if (matched) { break; }
 			}
 			// handle text input events
-			else if (context.options[CaptureTextInput_T] && evt.eventType == Event_TextInput_T) {
+			else if (context.options[CaptureTextInput] && evt.eventType == Event_TextInput) {
+				typedef std::codecvt_utf8<wchar_t> convert_type;
+				std::wstring_convert<convert_type, wchar_t> converter;
+
 				if (evt.evt.type == SDL_TEXTINPUT) {
-					//m_frameMappedInput.textInput += std::wstring(evt.evt.text.text);
+					m_frameMappedInput.textInput += converter.from_bytes(evt.evt.text.text);
+				}
+				if (evt.evt.type == SDL_TEXTEDITING) {
+					m_frameMappedInput.textComposition = converter.from_bytes(evt.evt.edit.text);
+					m_frameMappedInput.cursorPos = evt.evt.edit.start;
+					m_frameMappedInput.selectionLength = evt.evt.edit.length;
 				}
 				break;
 			}
 
 			// didn't find a match, check if this context eats input events or passes them down
-			if (context.options[EatMouseEvents_T]    && evt.eventType == Event_Mouse_T)    { break; }
-			if (context.options[EatJoystickEvents_T] && evt.eventType == Event_Joystick_T) { break; }
-			if (context.options[EatKeyboardEvents_T] &&
-				(evt.eventType == Event_Keyboard_T || evt.eventType == Event_TextInput_T)) { break; }
+			if (context.options[EatMouseEvents]    && evt.eventType == Event_Mouse)    { break; }
+			if (context.options[EatJoystickEvents] && evt.eventType == Event_Joystick) { break; }
+			if (context.options[EatKeyboardEvents] &&
+				(evt.eventType == Event_Keyboard || evt.eventType == Event_TextInput)) { break; }
 		}
 	}
 }
@@ -313,7 +325,7 @@ void InputSystem::mapFrameMotion(const UpdateInfo& ui)
 				const auto& mapping = m_inputMappings[mappingId];
 
 				// check for axis mappings
-				matched = (mapping.type == Axis_T &&
+				matched = (mapping.type == Type_Axis &&
 						   mapping.device == motion.device &&
 						   mapping.axis == motion.axis &&
 						   ((mapping.relativeMotion == 1) == relativeMode) &&
@@ -345,8 +357,8 @@ void InputSystem::mapFrameMotion(const UpdateInfo& ui)
 			}
 
 			if (matched || // found a mapping, move on to the next input event
-				(context.options[EatMouseEvents_T] && isMouse) || // didn't find a match, check if this context eats input events or passes them down
-				(context.options[EatJoystickEvents_T] && !isMouse))
+				(context.options[EatMouseEvents] && isMouse) || // didn't find a match, check if this context eats input events or passes them down
+				(context.options[EatJoystickEvents] && !isMouse))
 			{
 				break;
 			}
@@ -383,7 +395,7 @@ bool InputSystem::handleInputAction(Id_T mappingId, FrameMappedInput& mappedInpu
 									std::function<bool(MappedAction&, InputContext&)> callback)
 {
 	InputMapping mapping = m_inputMappings[mappingId];
-	assert(mapping.type == Action_T && "wrong handler for mapping type");
+	assert(mapping.type == Type_Action && "wrong handler for mapping type");
 
 	for (auto& mi : mappedInput.actions) {
 		if (mi.mappingId == mappingId && !mi.handled) {
@@ -399,7 +411,7 @@ bool InputSystem::handleInputState(Id_T mappingId, FrameMappedInput& mappedInput
 								   std::function<bool(MappedState&, InputContext&)> callback)
 {
 	InputMapping mapping = m_inputMappings[mappingId];
-	assert(mapping.type == State_T && "wrong handler for mapping type");
+	assert(mapping.type == Type_State && "wrong handler for mapping type");
 
 	for (auto& mi : mappedInput.states) {
 		if (mi.mappingId == mappingId && !mi.handled) {
@@ -415,13 +427,34 @@ bool InputSystem::handleInputAxis(Id_T mappingId, FrameMappedInput& mappedInput,
 								  std::function<bool(MappedAxis&, InputContext&)> callback)
 {
 	InputMapping mapping = m_inputMappings[mappingId];
-	assert(mapping.type == Axis_T && "wrong handler for mapping type");
+	assert(mapping.type == Type_Axis && "wrong handler for mapping type");
 
 	for (auto& mi : mappedInput.axes) {
 		if (mi.mappingId == mappingId && !mi.handled) {
 			auto& context = m_inputContexts[mi.inputMapping->contextId];
 			mi.handled = callback(mi, context);
 			return mi.handled;
+		}
+	}
+	return false;
+}
+
+bool InputSystem::handleTextInput(Id_T contextId, FrameMappedInput& mappedInput,
+								  std::function<bool(FrameMappedInput&, InputContext&)> callback)
+{
+	assert(m_inputContexts.isValid(contextId) && "invalid input context");
+
+	// there must be some text input left to consume
+	if (!mappedInput.textInputHandled && mappedInput.textInput.length() > 0) {
+		// find if the context is active and captures text input
+		for (auto& ac : m_activeInputContexts) {
+			if (ac.active && ac.contextId == contextId) {
+				auto& context = m_inputContexts[contextId];
+				if (context.options[CaptureTextInput]) {
+					mappedInput.textInputHandled = callback(mappedInput, context);
+					mappedInput.textInputHandled;
+				}
+			}
 		}
 	}
 	return false;
@@ -440,7 +473,7 @@ bool InputSystem::handleMessage(const SDL_Event& event)
 				/*SDL_Log("key event=%d: state=%d: key=%d: repeat=%d: realTime=%lu\n",
 						event.type, event.key.state, event.key.keysym.scancode, event.key.repeat, timestamp);*/
 
-				m_eventsQueue.push({ timestamp, std::move(event), Event_Keyboard_T, {} });
+				m_eventsQueue.push({ timestamp, std::move(event), Event_Keyboard, {} });
 			}
 			handled = true;
 			break;
@@ -450,7 +483,7 @@ bool InputSystem::handleMessage(const SDL_Event& event)
 			/*SDL_Log("key event=%d: text=%s: length=%d: start=%d: windowID=%d: realTime=%lu\n",
 					event.type, event.edit.text, event.edit.length, event.edit.start, event.edit.windowID, timestamp);*/
 
-			m_eventsQueue.push({ timestamp, std::move(event), Event_TextInput_T, {} });
+			m_eventsQueue.push({ timestamp, std::move(event), Event_TextInput, {} });
 
 			handled = true;
 			break;
@@ -459,7 +492,7 @@ bool InputSystem::handleMessage(const SDL_Event& event)
 			/*SDL_Log("key event=%d: text=%s: windowID=%d: realTime=%lu\n",
 					event.type, event.text.text, event.text.windowID, timestamp);*/
 
-			m_eventsQueue.push({ timestamp, std::move(event), Event_TextInput_T, {} });
+			m_eventsQueue.push({ timestamp, std::move(event), Event_TextInput, {} });
 
 			handled = true;
 			break;
@@ -469,7 +502,7 @@ bool InputSystem::handleMessage(const SDL_Event& event)
 			/*SDL_Log("mouse motion event=%d: which=%d: state=%d: window=%d: x,y=%d,%d: xrel,yrel=%d,%d: realTime=%lu\n",
 					event.type, event.motion.which, event.motion.state, event.motion.windowID,
 					event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel, timestamp);*/
-			m_motionEventsQueue.push({ timestamp, std::move(event), Event_Mouse_T, {} });
+			m_motionEventsQueue.push({ timestamp, std::move(event), Event_Mouse, {} });
 			handled = true;
 			break;
 		}
@@ -478,7 +511,7 @@ bool InputSystem::handleMessage(const SDL_Event& event)
 					event.type, event.jaxis.which, event.jaxis.axis, event.jaxis.value, timestamp);*/
 		case SDL_JOYBALLMOTION:
 		case SDL_JOYHATMOTION: {
-			m_motionEventsQueue.push({ timestamp, std::move(event), Event_Joystick_T, {} });
+			m_motionEventsQueue.push({ timestamp, std::move(event), Event_Joystick, {} });
 			handled = true;
 			break;
 		}
@@ -488,7 +521,7 @@ bool InputSystem::handleMessage(const SDL_Event& event)
 					event.type, event.wheel.which, event.wheel.windowID,
 					event.wheel.x, event.wheel.y, timestamp);
 
-			m_eventsQueue.push({ timestamp, std::move(event), Event_Mouse_T, {} });
+			m_eventsQueue.push({ timestamp, std::move(event), Event_Mouse, {} });
 			handled = true;
 			break;
 		}
@@ -498,7 +531,7 @@ bool InputSystem::handleMessage(const SDL_Event& event)
 					event.type, event.button.which, event.button.button, event.button.state,
 					event.button.clicks, event.button.windowID, event.button.x, event.button.y, timestamp);
 
-			m_eventsQueue.push({ timestamp, std::move(event), Event_Mouse_T, {} });
+			m_eventsQueue.push({ timestamp, std::move(event), Event_Mouse, {} });
 			handled = true;
 			break;
 		}
@@ -515,7 +548,7 @@ bool InputSystem::handleMessage(const SDL_Event& event)
 			SDL_Log("joystick button event=%d: which=%d: button=%d: state=%d: realTime=%lu\n",
 					event.type, event.jbutton.which, event.jbutton.button, event.jbutton.state, timestamp);
 			
-			m_eventsQueue.push({ timestamp, std::move(event), Event_Joystick_T, {} });
+			m_eventsQueue.push({ timestamp, std::move(event), Event_Joystick, {} });
 			handled = true;
 			break;
 		}
@@ -537,11 +570,11 @@ void InputSystem::initialize() // should this be the constructor?
 	// system, and be made available to Lua script
 
 	// Initialize the mouse cursors table
-	m_cursors[Cursor_Arrow_T]     = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
-	m_cursors[Cursor_Hand_T]      = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
-	m_cursors[Cursor_Wait_T]      = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
-	m_cursors[Cursor_IBeam_T]     = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
-	m_cursors[Cursor_Crosshair_T] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_CROSSHAIR);
+	m_cursors[Cursor_Arrow]     = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
+	m_cursors[Cursor_Hand]      = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
+	m_cursors[Cursor_Wait]      = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
+	m_cursors[Cursor_IBeam]     = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
+	m_cursors[Cursor_Crosshair] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_CROSSHAIR);
 
 
 	// Get number of input devices
@@ -633,12 +666,12 @@ int InputSystem::findActiveState(Id_T mappingId) const
 
 Id_T InputSystem::createContext(uint16_t optionsMask, uint8_t priority, bool makeActive)
 {
-	//auto f = tss_([optionsMask](ThreadSafeState& tss_) {
-	//	return tss_.m_inputContexts.emplace(optionsMask);
+	//auto f = tss_([optionsMask, priority](ThreadSafeState& tss_) {
+	//	return tss_.m_inputContexts.emplace(optionsMask, priority);
 	//});
 	//return f;
 
-	auto contextId = m_inputContexts.emplace(optionsMask);
+	auto contextId = m_inputContexts.emplace(optionsMask, priority);
 	m_activeInputContexts.push_back({ contextId, makeActive, priority, {} });
 	std::stable_sort(m_activeInputContexts.begin(), m_activeInputContexts.end(),
 					[](const ActiveInputContext& i, const ActiveInputContext& j) {
@@ -689,6 +722,11 @@ Id_T InputSystem::getInputContextHandle(const char* name) const
 
 void InputSystem::startTextInput()
 {
+	// clear text input
+	m_frameMappedInput.textInput.clear();
+	// TODO: what about re-entering a textbox and defaulting text input and cursor position to the existing values?
+	// for example we want to be able to remove characters that were entered previously
+
 	SDL_StartTextInput();
 }
 

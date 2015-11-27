@@ -98,6 +98,11 @@ extern "C" {
 			mi.axisMotionSize = static_cast<int16_t>(mappedInput.motion.size());
 			mi.textInput = mappedInput.textInput.c_str();
 			mi.textInputLength = static_cast<int32_t>(mappedInput.textInput.length());
+			mi.textComposition = mappedInput.textComposition.c_str();
+			mi.textCompositionLength = static_cast<int32_t>(mappedInput.textComposition.length());
+			mi.cursorPos = mappedInput.cursorPos;
+			mi.selectionLength = mappedInput.selectionLength;
+			mi.textInputHandled = mappedInput.textInputHandled;
 
 			callbackFunc(&mi);
 		});
