@@ -136,7 +136,7 @@ namespace griffin {
 
 		// class DeferredRenderer_GL
 
-		void DeferredRenderer_GL::renderViewport(Viewport& viewport /* pass container of render entries */)
+		void DeferredRenderer_GL::renderGBuffer(Viewport& viewport, const RenderQueue::KeyList& keys)
 		{
 			static float animTime = 0.0f; // TEMP
 
@@ -415,29 +415,99 @@ namespace griffin {
 		}
 
 
+		/**
+		* Filters keys, beginning at startIndex, by comparing (filter & mask) to each (key & mask).
+		*	If the resulting masked values match, the filter passes and the key is pushed to the
+		*	back of filteredKeys.
+		* @var startIndex	Start of key range to filter. If value passed is < 0, 0 will be used.
+		* @var earlyExit	If true, exits on first failed key after first passing key is found.
+		*					Set to true when you don't expect gaps in the passing set of keys.
+		* @returns	One past the last passing key index, or value of startIndex if no keys found.
+		*			The intention is to pass this value into startIndex of subsequent calls to
+		*			progress through the list in a forward direction.
+		*/
+		int filterKeys(const RenderQueue::KeyList& sortedKeys, int startIndex,
+					   RenderQueueKey filter, RenderQueueKey mask,
+					   RenderQueue::KeyList& filteredKeys,
+					   bool earlyExit = false)
+		{
+			if (startIndex < 0) { startIndex = 0; }
+			int lastKey = startIndex; // last passing key
+
+			for (int k = startIndex; k < sortedKeys.size(); ++k) {
+				auto thisKey = sortedKeys[k];
+				// mask only the bits that matter, and compare the values
+				if ((thisKey.key.value & mask.value) == (filter.value & mask.value)) {
+					filteredKeys.push_back(thisKey);
+					lastKey = k + 1;
+				}
+				else if (earlyExit && lastKey != startIndex) {
+					break;
+				}
+			}
+
+			return lastKey;
+		}
+
+
 		void RenderSystem::renderFrame(float interpolation)
 		{
+			// for each active viewport
 			for (int v = 0; v < MAX_VIEWPORTS; ++v) {
 				Viewport& viewport = m_viewports[v];
+				
+				#if 1
+				// TEMP
+				if (v == 0) {
+					m_deferredRenderer.renderGBuffer(viewport, viewport.renderQueue.filteredKeys);
+					m_vectorRenderer.renderViewport(viewport, viewport.renderQueue.filteredKeys);
+				}
+				#endif
+				
 				if (viewport.display) {
-					viewport.renderQueue.sortRenderQueue();
-
-					// for each fullscreen layer
-						// for each scene layer
-
-					// gather g-buffer geometry
-					for (auto key : viewport.renderQueue.entries) {
+					int keyStart = 0; // start of key range for filtering entries
 					
-					}
-					switch (viewport.rendererType) {
-						case RendererType_Deferred:
-							m_deferredRenderer.renderViewport(viewport);
-							break;
-						case RendererType_Forward:
-							break;
-						case RendererType_Vector:
-							m_vectorRenderer.renderViewport(viewport);
-							break;
+					viewport.renderQueue.sortRenderQueue();
+					
+					if (viewport.fullscreenLayers[FullscreenLayer_Scene]) {
+						// render the main scene's g-buffer with deferred renderer
+						RenderQueueKey filter{};
+						filter.allKeys.fullscreenLayer = FullscreenLayer_Scene;
+						filter.allKeys.sceneLayer = SceneLayer_SceneGeometry;
+						RenderQueueKey mask{};
+						mask.allKeys.fullscreenLayer = 0xF;
+						mask.allKeys.sceneLayer = 0xF;
+
+						// gather main scene entries for deferred renderer into filteredKeys set
+						viewport.renderQueue.filteredKeys.clear();
+						keyStart = filterKeys(viewport.renderQueue.keys, keyStart, filter, mask,
+											  viewport.renderQueue.filteredKeys,
+											  true); // no gaps in keys, so exit early is ok
+						m_deferredRenderer.renderGBuffer(viewport, viewport.renderQueue.filteredKeys);
+
+						// render the main scene's lighting pass
+						filter.allKeys.sceneLayer = SceneLayer_LightVolumeGeometry;
+						viewport.renderQueue.filteredKeys.clear();
+						keyStart = filterKeys(viewport.renderQueue.keys, keyStart, filter, mask, viewport.renderQueue.filteredKeys, true);
+						//m_deferredRenderer.renderLightVolumes(viewport, viewport.renderQueue.filteredKeys);
+
+						// render the main scene's skybox
+						filter.allKeys.sceneLayer = SceneLayer_Skybox;
+						viewport.renderQueue.filteredKeys.clear();
+						keyStart = filterKeys(viewport.renderQueue.keys, keyStart, filter, mask, viewport.renderQueue.filteredKeys, true);
+						//m_deferredRenderer.renderSkybox(viewport, viewport.renderQueue.filteredKeys);
+
+						// render the main scene's translucent geometry
+						filter.allKeys.sceneLayer = SceneLayer_Translucent;
+						viewport.renderQueue.filteredKeys.clear();
+						keyStart = filterKeys(viewport.renderQueue.keys, keyStart, filter, mask, viewport.renderQueue.filteredKeys, true);
+						// forward render translucent stuff
+
+						// render the main scene's vector geometry
+						filter.allKeys.sceneLayer = SceneLayer_VectorGeometry;
+						viewport.renderQueue.filteredKeys.clear();
+						keyStart = filterKeys(viewport.renderQueue.keys, keyStart, filter, mask, viewport.renderQueue.filteredKeys, true);
+						m_vectorRenderer.renderViewport(viewport, viewport.renderQueue.filteredKeys);
 					}
 
 					viewport.renderQueue.clearRenderEntries();

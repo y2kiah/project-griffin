@@ -47,26 +47,32 @@ namespace griffin {
 		* Layer of geometry for the scene render passes, specified in render queue key. Value is
 		* ignored for ScenePostPass and FinalPostPass layers.
 		*/
-		enum RenderQueueSceneLayer : uint8_t {
-			SceneLayer_SceneGeometry = 0,	//<! scene geometry for the g-buffer pass
-			SceneLayer_LightVolumeGeometry,	//<! light volume geometry for deferred renderer
-			SceneLayer_Skybox,				//<! skybox is a special case handled in the deferred renderer
-			SceneLayer_VectorRenderer		//<! uses the vector renderer to overlay into the scene
-		};
+		MakeEnum(RenderQueueSceneLayer, uint8_t,
+			(SceneLayer_SceneGeometry)			//<! scene geometry for the g-buffer pass
+			(SceneLayer_LightVolumeGeometry)	//<! light volume geometry for deferred renderer
+			(SceneLayer_Skybox)					//<! skybox is a special case handled in the deferred renderer
+			(SceneLayer_Translucent)			//<! translucent geometry is rendered after framebuffer composition
+			(SceneLayer_VectorGeometry)			//<! uses the vector renderer to overlay into the scene
+			,);
 
 		/**
 		* Fullscreen layer determines order of composition. Each layer is effectively its own
 		* scene with unique geometry. The ScenePostPass and FinalPostPass layers are special cases
 		* where custom fullscreen filters can be added to the main scene, and final framebuffer.
 		*/
-		enum RenderQueueFullscreenLayer : uint8_t {
-			FullscreenLayer_Scene = 0,
-			FullscreenLayer_ScenePostPass,
-			FullscreenLayer_HUD,
-			FullscreenLayer_UI,
-			FullscreenLayer_Debug,
-			FullscreenLayer_FinalPostPass
-		};
+		MakeEnum(RenderQueueFullscreenLayer, uint8_t,
+			(FullscreenLayer_Scene)
+			(FullscreenLayer_ScenePostPass)
+			(FullscreenLayer_HUD)
+			(FullscreenLayer_UI)
+			(FullscreenLayer_Debug)
+			(FullscreenLayer_FinalPostPass)
+			,);
+
+		MakeEnum(RenderQueueTranslucencyType, uint8_t,
+			(TranslucencyType_AlphaTest)		//<! alpha test only no blend
+			(TranslucencyType_AlphaBlend)		//<! using typical src_alpha, one_minus_src_alpha blend
+			,);
 
 		// Variables
 		
@@ -88,13 +94,13 @@ namespace griffin {
 		/**
 		* @struct RenderQueueKey
 		* @var	frontToBackDepth	depth value converted to 32 bit integer, used for opaque objects
-		* @var	backToFrontDepth	inverse depth converted to 48 bits, used for transparent objects
-		* @var	material	internal material feature bits, determines shader
-		* @var	instanced	0=no, 1=yes mesh is instanced
-		* @var	translucencyType	0=opaque, 1=back-to-front translucent, 2=additive, 3=subtractive
-		* @var	sceneLayer	One of the RenderQueueSceneLayer values
-		* @var	fullscreenLayer	One of the RenderQueueFullscreenLayer values
-		* @var	value		unioned with the vars above, used for sorting
+		* @var	backToFrontDepth	inverse depth used for translucent objects
+		* @var	material			internal material feature bits, determines shader
+		* @var	instanced			0=no, 1=yes mesh is instanced
+		* @var	translucencyType	one of the RenderQueueTranslucencyType values
+		* @var	sceneLayer			one of the RenderQueueSceneLayer values
+		* @var	fullscreenLayer		one of the RenderQueueFullscreenLayer values
+		* @var	value				unioned with the vars above, used for sorting
 		*/
 		struct RenderQueueKey {
 			union {
@@ -103,23 +109,30 @@ namespace griffin {
 					uint16_t _all_pad2;
 
 					uint16_t instanced        : 1;
-					uint16_t translucencyType : 2;
 					uint16_t sceneLayer       : 4;
 					uint16_t fullscreenLayer  : 4;
-					uint16_t _reserved        : 5;
+					uint16_t _reserved        : 7;
 				};
+
 				struct OpaqueKey {			// OpaqueKey 48 bits split between material and depth
 					uint32_t frontToBackDepth;
 					uint16_t material;
 
 					uint16_t _opaque_pad;
 				};
-				struct TransparentKey {		// TransparentKey 48 bits for depth alone
-					uint64_t backToFrontDepth : 48;
+
+				struct TranslucentKey {		// TranslucentKey 46 bits for depth
+					uint64_t translucencyType : 2;
+					uint64_t backToFrontDepth : 46;
 
 					uint64_t _translucent_pad : 16;
 				};
-				uint64_t value;
+
+				AllKeys        allKeys;
+				OpaqueKey      opaqueKey;
+				TranslucentKey translucentKey;
+
+				uint64_t       value;
 			};
 		};
 
@@ -151,6 +164,7 @@ namespace griffin {
 
 			explicit RenderQueue() {
 				keys.reserve(RESERVE_RENDER_QUEUE);
+				filteredKeys.reserve(RESERVE_RENDER_QUEUE);
 				entries.reserve(RESERVE_RENDER_QUEUE);
 			}
 
@@ -171,8 +185,9 @@ namespace griffin {
 				entries.clear();
 			}
 
-			KeyList		keys;
-			EntryList	entries;
+			KeyList		keys;			//<! set of keys to be sorted for rendering order
+			KeyList		filteredKeys;	//<! filtered set of keys used internally by render system
+			EntryList	entries;		//<! list of render entries for a frame
 		};
 
 
@@ -201,6 +216,7 @@ namespace griffin {
 			ViewportParameters	params;
 			RenderQueue			renderQueue;
 			bool				display = false;
+			std::bitset<RenderQueueFullscreenLayerCount> fullscreenLayers = 0; //<! bits indicating which fullscreen layers are rendered in the viewport
 			//RenderTarget ?? optional fbo, for rendering viewport to texture
 		};
 
@@ -221,7 +237,16 @@ namespace griffin {
 			*/
 			void init(int viewportWidth, int viewportHeight);
 
-			void renderViewport(Viewport& viewport);
+			/**
+			* Renders a viewport's render queue keys.
+			* @var viewport	the viewport to render
+			* @var keys		list of keys to render, usually set to viewport.filteredKeys (after
+			*				filtering) or viewport.keys for all, but any KeyList can be passed
+			*/
+			void renderGBuffer(Viewport& viewport, const RenderQueue::KeyList& keys);
+			void renderLightVolumes(Viewport& viewport, const RenderQueue::KeyList& keys);
+			void renderSkybox(Viewport& viewport, const RenderQueue::KeyList& keys);
+			void renderPostProcess(Viewport& viewport, const RenderQueue::KeyList& keys);
 
 			// temp, will be part of render queue in its own layer
 			void setSkyboxTexture(const ResourcePtr& textureCubeMap) {
@@ -259,7 +284,13 @@ namespace griffin {
 			*/
 			void init(int viewportWidth, int viewportHeight);
 
-			void renderViewport(Viewport& viewport);
+			/**
+			* Renders a viewport's render queue keys.
+			* @var viewport	the viewport to render
+			* @var keys		list of keys to render, usually set to viewport.filteredKeys (after
+			*				filtering) or viewport.keys for all, but any KeyList can be passed
+			*/
+			void renderViewport(Viewport& viewport, const RenderQueue::KeyList& keys);
 
 			static void loadGlobalFonts(VectorRenderer_GL& inst);
 
