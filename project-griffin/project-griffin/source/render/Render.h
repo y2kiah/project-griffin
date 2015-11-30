@@ -28,12 +28,10 @@ namespace griffin {
 
 		// Enums
 
-		enum RendererType {
-			RendererType_Deferred = 0,
-			RendererType_Forward = 1,
-			RendererType_Vector = 2
-		};
-
+		/**
+		* Global fonts loaded at startup, in memory for the lifetime of the render system.
+		* Pass these values to getFontId() function to get a font handle for the vector renderer.
+		*/
 		MakeEnum(FontFace, uint8_t,
 			(Sans)
 			(SansBold)
@@ -45,6 +43,30 @@ namespace griffin {
 			(ExoBoldItalic)
 			,);
 
+		/**
+		* Layer of geometry for the scene render passes, specified in render queue key. Value is
+		* ignored for ScenePostPass and FinalPostPass layers.
+		*/
+		enum RenderQueueSceneLayer : uint8_t {
+			SceneLayer_SceneGeometry = 0,	//<! scene geometry for the g-buffer pass
+			SceneLayer_LightVolumeGeometry,	//<! light volume geometry for deferred renderer
+			SceneLayer_Skybox,				//<! skybox is a special case handled in the deferred renderer
+			SceneLayer_VectorRenderer		//<! uses the vector renderer to overlay into the scene
+		};
+
+		/**
+		* Fullscreen layer determines order of composition. Each layer is effectively its own
+		* scene with unique geometry. The ScenePostPass and FinalPostPass layers are special cases
+		* where custom fullscreen filters can be added to the main scene, and final framebuffer.
+		*/
+		enum RenderQueueFullscreenLayer : uint8_t {
+			FullscreenLayer_Scene = 0,
+			FullscreenLayer_ScenePostPass,
+			FullscreenLayer_HUD,
+			FullscreenLayer_UI,
+			FullscreenLayer_Debug,
+			FullscreenLayer_FinalPostPass
+		};
 
 		// Variables
 		
@@ -65,13 +87,14 @@ namespace griffin {
 
 		/**
 		* @struct RenderQueueKey
-		* @var	frontToBackDepth	depth value converted to 32 bit integer
+		* @var	frontToBackDepth	depth value converted to 32 bit integer, used for opaque objects
+		* @var	backToFrontDepth	inverse depth converted to 48 bits, used for transparent objects
 		* @var	material	internal material feature bits, determines shader
 		* @var	instanced	0=no, 1=yes mesh is instanced
 		* @var	translucencyType	0=opaque, 1=back-to-front translucent, 2=additive, 3=subtractive
-		* @var	sceneLayer	0=skybox, 1=scene geometry, etc.
-		* @var	fullscreenLayer	0=light pre-pass, 1=game scene, 2=post filter, 3=HUD, 4=UI, 5=debug
-		* @var	value		unioned with the above four vars, used for sorting
+		* @var	sceneLayer	One of the RenderQueueSceneLayer values
+		* @var	fullscreenLayer	One of the RenderQueueFullscreenLayer values
+		* @var	value		unioned with the vars above, used for sorting
 		*/
 		struct RenderQueueKey {
 			union {
@@ -127,8 +150,8 @@ namespace griffin {
 			typedef std::vector<RenderEntry>	EntryList;
 
 			explicit RenderQueue() {
-				m_keys.reserve(RESERVE_RENDER_QUEUE);
-				m_entries.reserve(RESERVE_RENDER_QUEUE);
+				keys.reserve(RESERVE_RENDER_QUEUE);
+				entries.reserve(RESERVE_RENDER_QUEUE);
 			}
 
 			~RenderQueue();
@@ -144,13 +167,12 @@ namespace griffin {
 			* Clear the keys and entries lists each frame
 			*/
 			void clearRenderEntries() {
-				m_keys.clear();
-				m_entries.clear();
+				keys.clear();
+				entries.clear();
 			}
 
-		private:
-			KeyList		m_keys;
-			EntryList	m_entries;
+			KeyList		keys;
+			EntryList	entries;
 		};
 
 
@@ -179,7 +201,6 @@ namespace griffin {
 			ViewportParameters	params;
 			RenderQueue			renderQueue;
 			bool				display = false;
-			RendererType		rendererType = RendererType_Deferred;
 			//RenderTarget ?? optional fbo, for rendering viewport to texture
 		};
 

@@ -49,21 +49,21 @@ namespace griffin {
 
 		void RenderQueue::addRenderEntry(RenderQueueKey sortKey, RenderEntry&& entry)
 		{
-			m_entries.push_back(std::forward<RenderEntry>(entry));
-			m_keys.push_back({ sortKey, static_cast<int>(m_entries.size()) });
+			entries.push_back(std::forward<RenderEntry>(entry));
+			keys.push_back({ sortKey, static_cast<int>(entries.size()) });
 		}
 
 		void RenderQueue::sortRenderQueue()
 		{
-			std::sort(m_keys.begin(), m_keys.end(), [](const KeyType& a, const KeyType& b) {
+			std::sort(keys.begin(), keys.end(), [](const KeyType& a, const KeyType& b) {
 				return (a.key.value < b.key.value);
 			});
 		}
 
 		RenderQueue::~RenderQueue()
 		{
-			if (m_keys.capacity() > RESERVE_RENDER_QUEUE) {
-				SDL_Log("check RESERVE_RENDER_QUEUE: original=%d, highest=%d", RESERVE_RENDER_QUEUE, m_keys.capacity());
+			if (keys.capacity() > RESERVE_RENDER_QUEUE) {
+				SDL_Log("check RESERVE_RENDER_QUEUE: original=%d, highest=%d", RESERVE_RENDER_QUEUE, keys.capacity());
 			}
 		}
 
@@ -136,7 +136,7 @@ namespace griffin {
 
 		// class DeferredRenderer_GL
 
-		void DeferredRenderer_GL::renderViewport(Viewport& viewport)
+		void DeferredRenderer_GL::renderViewport(Viewport& viewport /* pass container of render entries */)
 		{
 			static float animTime = 0.0f; // TEMP
 
@@ -370,7 +370,6 @@ namespace griffin {
 			m_viewports[0].top = 0;
 			m_viewports[0].width = viewportWidth;
 			m_viewports[0].height = viewportHeight;
-			m_viewports[0].rendererType = RendererType_Deferred;
 			setViewportParameters(0, std::move(defaultView));
 
 			ViewportParameters guiView{};
@@ -387,7 +386,6 @@ namespace griffin {
 			m_viewports[1].top = 0;
 			m_viewports[1].width = viewportWidth;
 			m_viewports[1].height = viewportHeight;
-			m_viewports[1].rendererType = RendererType_Vector;
 			setViewportParameters(1, std::move(guiView));
 
 			// TEMP create some test resources
@@ -424,6 +422,13 @@ namespace griffin {
 				if (viewport.display) {
 					viewport.renderQueue.sortRenderQueue();
 
+					// for each fullscreen layer
+						// for each scene layer
+
+					// gather g-buffer geometry
+					for (auto key : viewport.renderQueue.entries) {
+					
+					}
 					switch (viewport.rendererType) {
 						case RendererType_Deferred:
 							m_deferredRenderer.renderViewport(viewport);

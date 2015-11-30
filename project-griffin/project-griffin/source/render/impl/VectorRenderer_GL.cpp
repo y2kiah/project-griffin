@@ -30,7 +30,6 @@ void drawWindow(NVGcontext* nvg, const char* title, float x, float y, float w, f
 	float cornerRadius = 3.0f;
 	
 	nvgSave(nvg);
-	//	nvgClearState(vg);
 
 	// Window
 	nvgBeginPath(nvg);
