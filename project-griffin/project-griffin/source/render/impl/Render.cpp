@@ -156,45 +156,42 @@ namespace griffin {
 				program.useProgram();
 				auto programId = program.getProgramId();
 
+				// TEMP get uniform locations
+				// TODO need to use uniform buffers here instead
 				//glUniformMatrix4fv(UniformLayout_ModelView, 1, GL_FALSE, &camera->getModelViewMatrix()[0][0]);
 				//glUniformMatrix4fv(UniformLayout_Projection, 1, GL_FALSE, &camera->getProjectionMatrix()[0][0]);
 				//glUniformMatrix4fv(UniformLayout_ModelViewProjection, 1, GL_FALSE, &mvp[0][0]);
-				GLint modelMatLoc     = glGetUniformLocation(programId, "modelToWorld");
+				GLint modelMatLoc = glGetUniformLocation(programId, "modelToWorld");
 				GLint modelViewMatLoc = glGetUniformLocation(programId, "modelView");
-				GLint viewProjMatLoc  = glGetUniformLocation(programId, "viewProjection");
-				GLint mvpMatLoc       = glGetUniformLocation(programId, "modelViewProjection");
-				GLint normalMatLoc    = glGetUniformLocation(programId, "normalMatrix");
+				GLint viewProjMatLoc = glGetUniformLocation(programId, "viewProjection");
+				GLint mvpMatLoc = glGetUniformLocation(programId, "modelViewProjection");
+				GLint normalMatLoc = glGetUniformLocation(programId, "normalMatrix");
 
-				GLint frustumNearLoc  = glGetUniformLocation(programId, "frustumNear");
-				GLint frustumFarLoc   = glGetUniformLocation(programId, "frustumFar");
+				GLint frustumNearLoc = glGetUniformLocation(programId, "frustumNear");
+				GLint frustumFarLoc = glGetUniformLocation(programId, "frustumFar");
 				GLint inverseFrustumDistanceLoc = glGetUniformLocation(programId, "inverseFrustumDistance");
 
-				glUniformMatrix4fv(viewProjMatLoc, 1, GL_FALSE, &viewport.params.viewProjMat[0][0]);
-
-				glUniform1f(frustumNearLoc, viewport.params.nearClipPlane);
-				glUniform1f(frustumFarLoc, viewport.params.farClipPlane);
-				glUniform1f(inverseFrustumDistanceLoc, viewport.params.inverseFrustumDistance);
-
 				// TEMP get material uniform locations
-				GLint ambientLoc      = glGetUniformLocation(programId, "material.Ma");
-				GLint diffuseLoc      = glGetUniformLocation(programId, "material.Md");
-				GLint specularLoc     = glGetUniformLocation(programId, "material.Ms");
-				GLint emissiveLoc     = glGetUniformLocation(programId, "material.Me");
-				GLint shininessLoc    = glGetUniformLocation(programId, "material.shininess");
-				GLint metallicLoc     = glGetUniformLocation(programId, "material.metallic");
+				GLint ambientLoc = glGetUniformLocation(programId, "material.Ma");
+				GLint diffuseLoc = glGetUniformLocation(programId, "material.Md");
+				GLint specularLoc = glGetUniformLocation(programId, "material.Ms");
+				GLint emissiveLoc = glGetUniformLocation(programId, "material.Me");
+				GLint shininessLoc = glGetUniformLocation(programId, "material.shininess");
+				GLint metallicLoc = glGetUniformLocation(programId, "material.metallic");
 
-				GLint diffuseMapLoc   = glGetUniformLocation(programId, "diffuseMap");
-				
+				GLint diffuseMapLoc = glGetUniformLocation(programId, "diffuseMap");
+
 				// TEMP set light uniforms
-				GLint lightPosLoc     = glGetUniformLocation(programId, "light.positionViewspace");
-				GLint lightDirLoc     = glGetUniformLocation(programId, "light.directionViewspace");
-				GLint lightLaLoc      = glGetUniformLocation(programId, "light.La");
-				GLint lightLdsLoc     = glGetUniformLocation(programId, "light.Lds");
-				GLint lightKcLoc      = glGetUniformLocation(programId, "light.Kc");
-				GLint lightKlLoc      = glGetUniformLocation(programId, "light.Kl");
-				GLint lightKqLoc      = glGetUniformLocation(programId, "light.Kq");
-				GLint lightAngleLoc   = glGetUniformLocation(programId, "light.spotAngleCutoff");
-				GLint lightEdgeLoc    = glGetUniformLocation(programId, "light.spotEdgeBlendPct");
+				// TODO, this is not relevant in g-buffer render step, move to lightVolume render
+				GLint lightPosLoc = glGetUniformLocation(programId, "light.positionViewspace");
+				GLint lightDirLoc = glGetUniformLocation(programId, "light.directionViewspace");
+				GLint lightLaLoc = glGetUniformLocation(programId, "light.La");
+				GLint lightLdsLoc = glGetUniformLocation(programId, "light.Lds");
+				GLint lightKcLoc = glGetUniformLocation(programId, "light.Kc");
+				GLint lightKlLoc = glGetUniformLocation(programId, "light.Kl");
+				GLint lightKqLoc = glGetUniformLocation(programId, "light.Kq");
+				GLint lightAngleLoc = glGetUniformLocation(programId, "light.spotAngleCutoff");
+				GLint lightEdgeLoc = glGetUniformLocation(programId, "light.spotEdgeBlendPct");
 
 				glm::vec4 lightPos{ 0.1f, 1.0f, 1.0f, 0.0f };
 				glm::vec4 lightPosViewspace = viewport.params.viewMat * lightPos;
@@ -213,8 +210,24 @@ namespace griffin {
 				glUniform1f(lightAngleLoc, 0.96f);
 				glUniform1f(lightEdgeLoc, 0.4f);
 
+				// set viewport uniforms
+				glUniformMatrix4fv(viewProjMatLoc, 1, GL_FALSE, &viewport.params.viewProjMat[0][0]);
+
+				glUniform1f(frustumNearLoc, viewport.params.nearClipPlane);
+				glUniform1f(frustumFarLoc, viewport.params.farClipPlane);
+				glUniform1f(inverseFrustumDistanceLoc, viewport.params.inverseFrustumDistance);
+
+				// render all keys
+				int lastDrawsetIndex = -1;
+				for (auto key : keys) {
+					auto& entry = viewport.renderQueue.entries[key.entryIndex];
+					
+
+					entry.drawCallback(entry.entityId, entry.drawsetIndex);
+				}
+
 				// TEMP
-				animTime += 0.001667f;
+				/*animTime += 0.001667f;
 				if (animTime > 2.5f) {
 					animTime = 0.0f;
 				}
@@ -226,7 +239,7 @@ namespace griffin {
 									ambientLoc, diffuseLoc, specularLoc, shininessLoc,
 									diffuseMapLoc, animTime,
 									viewport.params.viewMat, viewport.params.projMat); // temporarily passing in the modelMatLoc
-				}
+				}*/
 
 				glDisable(GL_DEPTH_TEST);
 				
@@ -452,6 +465,12 @@ namespace griffin {
 
 		void RenderSystem::renderFrame(float interpolation)
 		{
+			using namespace resource;
+			auto loader = g_resourceLoader.lock();
+			if (!loader) {
+				throw std::runtime_error("no resource loader");
+			}
+
 			// for each active viewport
 			for (int v = 0; v < MAX_VIEWPORTS; ++v) {
 				Viewport& viewport = m_viewports[v];

@@ -148,6 +148,7 @@ namespace griffin {
 			glm::quat		orientationWorld;
 			Id_T			entityId;
 			DrawCallback	drawCallback;
+			uint32_t		drawsetIndex;
 			// render flags?
 		};
 
