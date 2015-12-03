@@ -58,6 +58,7 @@
     <ClCompile Include="source\render\model\impl\Animation.cpp" />
     <ClCompile Include="source\render\model\impl\Mesh_GL.cpp" />
     <ClCompile Include="source\render\model\impl\ModelImport_Assimp.cpp" />
+    <ClCompile Include="source\render\model\impl\Model_GL.cpp" />
     <ClCompile Include="source\render\texture\impl\Texture2D_GL.cpp" />
     <ClCompile Include="source\render\texture\dds.cpp" />
     <ClCompile Include="source\render\texture\impl\TextureCubeMap_GL.cpp" />

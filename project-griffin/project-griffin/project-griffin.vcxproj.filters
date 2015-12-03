@@ -316,6 +316,9 @@
     <ClCompile Include="source\game\devConsole\DevConsoleSystem.cpp">
       <Filter>game\devConsole</Filter>
     </ClCompile>
+    <ClCompile Include="source\render\model\impl\Model_GL.cpp">
+      <Filter>render\model\impl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\application\main.h">

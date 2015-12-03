@@ -24,7 +24,7 @@ namespace griffin {
 
 		// Function declarations
 
-		extern void setResourceLoaderPtr(const resource::ResourceLoaderPtr& resourcePtr);
+		void setResourceLoaderPtr(const resource::ResourceLoaderPtr& resourcePtr);
 
 
 		/**

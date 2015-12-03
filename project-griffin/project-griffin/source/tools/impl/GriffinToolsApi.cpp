@@ -11,14 +11,16 @@
 #include <SDL_log.h>
 #include <fstream>
 
+namespace griffin {
+	namespace tools {
+		griffin::resource::ResourceLoaderWeakPtr g_resourceLoader;
 
-griffin::resource::ResourceLoaderWeakPtr g_resourceLoader;
-
-void griffin::tools::setResourceLoaderPtr(const resource::ResourceLoaderPtr& resourcePtr)
-{
-	g_resourceLoader = resourcePtr;
+		void setResourceLoaderPtr(const resource::ResourceLoaderPtr& resourcePtr)
+		{
+			g_resourceLoader = resourcePtr;
+		}
+	}
 }
-
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,7 +34,7 @@ extern "C" {
 	uint64_t griffin_tools_importMesh(const char* filename, bool optimizeGraph, bool preTransformVertices, bool flipUVs)
 	{
 		try {
-			auto loader = g_resourceLoader.lock();
+			auto loader = tools::g_resourceLoader.lock();
 			if (!loader) {
 				throw std::runtime_error("no resource loader");
 			}
@@ -69,7 +71,7 @@ extern "C" {
 	bool griffin_tools_saveMesh(uint64_t mesh, const char* filename)
 	{
 		try {
-			auto loader = g_resourceLoader.lock();
+			auto loader = tools::g_resourceLoader.lock();
 			if (!loader) {
 				throw std::runtime_error("no resource loader");
 			}

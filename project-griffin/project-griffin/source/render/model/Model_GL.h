@@ -10,6 +10,10 @@
 
 namespace griffin {
 	using namespace resource;
+	
+	namespace scene {
+		class Scene;
+	}
 
 	namespace render {
 
@@ -51,7 +55,7 @@ namespace griffin {
 
 			Model_GL(const Model_GL&) = delete;
 
-			void render(Id_T entityId);
+			void render(Id_T entityId, scene::Scene& scene);
 			void draw(Id_T entityId, int drawSetIndex);
 			
 			// Variables

@@ -18,6 +18,10 @@ namespace griffin {
 		class RenderSystem;
 		typedef std::weak_ptr<RenderSystem> RenderSystemWeakPtr;
 	}
+	namespace resource {
+		class ResourceLoader;
+		typedef std::shared_ptr<ResourceLoader> ResourceLoaderPtr;
+	}
 
 	namespace scene {
 
@@ -34,8 +38,9 @@ namespace griffin {
 		
 		// Function declarations
 
-		extern void setSceneManagerPtr(const SceneManagerPtr&);
-		extern void setRenderSystemPtr(const render::RenderSystemWeakPtr&);
+		void setSceneManagerPtr(const SceneManagerPtr&);
+		void setRenderSystemPtr(const render::RenderSystemWeakPtr&);
+		void setResourceLoaderPtr(const resource::ResourceLoaderPtr&);
 
 
 		// Type declarations

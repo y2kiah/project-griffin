@@ -19,12 +19,13 @@
 #include "ResourceCache.h"
 #include "ResourceSource.h"
 
+using std::unique_ptr;
+using std::shared_ptr;
+using std::weak_ptr;
+using std::wstring;
+
 namespace griffin {
 	namespace resource {
-
-		using std::unique_ptr;
-		using std::shared_ptr;
-		using std::wstring;
 
 		/**
 		* ResourceLoader is a manager of shared resources used by the engine, and provides an
@@ -113,7 +114,7 @@ namespace griffin {
 		};
 
 		typedef shared_ptr<ResourceLoader>	ResourceLoaderPtr;
-
+		typedef weak_ptr<ResourceLoader>	ResourceLoaderWeakPtr;
 	}
 }
 

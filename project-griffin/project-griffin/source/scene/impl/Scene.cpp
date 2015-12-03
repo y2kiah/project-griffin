@@ -3,32 +3,43 @@
 * @author Jeff Kiah
 */
 #include "../Scene.h"
-#include <SDL_log.h>
+#include <resource/ResourceLoader.h>
 #include <utility/memory_reserve.h>
 #include <scene/Camera.h>
 #include <entity/EntityManager.h>
-#include <render/Render.h>
 #include <glm/vec3.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <render/Render.h>
 #include <render/geometry/Intersection.h>
+#include <render/model/Model_GL.h>
+#include <SDL_log.h>
 
 
 using namespace griffin;
 using namespace griffin::scene;
 
 
-// Globals
-griffin::render::RenderSystemWeakPtr g_renderPtr;
-
-void griffin::scene::setRenderSystemPtr(const griffin::render::RenderSystemWeakPtr& renderPtr)
-{
-	g_renderPtr = renderPtr;
-}
+// Global Variables
+render::RenderSystemWeakPtr g_renderPtr;
+resource::ResourceLoaderWeakPtr g_resourceLoader;
 
 
 // Forward Declarations
 void interpolateSceneNodes(entity::EntityManager& entityMgr, float interpolation);
+
+
+// Free functions
+
+void scene::setRenderSystemPtr(const griffin::render::RenderSystemWeakPtr& renderPtr)
+{
+	g_renderPtr = renderPtr;
+}
+
+void scene::setResourceLoaderPtr(const resource::ResourceLoaderPtr& resourcePtr)
+{
+	g_resourceLoader = resourcePtr;
+}
 
 
 // class Scene
@@ -99,6 +110,7 @@ void SceneManager::updateActiveScenes()
 void SceneManager::renderActiveScenes(float interpolation)
 {
 	auto& render = *g_renderPtr.lock();
+	auto& loader = *g_resourceLoader.lock();
 
 	int8_t activeViewport = 0; // TEMP, hard coded to one viewport
 
@@ -161,9 +173,9 @@ void SceneManager::renderActiveScenes(float interpolation)
 				// if it's a Model_GL
 				if (mask[ModelInstance::componentType]) {
 					auto modelCmp = *s.entityManager->getEntityComponent<ModelInstance>(rci.entityId);
-					// use modelCmp.modelId to render
+					auto pModel = loader.getResource<render::Model_GL>(modelCmp.modelId, resource::Cache_Models);
 					
-					
+					pModel->render(rci.entityId, s);
 				}
 					//auto& node = *s.entityManager->getEntityComponent<SceneNode>(rci.entityId);
 					

@@ -27,6 +27,7 @@
 #include <render/RenderResources.h>
 #include <render/ShaderManager_GL.h>
 #include <render/Material_GL.h>
+#include <resource/ResourceLoader.h>
 
 #include <glm/vec4.hpp>
 #include <SDL_log.h>

@@ -2,29 +2,38 @@
 #ifndef GRIFFIN_RENDER_H_
 #define GRIFFIN_RENDER_H_
 
+#pragma warning(disable:4003)
+
 #include <string>
 #include <memory>
+#include <functional>
+#include <bitset>
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include <resource/ResourceLoader.h>
 #include <utility/memory_reserve.h>
 #include <utility/enum.h>
+#include <utility/container/handle_map.h>
 #include "RenderTarget_GL.h"
 
+using std::unique_ptr;
+using std::weak_ptr;
+using std::shared_ptr;
+using std::wstring;
 
 // Forward Declarations
 typedef struct NVGcontext NVGcontext;
 
 namespace griffin {
-	namespace resource { class ResourceLoader; }
+	namespace resource {
+		class ResourceLoader;
+		typedef shared_ptr<ResourceLoader>	ResourceLoaderPtr;
+		typedef weak_ptr<ResourceLoader>	ResourceLoaderWeakPtr;
+		class Resource_T;
+		typedef shared_ptr<Resource_T>	ResourcePtr;
+	}
 
 	namespace render {
-		using std::unique_ptr;
-		using std::weak_ptr;
-		using std::shared_ptr;
-		using std::wstring;
 		using resource::ResourcePtr;
-		using resource::CacheType;
 
 		// Enums
 
@@ -76,12 +85,14 @@ namespace griffin {
 
 		// Variables
 		
-		extern weak_ptr<resource::ResourceLoader> g_resourceLoader;
+		extern resource::ResourceLoaderWeakPtr g_resourceLoader;
 
 		extern int g_fonts[FontFaceCount];
 
 
 		// Functions
+
+		void setResourceLoaderPtr(const resource::ResourceLoaderPtr& resourcePtr);
 
 		/**
 		* Helper to get a font face id

@@ -170,7 +170,8 @@ namespace griffin {
 			loaderPtr->registerSource(fileSystemSourcePtr);
 
 			// inject loader dependencies into other system
-			render::g_resourceLoader = loaderPtr;
+			render::setResourceLoaderPtr(loaderPtr);
+			scene::setResourceLoaderPtr(loaderPtr);
 			#ifdef GRIFFIN_TOOLS_BUILD
 			tools::setResourceLoaderPtr(loaderPtr);
 			#endif

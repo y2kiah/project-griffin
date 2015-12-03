@@ -31,7 +31,7 @@ namespace griffin {
 
 		// Global Variables
 
-		weak_ptr<resource::ResourceLoader> g_resourceLoader;
+		resource::ResourceLoaderWeakPtr g_resourceLoader;
 
 		// TEMP
 		ResourcePtr		g_tempModel = nullptr;
@@ -43,6 +43,14 @@ namespace griffin {
 		extern float			g_cubeBufferData[3 * 36];
 		extern uint32_t			g_glCubeVAO;
 		extern VertexBuffer_GL	g_cubeBuffer;
+
+
+		// Free functions
+
+		void setResourceLoaderPtr(const resource::ResourceLoaderPtr& resourcePtr)
+		{
+			g_resourceLoader = resourcePtr;
+		}
 
 
 		// class RenderQueue
@@ -227,7 +235,7 @@ namespace griffin {
 				}
 
 				// TEMP
-				/*animTime += 0.001667f;
+				animTime += 0.001667f;
 				if (animTime > 2.5f) {
 					animTime = 0.0f;
 				}
@@ -239,7 +247,7 @@ namespace griffin {
 									ambientLoc, diffuseLoc, specularLoc, shininessLoc,
 									diffuseMapLoc, animTime,
 									viewport.params.viewMat, viewport.params.projMat); // temporarily passing in the modelMatLoc
-				}*/
+				}
 
 				glDisable(GL_DEPTH_TEST);
 				
