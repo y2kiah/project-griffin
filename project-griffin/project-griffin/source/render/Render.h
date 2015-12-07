@@ -24,6 +24,8 @@ using std::wstring;
 typedef struct NVGcontext NVGcontext;
 
 namespace griffin {
+	struct Engine;
+
 	namespace resource {
 		class ResourceLoader;
 		typedef shared_ptr<ResourceLoader>	ResourceLoaderPtr;
@@ -155,8 +157,9 @@ namespace griffin {
 			*/
 			typedef std::function<void(Id_T, int)>	DrawCallback;
 
-			glm::dvec3		positionWorld;
+			glm::dvec4		positionWorld;
 			glm::quat		orientationWorld;
+			glm::dvec3		scale;
 			Id_T			entityId;
 			DrawCallback	drawCallback;
 			uint32_t		drawsetIndex;
@@ -255,10 +258,10 @@ namespace griffin {
 			* @var keys		list of keys to render, usually set to viewport.filteredKeys (after
 			*				filtering) or viewport.keys for all, but any KeyList can be passed
 			*/
-			void renderGBuffer(Viewport& viewport, const RenderQueue::KeyList& keys);
-			void renderLightVolumes(Viewport& viewport, const RenderQueue::KeyList& keys);
-			void renderSkybox(Viewport& viewport, const RenderQueue::KeyList& keys);
-			void renderPostProcess(Viewport& viewport, const RenderQueue::KeyList& keys);
+			void renderGBuffer(Viewport& viewport, const RenderQueue::KeyList& keys, Engine& engine);
+			void renderLightVolumes(Viewport& viewport, const RenderQueue::KeyList& keys, Engine& engine);
+			void renderSkybox(Viewport& viewport, const RenderQueue::KeyList& keys, Engine& engine);
+			void renderPostProcess(Viewport& viewport, const RenderQueue::KeyList& keys, Engine& engine);
 
 			// temp, will be part of render queue in its own layer
 			void setSkyboxTexture(const ResourcePtr& textureCubeMap) {
@@ -302,7 +305,7 @@ namespace griffin {
 			* @var keys		list of keys to render, usually set to viewport.filteredKeys (after
 			*				filtering) or viewport.keys for all, but any KeyList can be passed
 			*/
-			void renderViewport(Viewport& viewport, const RenderQueue::KeyList& keys);
+			void renderViewport(Viewport& viewport, const RenderQueue::KeyList& keys, Engine& engine);
 
 			static void loadGlobalFonts(VectorRenderer_GL& inst);
 
@@ -365,7 +368,7 @@ namespace griffin {
 				m_viewports[viewport].renderQueue.addRenderEntry(sortKey, std::forward<RenderEntry>(renderEntry));
 			}
 
-			void renderFrame(float interpolation);
+			void renderFrame(float interpolation, Engine& engine);
 
 			// temp, will be part of render queue in its own layer
 			void setSkyboxTexture(const ResourcePtr& textureCubeMap) {

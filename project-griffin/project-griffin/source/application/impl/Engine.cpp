@@ -60,9 +60,9 @@ namespace griffin {
 
 		gameRenderFrameTick(pGame, engine, interpolation, realTime, countsPassed);
 
-		engine.sceneManager->renderActiveScenes(interpolation);
+		engine.sceneManager->renderActiveScenes(interpolation, engine);
 
-		engine.renderSystem->renderFrame(interpolation);
+		engine.renderSystem->renderFrame(interpolation, engine);
 	}
 
 

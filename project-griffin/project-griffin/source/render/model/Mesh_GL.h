@@ -12,6 +12,8 @@
 
 
 namespace griffin {
+	struct Engine;
+
 	namespace render {
 		
 		#define MAX_MESHSCENENODE_NAME_SIZE		64
@@ -243,12 +245,13 @@ namespace griffin {
 			void drawMesh(int drawSetIndex) const;
 			
 			/**
-			* Draws all DrawSets without using render queue sorting, use for debugging only
+			* Adds all DrawSets to render queue
 			*/
-			void draw(int modelMatLoc, int modelViewMatLoc, int mvpMatLoc, int normalMatLoc,
-					  int ambientLoc, int diffuseLoc, int specularLoc, int shininessLoc,
-					  int diffuseMapLoc, float animTime, // TODO: should take an Entity Id instead, to get animation times and blends and material overrides
-					  const glm::dmat4& viewMat, const glm::mat4& projMat/*All TEMP*/) const;
+			void render(Engine& engine, uint8_t viewport,
+						int modelMatLoc, int modelViewMatLoc, int mvpMatLoc, int normalMatLoc,
+						int ambientLoc, int diffuseLoc, int specularLoc, int shininessLoc,
+						int diffuseMapLoc, float animTime, // TODO: should take an Entity Id instead, to get animation times and blends and material overrides
+						const glm::dmat4& viewMat, const glm::mat4& projMat/*All TEMP*/) const;
 
 			/**
 			* Creates the Vertex Buffer Object with OpenGL for each draw set

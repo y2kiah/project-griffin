@@ -78,7 +78,7 @@ void drawWindow(NVGcontext* nvg, const char* title, float x, float y, float w, f
 
 // class VectorRenderer_GL
 
-void griffin::render::VectorRenderer_GL::renderViewport(Viewport& viewport, const RenderQueue::KeyList& keys)
+void griffin::render::VectorRenderer_GL::renderViewport(Viewport& viewport, const RenderQueue::KeyList& keys, Engine& engine)
 {
 	glClear(GL_STENCIL_BUFFER_BIT);
 

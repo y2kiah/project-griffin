@@ -3,6 +3,7 @@
 * @author Jeff Kiah
 */
 #include <render/model/Mesh_GL.h>
+#include <application/Engine.h>
 #include <GL/glew.h>
 #include <utility>
 #include <cassert>
@@ -44,13 +45,16 @@ namespace griffin {
 		}
 
 
-		void Mesh_GL::draw(int modelMatLoc, int modelViewMatLoc, int mvpMatLoc, int normalMatLoc,
-						   int ambientLoc, int diffuseLoc, int specularLoc, int shininessLoc,
-						   int diffuseMapLoc, float animTime,
-						   const glm::dmat4& viewMat, const glm::mat4& projMat/*All TEMP*/) const
+		void Mesh_GL::render(Engine& engine, uint8_t viewport,
+							 int modelMatLoc, int modelViewMatLoc, int mvpMatLoc, int normalMatLoc,
+							 int ambientLoc, int diffuseLoc, int specularLoc, int shininessLoc,
+							 int diffuseMapLoc, float animTime,
+							 const glm::dmat4& viewMat, const glm::mat4& projMat/*All TEMP*/) const
 		{
 			using namespace glm;
 			
+			auto& renderSystem = *engine.renderSystem;
+
 			dmat4 modelToWorld;
 			dmat4 nodeTransform;
 			
@@ -65,6 +69,9 @@ namespace griffin {
 				dmat4    toWorld;
 			};
 			// TODO: lot of memory being created and destroyed every frame, should all be pre-calculated and stored for non-animated meshes?
+			// Do this on mesh init and save a list of RenderEntries with matching index to the DrawSet
+			// during the init, decompose the nodeTransform into separate translation, orientation, scale
+			// Move this RenderEntry list to the Model_GL?
 			vector_queue<BFSQueueItem> bfsQueue;
 			bfsQueue.reserve(m_meshScene.numNodes);
 
@@ -81,7 +88,7 @@ namespace griffin {
 
 				// Get this node's animation, if any. Alter the node transform matrix.
 				// TODO: make sure animation takes place only when instance is going to be visible after early frustum cull
-				if (m_animations.numAnimationTracks > 0) {
+				/*if (m_animations.numAnimationTracks > 0) {
 					auto& anim = m_animations.animations[0];
 					for (uint32_t na = anim.nodeAnimationsIndexOffset; na < anim.nodeAnimationsIndexOffset + anim.numNodeAnimations; ++na) {
 						// TODO: move some of this out of the scene graph traversal? We know the active animations
@@ -204,7 +211,7 @@ namespace griffin {
 							nodeTransform = scale(nodeTransform, dvec3(nodeScale));
 						}
 					}
-				}
+				}*/
 
 				modelToWorld = thisItem.toWorld * nodeTransform;
 				
@@ -257,6 +264,14 @@ namespace griffin {
 						}
 					}
 
+					RenderQueueKey key{};
+					RenderEntry entry{
+						nodeTranslationWorld,
+
+					};
+					renderSystem.addRenderEntry(viewport, key, std::move(entry));
+					
+					// TEMP
 					drawMesh(ds);
 				}
 

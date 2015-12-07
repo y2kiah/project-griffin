@@ -3,6 +3,7 @@
 * @author Jeff Kiah
 */
 #include "../Scene.h"
+#include <application/Engine.h>
 #include <resource/ResourceLoader.h>
 #include <utility/memory_reserve.h>
 #include <scene/Camera.h>
@@ -107,7 +108,7 @@ void SceneManager::updateActiveScenes()
 	}
 }
 
-void SceneManager::renderActiveScenes(float interpolation)
+void SceneManager::renderActiveScenes(float interpolation, Engine& engine)
 {
 	auto& render = *g_renderPtr.lock();
 	auto& loader = *g_resourceLoader.lock();
@@ -175,7 +176,7 @@ void SceneManager::renderActiveScenes(float interpolation)
 					auto modelCmp = *s.entityManager->getEntityComponent<ModelInstance>(rci.entityId);
 					auto pModel = loader.getResource<render::Model_GL>(modelCmp.modelId, resource::Cache_Models);
 					
-					pModel->render(rci.entityId, s);
+					pModel->render(rci.entityId, s, activeViewport, engine);
 				}
 					//auto& node = *s.entityManager->getEntityComponent<SceneNode>(rci.entityId);
 					

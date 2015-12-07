@@ -144,7 +144,7 @@ namespace griffin {
 
 		// class DeferredRenderer_GL
 
-		void DeferredRenderer_GL::renderGBuffer(Viewport& viewport, const RenderQueue::KeyList& keys)
+		void DeferredRenderer_GL::renderGBuffer(Viewport& viewport, const RenderQueue::KeyList& keys, Engine& engine)
 		{
 			static float animTime = 0.0f; // TEMP
 
@@ -243,10 +243,11 @@ namespace griffin {
 				// draw the test mesh
 				if (g_tempModel) {
 					auto& mdl = g_tempModel->getResource<Model_GL>();
-					mdl.m_mesh.draw(modelMatLoc, modelViewMatLoc, mvpMatLoc, normalMatLoc,
-									ambientLoc, diffuseLoc, specularLoc, shininessLoc,
-									diffuseMapLoc, animTime,
-									viewport.params.viewMat, viewport.params.projMat); // temporarily passing in the modelMatLoc
+					mdl.m_mesh.render(engine, 0,
+									  modelMatLoc, modelViewMatLoc, mvpMatLoc, normalMatLoc,
+									  ambientLoc, diffuseLoc, specularLoc, shininessLoc,
+									  diffuseMapLoc, animTime,
+									  viewport.params.viewMat, viewport.params.projMat); // temporarily passing in the modelMatLoc
 				}
 
 				glDisable(GL_DEPTH_TEST);
@@ -391,7 +392,8 @@ namespace griffin {
 			m_viewports[0].top = 0;
 			m_viewports[0].width = viewportWidth;
 			m_viewports[0].height = viewportHeight;
-			setViewportParameters(0, std::move(defaultView));
+			m_viewports[0].params = defaultView;
+			m_viewports[0].display = true;
 
 			ViewportParameters guiView{};
 			guiView.nearClipPlane = -1.0f;
@@ -407,7 +409,8 @@ namespace griffin {
 			m_viewports[1].top = 0;
 			m_viewports[1].width = viewportWidth;
 			m_viewports[1].height = viewportHeight;
-			setViewportParameters(1, std::move(guiView));
+			m_viewports[1].params = guiView;
+			m_viewports[1].display = true;
 
 			// TEMP create some test resources
 			try {
@@ -471,7 +474,7 @@ namespace griffin {
 		}
 
 
-		void RenderSystem::renderFrame(float interpolation)
+		void RenderSystem::renderFrame(float interpolation, Engine& engine)
 		{
 			using namespace resource;
 			auto loader = g_resourceLoader.lock();
@@ -486,8 +489,8 @@ namespace griffin {
 				#if 1
 				// TEMP
 				if (v == 0) {
-					m_deferredRenderer.renderGBuffer(viewport, viewport.renderQueue.filteredKeys);
-					m_vectorRenderer.renderViewport(viewport, viewport.renderQueue.filteredKeys);
+					m_deferredRenderer.renderGBuffer(viewport, viewport.renderQueue.filteredKeys, engine);
+					m_vectorRenderer.renderViewport(viewport, viewport.renderQueue.filteredKeys, engine);
 				}
 				#endif
 				
@@ -510,7 +513,7 @@ namespace griffin {
 						keyStart = filterKeys(viewport.renderQueue.keys, keyStart, filter, mask,
 											  viewport.renderQueue.filteredKeys,
 											  true); // no gaps in keys, so exit early is ok
-						m_deferredRenderer.renderGBuffer(viewport, viewport.renderQueue.filteredKeys);
+						m_deferredRenderer.renderGBuffer(viewport, viewport.renderQueue.filteredKeys, engine);
 
 						// render the main scene's lighting pass
 						filter.allKeys.sceneLayer = SceneLayer_LightVolumeGeometry;
@@ -534,7 +537,7 @@ namespace griffin {
 						filter.allKeys.sceneLayer = SceneLayer_VectorGeometry;
 						viewport.renderQueue.filteredKeys.clear();
 						keyStart = filterKeys(viewport.renderQueue.keys, keyStart, filter, mask, viewport.renderQueue.filteredKeys, true);
-						m_vectorRenderer.renderViewport(viewport, viewport.renderQueue.filteredKeys);
+						m_vectorRenderer.renderViewport(viewport, viewport.renderQueue.filteredKeys, engine);
 					}
 
 					viewport.renderQueue.clearRenderEntries();
