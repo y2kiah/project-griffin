@@ -256,8 +256,13 @@ namespace griffin {
 			/**
 			* Creates the Vertex Buffer Object with OpenGL for each draw set
 			*/
-			void initializeVAO(int drawSetIndex) const;
-			void initializeVAOs() const;
+			void initVAO(int drawSetIndex) const;
+			void initVAOs() const;
+
+			/**
+			* Builds a list of render keys/entries for optimized submission to the render queue.
+			*/
+			void initRenderEntries();
 
 			/**
 			* Serialization functions, to/from binary stream
@@ -307,10 +312,10 @@ namespace griffin {
 
 		// Inline Functions
 
-		inline void Mesh_GL::initializeVAOs() const
+		inline void Mesh_GL::initVAOs() const
 		{
 			for (uint32_t ds = 0; ds < m_numDrawSets; ++ds) {
-				initializeVAO(ds);
+				initVAO(ds);
 			}
 		}
 	}

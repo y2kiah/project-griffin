@@ -19,7 +19,7 @@
 
 namespace griffin {
 	namespace render {
-		
+
 		void Model_GL::render(Id_T entityId, scene::Scene& scene, uint8_t viewport, Engine& engine)
 		{
 			//m_mesh.render(engine, viewport );

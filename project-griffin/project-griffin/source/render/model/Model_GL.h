@@ -50,9 +50,9 @@ namespace griffin {
 				m_mesh(std::move(other.m_mesh)),
 				m_textures(std::move(other.m_textures)),
 				m_shaderPrograms(std::move(other.m_shaderPrograms)),
-				m_childResourcesLoaded{ other.m_childResourcesLoaded }
+				m_resourcesLoaded{ other.m_resourcesLoaded }
 			{
-				other.m_childResourcesLoaded = false;
+				other.m_resourcesLoaded = false;
 			}
 
 			Model_GL(const Model_GL&) = delete;
@@ -64,7 +64,7 @@ namespace griffin {
 			Mesh_GL		m_mesh; // should models have a collection of meshes here?
 			TextureList	m_textures;
 			ShaderList	m_shaderPrograms;
-			bool		m_childResourcesLoaded = false;	//<! true when all child resource asyncronous loading completed, model can be rendered
+			bool		m_resourcesLoaded = false;	//<! true when all resource asyncronous loading completed, model can be rendered
 
 		};
 
