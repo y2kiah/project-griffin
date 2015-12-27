@@ -16,7 +16,13 @@
 
 namespace griffin {
 	// Forward Declarations
-	namespace entity { class EntityManager; }
+	namespace entity {
+		class EntityManager;
+	}
+	namespace resource {
+		class Resource_T;
+		typedef shared_ptr<Resource_T> ResourcePtr;
+	}
 
 	namespace scene {
 
@@ -62,7 +68,8 @@ namespace griffin {
 		* entity represent a unique instance of a model object in the scene.
 		*/
 		COMPONENT(ModelInstance,
-			(Id_T,			modelId,,			"resource id of the model")
+			(Id_T,					modelId,,	"resource id of the model"),
+			(resource::ResourcePtr,	modelPtr,,	"shared_ptr to model resource")
 			// TODO: there is no safety in holding just an id, need the handle to ensure reference count prevents deletion of resource
 		)
 

@@ -80,8 +80,7 @@ namespace griffin {
 			* instead of calling this a lot, due to the performance penalty of this call.
 			* @return	pointer to resource or nullptr if resource not found
 			*/
-			template <typename T>
-			T* getResource(Id_T h, CacheType cache_);
+			ResourcePtr getResource(Id_T h, CacheType cache_);
 
 			/**
 			* Blocking call, register a cache with the loader. Done during engine init.

@@ -18,7 +18,7 @@ namespace griffin {
 	Id_T createEmptySceneNode(Id_T sceneId, Id_T parentEntityId = NullId_T);
 
 	Id_T createModelInstance(Id_T sceneId, bool movable,
-							 Id_T parentEntityId = NullId_T, Id_T entityId = NullId_T);
+							 Id_T parentEntityId = Id_T(NullId_T), Id_T entityId = NullId_T);
 
 	Id_T createCamera(Id_T sceneId, scene::CameraParameters& cameraParams, const char name[32],
 					  Id_T parentEntityId = NullId_T);

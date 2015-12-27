@@ -86,7 +86,7 @@ void griffin::game::DevCameraSystem::init(Game* pGame, const Engine& engine, con
 	///// end TEMP
 
 	// create dev camera scene node
-	devCameraId = createCamera(game.sceneId, NullId_T, CameraParameters{
+	devCameraId = createCamera(game.sceneId, CameraParameters{
 		0.1f, 53000000.0f,	// near/far clip
 		app.getPrimaryWindow().width, app.getPrimaryWindow().height, // viewport
 		60.0f, Camera_Perspective

@@ -174,6 +174,7 @@ extern "C" {
 	}
 
 	
+	// TODO: this should call the c++ function, also make signature match
 	uint64_t griffin_scene_createModelInstance(uint64_t scene, uint64_t parentEntity, uint64_t model)
 	{
 		EntityId entityId{};

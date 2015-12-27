@@ -257,9 +257,10 @@ namespace griffin {
 						// should NOT use this method to get the resource, it serializes to the worker thread
 						// this part of the render is a time-critical section, should have the resourcePtr directly by now
 						// store resourcePtr's within the model containing this mesh, render from the model file
-						auto tex = g_resourceLoader.lock()->getResource<Texture2D_GL>(mat.textures[0].textureResourceHandle, CacheType::Cache_Materials);
-						if (tex) {
-							tex->bind(GL_TEXTURE4);
+						auto texPtr = g_resourceLoader.lock()->getResource(mat.textures[0].textureResourceHandle, CacheType::Cache_Materials);
+						if (texPtr) {
+							auto& tex = texPtr->getResource<Texture2D_GL>();
+							tex.bind(GL_TEXTURE4);
 							glUniform1i(diffuseMapLoc, 4);
 						}
 					}

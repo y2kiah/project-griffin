@@ -37,13 +37,13 @@ ffi.cdef[[
 	// Entity/Component functions
 
 	
-	uint64_t griffin_scene_createComponentStore(uint64_t scene, uint16_t typeId, uint32_t componentSize, size_t reserve);
+	uint64_t griffin_scene_createDataComponentStore(uint64_t scene, uint16_t typeId, uint32_t componentSize, size_t reserve);
 
 	
-	void* griffin_scene_getComponentData(uint64_t scene, uint64_t component);
+	void* griffin_scene_getDataComponent(uint64_t scene, uint64_t component);
 
 	
-	uint64_t griffin_scene_addComponentToEntity(uint64_t scene, uint16_t typeId, uint64_t entity);
+	uint64_t griffin_scene_addDataComponentToEntity(uint64_t scene, uint16_t typeId, uint64_t entity);
 
 
 	// Scene Node functions
@@ -58,14 +58,14 @@ ffi.cdef[[
 	uint64_t griffin_scene_createEmptySceneNode(uint64_t scene, uint64_t parentEntity);
 
 	/**
-	* Creates a new entity with SceneNode and MeshInstanceContainer components
+	* Creates a new scene entity with SceneNode, ModelInstance and optional animation components
 	* @scene	scene id
 	* @parentEntity	entity id of the parent scene node, 0 for root node
-	* @mesh		resource id of the mesh to reference
+	* @model	resource id of the model to reference
 	* @return	entity id of the newly created scene node
 	*/
 	
-	uint64_t griffin_scene_createMeshInstance(uint64_t scene, uint64_t parentEntity, uint64_t mesh);
+	uint64_t griffin_scene_createModelInstance(uint64_t scene, uint64_t parentEntity, uint64_t model);
 
 	
 	uint64_t griffin_scene_createCamera(uint64_t scene, uint64_t parentEntity,
