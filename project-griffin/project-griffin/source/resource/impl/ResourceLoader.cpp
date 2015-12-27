@@ -4,6 +4,23 @@
 namespace griffin {
 	namespace resource {
 
+		ResourcePtr ResourceLoader::getResource(Id_T h, CacheType cache_)
+		{
+			auto f = m_c([=](Impl& impl) {
+				auto& cache = *impl.m_caches[cache_].get();
+
+				if (!cache.hasResource(h)) {
+					throw std::runtime_error("resource not found by handle");
+				}
+				return cache.getResource(h);
+			});
+
+			if (f.get().get() == nullptr) {
+				return nullptr;
+			}
+			return f.get();
+		}
+
 		void ResourceLoader::executeCallbacks()
 		{
 			std::vector<std::function<void()>> callbacks;

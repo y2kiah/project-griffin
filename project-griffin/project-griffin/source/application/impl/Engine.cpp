@@ -195,11 +195,11 @@ namespace griffin {
 			auto shaderManagerPtr = make_shared<ShaderManager_GL>();
 			shaderManagerPtr->loadUbershaderCode("shaders/ads.glsl");
 
-			//auto modelManagerPtr = make_shared<ModelManager_GL>();
+			auto modelManagerPtr = make_shared<ModelManager_GL>();
 
 			engine.renderSystem = renderSystemPtr;
 			engine.shaderManager = shaderManagerPtr;
-			//engine.modelManager = modelManagerPtr;
+			engine.modelManager = modelManagerPtr;
 		}
 
 		/**

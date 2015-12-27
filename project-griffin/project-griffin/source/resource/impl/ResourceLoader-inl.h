@@ -25,8 +25,6 @@ namespace griffin {
 
 			ResourceHandle<T> h;
 
-			// Can this safely capture name and callback by reference?
-			// Or do they need to be copied for the lambda to refer to them later?
 			h.resourceId = m_c([=, this](Impl& impl) {
 				// check cache for resource first
 				auto indexIterator = impl.m_nameToHandle.find(name);
@@ -112,24 +110,6 @@ namespace griffin {
 			});
 
 			return f;
-		}
-
-
-		ResourcePtr ResourceLoader::getResource(Id_T h, CacheType cache_)
-		{
-			auto f = m_c([=](Impl& impl) {
-				auto& cache = *impl.m_caches[cache_].get();
-
-				if (!cache.hasResource(h)) {
-					throw std::runtime_error("resource not found by handle");
-				}
-				return cache.getResource(h);
-			});
-
-			if (f.get().get() == nullptr) {
-				return nullptr;
-			}
-			return f.get();
 		}
 
 	}

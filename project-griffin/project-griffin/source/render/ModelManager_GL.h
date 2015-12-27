@@ -1,4 +1,3 @@
-#if 0 // not sure I want this
 #pragma once
 #ifndef GRIFFIN_MODELMANAGER_H_
 #define GRIFFIN_MODELMANAGER_H_
@@ -14,8 +13,8 @@ namespace griffin {
 		public:
 			typedef griffin::handle_map<Model_GL> ModelMap;
 
-			explicit ModelManager_GL();
-			~ModelManager_GL();
+			explicit ModelManager_GL() : m_models(0, 100) {} // TEMP
+			~ModelManager_GL() {}
 
 		private:
 			// Variables
@@ -28,5 +27,4 @@ namespace griffin {
 	}
 }
 
-#endif
 #endif

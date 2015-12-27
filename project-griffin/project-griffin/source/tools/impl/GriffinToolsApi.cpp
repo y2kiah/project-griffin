@@ -79,14 +79,15 @@ extern "C" {
 			Id_T handle;
 			handle.value = mesh;
 
-			auto res = loader->getResource<Mesh_GL>(handle, CacheType::Cache_Models);
+			auto resPtr = loader->getResource(handle, CacheType::Cache_Models);
+			auto& res = resPtr->getResource<Mesh_GL>();
 
 			std::ofstream ofs;
 			SDL_Log("saving mesh %llu to %s", mesh, filename);
 			ofs.open(filename, std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
 			ofs.exceptions(std::ofstream::failbit | std::ofstream::badbit);
 
-			res->serialize(ofs);
+			res.serialize(ofs);
 
 			ofs.close();
 

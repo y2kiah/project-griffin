@@ -16,12 +16,10 @@
 
 namespace griffin {
 	// Forward Declarations
-	namespace entity {
-		class EntityManager;
-	}
+	namespace entity { class EntityManager; }
 	namespace resource {
 		class Resource_T;
-		typedef shared_ptr<Resource_T> ResourcePtr;
+		typedef std::shared_ptr<Resource_T>	ResourcePtr;
 	}
 
 	namespace scene {
@@ -31,6 +29,7 @@ namespace griffin {
 		typedef griffin::Id_T    SceneId;
 		typedef griffin::Id_T    SceneNodeId;
 
+		//typedef std::shared_ptr<resource::Resource_T> ResourcePtr;
 
 		// Structs
 
@@ -70,7 +69,7 @@ namespace griffin {
 		COMPONENT(ModelInstance,
 			(Id_T,					modelId,,	"resource id of the model"),
 			(resource::ResourcePtr,	modelPtr,,	"shared_ptr to model resource")
-			// TODO: there is no safety in holding just an id, need the handle to ensure reference count prevents deletion of resource
+			// TODO: consider using model manager, hold a unique index here instead of resourceptr
 		)
 
 		/**

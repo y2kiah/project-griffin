@@ -174,9 +174,10 @@ void SceneManager::renderActiveScenes(float interpolation, Engine& engine)
 				// if it's a Model_GL
 				if (mask[ModelInstance::componentType]) {
 					auto modelCmp = *s.entityManager->getEntityComponent<ModelInstance>(rci.entityId);
-					auto pModel = loader.getResource<render::Model_GL>(modelCmp.modelId, resource::Cache_Models);
-					
-					pModel->render(rci.entityId, s, activeViewport, engine);
+					auto modelPtr = loader.getResource(modelCmp.modelId, resource::Cache_Models);
+					auto& model = modelPtr->getResource<render::Model_GL>();
+
+					model.render(rci.entityId, s, activeViewport, engine);
 				}
 					//auto& node = *s.entityManager->getEntityComponent<SceneNode>(rci.entityId);
 					

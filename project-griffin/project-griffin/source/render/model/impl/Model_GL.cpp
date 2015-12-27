@@ -148,7 +148,8 @@ namespace griffin {
 						// Potential bug, use the resource ids to look up by handle to get its current memory location from the task
 						// Also, can this model move in memory while tasks are queued holding a memory location back? Don't allow that to happen.
 						tex.textureResourceHandle = resHandle.handle();
-						auto pTex = render::g_resourceLoader.lock()->getResource<Texture2D_GL>(tex.textureResourceHandle, resource::CacheType::Cache_Materials);
+						auto texPtr = render::g_resourceLoader.lock()->getResource(tex.textureResourceHandle, resource::CacheType::Cache_Materials);
+						auto& tex = texPtr->getResource<Texture2D_GL>();
 						
 						// TODO: where should I call the following??? Can't call here since this is called on loading thread
 						//pTex->bind(GL_TEXTURE0);
