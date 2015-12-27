@@ -8,18 +8,19 @@
 #include <utility>
 #include <cassert>
 #include <render/ShaderProgramLayouts_GL.h>
-#include <render/Render.h>
-#include <render/RenderResources.h>
-#include <resource/ResourceLoader.h>
 #include <utility/container/vector_queue.h>
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
+#include <render/RenderResources.h> // TEMP (these two headers needed only for temp render function)
+#include <resource/ResourceLoader.h>
+
 
 #define Meters_to_Feet 3.2808398950131233595800524934383f
 
 namespace griffin {
 	namespace render {
-		using glm::dmat4;
+		using namespace glm;
 
 		void Mesh_GL::bind(int drawSetIndex) const
 		{
@@ -45,14 +46,13 @@ namespace griffin {
 		}
 
 
+		// TODO: convert this to per-update "animate" function, operating on animation components
 		void Mesh_GL::render(Engine& engine, uint8_t viewport,
 							 int modelMatLoc, int modelViewMatLoc, int mvpMatLoc, int normalMatLoc,
 							 int ambientLoc, int diffuseLoc, int specularLoc, int shininessLoc,
 							 int diffuseMapLoc, float animTime,
-							 const glm::dmat4& viewMat, const glm::mat4& projMat/*All TEMP*/) const
+							 const dmat4& viewMat, const mat4& projMat/*All TEMP*/) const
 		{
-			using namespace glm;
-			
 			auto& renderSystem = *engine.renderSystem;
 
 			dmat4 modelToWorld;
@@ -263,13 +263,6 @@ namespace griffin {
 							glUniform1i(diffuseMapLoc, 4);
 						}
 					}
-
-					RenderQueueKey key{};
-					RenderEntry entry{
-						nodeTranslationWorld,
-
-					};
-					renderSystem.addRenderEntry(viewport, key, std::move(entry));
 					
 					// TEMP
 					drawMesh(ds);
@@ -372,74 +365,6 @@ namespace griffin {
 
 					offset += (sizeof(float) * 4);
 				}
-			}
-		}
-
-
-		void Mesh_GL::initRenderEntries()
-		{
-			struct BFSQueueItem {
-				uint32_t nodeIndex;
-				dmat4    toWorld;
-			};
-
-			vector_queue<BFSQueueItem> bfsQueue;
-			bfsQueue.reserve(m_meshScene.numNodes);
-
-			bfsQueue.push({ 0, modelToWorld }); // push root node to start traversal
-
-			while (!bfsQueue.empty()) {
-				auto& thisItem = bfsQueue.front();
-
-				uint32_t nodeIndex = thisItem.nodeIndex;
-				assert(nodeIndex >= 0 && nodeIndex < m_meshScene.numNodes && "node index out of range");
-
-				const auto& node = m_meshScene.sceneNodes[thisItem.nodeIndex];
-				nodeTransform = node.transform;
-
-				modelToWorld = thisItem.toWorld * nodeTransform;
-
-				// draw this node's meshes
-				for (uint32_t m = 0; m < node.numMeshes; ++m) {
-					uint32_t ds = m_meshScene.meshIndices[node.meshIndexOffset + m];
-					auto& drawSet = m_drawSets[ds];
-					Material_GL& mat = m_materials[drawSet.materialIndex];
-
-					// renderer should do this as part of the render key sort/render, not the mesh
-					// TEMP, assuming one texture
-					if (mat.numTextures > 0) {
-						// should NOT use this method to get the resource, it serializes to the worker thread
-						// this part of the render is a time-critical section, should have the resourcePtr directly by now
-						// store resourcePtr's within the model containing this mesh, render from the model file
-						auto tex = g_resourceLoader.lock()->getResource<Texture2D_GL>(mat.textures[0].textureResourceHandle, CacheType::Cache_Materials);
-						if (tex) {
-							tex->bind(GL_TEXTURE4);
-							glUniform1i(diffuseMapLoc, 4);
-						}
-					}
-
-					RenderQueueKey key{};
-					RenderEntry entry{
-						nodeTranslationWorld,
-
-					};
-					renderSystem.addRenderEntry(viewport, key, std::move(entry));
-
-					// TEMP
-					drawMesh(ds);
-				}
-
-				// push children to traverse
-				for (uint32_t c = 0; c < node.numChildren; ++c) {
-					uint32_t childNodeIndex = m_meshScene.childIndices[node.childIndexOffset + c];
-
-					assert(childNodeIndex >= 0 && childNodeIndex < m_meshScene.numNodes && "child node index out of range");
-					assert(childNodeIndex > nodeIndex && "child node is not lower in the tree");
-
-					bfsQueue.push({ childNodeIndex, modelToWorld });
-				}
-
-				bfsQueue.pop();
 			}
 		}
 
@@ -723,7 +648,7 @@ namespace griffin {
 		}
 
 		
-		void Mesh_GL::createResourcesFromInternalMemory(const std::wstring& filePath)
+		void Mesh_GL::createBuffersFromInternalMemory()
 		{
 			// This function is called by the deserialization / resource loading routines, not by
 			// the assimp import. The size/flags of the buffers are set in loadFromInternalMemory.
@@ -736,35 +661,6 @@ namespace griffin {
 										 IndexBuffer_GL::getSizeOfElement(m_indexBuffer.getFlags()));
 
 			initVAOs();
-
-			// materials
-			for (uint32_t m = 0; m < m_numMaterials; ++m) {
-				auto& mat = m_materials[m];
-				for (uint32_t t = 0; t < mat.numTextures; ++t) {
-					auto& tex = mat.textures[t];
-					if (tex.textureType != MaterialTexture_None) {
-						// convert from ascii to wide character set
-						string aName(tex.name);
-						wstring wName;
-						wName.assign(aName.begin(), aName.end());
-						
-						// prefix texture path with the path to the model being loaded
-						wName = filePath.substr(0, filePath.find_last_of(L'/')) + L'/' + wName;
-						SDL_Log("trying to load %s", aName.assign(wName.begin(),wName.end()).c_str());
-
-						auto resHandle = render::loadTexture2D(wName, resource::CacheType::Cache_Materials);
-						// TEMP, blocking call, need to make this async, use task system
-						// BUT, the continuation must update this handle, assuming "this" pointer is captured by reference,
-						// the material may move in memory, since the resource system is free to move it, potential bug
-						// use the resource id to look up by handle to get its current memory location from the task
-						tex.textureResourceHandle = resHandle.handle();
-						auto pTex = render::g_resourceLoader.lock()->getResource<Texture2D_GL>(tex.textureResourceHandle, resource::CacheType::Cache_Materials);
-						pTex->bind(GL_TEXTURE0);
-						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-					}
-				}
-			}
 		}
 
 

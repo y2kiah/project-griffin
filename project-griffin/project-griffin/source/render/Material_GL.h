@@ -15,13 +15,14 @@ namespace griffin {
 		enum MaterialTextureType : uint16_t {
 			MaterialTexture_None			= 0,
 			MaterialTexture_Diffuse			= 1,			// RGB - diffuse surface color,			A - unused
-			MaterialTexture_Diffuse_Opacity = 2,			// RGB - diffuse surface color,			A - opacity
-			MaterialTexture_Diffuse_AO		= 3,			// RGB - diffuse surface color,			A - ambient occlusion
-			MaterialTexture_Specular		= 4,			// RGB - specular reflectivity color,	A - specular power/shininess
-			MaterialTexture_Emissive		= 5,			// RGB - emissive light color,			A - brightness
-			MaterialTexture_Normal			= 6,			// RGB - normal map,					A - unused
-			MaterialTexture_Normal_Height	= 7,			// RGB - normal map,					A - height map
-			MaterialTexture_Metallic_Reflectivity_AO = 8	// R - metallic, G - reflectivity, B - ambient occlusion, A - *Unused/Available*
+			MaterialTexture_Diffuse_Opacity = 2,			// RGB - diffuse surface color,			A - opacity (alpha blend)
+			MaterialTexture_Diffuse_OpacityMask = 3,		// RGB - diffuse surface color,			A - opacity (no blend, alpha test only)
+			MaterialTexture_Diffuse_AO		= 4,			// RGB - diffuse surface color,			A - ambient occlusion
+			MaterialTexture_Specular		= 5,			// RGB - specular reflectivity color,	A - specular power/shininess
+			MaterialTexture_Emissive		= 6,			// RGB - emissive light color,			A - brightness
+			MaterialTexture_Normal			= 7,			// RGB - normal map,					A - unused
+			MaterialTexture_Normal_Height	= 8,			// RGB - normal map,					A - height map
+			MaterialTexture_Metallic_Reflectivity_AO = 9	// R - metallic, G - reflectivity, B - ambient occlusion, A - *Unused/Available*
 		};
 
 		enum MaterialTextureMappingMode : uint8_t {
@@ -32,18 +33,55 @@ namespace griffin {
 			MaterialTextureMappingMode_Mirror = 4
 		};
 
-		enum MaterialFlags : uint16_t {
-			Material_None                = 0,
-			Material_Textured            = 1,
-			Material_Lit                 = 1 << 1,
-			Material_Shadowed            = 1 << 2,
-			Material_Reflective          = 1 << 3,
-			Material_Transparent         = 1 << 4,
-			Material_NormalMapping       = 1 << 5,
-			Material_DisplacementMapping = 1 << 6,
-			Material_VertexColors        = 1 << 7
-		};
+		/**
+		* @struct ShaderKey
+		* All of the parameters in this key tie in to the ubershader with a compile time ifdef
+		*	to generate a unique permutation of the shader for each unique key. The shader manager
+		*	stores and identifies needed shaders by this key. Non-ubershader programs just use key
+		*	value of 0.
+		* @var	numDiffuseTextures	Up to 4 diffuse textures can be blended. for the first diffuse
+		*			texture, the channels are interpreted by the presence of either the
+		*			hasFirstDiffuseMap or hasFirstDiffuseOpacityMap flag. For the next 3
+		*			diffuse textures, alpha is always used for blending with the base color
+		*/
+		struct ShaderKey {
+			union {
+				struct {
+					uint8_t isUbershader				: 1;	//<! 1 = shader is an ubershader permutation, 0 = unique shader
+					uint8_t hasFirstDiffuseMap			: 1;	//<! mutually exclusive with hasFirstDiffuseOpacityMap and hasFirstDiffuseAOMap
+					uint8_t hasFirstDiffuseOpacityMap	: 1;	//<! mutually exclusive with hasFirstDiffuseMap and hasFirstDiffuseAOMap
+					uint8_t hasFirstDiffuseAOMap		: 1;	//<! mutually exclusive with hasFirstDiffuseMap and hasFirstDiffuseOpacityMap
+					uint8_t hasSpecularMap				: 1;
+					uint8_t hasEmissiveMap				: 1;
+					uint8_t hasNormalMap				: 1;
+					uint8_t hasNormalHeightMap			: 1;
+					// 1
+					uint8_t hasMetallicReflectiveAOMap	: 1;
+					uint8_t numDiffuseTextures			: 2;
+					uint8_t usesVertexColorForDiffuse	: 1;	//<! whether or not to multiply vertex color channel 1 into base diffuse, TODO: support or no? Use uniform for color channel index
+					uint8_t isLit						: 1;	//<! accepts scene lighting, if 0 object masked off from lighting using stencil buffer
+					uint8_t isReflective				: 1;	//<! reflects environment map
+					uint8_t isTranslucent				: 1;	//<! uses alpha blend and depth sort, rendered after deferred pass, either mat. opacity < 1 or usesAlphaBlend=1 cause this to be 1
+					uint8_t isShadowed					: 1;	//<! accepts shadows from scene, if 0 object masked off from shadows using stencil buffer???
+					// 2
+					uint8_t castsShadow					: 1;	//<! casts shadow in scene, if 0 object does not cast a shadow
+					uint8_t usesAlphaBlend				: 1;	//<! when hasFirstDiffuseOpacityMap=1, alpha channel of diffuse texture 0 is used for alpha blend
+					uint8_t usesAlphaTest				: 1;	//<! when hasFirstDiffuseOpacityMap=1, alpha channel of diffuse texture 0 is treated as on/off alpha mask
+					uint8_t usesBumpMapping				: 1;	//<! uses normalmap to do bumpmapping
+					uint8_t usesDisplacementMapping		: 1;	//<! uses normalmap and heightmap to do displacement mapping
 
+					uint8_t _padding_0					: 3;
+					// 3
+
+					uint8_t _padding_end[5];
+					// 8
+					// TODO: how to handle LOD, e.g. turn off bump/displacement mapping with distance from camera
+				};
+
+				uint64_t	value;
+			};
+		};
+		
 
 		struct MaterialTexture {
 			Id_T						textureResourceHandle = NullId_T;
@@ -56,8 +94,7 @@ namespace griffin {
 		};
 
 
-		class Material_GL {
-		public:
+		struct Material_GL {
 			glm::vec3	diffuseColor = {};
 			glm::vec3	ambientColor = {};
 			glm::vec3	specularColor = {};
@@ -69,7 +106,7 @@ namespace griffin {
 			float		metallic = 0;
 			// 64
 			Id_T		shaderResourceHandle = NullId_T;
-			uint64_t	shaderKey = 0;		//<! shader key combines vertex and material flags, shader manager stores ubershader by key
+			ShaderKey	shaderKey = {};		//<! shader key combines vertex and material flags, shader manager stores ubershader by key
 			uint8_t		numTextures = 0;
 			uint8_t		_padding_0[7] = {};
 			// 88

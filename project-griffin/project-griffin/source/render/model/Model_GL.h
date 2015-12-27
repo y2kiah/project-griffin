@@ -3,10 +3,12 @@
 #define GRIFFIN_MODEL_GL_H_
 
 #include <vector>
+#include <string>
 #include "Mesh_GL.h"
 #include <resource/Resource.h>
 #include <render/texture/Texture2D_GL.h>
 #include <render/ShaderProgram_GL.h>
+#include <render/Render.h>
 
 namespace griffin {
 	using namespace resource;
@@ -36,6 +38,17 @@ namespace griffin {
 			// OR vector<uint16_t> ???
 			// and how do we relate the textures/shaders stored here back to the relevant material texture / material, or do we even need to??
 
+			struct RenderQueueKeyRecord {
+				RenderQueueKey	key;
+				uint32_t		entryIndex;
+				uint32_t		_padding_0;
+			};
+
+			struct RenderEntryList {
+				std::vector<RenderQueueKeyRecord>	keys;
+				std::vector<RenderEntry>			entries;
+			};
+
 			// Constructors
 			explicit Model_GL() {}
 
@@ -48,6 +61,7 @@ namespace griffin {
 
 			Model_GL(Model_GL&& other) :
 				m_mesh(std::move(other.m_mesh)),
+				m_renderEntries(std::move(other.m_renderEntries)),
 				m_textures(std::move(other.m_textures)),
 				m_shaderPrograms(std::move(other.m_shaderPrograms)),
 				m_resourcesLoaded{ other.m_resourcesLoaded }
@@ -60,11 +74,42 @@ namespace griffin {
 			void render(Id_T entityId, scene::Scene& scene, uint8_t viewport, Engine& engine);
 			void draw(Id_T entityId, int drawSetIndex);
 			
+			/**
+			* Builds a list of render keys/entries  for
+			* the owner model.
+			*/
+			void initRenderEntries(Model_GL& owner);
+
+			/**
+			* Builds list of render keys/entries for optimized submission to the render queue. Can
+			* be called on loading thread since no OpenGL calls are made.
+			*/
+			void initRenderEntries();
+
+			/**
+			* Causes all mesh material textures and shaders to be queued up for asynchronous
+			* loading, and stores all resource handles containing the futures. Can be called from
+			* the loading thread since no OpenGL calls are directly made, this only creates the
+			* resource loading tasks. Once all resources are loaded, the m_resourcesLoaded bool is
+			* set to true, and the model is ready to be rendered.
+			*/
+			void loadMaterialResources(const std::wstring& filePath);
+
+			/**
+			* Creates OpenGL buffers in the internal mesh. Call this from the OpenGL thread after
+			* the mesh is constructed.
+			*/
+			void createBuffers()
+			{
+				m_mesh.createBuffersFromInternalMemory();
+			}
+
 			// Variables
-			Mesh_GL		m_mesh; // should models have a collection of meshes here?
-			TextureList	m_textures;
-			ShaderList	m_shaderPrograms;
-			bool		m_resourcesLoaded = false;	//<! true when all resource asyncronous loading completed, model can be rendered
+			Mesh_GL			m_mesh; // should models have a collection of meshes here?
+			RenderEntryList	m_renderEntries;
+			TextureList		m_textures;
+			ShaderList		m_shaderPrograms;
+			bool			m_resourcesLoaded = false;	//<! true when all resource asyncronous loading completed, model can be rendered
 
 		};
 

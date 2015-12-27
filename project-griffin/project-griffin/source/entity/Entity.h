@@ -14,8 +14,7 @@
 namespace griffin {
 	namespace entity {
 
-		// Entity should have relationships to other entities through components
-		// Entity is a messaging (event) hub, both sending and handling events, allowing for direct
+		// TODO: Entity can be a messaging (event) hub, both sending and handling events, allowing for direct
 		// dispatch, broadcast, observer, pub/sub, and event bubbling up and down
 		struct Entity {
 			explicit Entity() {

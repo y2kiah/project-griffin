@@ -4,7 +4,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <string>
 #include "render/VertexBuffer_GL.h"
 #include "render/IndexBuffer_GL.h"
 #include "render/Material_GL.h"
@@ -21,6 +20,8 @@ namespace griffin {
 
 
 		// Type Declarations
+
+		class Model_GL;
 
 		typedef std::unique_ptr<unsigned char[]> ByteBuffer;
 
@@ -162,22 +163,25 @@ namespace griffin {
 		};
 
 
-		static_assert(sizeof(DrawSet) % 4 == 0, "DrawSet size should be multiple of 4 for alignment of animation buffer");
-		static_assert(sizeof(MeshSceneNode) % 4 == 0, "MeshSceneNode size should be multiple of 4 for alignment of animation buffer");
-		static_assert(sizeof(MeshSceneNodeMetaData) % 4 == 0, "MeshSceneNodeMetaData size should be multiple of 4 for alignment of animation buffer");
-		static_assert(sizeof(PositionKeyFrame) % 4 == 0, "PositionKeyFrame size should be multiple of 4 for alignment of mesh buffer");
-		static_assert(sizeof(RotationKeyFrame) % 4 == 0, "RotationKeyFrame size should be multiple of 4 for alignment of mesh buffer");
-		static_assert(sizeof(ScalingKeyFrame) % 4 == 0, "ScalingKeyFrame size should be multiple of 4 for alignment of mesh buffer");
-		static_assert(sizeof(AnimationTrack) % 4 == 0, "AnimationTrack size should be multiple of 4 for alignment of mesh buffer");
-		static_assert(sizeof(NodeAnimation) % 4 == 0, "NodeAnimation size should be multiple of 4 for alignment of mesh buffer");
-		static_assert(sizeof(AnimationTrackMetaData) % 4 == 0, "AnimationTrackMetaData size should be multiple of 4 for alignment of mesh buffer");
-		static_assert(std::is_trivially_copyable<DrawSet>::value /*&& std::is_trivially_copyable<MeshSceneNode>::value*/, // check disabled due to glm::mat, it's still safe though
+		static_assert(sizeof(DrawSet) % 4 == 0, "DrawSet size must be multiple of 4 for alignment of animation buffer");
+		static_assert(sizeof(Material_GL) % 4 == 0, "Material_GL size must be multiple of 4 for alignment of animation buffer");
+		static_assert(sizeof(MeshSceneNode) % 4 == 0, "MeshSceneNode size must be multiple of 4 for alignment of animation buffer");
+		static_assert(sizeof(MeshSceneNodeMetaData) % 4 == 0, "MeshSceneNodeMetaData size must be multiple of 4 for alignment of animation buffer");
+		static_assert(sizeof(PositionKeyFrame) % 4 == 0, "PositionKeyFrame size must be multiple of 4 for alignment of mesh buffer");
+		static_assert(sizeof(RotationKeyFrame) % 4 == 0, "RotationKeyFrame size must be multiple of 4 for alignment of mesh buffer");
+		static_assert(sizeof(ScalingKeyFrame) % 4 == 0, "ScalingKeyFrame size must be multiple of 4 for alignment of mesh buffer");
+		static_assert(sizeof(AnimationTrack) % 4 == 0, "AnimationTrack size must be multiple of 4 for alignment of mesh buffer");
+		static_assert(sizeof(NodeAnimation) % 4 == 0, "NodeAnimation size must be multiple of 4 for alignment of mesh buffer");
+		static_assert(sizeof(AnimationTrackMetaData) % 4 == 0, "AnimationTrackMetaData size must be multiple of 4 for alignment of mesh buffer");
+		static_assert(std::is_trivially_copyable<DrawSet>::value
+					  /*&& std::is_trivially_copyable<MeshSceneNode>::value*/, // check disabled due to glm::mat, it's still safe though
 					  "Mesh structs must be trivially copyable for serialization");
+		static_assert(std::is_trivially_copyable<Material_GL>::value,
+					  "Material structs must be trivially copyable for serialization");
 		static_assert(std::is_trivially_copyable<PositionKeyFrame>::value && std::is_trivially_copyable<RotationKeyFrame>::value &&
 					  std::is_trivially_copyable<ScalingKeyFrame>::value && std::is_trivially_copyable<AnimationTrack>::value &&
 					  std::is_trivially_copyable<NodeAnimation>::value && std::is_trivially_copyable<AnimationTrackMetaData>::value,
 					  "Animation structs must be trivially copyable for serialization");
-
 
 		/**
 		* @class Mesh_GL
@@ -260,11 +264,6 @@ namespace griffin {
 			void initVAOs() const;
 
 			/**
-			* Builds a list of render keys/entries for optimized submission to the render queue.
-			*/
-			void initRenderEntries();
-
-			/**
 			* Serialization functions, to/from binary stream
 			*/
 			void serialize(std::ostream& out);
@@ -279,11 +278,11 @@ namespace griffin {
 			* Creates index/vertex buffers based on data loaded into m_modelData buffer. Call this
 			* from the OpenGL thread after calling loadFromInternalMemory.
 			*/
-			void createResourcesFromInternalMemory(const std::wstring& filePath);
+			void createBuffersFromInternalMemory();
 
-		private:
 
 			// Variables
+
 			uint32_t		m_sizeBytes = 0;			//<! contains the size of m_modelData in bytes
 
 			uint32_t		m_numDrawSets = 0;

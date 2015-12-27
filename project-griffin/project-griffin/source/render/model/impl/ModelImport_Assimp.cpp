@@ -473,13 +473,26 @@ namespace griffin {
 				auto& mat = materials[m];
 
 				ShaderKey key{};
+				key.isUbershader = 1;
+				// TODO: How do I import these (and other) properties? How to tell if vertex color channels are used?
+				key.isLit = 1;
+				key.isShadowed = 1;
+				key.castsShadow = 1;
 
 				aiString name;
 				aiGetMaterialString(assimpMat, AI_MATKEY_NAME, &name);
 				// store name in material?
 
 				aiGetMaterialFloat(assimpMat, AI_MATKEY_OPACITY, &mat.opacity);
+				if (mat.opacity < 1.0f) {
+					key.isTranslucent = 1;
+				}
+
 				aiGetMaterialFloat(assimpMat, AI_MATKEY_REFLECTIVITY, &mat.reflectivity);
+				if (mat.reflectivity > 0.0f) {
+					key.isReflective = 1;
+				}
+
 				aiGetMaterialFloat(assimpMat, AI_MATKEY_SHININESS, &mat.shininess);
 
 				aiColor4D color;
@@ -495,16 +508,8 @@ namespace griffin {
 				aiGetMaterialColor(assimpMat, AI_MATKEY_COLOR_EMISSIVE, &color);
 				mat.emissiveColor = { color.r, color.g, color.b };
 
-
-				// TODO: set material flags and use the flags to determine ubershader key hash
-				// maybe need to combine vertex flags for the vertex shader, material flags for the vertex/fragment shader
-				// programs compiled on demand by the shader manager and maintained in lookup table
-
-				// store the shader hash key in the material
-				// how to handle LOD, e.g. turn off normal / displacement mapping with distance from camera
-
-				//Texture Loading pseudo-code from http://assimp.sourceforge.net/lib_html/materials.html
-				//Also see that page for example shader code to get color channel contributions
+				// Texture Loading pseudo-code from http://assimp.sourceforge.net/lib_html/materials.html
+				// Also see that page for example shader code to get color channel contributions
 
 				//	have only one uv channel?
 				//		assign channel 0 to all textures and break
@@ -535,7 +540,7 @@ namespace griffin {
 						case aiTextureType_REFLECTION: texType = MaterialTexture_Metallic_Reflectivity_AO; break;
 						case aiTextureType_OPACITY:    texType = MaterialTexture_Diffuse_Opacity; break;
 					}
-
+					
 					// for each texture of a type
 					for (uint32_t i = 0; i < assimpMat->GetTextureCount((aiTextureType)tt); ++i) {
 						// check for maximum samplers per material
@@ -576,7 +581,9 @@ namespace griffin {
 																		  (mappingModeV == aiTextureMapMode_Mirror ? MaterialTextureMappingMode_Mirror :
 																		  MaterialTextureMappingMode_Wrap)));
 
-						// not supporting aiTextureFlags, aiTextureMapping, aiTextureOp
+						// not supporting aiTextureFlags, alpha blending is determined by "_diffuse_opacity" or "_diffuse_opacity_mask" postfix on texture name
+						// not supporting aiTextureMapping, only UV mapping is supported, models without UV data are considered untextured
+						// not supporting aiTextureOp, the stacked color calculation of assimp's material system is not used
 
 						// get texture filename
 						aiString path;
@@ -610,6 +617,9 @@ namespace griffin {
 						else if (strstr(mat.textures[samplerIndex].name, "_diffuse_opacity") != nullptr) {
 							texType = MaterialTexture_Diffuse_Opacity;
 						}
+						else if (strstr(mat.textures[samplerIndex].name, "_diffuse_opacity_mask") != nullptr) {
+							texType = MaterialTexture_Diffuse_OpacityMask;
+						}
 						else if (strstr(mat.textures[samplerIndex].name, "_diffuse_ao") != nullptr) {
 							texType = MaterialTexture_Diffuse_AO;
 						}
@@ -632,21 +642,27 @@ namespace griffin {
 						// set shader key params
 						if (texType == MaterialTexture_Diffuse ||
 							texType == MaterialTexture_Diffuse_Opacity ||
+							texType == MaterialTexture_Diffuse_OpacityMask ||
 							texType == MaterialTexture_Diffuse_AO)
 						{
 							++key.numDiffuseTextures;
 							assert(key.numDiffuseTextures <= 4);
-							if (i == 0) { // this is the first diffuse texture, it can contain the opacity or AO channel
+
+							if (i == 0) { // this is the first diffuse texture, it can contain the opacity or AO channel as well
 								if (texType == MaterialTexture_Diffuse) {
 									key.hasFirstDiffuseMap = 1;
 								}
 								else if (texType == MaterialTexture_Diffuse_Opacity) {
 									key.hasFirstDiffuseOpacityMap = 1;
+									key.isTranslucent = 1;
+									key.usesAlphaBlend = 1;
 								}
-								// TODO: need to look at this... why does FirstDiffuseOpacity have its own special-case flag, but this doesn't?? Which one should change?
+								else if (texType == MaterialTexture_Diffuse_OpacityMask) {
+									key.hasFirstDiffuseOpacityMap = 1;
+									key.usesAlphaTest = 1;
+								}
 								else if (texType == MaterialTexture_Diffuse_AO) {
-									key.hasFirstDiffuseMap = 1;
-									key.hasAOMap = 1;
+									key.hasFirstDiffuseAOMap = 1;
 								}
 							}
 						}
@@ -658,15 +674,15 @@ namespace griffin {
 						}
 						else if (texType == MaterialTexture_Normal) {
 							key.hasNormalMap = 1;
+							key.usesBumpMapping = 1;
 						}
 						else if (texType == MaterialTexture_Normal_Height) {
-							key.hasNormalMap = 1;
-							key.hasHeightMap = 1;
+							key.hasNormalHeightMap = 1; // height, if used, is always bundled with normal
+							key.usesDisplacementMapping = 1;
 						}
 						else if (texType == MaterialTexture_Metallic_Reflectivity_AO) {
-							key.hasMetallicMap = 1;
-							key.hasReflectivityMap = 1;
-							key.hasAOMap = 1;
+							key.hasMetallicReflectiveAOMap = 1;
+							key.isReflective = 1;
 						}
 
 						// everything converted successfully, set the texture type away from None
@@ -677,8 +693,7 @@ namespace griffin {
 					}
 				}
 
-				key.isUbershader = 1;
-				mat.shaderKey = key.value;
+				mat.shaderKey = key;
 			}
 		}
 

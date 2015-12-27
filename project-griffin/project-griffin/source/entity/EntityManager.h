@@ -30,7 +30,7 @@ namespace griffin {
 			explicit EntityManager() :
 				m_entityStore(0, RESERVE_ENTITYMANAGER_ENTITIES),
 				m_componentStores{}, // zero-init fills with nullptr, component store created on first access
-				m_scriptComponentStoreSizes{}
+				m_dataComponentStoreSizes{}
 			{}
 
 			// Entity Functions
@@ -47,6 +47,14 @@ namespace griffin {
 			*/
 			ComponentMask getEntityComponentMask(EntityId entityId) const {
 				return m_entityStore[entityId].componentMask;
+			}
+
+			/**
+			* Uses the component mask to quickly see if a component type exists in the entity
+			* @return	true if the component type exists at least once, false if not
+			*/
+			bool entityHasComponent(EntityId entityId, ComponentType ct) const {
+				return m_entityStore[entityId].hasComponent(ct);
 			}
 
 			/**
@@ -198,27 +206,27 @@ namespace griffin {
 			}
 
 
-			// Script-based component functions
+			// Size-based data component functions
 
 			/**
-			* Create a store for script-based components
-			* @typeId	zero-based unique id for the script component type
+			* Create a store for size-based data components
+			* @typeId	zero-based unique id for the data component type
 			* @componentSize	size in bytes of the component struct
 			* @reserve	how many components to reserve memory for upfront
 			* @return	Index id of the component store. Stores cannot be removed once created so
 			*	this index is stable for the lifetime of the EntityManager. The number returned is
 			*	equal to one above the highest fixed entity plus typeId.
 			*/
-			uint16_t createScriptComponentStore(uint16_t typeId, uint32_t componentSize, size_t reserve);
+			uint16_t createDataComponentStore(uint16_t typeId, uint32_t componentSize, size_t reserve);
 
-			ComponentId addScriptComponentToEntity(uint16_t typeId, EntityId entityId);
+			ComponentId addDataComponentToEntity(uint16_t typeId, EntityId entityId);
 			
-			inline uint16_t getScriptComponentSize(uint16_t typeId) {
+			inline uint16_t getDataComponentSize(uint16_t typeId) {
 				assert(typeId < MAX_COMPONENTS - ComponentType::last_ComponentType_enum && "typeId out of range");
-				return m_scriptComponentStoreSizes[typeId];
+				return m_dataComponentStoreSizes[typeId];
 			}
 			
-			void* getScriptComponentData(ComponentId componentId);
+			void* getDataComponent(ComponentId componentId);
 
 		private:
 
@@ -245,7 +253,7 @@ namespace griffin {
 			//ComponentStoreMap	m_componentStores;	//<! ComponentStore indexed by componentType, stores component and parent entityId
 			ComponentStoreBasePtr m_componentStores[MAX_COMPONENTS];
 
-			uint32_t			m_scriptComponentStoreSizes[MAX_COMPONENTS - ComponentType::last_ComponentType_enum]; //<! one size per script component type
+			uint32_t			m_dataComponentStoreSizes[MAX_COMPONENTS - ComponentType::last_ComponentType_enum]; //<! one size per data component type
 
 		};
 

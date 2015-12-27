@@ -57,79 +57,79 @@ bool EntityManager::removeComponentsOfTypeFromEntity(ComponentType ct, EntityId 
 
 
 /**
-* Script Components, 8-byte aligned sizes up to MAX_SCRIPT_COMPONENT_SIZE
+* Data Components, 8-byte aligned sizes up to MAX_DATA_COMPONENT_SIZE
 */
 
-#define MAX_SCRIPT_COMPONENT_SIZE	128
+#define MAX_DATA_COMPONENT_SIZE	128
 template <int SizeBytes>
-struct ScriptComponent {
+struct DataComponent {
 	uint8_t data[SizeBytes];
 	static const int _data_size = SizeBytes;
 };
 
-typedef struct ScriptComponent<8>	ScriptComponent8;
-typedef struct ScriptComponent<16>	ScriptComponent16;
-typedef struct ScriptComponent<24>	ScriptComponent24;
-typedef struct ScriptComponent<32>	ScriptComponent32;
-typedef struct ScriptComponent<40>	ScriptComponent40;
-typedef struct ScriptComponent<48>	ScriptComponent48;
-typedef struct ScriptComponent<56>	ScriptComponent56;
-typedef struct ScriptComponent<64>	ScriptComponent64;
-typedef struct ScriptComponent<72>	ScriptComponent72;
-typedef struct ScriptComponent<80>	ScriptComponent80;
-typedef struct ScriptComponent<88>	ScriptComponent88;
-typedef struct ScriptComponent<96>	ScriptComponent96;
-typedef struct ScriptComponent<104>	ScriptComponent104;
-typedef struct ScriptComponent<112>	ScriptComponent112;
-typedef struct ScriptComponent<120>	ScriptComponent120;
-typedef struct ScriptComponent<128>	ScriptComponent128;
+typedef struct DataComponent<8>		DataComponent8;
+typedef struct DataComponent<16>	DataComponent16;
+typedef struct DataComponent<24>	DataComponent24;
+typedef struct DataComponent<32>	DataComponent32;
+typedef struct DataComponent<40>	DataComponent40;
+typedef struct DataComponent<48>	DataComponent48;
+typedef struct DataComponent<56>	DataComponent56;
+typedef struct DataComponent<64>	DataComponent64;
+typedef struct DataComponent<72>	DataComponent72;
+typedef struct DataComponent<80>	DataComponent80;
+typedef struct DataComponent<88>	DataComponent88;
+typedef struct DataComponent<96>	DataComponent96;
+typedef struct DataComponent<104>	DataComponent104;
+typedef struct DataComponent<112>	DataComponent112;
+typedef struct DataComponent<120>	DataComponent120;
+typedef struct DataComponent<128>	DataComponent128;
 
 inline uint32_t findStoreMinimumSize(int componentSize) {
-	for (int s = 8; s <= MAX_SCRIPT_COMPONENT_SIZE; s += 8) {
+	for (int s = 8; s <= MAX_DATA_COMPONENT_SIZE; s += 8) {
 		if (componentSize <= s) { return s; }
 	}
 	return 0;
 }
 
 
-uint16_t EntityManager::createScriptComponentStore(uint16_t typeId, uint32_t componentSize, size_t reserve)
+uint16_t EntityManager::createDataComponentStore(uint16_t typeId, uint32_t componentSize, size_t reserve)
 {
 	uint16_t storeIndex = ComponentType::last_ComponentType_enum + typeId;
 	assert(storeIndex < MAX_COMPONENTS && "exceeded MAX_COMPONENTS");
-	assert(componentSize <= MAX_SCRIPT_COMPONENT_SIZE && "exceeded MAX_SCRIPT_COMPONENT_SIZE");
+	assert(componentSize <= MAX_DATA_COMPONENT_SIZE && "exceeded MAX_DATA_COMPONENT_SIZE");
 	
 	uint32_t storeMinSize = findStoreMinimumSize(componentSize);
 
 	if (m_componentStores[storeIndex] != nullptr || storeMinSize == 0) {
-		throw std::logic_error("script component store already exists or component size out of range");
+		throw std::logic_error("data component store already exists or component size out of range");
 	}
 
 	switch (storeMinSize) {
-		case 8:   { createComponentStore<ScriptComponent8>(storeIndex, reserve); break; }
-		case 16:  { createComponentStore<ScriptComponent16>(storeIndex, reserve); break; }
-		case 24:  { createComponentStore<ScriptComponent24>(storeIndex, reserve); break; }
-		case 32:  { createComponentStore<ScriptComponent32>(storeIndex, reserve); break; }
-		case 40:  { createComponentStore<ScriptComponent40>(storeIndex, reserve); break; }
-		case 48:  { createComponentStore<ScriptComponent48>(storeIndex, reserve); break; }
-		case 56:  { createComponentStore<ScriptComponent56>(storeIndex, reserve); break; }
-		case 64:  { createComponentStore<ScriptComponent64>(storeIndex, reserve); break; }
-		case 72:  { createComponentStore<ScriptComponent72>(storeIndex, reserve); break; }
-		case 80:  { createComponentStore<ScriptComponent80>(storeIndex, reserve); break; }
-		case 88:  { createComponentStore<ScriptComponent88>(storeIndex, reserve); break; }
-		case 96:  { createComponentStore<ScriptComponent96>(storeIndex, reserve); break; }
-		case 104: { createComponentStore<ScriptComponent104>(storeIndex, reserve); break; }
-		case 112: { createComponentStore<ScriptComponent112>(storeIndex, reserve); break; }
-		case 120: { createComponentStore<ScriptComponent120>(storeIndex, reserve); break; }
-		case 128: { createComponentStore<ScriptComponent128>(storeIndex, reserve); break; }
+		case 8:   { createComponentStore<DataComponent8>(storeIndex, reserve); break; }
+		case 16:  { createComponentStore<DataComponent16>(storeIndex, reserve); break; }
+		case 24:  { createComponentStore<DataComponent24>(storeIndex, reserve); break; }
+		case 32:  { createComponentStore<DataComponent32>(storeIndex, reserve); break; }
+		case 40:  { createComponentStore<DataComponent40>(storeIndex, reserve); break; }
+		case 48:  { createComponentStore<DataComponent48>(storeIndex, reserve); break; }
+		case 56:  { createComponentStore<DataComponent56>(storeIndex, reserve); break; }
+		case 64:  { createComponentStore<DataComponent64>(storeIndex, reserve); break; }
+		case 72:  { createComponentStore<DataComponent72>(storeIndex, reserve); break; }
+		case 80:  { createComponentStore<DataComponent80>(storeIndex, reserve); break; }
+		case 88:  { createComponentStore<DataComponent88>(storeIndex, reserve); break; }
+		case 96:  { createComponentStore<DataComponent96>(storeIndex, reserve); break; }
+		case 104: { createComponentStore<DataComponent104>(storeIndex, reserve); break; }
+		case 112: { createComponentStore<DataComponent112>(storeIndex, reserve); break; }
+		case 120: { createComponentStore<DataComponent120>(storeIndex, reserve); break; }
+		case 128: { createComponentStore<DataComponent128>(storeIndex, reserve); break; }
 	}
 
-	m_scriptComponentStoreSizes[typeId] = storeMinSize;
+	m_dataComponentStoreSizes[typeId] = storeMinSize;
 
 	return storeIndex;
 }
 
 
-ComponentId EntityManager::addScriptComponentToEntity(uint16_t typeId, EntityId entityId)
+ComponentId EntityManager::addDataComponentToEntity(uint16_t typeId, EntityId entityId)
 {
 	uint16_t storeIndex = ComponentType::last_ComponentType_enum + typeId;
 	assert(storeIndex < MAX_COMPONENTS && "typeId out of range");
@@ -169,33 +169,33 @@ ComponentId EntityManager::addScriptComponentToEntity(uint16_t typeId, EntityId 
 }
 
 
-void* EntityManager::getScriptComponentData(ComponentId componentId)
+void* EntityManager::getDataComponent(ComponentId componentId)
 {
 	assert(componentId.typeId < MAX_COMPONENTS && "typeId out of range");
 	
-	auto cmpSize = m_scriptComponentStoreSizes[componentId.typeId - ComponentType::last_ComponentType_enum];
+	auto cmpSize = m_dataComponentStoreSizes[componentId.typeId - ComponentType::last_ComponentType_enum];
 	assert(cmpSize > 0 && "typeId store not created yet");
 
 	void* dataPtr = nullptr;
 	auto pStore = m_componentStores[componentId.typeId].get();
 	if (cmpSize > 0) {
 		switch (cmpSize) {
-			case 8:   { dataPtr = reinterpret_cast<ComponentStore<ScriptComponent8>*>(pStore)->getComponent(componentId).data; break; }
-			case 16:  { dataPtr = reinterpret_cast<ComponentStore<ScriptComponent16>*>(pStore)->getComponent(componentId).data; break; }
-			case 24:  { dataPtr = reinterpret_cast<ComponentStore<ScriptComponent24>*>(pStore)->getComponent(componentId).data; break; }
-			case 32:  { dataPtr = reinterpret_cast<ComponentStore<ScriptComponent32>*>(pStore)->getComponent(componentId).data; break; }
-			case 40:  { dataPtr = reinterpret_cast<ComponentStore<ScriptComponent40>*>(pStore)->getComponent(componentId).data; break; }
-			case 48:  { dataPtr = reinterpret_cast<ComponentStore<ScriptComponent48>*>(pStore)->getComponent(componentId).data; break; }
-			case 56:  { dataPtr = reinterpret_cast<ComponentStore<ScriptComponent56>*>(pStore)->getComponent(componentId).data; break; }
-			case 64:  { dataPtr = reinterpret_cast<ComponentStore<ScriptComponent64>*>(pStore)->getComponent(componentId).data; break; }
-			case 72:  { dataPtr = reinterpret_cast<ComponentStore<ScriptComponent72>*>(pStore)->getComponent(componentId).data; break; }
-			case 80:  { dataPtr = reinterpret_cast<ComponentStore<ScriptComponent80>*>(pStore)->getComponent(componentId).data; break; }
-			case 88:  { dataPtr = reinterpret_cast<ComponentStore<ScriptComponent88>*>(pStore)->getComponent(componentId).data; break; }
-			case 96:  { dataPtr = reinterpret_cast<ComponentStore<ScriptComponent96>*>(pStore)->getComponent(componentId).data; break; }
-			case 104: { dataPtr = reinterpret_cast<ComponentStore<ScriptComponent104>*>(pStore)->getComponent(componentId).data; break; }
-			case 112: { dataPtr = reinterpret_cast<ComponentStore<ScriptComponent112>*>(pStore)->getComponent(componentId).data; break; }
-			case 120: { dataPtr = reinterpret_cast<ComponentStore<ScriptComponent120>*>(pStore)->getComponent(componentId).data; break; }
-			case 128: { dataPtr = reinterpret_cast<ComponentStore<ScriptComponent128>*>(pStore)->getComponent(componentId).data; break; }
+			case 8:   { dataPtr = reinterpret_cast<ComponentStore<DataComponent8>*>(pStore)->getComponent(componentId).data; break; }
+			case 16:  { dataPtr = reinterpret_cast<ComponentStore<DataComponent16>*>(pStore)->getComponent(componentId).data; break; }
+			case 24:  { dataPtr = reinterpret_cast<ComponentStore<DataComponent24>*>(pStore)->getComponent(componentId).data; break; }
+			case 32:  { dataPtr = reinterpret_cast<ComponentStore<DataComponent32>*>(pStore)->getComponent(componentId).data; break; }
+			case 40:  { dataPtr = reinterpret_cast<ComponentStore<DataComponent40>*>(pStore)->getComponent(componentId).data; break; }
+			case 48:  { dataPtr = reinterpret_cast<ComponentStore<DataComponent48>*>(pStore)->getComponent(componentId).data; break; }
+			case 56:  { dataPtr = reinterpret_cast<ComponentStore<DataComponent56>*>(pStore)->getComponent(componentId).data; break; }
+			case 64:  { dataPtr = reinterpret_cast<ComponentStore<DataComponent64>*>(pStore)->getComponent(componentId).data; break; }
+			case 72:  { dataPtr = reinterpret_cast<ComponentStore<DataComponent72>*>(pStore)->getComponent(componentId).data; break; }
+			case 80:  { dataPtr = reinterpret_cast<ComponentStore<DataComponent80>*>(pStore)->getComponent(componentId).data; break; }
+			case 88:  { dataPtr = reinterpret_cast<ComponentStore<DataComponent88>*>(pStore)->getComponent(componentId).data; break; }
+			case 96:  { dataPtr = reinterpret_cast<ComponentStore<DataComponent96>*>(pStore)->getComponent(componentId).data; break; }
+			case 104: { dataPtr = reinterpret_cast<ComponentStore<DataComponent104>*>(pStore)->getComponent(componentId).data; break; }
+			case 112: { dataPtr = reinterpret_cast<ComponentStore<DataComponent112>*>(pStore)->getComponent(componentId).data; break; }
+			case 120: { dataPtr = reinterpret_cast<ComponentStore<DataComponent120>*>(pStore)->getComponent(componentId).data; break; }
+			case 128: { dataPtr = reinterpret_cast<ComponentStore<DataComponent128>*>(pStore)->getComponent(componentId).data; break; }
 		}
 	}
 	return dataPtr;

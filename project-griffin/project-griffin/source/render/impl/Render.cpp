@@ -655,13 +655,17 @@ namespace griffin {
 				throw std::runtime_error("no resource loader");
 			}
 
-			auto modelResourceBuilder = [](DataPtr data, size_t size) {
-				return Model_GL(Mesh_GL(std::move(data), size));
+			auto modelResourceBuilder = [/*modelFilePath*/](DataPtr data, size_t size) {
+				Model_GL mdl(Mesh_GL(std::move(data), size));
+				mdl.initRenderEntries();
+				//mdl.loadMaterialResources(modelFilePath);
+				return mdl;
 			};
 
 			auto modelResourceCallback = [modelFilePath](const ResourcePtr& resourcePtr, Id_T handle, size_t size) {
 				Model_GL& mdl = resourcePtr->getResource<Model_GL>();
-				mdl.m_mesh.createResourcesFromInternalMemory(modelFilePath);
+				mdl.createBuffers();
+				mdl.loadMaterialResources(modelFilePath); // TEMP, switch to calling from the builder once internal texture loading is made async
 			};
 
 			return loader->load<Model_GL>(modelFilePath, cache, modelResourceBuilder, modelResourceCallback);

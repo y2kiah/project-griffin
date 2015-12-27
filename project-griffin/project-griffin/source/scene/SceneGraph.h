@@ -63,6 +63,7 @@ namespace griffin {
 		*/
 		COMPONENT(ModelInstance,
 			(Id_T,			modelId,,			"resource id of the model")
+			// TODO: there is no safety in holding just an id, need the handle to ensure reference count prevents deletion of resource
 		)
 
 		/**

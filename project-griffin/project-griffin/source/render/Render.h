@@ -158,7 +158,7 @@ namespace griffin {
 			typedef std::function<void(Id_T, int)>	DrawCallback;
 
 			glm::dvec4		positionWorld;
-			glm::quat		orientationWorld;
+			glm::dquat		orientationWorld;
 			glm::dvec3		scale;
 			Id_T			entityId;
 			DrawCallback	drawCallback;

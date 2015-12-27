@@ -25,8 +25,48 @@ namespace griffin {
 	}
 
 
-	Id_T createCamera(Id_T sceneId, Id_T parentEntityId,
-					  scene::CameraParameters& cameraParams, const char name[32])
+	// TODO: pass in model resource id, position, orientation and scale
+	Id_T createModelInstance(Id_T sceneId, bool movable, Id_T parentEntityId, Id_T entityId)
+	{
+		auto& s = g_sceneMgrPtr->getScene(sceneId);
+
+		// if existing entity is not given, create a new one in the scene graph
+		if (entityId == NullId_T) {
+			entityId = createEmptySceneNode(sceneId, parentEntityId);
+		}
+		else if (!s.entityManager->entityIsValid(entityId)) {
+			return NullId_T;
+		}
+		
+		auto cmpMask = s.entityManager->getEntityComponentMask(entityId);
+		
+		// ensure a SceneNode component (only necessary for existing entities)
+		if (!cmpMask[scene::SceneNode::componentType]) {
+			s.sceneGraph->addToSceneEntity(entityId, {}, {}, parentEntityId);
+		}
+
+		// ensure a ModelInstance component
+		if (!cmpMask[scene::ModelInstance::componentType]) {
+			scene::ModelInstance mi{};
+			//mi.modelId = 
+			s.entityManager->addComponentToEntity(std::move(mi), entityId);
+		}
+
+		// ensure a MovementComponent if required
+		if (movable && !cmpMask[scene::MovementComponent::componentType]) {
+			scene::MovementComponent mc{};
+			s.entityManager->addComponentToEntity(std::move(mc), entityId);
+		}
+
+		return entityId;
+	}
+
+
+	// TODO: this should take an "entityId" like createModelInstance for adding camera to existing entity,
+	//	also make it "safe" to call on any entity where it checks the component mask before adding each required component
+	//	incase the entity already has that component type
+	Id_T createCamera(Id_T sceneId, scene::CameraParameters& cameraParams, const char name[32],
+					  Id_T parentEntityId)
 	{
 		auto entityId = createEmptySceneNode(sceneId, parentEntityId);
 
@@ -74,18 +114,18 @@ extern "C" {
 
 	// Entity/Component functions
 
-	uint64_t griffin_scene_createComponentStore(uint64_t scene, uint16_t typeId,
-												uint32_t componentSize, size_t reserve)
+	uint64_t griffin_scene_createDataComponentStore(uint64_t scene, uint16_t typeId,
+													uint32_t componentSize, size_t reserve)
 	{
 		SceneId sceneId;
 		sceneId.value = scene;
 
 		auto& s = g_sceneMgrPtr->getScene(sceneId);
-		return s.entityManager->createScriptComponentStore(typeId, componentSize, reserve);
+		return s.entityManager->createDataComponentStore(typeId, componentSize, reserve);
 	}
 
 
-	void* griffin_scene_getComponentData(uint64_t scene, uint64_t component)
+	void* griffin_scene_getDataComponent(uint64_t scene, uint64_t component)
 	{
 		SceneId sceneId;
 		sceneId.value = scene;
@@ -93,11 +133,11 @@ extern "C" {
 		cmpId.value = component;
 
 		auto& s = g_sceneMgrPtr->getScene(sceneId);
-		return s.entityManager->getScriptComponentData(cmpId);
+		return s.entityManager->getDataComponent(cmpId);
 	}
 
 
-	uint64_t griffin_scene_addComponentToEntity(uint64_t scene, uint16_t typeId, uint64_t entity)
+	uint64_t griffin_scene_addDataComponentToEntity(uint64_t scene, uint16_t typeId, uint64_t entity)
 	{
 		SceneId sceneId;
 		sceneId.value = scene;
@@ -105,7 +145,7 @@ extern "C" {
 		entityId.value = entity;
 
 		auto& s = g_sceneMgrPtr->getScene(sceneId);
-		return s.entityManager->addScriptComponentToEntity(typeId, entityId).value;
+		return s.entityManager->addDataComponentToEntity(typeId, entityId).value;
 	}
 
 
@@ -134,7 +174,7 @@ extern "C" {
 	}
 
 	
-	uint64_t griffin_scene_createMeshInstance(uint64_t scene, uint64_t parentEntity, uint64_t mesh)
+	uint64_t griffin_scene_createModelInstance(uint64_t scene, uint64_t parentEntity, uint64_t model)
 	{
 		EntityId entityId{};
 		entityId.value = griffin_scene_createEmptySceneNode(scene, parentEntity);

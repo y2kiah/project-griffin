@@ -15,10 +15,13 @@
 namespace griffin {
 	namespace scene { struct CameraParameters; }
 
-	Id_T createEmptySceneNode(Id_T sceneId, Id_T parentEntityId);
+	Id_T createEmptySceneNode(Id_T sceneId, Id_T parentEntityId = NullId_T);
 
-	Id_T createCamera(Id_T sceneId, Id_T parentEntityId,
-					  scene::CameraParameters& cameraParams, const char name[32]);
+	Id_T createModelInstance(Id_T sceneId, bool movable,
+							 Id_T parentEntityId = NullId_T, Id_T entityId = NullId_T);
+
+	Id_T createCamera(Id_T sceneId, scene::CameraParameters& cameraParams, const char name[32],
+					  Id_T parentEntityId = NullId_T);
 }
 
 #ifdef __cplusplus
@@ -63,13 +66,13 @@ extern "C" {
 	// Entity/Component functions
 
 	GRIFFIN_EXPORT
-	uint64_t griffin_scene_createComponentStore(uint64_t scene, uint16_t typeId, uint32_t componentSize, size_t reserve);
+	uint64_t griffin_scene_createDataComponentStore(uint64_t scene, uint16_t typeId, uint32_t componentSize, size_t reserve);
 
 	GRIFFIN_EXPORT
-	void* griffin_scene_getComponentData(uint64_t scene, uint64_t component);
+	void* griffin_scene_getDataComponent(uint64_t scene, uint64_t component);
 
 	GRIFFIN_EXPORT
-	uint64_t griffin_scene_addComponentToEntity(uint64_t scene, uint16_t typeId, uint64_t entity);
+	uint64_t griffin_scene_addDataComponentToEntity(uint64_t scene, uint16_t typeId, uint64_t entity);
 
 
 	// Scene Node functions
@@ -84,14 +87,14 @@ extern "C" {
 	uint64_t griffin_scene_createEmptySceneNode(uint64_t scene, uint64_t parentEntity);
 
 	/**
-	* Creates a new entity with SceneNode and MeshInstanceContainer components
+	* Creates a new scene entity with SceneNode, ModelInstance and optional animation components
 	* @scene	scene id
 	* @parentEntity	entity id of the parent scene node, 0 for root node
-	* @mesh		resource id of the mesh to reference
+	* @model	resource id of the model to reference
 	* @return	entity id of the newly created scene node
 	*/
 	GRIFFIN_EXPORT
-	uint64_t griffin_scene_createMeshInstance(uint64_t scene, uint64_t parentEntity, uint64_t mesh);
+	uint64_t griffin_scene_createModelInstance(uint64_t scene, uint64_t parentEntity, uint64_t model);
 
 	GRIFFIN_EXPORT
 	uint64_t griffin_scene_createCamera(uint64_t scene, uint64_t parentEntity,
