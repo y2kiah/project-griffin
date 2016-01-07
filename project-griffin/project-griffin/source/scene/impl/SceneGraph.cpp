@@ -24,7 +24,7 @@ void SceneGraph::updateNodeTransforms()
 		&m_rootNode,
 		0, 0,
 		{ 0.0, 0.0, 0.0 },
-		{ 0.0f, 0.0f, 0.0f, 1.0f }
+		{ 0.0, 0.0, 0.0, 1.0 }
 	});
 
 	// traverse the scene graph and calculate new world positions if needed
@@ -76,7 +76,7 @@ void SceneGraph::updateNodeTransforms()
 
 
 SceneNodeId SceneGraph::addToScene(EntityId entityId, const glm::dvec3& translationLocal,
-									const glm::quat& rotationLocal, SceneNodeId parentNodeId)
+									const glm::dquat& rotationLocal, SceneNodeId parentNodeId)
 {
 	auto& nodeComponents = entityMgr.getComponentStore<SceneNode>().getComponents();
 
@@ -118,7 +118,7 @@ SceneNodeId SceneGraph::addToScene(EntityId entityId, const glm::dvec3& translat
 
 
 SceneNodeId SceneGraph::addToSceneEntity(EntityId entityId, const glm::dvec3& translationLocal,
-										 const glm::quat& rotationLocal, EntityId parentNodeEntityId)
+										 const glm::dquat& rotationLocal, EntityId parentNodeEntityId)
 {
 	SceneNodeId newSceneNodeId{};
 	SceneNodeId parentNodeId{};

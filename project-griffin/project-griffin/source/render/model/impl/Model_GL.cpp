@@ -2,22 +2,17 @@
 * @file Model_GL.cpp
 * @author Jeff Kiah
 */
+#include <scene/Scene.h>
 #include <render/model/Model_GL.h>
 #include <application/Engine.h>
 //#include <GL/glew.h>
-//#include <utility>
-//#include <cassert>
-//#include <render/ShaderProgramLayouts_GL.h>
 #include <render/Render.h>
 #include <render/RenderResources.h>
 #include <resource/ResourceLoader.h>
-//#include <utility/container/vector_queue.h>
-//#include <glm/mat4x4.hpp>
-//#include <glm/gtc/matrix_transform.hpp>
-#include <scene/Scene.h>
+#include <entity/EntityManager.h>
 #include <glm/mat4x4.hpp>
-//#include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtc/matrix_access.hpp>
+#include <glm/vec4.hpp>
 
 
 namespace griffin {
@@ -26,7 +21,34 @@ namespace griffin {
 
 		void Model_GL::render(Id_T entityId, scene::Scene& scene, uint8_t viewport, Engine& engine)
 		{
-			//m_mesh.render(engine, viewport );
+			using scene::SceneNode;
+			
+			SceneNode* sceneNode = scene.entityManager->getEntityComponent<SceneNode>(entityId);
+
+			uint32_t currentNodeIndex = UINT32_MAX;
+			glm::dvec4 currentWorldPosition;
+			glm::dquat currentWorldOrientation;
+
+			// TODO: should not be modifying the m_renderEntries vectors, need to make copies, or use in-place copies made for renderSystem
+			for (int re = 0; re < m_renderEntries.keys.size(); ++re) {
+				//m_renderEntries.keys[re].key.allKeys.fullscreenLayer;
+				//m_renderEntries.keys[re].key.allKeys.sceneLayer;
+				//m_renderEntries.keys[re].key.opaqueKey.frontToBackDepth;
+				//m_renderEntries.keys[re].key.translucentKey.backToFrontDepth;
+				
+				auto& entry = m_renderEntries.entries[re];
+				entry.entityId = entityId;
+				
+				if (currentNodeIndex != entry.nodeIndex) {
+					currentWorldPosition = dvec4(sceneNode->positionWorld, 1.0) + entry.positionWorld;
+					currentWorldOrientation = glm::normalize(sceneNode->orientationWorld + entry.orientationWorld);
+					currentNodeIndex = entry.nodeIndex;
+				}
+				entry.positionWorld = currentWorldPosition;
+				entry.orientationWorld = currentWorldOrientation;
+			}
+
+			engine.renderSystem->addRenderEntries(viewport, m_renderEntries.keys, m_renderEntries.entries);
 		}
 
 
@@ -66,7 +88,7 @@ namespace griffin {
 				// TODO: keep an eye on calcs above, assumes there is no skew, use function below if bugs appear
 				//decompose(localTransform, scaling, orientation, translation, dvec3(), dvec4());
 
-				// draw this node's meshes
+				// add this node's meshes
 				for (uint32_t m = 0; m < node.numMeshes; ++m) {
 					using namespace std::placeholders;
 
@@ -88,18 +110,20 @@ namespace griffin {
 					key.allKeys.fullscreenLayer = FullscreenLayer_Scene;
 
 					// add key and entry to returned list
-					m_renderEntries.keys.push_back({
+					m_renderEntries.keys.push_back(RenderQueue::KeyType{
 						key,
-						static_cast<uint32_t>(m_renderEntries.entries.size())
+						static_cast<uint32_t>(m_renderEntries.entries.size()),
+						0
 					});
 
 					m_renderEntries.entries.emplace_back(RenderEntry{
+						NullId_T,
+						ds,
+						nodeIndex,
 						translation,
 						orientation,
 						scaling,
-						NullId_T,
-						std::bind(&Model_GL::draw, this, _1, _2),
-						ds
+						std::bind(&Model_GL::draw, this, _1, _2)
 					});
 				}
 

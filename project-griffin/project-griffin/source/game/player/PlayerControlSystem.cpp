@@ -38,18 +38,18 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& en
 
 	// Mouse look
 	if (pitchRaw != 0 || yawRaw != 0) {
-		const float lookRate = 2.0f  * static_cast<float>(M_PI);
+		const double lookRate = 2.0  * M_PI;
 
-		float yawAngle = -yawMapped * lookRate * ui.deltaT;
-		float pitchAngle = -pitchMapped * lookRate * ui.deltaT;
+		double yawAngle = -yawMapped * lookRate * ui.deltaT;
+		double pitchAngle = -pitchMapped * lookRate * ui.deltaT;
 		
 		// constrain pitch to +/-89 degrees
-		const float deg1 = radians(1.0f);
-		const float deg179 = radians(179.0f);
+		const double deg1 = radians(1.0);
+		const double deg179 = radians(179.0);
 		
 		move.prevRotation = move.nextRotation;
 		
-		float currentPitch = pitch(move.prevRotation); // get pitch in parent node's space
+		double currentPitch = pitch(move.prevRotation); // get pitch in parent node's space
 		if (currentPitch + pitchAngle < deg1) {
 			pitchAngle = deg1 - currentPitch;
 		}
@@ -58,9 +58,9 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& en
 		}
 
 		move.nextRotation = normalize(
-								angleAxis(yawAngle, vec3(0, 0, 1.0f))
+								angleAxis(yawAngle, dvec3(0, 0, 1.0))
 								* move.prevRotation
-								* angleAxis(pitchAngle, vec3(1.0f, 0, 0)));
+								* angleAxis(pitchAngle, dvec3(1.0, 0, 0)));
 		move.rotationDirty = 1;
 	}
 	else {

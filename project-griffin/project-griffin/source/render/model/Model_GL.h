@@ -12,7 +12,8 @@
 
 namespace griffin {
 	using namespace resource;
-	
+	using std::vector;
+
 	struct Engine;
 
 	namespace scene {
@@ -31,22 +32,16 @@ namespace griffin {
 		*/
 		class Model_GL {
 		public:
-			typedef std::vector<ResourceHandle<Texture2D_GL>>		TextureList;
+			typedef vector<ResourceHandle<Texture2D_GL>>		TextureList;
 			// OR vector<Id_T> ???
 			// OR vector<shared_ptr<Texture2D_GL>> ???
-			typedef std::vector<ResourceHandle<ShaderProgram_GL>>	ShaderList;
+			typedef vector<ResourceHandle<ShaderProgram_GL>>	ShaderList;
 			// OR vector<uint16_t> ???
 			// and how do we relate the textures/shaders stored here back to the relevant material texture / material, or do we even need to??
 
-			struct RenderQueueKeyRecord {
-				RenderQueueKey	key;
-				uint32_t		entryIndex;
-				uint32_t		_padding_0;
-			};
-
 			struct RenderEntryList {
-				std::vector<RenderQueueKeyRecord>	keys;
-				std::vector<RenderEntry>			entries;
+				vector<RenderQueue::KeyType>	keys;
+				vector<RenderEntry>				entries;
 			};
 
 			// Constructors

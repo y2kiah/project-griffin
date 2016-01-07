@@ -48,10 +48,10 @@ namespace griffin {
 
 			// transform vars
 			(glm::dvec3,	translationLocal,,	"translation relative to parent"),
-			(glm::quat,		rotationLocal,,		"local rotation quaternion relative to parent"),
+			(glm::dquat,	rotationLocal,,		"local rotation quaternion relative to parent"),
 
 			(glm::dvec3,	positionWorld,,		"position in world space"),
-			(glm::quat,		orientationWorld,,	"orientation in world space"),
+			(glm::dquat,	orientationWorld,,	"orientation in world space"),
 
 			// support scale??
 
@@ -128,8 +128,8 @@ namespace griffin {
 			// movement vars
 			(glm::dvec3,	prevTranslation,,	"previous local translation"),
 			(glm::dvec3,	nextTranslation,,	"next local translation"),
-			(glm::quat,		prevRotation,,		"previous local rotation"),
-			(glm::quat,		nextRotation,,		"next local rotation")
+			(glm::dquat,	prevRotation,,		"previous local rotation"),
+			(glm::dquat,	nextRotation,,		"next local rotation")
 		)
 		
 		/**
@@ -169,7 +169,7 @@ namespace griffin {
 			* @return	ComponentId of the SceneNode added to the entity
 			*/
 			SceneNodeId addToScene(EntityId entityId, const glm::dvec3& translationLocal,
-								   const glm::quat& rotationLocal, SceneNodeId parentNodeId);
+								   const glm::dquat& rotationLocal, SceneNodeId parentNodeId);
 
 			/**
 			* See documentation for addToScene. This function takes an EntityId for the parent node
@@ -179,7 +179,7 @@ namespace griffin {
 			*	or if the parent entity is not part of the scene
 			*/
 			SceneNodeId addToSceneEntity(EntityId entityId, const glm::dvec3& translationLocal,
-										 const glm::quat& rotationLocal, EntityId parentNodeEntityId);
+										 const glm::dquat& rotationLocal, EntityId parentNodeEntityId);
 
 			/**
 			* Removes the SceneNode component from the entity and also fixes up the scene graph.
@@ -263,7 +263,7 @@ namespace griffin {
 				uint8_t		ancestorPositionDirty;
 				uint8_t		ancestorOrientationDirty;
 				glm::dvec3	translationToWorld;
-				glm::quat	rotationToWorld;
+				glm::dquat	rotationToWorld;
 			};
 
 			SceneId						m_sceneId = NullId_T;	//<! id of scene this graph belongs to

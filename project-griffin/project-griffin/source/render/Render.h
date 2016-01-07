@@ -157,12 +157,15 @@ namespace griffin {
 			*/
 			typedef std::function<void(Id_T, int)>	DrawCallback;
 
+			Id_T			entityId;
+			uint32_t		drawsetIndex;
+			uint32_t		nodeIndex;
+
 			glm::dvec4		positionWorld;
 			glm::dquat		orientationWorld;
 			glm::dvec3		scale;
-			Id_T			entityId;
+			
 			DrawCallback	drawCallback;
-			uint32_t		drawsetIndex;
 			// render flags?
 		};
 
@@ -170,9 +173,9 @@ namespace griffin {
 		class RenderQueue {
 		public:
 			typedef struct {
-				RenderQueueKey key;
-				int entryIndex;
-				int _pad_end;
+				RenderQueueKey	key;
+				uint32_t		entryIndex;
+				uint32_t		_pad_end;
 			} KeyType;
 			typedef std::vector<KeyType>		KeyList;
 			typedef std::vector<RenderEntry>	EntryList;
@@ -359,13 +362,29 @@ namespace griffin {
 			}
 
 			/**
-			* Adds a render entry into the viewport's render queue.
+			* Adds render entries into the viewport's render queue.
 			*/
-			void addRenderEntry(uint8_t viewport, RenderQueueKey sortKey, RenderEntry&& renderEntry)
+			void addRenderEntries(uint8_t viewport, const std::vector<RenderQueue::KeyType>& keys, const std::vector<RenderEntry>& entries)
 			{
 				assert(viewport < MAX_VIEWPORTS && "viewport out of range");
+				assert(keys.size() == entries.size() && "keys and entries sizes must match");
 
-				m_viewports[viewport].renderQueue.addRenderEntry(sortKey, std::forward<RenderEntry>(renderEntry));
+				RenderQueue& queue = m_viewports[viewport].renderQueue;
+
+				queue.keys.reserve(queue.keys.size() + keys.size());
+				queue.entries.reserve(queue.entries.size() + entries.size());
+
+				int startingSize = static_cast<int>(queue.keys.size());
+				int size = static_cast<int>(keys.size());
+
+				for (int k = 0; k < size; ++k) {
+					queue.keys.push_back(keys[k]);
+					queue.keys.back().entryIndex += startingSize;
+				}
+
+				for (int e = 0; e < size; ++e) {
+					queue.entries.push_back(entries[e]);
+				}
 			}
 
 			void renderFrame(float interpolation, Engine& engine);

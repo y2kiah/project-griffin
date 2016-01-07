@@ -270,7 +270,7 @@ void interpolateSceneNodes(entity::EntityManager& entityMgr, float interpolation
 		if (move.component.rotationDirty == 1) {
 			node.rotationLocal = glm::slerp(move.component.prevRotation,
 											move.component.nextRotation,
-											interpolation);
+											static_cast<double>(interpolation));
 			node.orientationDirty = 1;
 		}
 

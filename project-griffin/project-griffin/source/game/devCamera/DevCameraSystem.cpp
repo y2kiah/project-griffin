@@ -30,11 +30,11 @@ void griffin::game::DevCameraSystem::updateFrameTick(Game* pGame, Engine& engine
 		float pitchAngle = pitchMapped * lookRate * ui.deltaT;
 		float rollAngle = roll * rollRate * ui.deltaT;
 
-		vec3 angles(-pitchAngle, -yawAngle, -rollAngle);
+		dvec3 angles(-pitchAngle, -yawAngle, -rollAngle);
 		angles = angles * inverse(pNode->orientationWorld); // transform angles into viewspace
 
 		move.prevRotation = move.nextRotation;
-		move.nextRotation = normalize(quat(angles) * move.prevRotation);
+		move.nextRotation = normalize(dquat(angles) * move.prevRotation);
 		move.rotationDirty = 1;
 	}
 	else {
