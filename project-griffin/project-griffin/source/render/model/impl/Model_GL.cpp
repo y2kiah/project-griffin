@@ -65,13 +65,14 @@ namespace griffin {
 
 			struct BFSQueueItem {
 				uint32_t nodeIndex;
+				uint32_t parentNodeIndex;
 				dmat4    modelTransform;
 			};
 
 			vector_queue<BFSQueueItem> bfsQueue;
 			bfsQueue.reserve(m_mesh.m_meshScene.numNodes);
 
-			bfsQueue.push({ 0, dmat4() }); // push root node to start traversal
+			bfsQueue.push({ 0, 0, dmat4() }); // push root node to start traversal
 
 			while (!bfsQueue.empty()) {
 				auto& thisItem = bfsQueue.front();
@@ -120,6 +121,8 @@ namespace griffin {
 						NullId_T,
 						ds,
 						nodeIndex,
+						thisItem.parentNodeIndex,
+						0, // currently unused padding
 						translation,
 						orientation,
 						scaling,
@@ -134,7 +137,7 @@ namespace griffin {
 					assert(childNodeIndex >= 0 && childNodeIndex < m_mesh.m_meshScene.numNodes && "child node index out of range");
 					assert(childNodeIndex > nodeIndex && "child node is not lower in the tree");
 
-					bfsQueue.push({ childNodeIndex, localTransform });
+					bfsQueue.push({ childNodeIndex, nodeIndex, localTransform });
 				}
 
 				bfsQueue.pop();

@@ -165,7 +165,7 @@ namespace griffin {
 		/**
 		* Solve light attenuation for 5/256 to get light radius
 		* 5/256 = Imax / (Kc + Kl*d + Kq*d*d)
-		*	where Imax is 
+		*	where Imax is light's largest RGB component value
 		*
 		* @Imax	light's brightest color component
 		* @Kc	attenuation base constant

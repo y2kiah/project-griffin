@@ -160,6 +160,9 @@ namespace griffin {
 			Id_T			entityId;
 			uint32_t		drawsetIndex;
 			uint32_t		nodeIndex;
+			uint32_t		parentNodeIndex;
+
+			uint32_t		_padding_0;
 
 			glm::dvec4		positionWorld;
 			glm::dquat		orientationWorld;

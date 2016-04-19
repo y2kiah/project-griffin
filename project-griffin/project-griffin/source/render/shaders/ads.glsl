@@ -235,11 +235,11 @@
 		//#endif
 		/////
 
-		vec3 lightIntensity = blinnPhongDirectionalLight(positionViewspace, normalViewspace);
+		//vec3 lightIntensity = blinnPhongDirectionalLight(positionViewspace, normalViewspace);
 		//vec3 lightIntensity = blinnPhongPointLight(positionViewspace, normalViewspace);
-		//vec3 lightIntensity = blinnPhongSpotlight(positionViewspace, normalViewspace);
+		vec3 lightIntensity = blinnPhongSpotlight(positionViewspace, normalViewspace);
 
-		albedoDisplacement = vec4(surfaceColor, 0.0); //vec4(lightIntensity, 1.0);
+		albedoDisplacement = vec4(lightIntensity, 1.0); //vec4(surfaceColor, 0.0);
 		eyeSpacePosition = vec4(positionViewspace.xyz, 0.0);
 		normalReflectance = vec4(normalViewspace, 0.0);
 		gl_FragDepth = linearDepth;

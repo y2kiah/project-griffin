@@ -201,9 +201,10 @@ namespace griffin {
 				GLint lightAngleLoc = glGetUniformLocation(programId, "light.spotAngleCutoff");
 				GLint lightEdgeLoc = glGetUniformLocation(programId, "light.spotEdgeBlendPct");
 
-				glm::vec4 lightPos{ 0.1f, 1.0f, 1.0f, 0.0f };
+				glm::vec4 lightPos{ 0.1f, 1.0f, 150.0f, 1.0f };
+				glm::vec4 lightDir{ 0.0f, 0.0f, -1.0f, 0.0f };
 				glm::vec4 lightPosViewspace = viewport.params.viewMat * lightPos;
-				glm::vec3 lightDirViewspace = -glm::vec3(lightPosViewspace);
+				glm::vec3 lightDirViewspace = glm::normalize(glm::vec3(viewport.params.viewMat * lightDir));
 				//glm::vec4 lightPosViewspace{ 0.0f, 0.0f, 0.0f, 1.0f };
 				//glm::vec3 lightDirViewspace{ 0.0f, 0.0f, -1.0f };
 				glm::vec3 lightLa{ 0.1f, 0.2f, 0.3f };
@@ -213,8 +214,8 @@ namespace griffin {
 				glUniform3fv(lightLaLoc, 1, &lightLa[0]);
 				glUniform3fv(lightLdsLoc, 1, &lightLds[0]);
 				glUniform1f(lightKcLoc, 1.0f);
-				glUniform1f(lightKlLoc, 0.014f);
-				glUniform1f(lightKqLoc, 0.0007f);
+				glUniform1f(lightKlLoc, 0.007f);
+				glUniform1f(lightKqLoc, 0.0002f);
 				glUniform1f(lightAngleLoc, 0.96f);
 				glUniform1f(lightEdgeLoc, 0.4f);
 
