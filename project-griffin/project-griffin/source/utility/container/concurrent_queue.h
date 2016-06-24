@@ -151,6 +151,10 @@ namespace griffin {
 		mutable mutex		m_mutex;
 		condition_variable	m_cond;
 		vector_queue<T>		m_queue;
+		
+		// padding added for 64 byte total size, to avoid false sharing of the concurrent_queue's cache
+		// line when they are kept in an array
+		uint32_t			_padding[4];
 	};
 
 }
