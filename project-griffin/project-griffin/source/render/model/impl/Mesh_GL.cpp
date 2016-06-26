@@ -25,6 +25,7 @@ namespace griffin {
 		void Mesh_GL::bind(int drawSetIndex) const
 		{
 			glBindVertexArray(m_drawSets[drawSetIndex].glVAO);
+			assert(glGetError() == GL_NO_ERROR);
 		}
 
 
@@ -39,16 +40,15 @@ namespace griffin {
 			glDrawRangeElements(drawSet.glPrimitiveType, drawSet.indexRangeStart, drawSet.indexRangeEnd,
 								drawSet.numElements, indexType, reinterpret_cast<const GLvoid*>(drawSet.indexBaseOffset));
 
-			//glDrawRangeElementsBaseVertex(/*GL_POINTS*/drawSet.glPrimitiveType, drawSet.indexRangeStart, drawSet.indexRangeEnd,
-			//							  drawSet.numElements, indexType,
-			//							  reinterpret_cast<const GLvoid*>(drawSet.indexBaseOffset), drawSet.vertexBaseOffset);
 			//unbind(drawSetIndex);
+
+			assert(glGetError() == GL_NO_ERROR);
 		}
 
 
 		// TODO: convert this to per-update "animate" function, operating on animation components
 		void Mesh_GL::render(Engine& engine, uint8_t viewport,
-							 int modelMatLoc, int modelViewMatLoc, int mvpMatLoc, int normalMatLoc,
+							 int shaderProgramId,
 							 int ambientLoc, int diffuseLoc, int specularLoc, int shininessLoc,
 							 int diffuseMapLoc, float animTime,
 							 const dmat4& viewMat, const mat4& projMat/*All TEMP*/) const
@@ -58,6 +58,9 @@ namespace griffin {
 			dmat4 modelToWorld;
 			dmat4 nodeTransform;
 			
+			ObjectUniformsUBO objectUniformsUBO{};
+			glBindBuffer(GL_UNIFORM_BUFFER, renderSystem.getUBOHandle(ObjectUniforms));
+
 			// temp
 			modelToWorld = rotate(translate(modelToWorld, dvec3(0.0, -50.0, 0.0)),
 								  radians(90.0),
@@ -220,25 +223,27 @@ namespace griffin {
 				//mat4 mvp(projMat * modelView);
 				//mat4 normalMat(transpose(inverse(mat3(modelView))));
 
-				// transform world space to eye space on CPU in double precision, then send single to GPU
+				// transform world space to camera space on CPU in double precision, then send single to GPU
 				// see http://blogs.agi.com/insight3d/index.php/2008/09/03/precisions-precisions/
-				dmat4 modelViewWorld(viewMat * modelToWorld);
+				dmat4 modelView_World(viewMat * modelToWorld);
 				
 				dvec4 nodeTranslationWorld(modelToWorld[0][3], modelToWorld[1][3], modelToWorld[2][3], 1.0);
-				vec3 nodeTranslationEye(nodeTranslationWorld * modelViewWorld);
+				vec3 nodeTranslation_Camera(nodeTranslationWorld * modelView_World);
 
-				mat4 modelViewEye(modelViewWorld);
-				modelViewEye[0][3] = nodeTranslationEye.x;
-				modelViewEye[1][3] = nodeTranslationEye.y;
-				modelViewEye[2][3] = nodeTranslationEye.z;
+				mat4 modelView_Camera(modelView_World);
+				modelView_Camera[0][3] = nodeTranslation_Camera.x;
+				modelView_Camera[1][3] = nodeTranslation_Camera.y;
+				modelView_Camera[2][3] = nodeTranslation_Camera.z;
 
-				mat4 mvp(projMat * modelViewEye);
-				mat4 normalMat(transpose(inverse(mat3(modelViewEye))));
-
-				glUniformMatrix4fv(modelMatLoc, 1, GL_FALSE, &mat4(modelToWorld)[0][0]);
-				glUniformMatrix4fv(modelViewMatLoc, 1, GL_FALSE, &modelViewEye[0][0]);
-				glUniformMatrix4fv(mvpMatLoc, 1, GL_FALSE, &mvp[0][0]);
-				glUniformMatrix4fv(normalMatLoc, 1, GL_FALSE, &normalMat[0][0]);
+				mat4 mvp(projMat * modelView_Camera);
+				mat4 normalMat(transpose(inverse(mat3(modelView_Camera))));
+				
+				// set the object UBO values
+				objectUniformsUBO.modelToWorld = mat4(modelToWorld);
+				objectUniformsUBO.modelView = modelView_Camera;
+				objectUniformsUBO.modelViewProjection = mvp;
+				objectUniformsUBO.normalMatrix = normalMat;
+				glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ObjectUniformsUBO), &objectUniformsUBO);
 
 				// draw this node's meshes
 				for (uint32_t m = 0; m < node.numMeshes; ++m) {
@@ -260,9 +265,17 @@ namespace griffin {
 						auto texPtr = g_resourceLoader.lock()->getResource(mat.textures[0].textureResourceHandle, CacheType::Cache_Materials);
 						if (texPtr) {
 							auto& tex = texPtr->getResource<Texture2D_GL>();
-							tex.bind(GL_TEXTURE4);
-							glUniform1i(diffuseMapLoc, 4);
+							tex.bind(4);
+							//glUniform1i(diffuseMapLoc, 4);
+
+							// TEMP, these layout indexes should be in a header, and the gl call should be made after render key changes
+							uint32_t getSurfaceColorFromTexture = 0;
+							glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &getSurfaceColorFromTexture);
 						}
+					}
+					else {
+						uint32_t getSurfaceColorFromMaterial = 1;
+						glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &getSurfaceColorFromMaterial);
 					}
 					
 					// TEMP
@@ -281,6 +294,8 @@ namespace griffin {
 
 				bfsQueue.pop();
 			}
+
+			assert(glGetError() == GL_NO_ERROR);
 		}
 
 
@@ -367,6 +382,8 @@ namespace griffin {
 					offset += (sizeof(float) * 4);
 				}
 			}
+
+			assert(glGetError() == GL_NO_ERROR);
 		}
 
 

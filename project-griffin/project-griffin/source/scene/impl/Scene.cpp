@@ -139,7 +139,7 @@ void SceneManager::renderActiveScenes(float interpolation, Engine& engine)
 					float frustumDistance = cam.getFarClip() - cam.getNearClip();
 
 					// set viewport 0 which is the main view viewport
-					render.setViewportParameters(activeViewport, render::ViewportParameters{
+					render.setViewParameters(activeViewport, render::ViewParameters{
 						cam.getModelViewMatrix(),
 						cam.getProjectionMatrix(),
 						viewProjMat,

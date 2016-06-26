@@ -2,9 +2,7 @@
 #extension GL_EXT_geometry_shader4 : enable
 #endif
 
-//#define UniformLayout_ModelToWorld        0
-//#define UniformLayout_ViewProjection      1
-//#define UniformLayout_ModelViewProjection 2
+// VBO binding locations
 
 #define VertexLayout_Position      0
 #define VertexLayout_Normal        1
@@ -13,6 +11,11 @@
 #define VertexLayout_TextureCoords 4   // consumes up to 8 locations
 #define VertexLayout_Colors        12  // consumes up to 8 locations
 #define VertexLayout_CustomStart   20  // use for first custom binding location and increment
+
+
+// Subroutine uniform locations
+
+#define SubroutineUniform_SurfaceColor		0
 /**
  * Precomputed Atmospheric Scattering
  * Copyright (c) 2008 INRIA

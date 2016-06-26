@@ -36,6 +36,8 @@ namespace griffin {
 
 		game.devCamera.updateFrameTick(pGame, engine, ui);
 
+		game.terrain.updateFrameTick(pGame, engine, ui);
+
 		// TODO: consider running this less frequently, and spread the load with other systems that
 		//	don't run every frame by offsetting the frame that it runs on
 		game.sky.updateFrameTick(pGame, engine, ui);
@@ -79,6 +81,9 @@ namespace griffin {
 			game.sceneId = engine.sceneManager->createScene("Game World", true);
 			auto& scene = engine.sceneManager->getScene(game.sceneId);
 			
+			// set up terrain system
+			game.terrain.init(gamePtr.get(), engine, app);
+
 			// set up sky system
 			game.sky.init(gamePtr.get(), engine, app);
 			// TODO: scene should have a setSkybox convenience function or something like that
@@ -86,9 +91,11 @@ namespace griffin {
 			// temp, will be part of scene as above
 			engine.renderSystem->setSkyboxTexture(game.sky.skyBoxCubeMap);
 
-			// set up game systems
+			// set up input control systems
 			game.player.init(gamePtr.get(), engine, app);
 			game.devCamera.init(gamePtr.get(), engine, app);
+
+			// set up development tools
 			game.devConsole.init(gamePtr.get(), engine, app);
 			
 			// ...

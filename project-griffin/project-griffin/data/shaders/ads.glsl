@@ -1,6 +1,4 @@
-//#define UniformLayout_ModelToWorld        0
-//#define UniformLayout_ViewProjection      1
-//#define UniformLayout_ModelViewProjection 2
+// VBO binding locations
 
 #define VertexLayout_Position      0
 #define VertexLayout_Normal        1
@@ -10,19 +8,30 @@
 #define VertexLayout_Colors        12  // consumes up to 8 locations
 #define VertexLayout_CustomStart   20  // use for first custom binding location and increment
 
+
+// Subroutine uniform locations
+
+#define SubroutineUniform_SurfaceColor		0
+// UBO definitions
+
+layout(std140) uniform CameraUniforms {
+	mat4  projection;
+	mat4  viewProjection;
+	float frustumNear;
+	float frustumFar;
+	float inverseFrustumDistance; // inverse max distance of the camera, to get linear depth
+};
+
+layout(std140) uniform ObjectUniforms {
+	mat4 modelToWorld;
+	mat4 modelView;
+	mat4 modelViewProjection;
+	mat4 normalMatrix;
+};
+
+
 #ifdef _VERTEX_
-	// Uniform Variables
-
-	uniform mat4 modelToWorld;
-	uniform mat4 modelView;
-	uniform mat4 viewProjection;
-	uniform mat4 modelViewProjection;
-	uniform mat4 normalMatrix;
-
-	uniform float frustumNear;
-	uniform float frustumFar;
-	uniform float inverseFrustumDistance; // inverse max distance of the camera, to get linear depth
-
+	
 	// Input Variables
 
 	layout(location = VertexLayout_Position) in vec3 vertexPosition_modelspace;
@@ -89,7 +98,6 @@
 	uniform Material material;
 
 	//uniform vec3 diffuseColor;
-	uniform sampler2D diffuseMap;	// 4
 
 	// these would be used to support models with > 1 channel
 	// these should go in the per-material uniform buffer
@@ -101,9 +109,6 @@
 	//
 	//uniform int diffuseVertexColorChannel = 0;
 	
-	// Globals
-	vec3 surfaceColor;
-
 	// Input Variables
 
 	in vec4 positionViewspace;
@@ -119,12 +124,29 @@
 	layout(location = 0) out vec4 albedoDisplacement;
 	layout(location = 1) out vec4 eyeSpacePosition;
 	layout(location = 2) out vec4 normalReflectance;
+
+	layout(binding = 4) uniform sampler2D diffuseMap;
 	
+	// Subroutines
+
+	subroutine vec3 SurfaceColorSubroutine();
+	layout(location = SubroutineUniform_SurfaceColor) subroutine uniform SurfaceColorSubroutine getSurfaceColor;
+
 	// Functions
 
-	vec3 blinnPhongDirectionalLight(vec4 positionViewspace, vec3 normalViewspace)
+	layout(index = 0) subroutine(SurfaceColorSubroutine) vec3 getSurfaceColorFromTexture()
 	{
-		vec3 toLight = normalize(vec3(light.positionViewspace));
+		return texture(diffuseMap, uv).rgb;
+	}
+
+	layout(index = 1) subroutine(SurfaceColorSubroutine) vec3 getSurfaceColorFromMaterial()
+	{
+		return material.Md;
+	}
+
+	vec3 blinnPhongDirectionalLight(vec4 positionViewspace, vec3 normalViewspace, vec3 surfaceColor)
+	{
+		vec3 toLight = -normalize(light.directionViewspace);
 
 		vec3 specular = vec3(0.0);
 		
@@ -153,7 +175,7 @@
 		return ambient + emissive + diffuse + specular;
 	}
 
-	vec3 blinnPhongPointLight(vec4 positionViewspace, vec3 normalViewspace)
+	vec3 blinnPhongPointLight(vec4 positionViewspace, vec3 normalViewspace, vec3 surfaceColor)
 	{
 		vec4 positionToLight = light.positionViewspace - positionViewspace;
 		float distanceToLight = length(positionToLight);
@@ -188,7 +210,7 @@
 		return ambient + emissive + diffuse + specular;
 	}
 
-	vec3 blinnPhongSpotlight(vec4 positionViewspace, vec3 normalViewspace)
+	vec3 blinnPhongSpotlight(vec4 positionViewspace, vec3 normalViewspace, vec3 surfaceColor)
 	{
 		vec4 positionToLight = light.positionViewspace - positionViewspace;
 		float distanceToLight = length(positionToLight);
@@ -239,15 +261,16 @@
 	void main() {
 		// get diffuse surface color
 		//#ifdef _HAS_DIFFUSE_MAP
-		//	surfaceColor = texture(diffuseMap, uv).rgb;
+		//	vec3 surfaceColor = texture(diffuseMap, uv).rgb;
 		//#else
-			surfaceColor = material.Md;
+		//	vec3 surfaceColor = material.Md;
 		//#endif
 		/////
+		vec3 surfaceColor = getSurfaceColor();
 
-		//vec3 lightIntensity = blinnPhongDirectionalLight(positionViewspace, normalViewspace);
-		//vec3 lightIntensity = blinnPhongPointLight(positionViewspace, normalViewspace);
-		vec3 lightIntensity = blinnPhongSpotlight(positionViewspace, normalViewspace);
+		vec3 lightIntensity = blinnPhongDirectionalLight(positionViewspace, normalViewspace, surfaceColor);
+		//vec3 lightIntensity = blinnPhongPointLight(positionViewspace, normalViewspace, surfaceColor);
+		//vec3 lightIntensity = blinnPhongSpotlight(positionViewspace, normalViewspace, surfaceColor);
 
 		albedoDisplacement = vec4(lightIntensity, 1.0); //vec4(surfaceColor, 0.0);
 		eyeSpacePosition = vec4(positionViewspace.xyz, 0.0);

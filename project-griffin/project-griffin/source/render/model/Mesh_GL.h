@@ -252,7 +252,7 @@ namespace griffin {
 			* Adds all DrawSets to render queue
 			*/
 			void render(Engine& engine, uint8_t viewport,
-						int modelMatLoc, int modelViewMatLoc, int mvpMatLoc, int normalMatLoc,
+						int shaderProgramId,
 						int ambientLoc, int diffuseLoc, int specularLoc, int shininessLoc,
 						int diffuseMapLoc, float animTime, // TODO: should take an Entity Id instead, to get animation times and blends and material overrides
 						const glm::dmat4& viewMat, const glm::mat4& projMat/*All TEMP*/) const;

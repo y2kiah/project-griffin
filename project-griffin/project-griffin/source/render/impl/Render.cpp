@@ -11,6 +11,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <SDL_log.h>
 
+#include <application/Engine.h>
 #include <resource/ResourceLoader.h>
 #include <render/Render.h>
 #include <render/RenderResources.h>
@@ -34,7 +35,7 @@ namespace griffin {
 		resource::ResourceLoaderWeakPtr g_resourceLoader;
 
 		// TEMP
-		ResourcePtr		g_tempModel = nullptr;
+		ResourcePtr		g_tempModel[4] = {};
 
 		// defined in RenderHelpers.cpp
 		extern float			g_fullScreenQuadBufferData[3 * 6];
@@ -78,7 +79,7 @@ namespace griffin {
 
 		// class DeferredRenderer_GL
 
-		void DeferredRenderer_GL::init(int viewportWidth, int viewportHeight)
+		void DeferredRenderer_GL::init(int viewportWidth, int viewportHeight, Engine& engine)
 		{
 			// get the resource loader
 			using namespace resource;
@@ -104,10 +105,10 @@ namespace griffin {
 			// hold a shared_ptr to these shader programs so they never fall out of cache
 
 			//auto fsq  = loadShaderProgram(L"shaders/fullscreenQuad.glsl");
-			auto mrt  = loadShaderProgram(L"shaders/ads.glsl"); // temporarily ads.glsl
-			auto sky  = loadShaderProgram(L"shaders/skybox.glsl");
-			auto ssao = loadShaderProgram(L"shaders/ssao.glsl");
-			auto fxaa = loadShaderProgram(L"shaders/fxaa.glsl");
+			auto mrt  = loadShaderProgram(L"shaders/ads.glsl", engine.renderSystem); // temporarily ads.glsl
+			auto sky  = loadShaderProgram(L"shaders/skybox.glsl", engine.renderSystem);
+			auto ssao = loadShaderProgram(L"shaders/ssao.glsl", engine.renderSystem);
+			auto fxaa = loadShaderProgram(L"shaders/fxaa.glsl", engine.renderSystem);
 			//L"shaders/linearDepth.glsl"
 			//L"shaders/SimpleShader.glsl"
 
@@ -139,6 +140,8 @@ namespace griffin {
 			glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 			glStencilFunc(GL_ALWAYS, 1, 0xFF);
 			glStencilMask(0x00); // writing turned off to start
+
+			assert(glGetError() == GL_NO_ERROR);
 		}
 
 
@@ -146,7 +149,19 @@ namespace griffin {
 
 		void DeferredRenderer_GL::renderGBuffer(Viewport& viewport, const RenderQueue::KeyList& keys, Engine& engine)
 		{
+			auto& renderSystem = *engine.renderSystem;
 			static float animTime = 0.0f; // TEMP
+
+			// set the camera UBO
+			CameraUniformsUBO cameraUniformsUBO = {
+				viewport.params.projMat,
+				viewport.params.viewProjMat,
+				viewport.params.nearClipPlane,
+				viewport.params.farClipPlane,
+				viewport.params.inverseFrustumDistance
+			};
+			glBindBuffer(GL_UNIFORM_BUFFER, renderSystem.getUBOHandle(CameraUniforms));
+			glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(CameraUniformsUBO), &cameraUniformsUBO);
 
 			// Start g-buffer rendering
 			m_gbuffer.start();
@@ -163,21 +178,6 @@ namespace griffin {
 				auto& program = m_mrtProgram.get()->getResource<ShaderProgram_GL>();
 				program.useProgram();
 				auto programId = program.getProgramId();
-
-				// TEMP get uniform locations
-				// TODO need to use uniform buffers here instead
-				//glUniformMatrix4fv(UniformLayout_ModelView, 1, GL_FALSE, &camera->getModelViewMatrix()[0][0]);
-				//glUniformMatrix4fv(UniformLayout_Projection, 1, GL_FALSE, &camera->getProjectionMatrix()[0][0]);
-				//glUniformMatrix4fv(UniformLayout_ModelViewProjection, 1, GL_FALSE, &mvp[0][0]);
-				GLint modelMatLoc = glGetUniformLocation(programId, "modelToWorld");
-				GLint modelViewMatLoc = glGetUniformLocation(programId, "modelView");
-				GLint viewProjMatLoc = glGetUniformLocation(programId, "viewProjection");
-				GLint mvpMatLoc = glGetUniformLocation(programId, "modelViewProjection");
-				GLint normalMatLoc = glGetUniformLocation(programId, "normalMatrix");
-
-				GLint frustumNearLoc = glGetUniformLocation(programId, "frustumNear");
-				GLint frustumFarLoc = glGetUniformLocation(programId, "frustumFar");
-				GLint inverseFrustumDistanceLoc = glGetUniformLocation(programId, "inverseFrustumDistance");
 
 				// TEMP get material uniform locations
 				GLint ambientLoc = glGetUniformLocation(programId, "material.Ma");
@@ -207,7 +207,7 @@ namespace griffin {
 				glm::vec3 lightDirViewspace = glm::normalize(glm::vec3(viewport.params.viewMat * lightDir));
 				//glm::vec4 lightPosViewspace{ 0.0f, 0.0f, 0.0f, 1.0f };
 				//glm::vec3 lightDirViewspace{ 0.0f, 0.0f, -1.0f };
-				glm::vec3 lightLa{ 0.1f, 0.2f, 0.3f };
+				glm::vec3 lightLa{ 0.8f, 0.9f, 1.0f };
 				glm::vec3 lightLds{ 0.8f, 0.6f, 0.3f };
 				glUniform4fv(lightPosLoc, 1, &lightPosViewspace[0]);
 				glUniform3fv(lightDirLoc, 1, &lightDirViewspace[0]);
@@ -219,18 +219,21 @@ namespace griffin {
 				glUniform1f(lightAngleLoc, 0.96f);
 				glUniform1f(lightEdgeLoc, 0.4f);
 
-				// set viewport uniforms
+				// TEMP set viewport uniforms
+				/*GLint viewProjMatLoc = glGetUniformLocation(programId, "viewProjection");
+				GLint frustumNearLoc = glGetUniformLocation(programId, "frustumNear");
+				GLint frustumFarLoc = glGetUniformLocation(programId, "frustumFar");
+				GLint inverseFrustumDistanceLoc = glGetUniformLocation(programId, "inverseFrustumDistance");
 				glUniformMatrix4fv(viewProjMatLoc, 1, GL_FALSE, &viewport.params.viewProjMat[0][0]);
-
 				glUniform1f(frustumNearLoc, viewport.params.nearClipPlane);
 				glUniform1f(frustumFarLoc, viewport.params.farClipPlane);
 				glUniform1f(inverseFrustumDistanceLoc, viewport.params.inverseFrustumDistance);
+				*/
 
 				// render all keys
 				int lastDrawsetIndex = -1;
 				for (auto key : keys) {
 					auto& entry = viewport.renderQueue.entries[key.entryIndex];
-					
 
 					entry.drawCallback(entry.entityId, entry.drawsetIndex);
 				}
@@ -242,13 +245,15 @@ namespace griffin {
 				}
 
 				// draw the test mesh
-				if (g_tempModel) {
-					auto& mdl = g_tempModel->getResource<Model_GL>();
-					mdl.m_mesh.render(engine, 0,
-									  modelMatLoc, modelViewMatLoc, mvpMatLoc, normalMatLoc,
-									  ambientLoc, diffuseLoc, specularLoc, shininessLoc,
-									  diffuseMapLoc, animTime,
-									  viewport.params.viewMat, viewport.params.projMat); // temporarily passing in the modelMatLoc
+				for (int i = 0; i < _countof(g_tempModel); ++i) {
+					if (g_tempModel[i]) {
+						auto& mdl = g_tempModel[i]->getResource<Model_GL>();
+						mdl.m_mesh.render(engine, 0,
+										  programId,
+										  ambientLoc, diffuseLoc, specularLoc, shininessLoc,
+										  diffuseMapLoc, animTime,
+										  viewport.params.viewMat, viewport.params.projMat); // temporarily passing in the modelMatLoc
+					}
 				}
 
 				glDisable(GL_DEPTH_TEST);
@@ -339,6 +344,8 @@ namespace griffin {
 				drawFullscreenQuad();
 			}
 			// End post-processing
+
+			assert(glGetError() == GL_NO_ERROR);
 		}
 
 		DeferredRenderer_GL::~DeferredRenderer_GL()
@@ -348,7 +355,7 @@ namespace griffin {
 
 		// class RenderSystem
 
-		void RenderSystem::init(int viewportWidth, int viewportHeight) {
+		void RenderSystem::init(int viewportWidth, int viewportHeight, Engine& engine) {
 			// build fullscreen quad vertex buffer
 			g_fullScreenQuad.loadFromMemory(reinterpret_cast<const unsigned char*>(g_fullScreenQuadBufferData),
 											sizeof(g_fullScreenQuadBufferData));
@@ -372,11 +379,11 @@ namespace griffin {
 			glVertexAttribPointer(VertexLayout_Position, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
 			// init the renderers
-			m_deferredRenderer.init(viewportWidth, viewportHeight);
+			m_deferredRenderer.init(viewportWidth, viewportHeight, engine);
 			m_vectorRenderer.init(viewportWidth, viewportHeight);
 
 			// set up default viewport matrices
-			ViewportParameters defaultView{};
+			ViewParameters defaultView{};
 			defaultView.nearClipPlane = 0.1f; //-1.0f;
 			defaultView.farClipPlane  = 100000.0f; //1.0f;
 			defaultView.frustumDistance = defaultView.farClipPlane - defaultView.nearClipPlane;
@@ -396,7 +403,7 @@ namespace griffin {
 			m_viewports[0].params = defaultView;
 			m_viewports[0].display = true;
 
-			ViewportParameters guiView{};
+			ViewParameters guiView{};
 			guiView.nearClipPlane = -1.0f;
 			guiView.farClipPlane = 1.0f;
 			guiView.frustumDistance = guiView.farClipPlane - guiView.nearClipPlane;
@@ -413,30 +420,44 @@ namespace griffin {
 			m_viewports[1].params = guiView;
 			m_viewports[1].display = true;
 
+			// Create the UBOs
+			glGenBuffers(UBOTypeCount, m_uboHandles);
+
+			glBindBuffer(GL_UNIFORM_BUFFER, m_uboHandles[CameraUniforms]);
+			glBufferData(GL_UNIFORM_BUFFER, sizeof(CameraUniformsUBO), nullptr, GL_DYNAMIC_DRAW);
+
+			glBindBuffer(GL_UNIFORM_BUFFER, m_uboHandles[ObjectUniforms]);
+			glBufferData(GL_UNIFORM_BUFFER, sizeof(ObjectUniformsUBO), nullptr, GL_DYNAMIC_DRAW);
+
 			// TEMP create some test resources
 			try {
-				//auto mdl = loadModel(L"models/Spitfire/spitfire.gmd", CacheType::Cache_Models);
-				auto mdl = loadModel(L"models/landing_platform.gmd", CacheType::Cache_Models);
-				//auto mdl = loadModel(L"models/collision_test/collision_test.gmd", CacheType::Cache_Models);
-				//auto mdl = loadModel(L"models/gunship/gunship.gmd", CacheType::Cache_Models);
-				//auto mdl = loadModel(L"models/A-10C Pit.gmd", CacheType::Cache_Models);
-				//auto mdl = loadModel(L"models/other_pit.gmd", CacheType::Cache_Models);
-				//auto mdl = loadModel(L"models/Bill/Bill.gmd", CacheType::Cache_Models);
-				//auto mdl = loadModel(L"models/ring/ring.gmd", CacheType::Cache_Models);
-				//auto mdl = loadModel(L"models/building_001.gmd", CacheType::Cache_Models);
-				//auto mdl = loadModel(L"models/scene/scene.gmd", CacheType::Cache_Models);
+				//auto mdl1 = loadModel(L"models/Spitfire/spitfire.gmd", CacheType::Cache_Models);
+				//auto mdl2 = loadModel(L"models/landing_platform.gmd", CacheType::Cache_Models);
+				//auto mdl3 = loadModel(L"models/collision_test/collision_test.gmd", CacheType::Cache_Models);
+				//auto mdl4 = loadModel(L"models/gunship/gunship.gmd", CacheType::Cache_Models);
+				auto mdl5 = loadModel(L"models/A-10C Pit.gmd", CacheType::Cache_Models);
+				//auto mdl6 = loadModel(L"models/other_pit.gmd", CacheType::Cache_Models);
+				//auto mdl7 = loadModel(L"models/Bill/Bill.gmd", CacheType::Cache_Models);
+				//auto mdl8 = loadModel(L"models/ring/ring.gmd", CacheType::Cache_Models);
+				//auto mdl9 = loadModel(L"models/building_001.gmd", CacheType::Cache_Models);
+				//auto mdl10 = loadModel(L"models/scene/scene.gmd", CacheType::Cache_Models);
 
 				using namespace resource;
 				auto loader = g_resourceLoader.lock();
 				if (!loader) {
 					throw std::runtime_error("no resource loader");
 				}
-				g_tempModel = loader->getResource(mdl).get();
+				//g_tempModel[0] = loader->getResource(mdl2).get();
+				//g_tempModel[1] = loader->getResource(mdl4).get();
+				g_tempModel[2] = loader->getResource(mdl5).get();
+				//g_tempModel[3] = loader->getResource(mdl8).get();
 				loader->executeCallbacks();
 			}
 			catch (std::exception ex) {
 				SDL_Log("%s", ex.what());
 			}
+
+			assert(glGetError() == GL_NO_ERROR);
 		}
 
 
@@ -549,6 +570,9 @@ namespace griffin {
 
 		RenderSystem::~RenderSystem()
 		{
+			if (m_uboHandles[0] != 0) {
+				glDeleteBuffers(UBOTypeCount, m_uboHandles);
+			}
 			if (g_glQuadVAO != 0) {
 				glDeleteVertexArrays(1, &g_glQuadVAO);
 			}
@@ -589,7 +613,7 @@ namespace griffin {
 		}
 
 
-		ResourceHandle<TextureCubeMap_GL> loadTextureCubeMap(wstring texturePath, CacheType cache, bool swapY)
+		ResourceHandle<TextureCubeMap_GL> loadTextureCubeMap(wstring texturePath, bool swapY, CacheType cache)
 		{
 			using namespace resource;
 
@@ -619,7 +643,7 @@ namespace griffin {
 		}
 
 
-		ResourceHandle<ShaderProgram_GL> loadShaderProgram(wstring programPath, CacheType cache)
+		ResourceHandle<ShaderProgram_GL> loadShaderProgram(wstring programPath, const RenderSystemPtr &renderSystemPtr, CacheType cache)
 		{
 			using namespace resource;
 
@@ -634,11 +658,17 @@ namespace griffin {
 				return ShaderProgram_GL(shaderCode, programPath);
 			};
 
-			auto shaderResourceCallback = [](const ResourcePtr& resourcePtr, Id_T handle, size_t size) {
+			auto shaderResourceCallback = [renderSystemPtr](const ResourcePtr& resourcePtr, Id_T handle, size_t size) {
 				ShaderProgram_GL& program = resourcePtr->getResource<ShaderProgram_GL>();
 				auto ok = program.compileAndLinkProgram();
 				if (!ok) {
+					SDL_Log("  program compilation/linking failed");
 					throw std::runtime_error("program compilation/linking failed");
+				}
+
+				// bind render system's UBOs to the shader's uniform buffer blocks
+				for (int uboType = 0; uboType < UBOTypeCount; ++uboType) {
+					program.bindUniformBuffer(static_cast<UBOType>(uboType), renderSystemPtr->getUBOHandle(static_cast<UBOType>(uboType)));
 				}
 			};
 

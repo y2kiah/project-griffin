@@ -78,8 +78,8 @@ namespace griffin {
 	/**
 	* griffin::handle_map serialization
 	*/
-	template <typename T>
-	void handle_map<T>::serialize(std::ostream& out, const handle_map<T>& map)
+	template <typename T, class Meta_T>
+	void handle_map<T, Meta_T>::serialize(std::ostream& out, const handle_map<T, Meta_T>& map)
 	{
 		out << "handle_map";
 		out.write(reinterpret_cast<const char*>(&map.m_freeListFront), sizeof(map.m_freeListFront));
@@ -94,15 +94,15 @@ namespace griffin {
 		griffin::serialize(out, map.m_items);
 
 		// copy the meta set
-		static_assert(std::is_trivially_copyable<handle_map<T>::MetaSet_T::value_type>::value, "MetaSet_T is not trivially copyable");
+		static_assert(std::is_trivially_copyable<handle_map<T, Meta_T>::MetaSet_T::value_type>::value, "MetaSet_T is not trivially copyable");
 		griffin::serialize(out, map.m_meta);
 	}
 
 	/**
 	* griffin::handle_map deserialization
 	*/
-	template <typename T>
-	void handle_map<T>::deserialize(std::istream& in, handle_map<T>& map)
+	template <typename T, class Meta_T>
+	void handle_map<T, Meta_T>::deserialize(std::istream& in, handle_map<T, Meta_T>& map)
 	{
 		char tag[11] = {};
 		in.read(tag, 10);

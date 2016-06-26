@@ -189,17 +189,16 @@ namespace griffin {
 			using namespace render;
 
 			auto renderSystemPtr = make_shared<RenderSystem>();
-			renderSystemPtr->init(app.getPrimaryWindow().width, app.getPrimaryWindow().height);
-			renderSystemPtr->loadGlobalFonts();
-
 			auto shaderManagerPtr = make_shared<ShaderManager_GL>();
-			shaderManagerPtr->loadUbershaderCode("shaders/ads.glsl");
-
 			auto modelManagerPtr = make_shared<ModelManager_GL>();
 
 			engine.renderSystem = renderSystemPtr;
 			engine.shaderManager = shaderManagerPtr;
 			engine.modelManager = modelManagerPtr;
+
+			renderSystemPtr->init(app.getPrimaryWindow().width, app.getPrimaryWindow().height, engine);
+			renderSystemPtr->loadGlobalFonts();
+			shaderManagerPtr->loadUbershaderCode("shaders/ads.glsl");
 		}
 
 		/**
@@ -219,7 +218,7 @@ namespace griffin {
 
 			engine.sceneManager = scenePtr;
 		}
-
+		
 		return engine;
 	}
 

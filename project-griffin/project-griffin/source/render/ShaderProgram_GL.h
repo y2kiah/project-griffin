@@ -6,7 +6,7 @@
 #include <memory>
 #include <vector>
 #include <utility/memory_reserve.h>
-
+#include "ShaderProgramLayouts_GL.h"
 
 namespace griffin {
 	namespace render {
@@ -16,7 +16,9 @@ namespace griffin {
 		using std::vector;
 		using std::shared_ptr;
 
-
+		/**
+		*
+		*/
 		class Shader_GL {
 		public:
 			explicit Shader_GL() = default;
@@ -36,6 +38,7 @@ namespace griffin {
 			bool compileShader(const char* shaderSource, unsigned int shaderType);
 
 			unsigned int getShaderId() const { return m_shaderId; }
+			unsigned int getShaderType() const { return m_shaderType; }
 
 		private:
 			unsigned int	m_shaderId = 0;
@@ -66,7 +69,9 @@ namespace griffin {
 			* @returns	true if compilation and link succeed, false on failure
 			*/
 			bool compileAndLinkProgram(const char* shaderCode = nullptr);
-			
+
+			void bindUniformBuffer(UBOType uboType, unsigned int uboHandle);
+
 			bool loadProgramBinaryFromMemory(unsigned char* data, size_t size);
 			bool loadProgramBinaryFromFile(const char* filename);
 			bool writeProgramBinaryFile(const char* filename) const;
@@ -86,6 +91,7 @@ namespace griffin {
 		private:
 			unsigned int		m_programId = 0;
 			uint32_t			m_numShaders = 0;
+			unsigned int		m_blockIndex[UBOTypeCount] = {};	// block index of each UBO type
 			Shader_GL			m_shaders[5] = {};
 			string				m_shaderCode;
 			string				m_preprocessorMacros = "";

@@ -39,13 +39,13 @@ int main(int argc, char *argv[])
 		bool done = false;
 		uint64_t frame = 0;
 
-		SDL_GL_MakeCurrent(nullptr, NULL); // make no gl context current on the input thread
+		SDL_GL_MakeCurrent(nullptr, 0); // make no gl context current on the input thread
+		glGetError(); // clear GL error from SDL call above
 
 		/**
 		* Game Update-Render Thread, runs the main rendering frame loop and the inner
 		* fixed-timestep game update loop
 		*/
-		// move this to a Game class instead of having a lambda??
 		auto gameProcess = [&](){
 			SDL_GL_MakeCurrent(app.getPrimaryWindow().window, app.getPrimaryWindow().glContext); // gl context made current on the main loop thread
 			Timer timer;
@@ -67,33 +67,40 @@ int main(int argc, char *argv[])
 			});
 
 			int64_t realTime = timer.start();
-
+			
 			for (frame = 0; !done; ++frame) {
-				PROFILE_BLOCK("render loop", frame, ThreadAffinity::Thread_OpenGL_Render);
+				try {
+					PROFILE_BLOCK("render loop", frame, ThreadAffinity::Thread_OpenGL_Render);
 
-				int64_t countsPassed = timer.queryCountsPassed();
-				realTime = timer.getStopCounts();
+					int64_t countsPassed = timer.queryCountsPassed();
+					realTime = timer.getStopCounts();
 
-				float interpolation = update.tick(realTime, countsPassed, 1.0f);
-				
-				//SDL_Delay(1000);
-				/*SDL_Log("Render realTime=%lu: interpolation=%0.3f: threadIdHash=%lu\n",
-						realTime, interpolation, std::this_thread::get_id().hash());*/
-				
-				engine.threadPool->executeFixedThreadTasks(ThreadAffinity::Thread_OpenGL_Render);
-				
-				engineRenderFrameTick(engine, game.get(), interpolation, realTime, countsPassed);
+					float interpolation = update.tick(realTime, countsPassed, 1.0f);
 
-				SDL_GL_SwapWindow(app.getPrimaryWindow().window);
-				platform::yieldThread();
+					//SDL_Delay(1000);
+					/*SDL_Log("Render realTime=%lu: interpolation=%0.3f: threadIdHash=%lu\n",
+							realTime, interpolation, std::this_thread::get_id().hash());*/
+
+					engine.threadPool->executeFixedThreadTasks(ThreadAffinity::Thread_OpenGL_Render);
+
+					engineRenderFrameTick(engine, game.get(), interpolation, realTime, countsPassed);
+
+					SDL_GL_SwapWindow(app.getPrimaryWindow().window);
+
+					platform::yieldThread();
+				}
+				catch (std::exception& e) {
+					SDL_Log("%s", e.what());
+					done = true;
+				}
 			}
 
 			destroy_game(game);
 			destroy_engine(engine); // delete the engine on the GL thread
 		};
 		
-		// This actually starts the update-render thread. OpenGL context is transferred to this
-		// thread after OpenGL is initialized on the OS thread. This thread joins in SDL_QUIT.
+		// This starts the update-render thread. OpenGL context is transferred to this thread
+		// after OpenGL is initialized on the OS thread. This thread joins in SDL_QUIT.
 		auto gameThread = std::async(std::launch::async, gameProcess);
 
 		/**
@@ -189,8 +196,9 @@ void SDLApplication::initWindow(const char* appName)
 	//AMD_gpu_association
 
 	// Turn on double buffering, Z buffer, and stencil buffer
+	SDL_GL_SetAttribute(SDL_GL_BUFFER_SIZE, 32);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24); // make 32 optional for newer systems
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
 	// Turn on antialiasing
@@ -199,6 +207,8 @@ void SDLApplication::initWindow(const char* appName)
 
 	int width = 1600;
 	int height = 900;
+	//int width = 1920;
+	//int height = 1080;
 
 	auto window = SDL_CreateWindow(
 		appName,
@@ -240,6 +250,7 @@ void SDLApplication::initOpenGL()
 		SDL_Log("Failed to initialize GLEW\n");
 		throw std::runtime_error((const char *)glewGetErrorString(err));
 	}
+	glGetError(); // clear any error created by GLEW init
 
 	SDL_Log("OpenGL Information:\n  Vendor: %s\n  Renderer: %s\n  Version: %s\n  Shading Language Version: %s\n",
 			glGetString(GL_VENDOR),
@@ -282,6 +293,8 @@ void SDLApplication::initOpenGL()
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	SDL_GL_SwapWindow(getPrimaryWindow().window);
+
+	assert(glGetError() == GL_NO_ERROR);
 }
 
 

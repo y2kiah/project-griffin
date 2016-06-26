@@ -178,7 +178,7 @@ namespace griffin {
 			* @return	ComponentId of the SceneNode added to the entity, NullId_T if the add fails
 			*	or if the parent entity is not part of the scene
 			*/
-			SceneNodeId addToSceneEntity(EntityId entityId, const glm::dvec3& translationLocal,
+			SceneNodeId addEntityToScene(EntityId entityId, const glm::dvec3& translationLocal,
 										 const glm::dquat& rotationLocal, EntityId parentNodeEntityId);
 
 			/**

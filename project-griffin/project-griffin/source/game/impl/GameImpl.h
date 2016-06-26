@@ -7,6 +7,7 @@
 #include <game/devCamera/DevCameraSystem.h>
 #include <game/devConsole/DevConsoleSystem.h>
 #include <game/sky/SkySystem.h>
+#include <game/terrain/TerrainSystem.h>
 #include <utility/container/handle_map.h>
 
 #define MAX_GAME_COMPONENTS		32
@@ -27,6 +28,7 @@ namespace griffin {
 		Id_T						sceneId = NullId_T;
 		game::PlayerControlSystem	player;
 		game::SkySystem				sky;
+		game::TerrainSystem			terrain;
 		game::DevCameraSystem		devCamera;
 		game::DevConsoleSystem		devConsole;
 

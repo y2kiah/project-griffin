@@ -1,0 +1,16 @@
+// UBO definitions
+
+layout(std140) uniform CameraUniforms {
+	mat4  projection;
+	mat4  viewProjection;
+	float frustumNear;
+	float frustumFar;
+	float inverseFrustumDistance; // inverse max distance of the camera, to get linear depth
+};
+
+layout(std140) uniform ObjectUniforms {
+	mat4 modelToWorld;
+	mat4 modelView;
+	mat4 modelViewProjection;
+	mat4 normalMatrix;
+};

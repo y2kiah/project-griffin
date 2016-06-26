@@ -20,27 +20,36 @@ uniform sampler3D deltaSSampler;
 
 	layout(location = VertexLayout_Position) in vec3 vertexPosition;
 
-	out vec2 uv;
+	out vec2 vertexUV;
 
 	void main() {
 		gl_Position = vec4(vertexPosition, 1.0);
-		uv = vertexPosition.xy * madd + madd;
+		vertexUV = vertexPosition.xy * madd + madd;
 	}
 
 #endif
 
 #ifdef _GEOMETRY_
+	
+	in vec2 vertexUV[];
+	out vec2 uv;
 
 	void main() {
 		gl_Position = gl_PositionIn[0];
 		gl_Layer = layer;
+		uv = vertexUV[0];
 		EmitVertex();
+
 		gl_Position = gl_PositionIn[1];
 		gl_Layer = layer;
+		uv = vertexUV[1];
 		EmitVertex();
+
 		gl_Position = gl_PositionIn[2];
 		gl_Layer = layer;
+		uv = vertexUV[2];
 		EmitVertex();
+
 		EndPrimitive();
 	}
 

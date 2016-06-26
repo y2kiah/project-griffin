@@ -2,9 +2,7 @@
 #extension GL_EXT_geometry_shader4 : enable
 #endif
 
-//#define UniformLayout_ModelToWorld        0
-//#define UniformLayout_ViewProjection      1
-//#define UniformLayout_ModelViewProjection 2
+// VBO binding locations
 
 #define VertexLayout_Position      0
 #define VertexLayout_Normal        1
@@ -13,6 +11,11 @@
 #define VertexLayout_TextureCoords 4   // consumes up to 8 locations
 #define VertexLayout_Colors        12  // consumes up to 8 locations
 #define VertexLayout_CustomStart   20  // use for first custom binding location and increment
+
+
+// Subroutine uniform locations
+
+#define SubroutineUniform_SurfaceColor		0
 /**
  * Precomputed Atmospheric Scattering
  * Copyright (c) 2008 INRIA
@@ -348,27 +351,36 @@ uniform sampler3D deltaSSampler;
 
 	layout(location = VertexLayout_Position) in vec3 vertexPosition;
 
-	out vec2 uv;
+	out vec2 vertexUV;
 
 	void main() {
 		gl_Position = vec4(vertexPosition, 1.0);
-		uv = vertexPosition.xy * madd + madd;
+		vertexUV = vertexPosition.xy * madd + madd;
 	}
 
 #endif
 
 #ifdef _GEOMETRY_
+	
+	in vec2 vertexUV[];
+	out vec2 uv;
 
 	void main() {
 		gl_Position = gl_PositionIn[0];
 		gl_Layer = layer;
+		uv = vertexUV[0];
 		EmitVertex();
+
 		gl_Position = gl_PositionIn[1];
 		gl_Layer = layer;
+		uv = vertexUV[1];
 		EmitVertex();
+
 		gl_Position = gl_PositionIn[2];
 		gl_Layer = layer;
+		uv = vertexUV[2];
 		EmitVertex();
+
 		EndPrimitive();
 	}
 

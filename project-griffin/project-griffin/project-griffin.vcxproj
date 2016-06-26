@@ -39,6 +39,7 @@
     <ClCompile Include="source\game\impl\Game.cpp" />
     <ClCompile Include="source\game\player\PlayerControlSystem.cpp" />
     <ClCompile Include="source\game\sky\SkySystem.cpp" />
+    <ClCompile Include="source\game\terrain\TerrainSystem.cpp" />
     <ClCompile Include="source\input\impl\InputSystem.cpp" />
     <ClCompile Include="source\input\impl\InputSystemApi.cpp" />
     <ClCompile Include="source\render\font\FreeType.cpp" />
@@ -104,6 +105,7 @@
     <ClInclude Include="source\game\player\PlayerControlSystem.h" />
     <ClInclude Include="source\game\sky\atmosphere.h" />
     <ClInclude Include="source\game\sky\SkySystem.h" />
+    <ClInclude Include="source\game\terrain\TerrainSystem.h" />
     <ClInclude Include="source\input\InputSystem.h" />
     <ClInclude Include="source\render\font\FreeType.h" />
     <ClInclude Include="source\render\geometry\Cube.h" />
@@ -144,6 +146,8 @@
     <ClInclude Include="source\utility\container\concurrent_queue.h" />
     <ClInclude Include="source\utility\container\handle_map.h" />
     <ClInclude Include="source\utility\container\bitwise_quadtree.h" />
+    <ClInclude Include="source\utility\container\hash_map.h" />
+    <ClInclude Include="source\utility\container\impl\hash_map-inl.h" />
     <ClInclude Include="source\utility\container\intrusive_tree_helper.h" />
     <ClInclude Include="source\utility\container\serial_task_queue.h" />
     <ClInclude Include="source\utility\container\vector_list.h" />
@@ -344,6 +348,7 @@
     <None Include="source\render\shaders\ssao2.glsl" />
     <None Include="source\render\shaders\ssao3.glsl" />
     <None Include="source\render\shaders\terrain.glsl" />
+    <None Include="source\render\shaders\ubo.glsli" />
     <None Include="source\utility\container\impl\bitwise_quadtree-inl.h" />
     <None Include="source\utility\container\impl\concurrent_queue-inl.h" />
     <None Include="source\utility\container\impl\handle_map-inl.h" />
@@ -534,7 +539,7 @@
       <Optimization>
       </Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GRIFFIN_TOOLS_BUILD=1;WIN32_LEAN_AND_MEAN;GLM_FORCE_RADIANS;GLM_MESSAGES;GLM_FORCE_SSE3;GLM_FORCE_INLINE;GLM_SWIZZLE;GL_GLEXT_PROTOTYPES;GLEW_STATIC;NANOVG_GL3_IMPLEMENTATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GRIFFIN_TOOLS_BUILD=1;WIN32_LEAN_AND_MEAN;GLM_FORCE_RADIANS;GLM_MESSAGES;GLM_FORCE_SSE3;GLM_FORCE_INLINE;GLM_SWIZZLE;GL_GLEXT_PROTOTYPES;GLEW_STATIC;NANOVG_GL3_IMPLEMENTATION;_VERTEX_;_TESS_CONTROL_;_TESS_EVAL_;_GEOMETRY_;_FRAGMENT_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <PreprocessKeepComments>false</PreprocessKeepComments>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -590,7 +595,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GRIFFIN_PROFILE=1;GRIFFIN_TOOLS_BUILD=1;_ITERATOR_DEBUG_LEVEL=0;NDEBUG;WIN32_LEAN_AND_MEAN;GLM_FORCE_RADIANS;GLM_FORCE_SSE3;GLM_FORCE_INLINE;GLM_SWIZZLE;GL_GLEXT_PROTOTYPES;GLEW_STATIC;NANOVG_GL3_IMPLEMENTATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GRIFFIN_PROFILE=1;GRIFFIN_TOOLS_BUILD=1;_ITERATOR_DEBUG_LEVEL=0;NDEBUG;WIN32_LEAN_AND_MEAN;GLM_FORCE_RADIANS;GLM_FORCE_SSE3;GLM_FORCE_INLINE;GLM_SWIZZLE;GL_GLEXT_PROTOTYPES;GLEW_STATIC;NANOVG_GL3_IMPLEMENTATION;_VERTEX_;_TESS_CONTROL_;_TESS_EVAL_;_GEOMETRY_;_FRAGMENT_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>

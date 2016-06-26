@@ -17,7 +17,7 @@ namespace griffin {
 		auto& s = g_sceneMgrPtr->getScene(sceneId);
 		auto entityId = s.entityManager->createEntity();
 
-		auto sceneNodeId = s.sceneGraph->addToSceneEntity(entityId, {}, {}, parentEntityId);
+		auto sceneNodeId = s.sceneGraph->addEntityToScene(entityId, {}, {}, parentEntityId);
 		if (sceneNodeId != NullId_T) {
 			return entityId;
 		}
@@ -42,7 +42,7 @@ namespace griffin {
 		
 		// ensure a SceneNode component (only necessary for existing entities)
 		if (!cmpMask[scene::SceneNode::componentType]) {
-			s.sceneGraph->addToSceneEntity(entityId, {}, {}, parentEntityId);
+			s.sceneGraph->addEntityToScene(entityId, {}, {}, parentEntityId);
 		}
 
 		// ensure a ModelInstance component
@@ -162,7 +162,7 @@ extern "C" {
 			auto& s = g_sceneMgrPtr->getScene(sceneId);
 			auto entityId = s.entityManager->createEntity();
 
-			auto sceneNodeId = s.sceneGraph->addToSceneEntity(entityId, {}, {}, parentId);
+			auto sceneNodeId = s.sceneGraph->addEntityToScene(entityId, {}, {}, parentId);
 			if (sceneNodeId != NullId_T) {
 				return entityId.value;
 			}

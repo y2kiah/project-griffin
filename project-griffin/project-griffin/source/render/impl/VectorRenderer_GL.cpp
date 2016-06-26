@@ -126,6 +126,8 @@ void griffin::render::VectorRenderer_GL::renderViewport(Viewport& viewport, cons
 
 	glDisable(GL_BLEND);
 	glEnable(GL_CULL_FACE);
+
+	assert(glGetError() == GL_NO_ERROR);
 }
 
 

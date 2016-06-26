@@ -13,7 +13,7 @@
 
 namespace griffin {
 
-	// struct Id_T comparison free functions
+	// struct Id_T comparison functions
 
 	inline bool operator==(const Id_T& a, const Id_T& b) { return (a.value == b.value); }
 	inline bool operator!=(const Id_T& a, const Id_T& b) { return (a.value != b.value); }
@@ -77,7 +77,7 @@ namespace griffin {
 	{
 		IdSet_T handles(n);
 
-		m_items.reserve(m_items.size() + n); // pre-reserve the space we need (if not already there)
+		m_items.reserve(m_items.size() + n); // reserve the space we need (if not already there)
 		m_meta.reserve(m_meta.size() + n);
 
 		std::generate_n(handles.begin(), n, [&, this](){ return emplace(args...); });

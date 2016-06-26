@@ -44,13 +44,15 @@ namespace griffin {
 			else {
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			}
-
+			
 			// TODO: TEMP, do NOT keep this here as it will be queried at runtime, move to OpenGL setup and set a flag
 			if (glewIsExtensionSupported("GL_EXT_texture_filter_anisotropic")) {
 				float fLargest = 1.0f;
 				glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest);
 				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
 			}
+
+			assert(glGetError() == GL_NO_ERROR);
 		}
 
 		bool Texture2D_GL::loadFromMemory(unsigned char* data, size_t size)
@@ -59,6 +61,7 @@ namespace griffin {
 
 			glGenTextures(1, &m_glTexture);
 			glBindTexture(GL_TEXTURE_2D, m_glTexture);
+			
 			DDSImage image;
 			bool ok = image.loadFromMemory(data, true) &&
 					  !image.is_cubemap() && !image.is_volume() &&
@@ -91,6 +94,7 @@ namespace griffin {
 				SDL_Log("texture loading error\n");
 			}
 
+			assert(glGetError() == GL_NO_ERROR);
 			return ok;// (m_glTexture != 0);
 		}
 
@@ -149,6 +153,8 @@ namespace griffin {
 
 			glActiveTexture(GL_TEXTURE0 + textureSlot);
 			glBindTexture(GL_TEXTURE_2D, m_glTexture);
+
+			assert(glGetError() == GL_NO_ERROR);
 		}
 
 	}

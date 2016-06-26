@@ -211,9 +211,10 @@ namespace griffin {
 		task(ThreadAffinity threadAffinity_ = Thread_Workers) :
 			_pImpl(std::make_shared<Impl>())
 		{
-			_pImpl->result = _pImpl->p.get_future();
-			_pImpl->threadAffinity = threadAffinity_;
-			_pImpl->flags = Flags::Task_None;
+			auto& impl = *_pImpl;
+			impl.result = impl.p.get_future();
+			impl.threadAffinity = threadAffinity_;
+			impl.flags = Flags::Task_None;
 		}
 
 		task(task&& t) :

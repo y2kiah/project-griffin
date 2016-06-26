@@ -2,8 +2,6 @@
 #ifndef GRIFFIN_RENDER_H_
 #define GRIFFIN_RENDER_H_
 
-#pragma warning(disable:4003)
-
 #include <string>
 #include <memory>
 #include <functional>
@@ -11,9 +9,10 @@
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <utility/memory_reserve.h>
-#include <utility/enum.h>
 #include <utility/container/handle_map.h>
+#include <utility/enum.h>
 #include "RenderTarget_GL.h"
+#include "ShaderProgramLayouts_GL.h"
 
 using std::unique_ptr;
 using std::weak_ptr;
@@ -44,27 +43,27 @@ namespace griffin {
 		* Pass these values to getFontId() function to get a font handle for the vector renderer.
 		*/
 		MakeEnum(FontFace, uint8_t,
-			(Sans)
-			(SansBold)
-			(SansItalic)
-			(SansBoldItalic)
-			(Exo)
-			(ExoBold)
-			(ExoItalic)
-			(ExoBoldItalic)
-			,);
+				 (Sans)
+				 (SansBold)
+				 (SansItalic)
+				 (SansBoldItalic)
+				 (Exo)
+				 (ExoBold)
+				 (ExoItalic)
+				 (ExoBoldItalic)
+				 ,);
 
 		/**
 		* Layer of geometry for the scene render passes, specified in render queue key. Value is
 		* ignored for ScenePostPass and FinalPostPass layers.
 		*/
 		MakeEnum(RenderQueueSceneLayer, uint8_t,
-			(SceneLayer_SceneGeometry)			//<! scene geometry for the g-buffer pass
-			(SceneLayer_LightVolumeGeometry)	//<! light volume geometry for deferred renderer
-			(SceneLayer_Skybox)					//<! skybox is a special case handled in the deferred renderer
-			(SceneLayer_Translucent)			//<! translucent geometry is rendered after framebuffer composition
-			(SceneLayer_VectorGeometry)			//<! uses the vector renderer to overlay into the scene
-			,);
+				 (SceneLayer_SceneGeometry)			//<! scene geometry for the g-buffer pass
+				 (SceneLayer_LightVolumeGeometry)	//<! light volume geometry for deferred renderer
+				 (SceneLayer_Skybox)					//<! skybox is a special case handled in the deferred renderer
+				 (SceneLayer_Translucent)			//<! translucent geometry is rendered after framebuffer composition
+				 (SceneLayer_VectorGeometry)			//<! uses the vector renderer to overlay into the scene
+				 ,);
 
 		/**
 		* Fullscreen layer determines order of composition. Each layer is effectively its own
@@ -72,18 +71,19 @@ namespace griffin {
 		* where custom fullscreen filters can be added to the main scene, and final framebuffer.
 		*/
 		MakeEnum(RenderQueueFullscreenLayer, uint8_t,
-			(FullscreenLayer_Scene)
-			(FullscreenLayer_ScenePostPass)
-			(FullscreenLayer_HUD)
-			(FullscreenLayer_UI)
-			(FullscreenLayer_Debug)
-			(FullscreenLayer_FinalPostPass)
-			,);
+				 (FullscreenLayer_Scene)
+				 (FullscreenLayer_ScenePostPass)
+				 (FullscreenLayer_HUD)
+				 (FullscreenLayer_UI)
+				 (FullscreenLayer_Debug)
+				 (FullscreenLayer_FinalPostPass)
+				 ,);
 
 		MakeEnum(RenderQueueTranslucencyType, uint8_t,
-			(TranslucencyType_AlphaTest)		//<! alpha test only no blend
-			(TranslucencyType_AlphaBlend)		//<! using typical src_alpha, one_minus_src_alpha blend
-			,);
+				 (TranslucencyType_AlphaTest)		//<! alpha test only no blend
+				 (TranslucencyType_AlphaBlend)		//<! using typical src_alpha, one_minus_src_alpha blend
+				 ,);
+
 
 		// Variables
 		
@@ -218,7 +218,7 @@ namespace griffin {
 		*/
 		#define MAX_VIEWPORTS	16
 
-		struct ViewportParameters {
+		struct ViewParameters {
 			glm::dmat4	viewMat;
 			glm::mat4	projMat;
 			glm::mat4	viewProjMat;
@@ -234,7 +234,7 @@ namespace griffin {
 			uint32_t			top;
 			uint32_t			width;
 			uint32_t			height;
-			ViewportParameters	params;
+			ViewParameters		params;
 			RenderQueue			renderQueue;
 			bool				display = false;
 			std::bitset<RenderQueueFullscreenLayerCount> fullscreenLayers = 0; //<! bits indicating which fullscreen layers are rendered in the viewport
@@ -256,7 +256,7 @@ namespace griffin {
 			/**
 			* Initialize the renderer
 			*/
-			void init(int viewportWidth, int viewportHeight);
+			void init(int viewportWidth, int viewportHeight, Engine& engine);
 
 			/**
 			* Renders a viewport's render queue keys.
@@ -342,7 +342,7 @@ namespace griffin {
 
 			~RenderSystem();
 
-			void init(int viewportWidth, int viewportHeight);
+			void init(int viewportWidth, int viewportHeight, Engine& engine);
 
 			/**
 			* Separate call to initialize fonts since they are global state. Must be called after
@@ -353,14 +353,22 @@ namespace griffin {
 			}
 
 			/**
+			* Gets the OpenGL handle for a UBO. Used by the shader program loader to bind UBOs
+			* to uniform blocks after linking.
+			*/
+			unsigned int getUBOHandle(UBOType uboType) const {
+				return m_uboHandles[uboType];
+			}
+
+			/**
 			* Sets the camera matrices and clip planes. Needs to be set for each viewport rendered
 			* and any time the view parameters change, usually once per frame.
 			*/
-			void setViewportParameters(uint8_t viewport, ViewportParameters&& viewportParams)
+			void setViewParameters(uint8_t viewport, ViewParameters&& viewParams)
 			{
 				assert(viewport < MAX_VIEWPORTS && "viewport out of range");
 
-				m_viewports[viewport].params = std::forward<ViewportParameters>(viewportParams);
+				m_viewports[viewport].params = std::forward<ViewParameters>(viewParams);
 				m_viewports[viewport].display = true;
 			}
 
@@ -399,6 +407,7 @@ namespace griffin {
 
 		private:
 			Viewport			m_viewports[MAX_VIEWPORTS];
+			unsigned int		m_uboHandles[UBOTypeCount] = {};
 			DeferredRenderer_GL	m_deferredRenderer;
 			VectorRenderer_GL	m_vectorRenderer;
 		};

@@ -142,6 +142,7 @@ using namespace griffin::render;
 // default constructor
 DDSImage::DDSImage() :
 	format(0),
+	internalFormat(0),
 	components(0),
 	compressed(false),
 	cubemap(false),
@@ -187,17 +188,17 @@ bool DDSImage::loadFromMemory(unsigned char* data, bool flipImage)
 	if (ddsh.ddspf.dwFlags & DDS_FOURCC) {
 		switch (ddsh.ddspf.dwFourCC) {
 			case FOURCC_DXT1:
-				format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+				internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
 				components = 3;
 				compressed = true;
 				break;
 			case FOURCC_DXT3:
-				format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+				internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
 				components = 4;
 				compressed = true;
 				break;
 			case FOURCC_DXT5:
-				format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+				internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
 				components = 4;
 				compressed = true;
 				break;
@@ -207,21 +208,25 @@ bool DDSImage::loadFromMemory(unsigned char* data, bool flipImage)
 	}
 	else if (ddsh.ddspf.dwFlags == DDS_RGBA && ddsh.ddspf.dwRGBBitCount == 32) {
 		format = GL_BGRA;
+		internalFormat = GL_RGBA8;
 		compressed = false;
 		components = 4;
 	}
 	else if (ddsh.ddspf.dwFlags == DDS_RGB  && ddsh.ddspf.dwRGBBitCount == 32) {
 		format = GL_BGRA;
+		internalFormat = GL_RGBA8;
 		compressed = false;
 		components = 4;
 	}
 	else if (ddsh.ddspf.dwFlags == DDS_RGB  && ddsh.ddspf.dwRGBBitCount == 24) {
 		format = GL_BGR;
+		internalFormat = GL_RGB8;
 		compressed = false;
 		components = 3;
 	}
 	else if (ddsh.ddspf.dwRGBBitCount == 8) {
-		format = GL_LUMINANCE;
+		format = GL_RED;
+		internalFormat = GL_R8;
 		compressed = false;
 		components = 1;
 	}
@@ -329,6 +334,7 @@ void DDSImage::clear()
 {
 	components = 0;
 	format = 0;
+	internalFormat = 0;
 	compressed = false;
 	cubemap = false;
 	volume = false;
@@ -361,7 +367,7 @@ bool DDSImage::upload_texture1D()
 	assert(valid && images[0] && images[0].height == 1 && images[0].width > 0);
 
 	if (compressed) {
-		glCompressedTexImage1D(GL_TEXTURE_1D, 0, format,
+		glCompressedTexImage1D(GL_TEXTURE_1D, 0, internalFormat,
 							   images[0].width, 0, images[0].size,
 							   images[0]);
 
@@ -369,7 +375,7 @@ bool DDSImage::upload_texture1D()
 		unsigned int numMipMaps = (unsigned int)images[0].mipmaps.size();
 		if (numMipMaps) {
 			for (unsigned int i = 0; i < numMipMaps; ++i) {
-				glCompressedTexImage1D(GL_TEXTURE_1D, i + 1, format,
+				glCompressedTexImage1D(GL_TEXTURE_1D, i + 1, internalFormat,
 									   images[0].mipmaps[i].width, 0,
 									   images[0].mipmaps[i].size,
 									   images[0].mipmaps[i]);
@@ -379,14 +385,14 @@ bool DDSImage::upload_texture1D()
 		}
 	}
 	else {
-		glTexImage1D(GL_TEXTURE_1D, 0, format, images[0].width, 0,
+		glTexImage1D(GL_TEXTURE_1D, 0, internalFormat, images[0].width, 0,
 					 format, GL_UNSIGNED_BYTE, images[0]);
 
 		// load all mipmaps
 		unsigned int numMipMaps = (unsigned int)images[0].mipmaps.size();
 		if (numMipMaps) {
 			for (unsigned int i = 0; i < numMipMaps; ++i) {
-				glTexImage1D(GL_TEXTURE_1D, i + 1, components,
+				glTexImage1D(GL_TEXTURE_1D, i + 1, internalFormat,
 							 images[0].mipmaps[i].width, 0, format,
 							 GL_UNSIGNED_BYTE, images[0].mipmaps[i]);
 			}
@@ -418,43 +424,54 @@ bool DDSImage::upload_texture2D(int imageIndex, GLenum target)
 	assert(target == GL_TEXTURE_2D || (target >= GL_TEXTURE_CUBE_MAP_POSITIVE_X && target <= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z));
 
 	if (compressed) {
-		glCompressedTexImage2D(target, 0, format,
-							   images[imageIndex].width, images[imageIndex].height, 0,
-							   images[imageIndex].size, images[imageIndex]);
-
+		glCompressedTexImage2D(target, 0, internalFormat,
+							   images[imageIndex].width, images[imageIndex].height,
+							   0, images[imageIndex].size,
+							   images[imageIndex]);
+		
 		// load all mipmaps
 		unsigned int numMipMaps = (unsigned int)images[imageIndex].mipmaps.size();
 		if (numMipMaps) {
 			for (unsigned int i = 0; i < numMipMaps; ++i) {
-				glCompressedTexImage2D(target, i + 1, format,
-									   images[imageIndex].mipmaps[i].width,
-									   images[imageIndex].mipmaps[i].height, 0,
-									   images[imageIndex].mipmaps[i].size,
+				glCompressedTexImage2D(target, i + 1, internalFormat,
+									   images[imageIndex].mipmaps[i].width, images[imageIndex].mipmaps[i].height,
+									   0, images[imageIndex].mipmaps[i].size,
 									   images[imageIndex].mipmaps[i]);
 			}
-			glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0);
-			glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, numMipMaps);
+
+			if (target == GL_TEXTURE_2D) {
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, numMipMaps);
+			}
+			else if (target >= GL_TEXTURE_CUBE_MAP_POSITIVE_X && target <= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z) {
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, numMipMaps);
+			}
+			
+			assert(glGetError() == GL_NO_ERROR);
 		}
 	}
 	else {
-		glTexImage2D(target, 0, components, images[imageIndex].width,
-					 images[imageIndex].height, 0, format, GL_UNSIGNED_BYTE,
+		glTexImage2D(target, 0, internalFormat,
+					 images[imageIndex].width, images[imageIndex].height,
+					 0, format, GL_UNSIGNED_BYTE,
 					 images[imageIndex]);
-
+		
 		// load all mipmaps
 		unsigned int numMipMaps = (unsigned int)images[imageIndex].mipmaps.size();
 		if (numMipMaps) {
 			for (unsigned int i = 0; i < numMipMaps; ++i) {
-				glTexImage2D(target, i + 1, components,
-							 images[imageIndex].mipmaps[i].width,
-							 images[imageIndex].mipmaps[i].height, 0, format,
-							 GL_UNSIGNED_BYTE, images[imageIndex].mipmaps[i]);
+				glTexImage2D(target, i + 1, internalFormat,
+							 images[imageIndex].mipmaps[i].width, images[imageIndex].mipmaps[i].height,
+							 0, format, GL_UNSIGNED_BYTE,
+							 images[imageIndex].mipmaps[i]);
 			}
 			glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0);
 			glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, numMipMaps);
 		}
 	}
 
+	assert(glGetError() == GL_NO_ERROR);
 	return true;
 }
 
@@ -472,6 +489,7 @@ bool DDSImage::upload_textureRectangle()
 // uploads a compressed/uncompressed cubemap texture
 bool DDSImage::upload_textureCubemap(bool swapY)
 {
+	bool result = true;
 	// TODO: use glTexStorage2D and glTexSubImage2D / glCompressedTexSubImage2D for performance
 
 	assert(valid && cubemap && images.size() == 6);
@@ -490,12 +508,11 @@ bool DDSImage::upload_textureCubemap(bool swapY)
 			target = GL_TEXTURE_CUBE_MAP_POSITIVE_Y;
 		}
 
-		if (!upload_texture2D(n, target)) {
-			return false;
-		}
+		result = upload_texture2D(n, target);
 	}
 
-	return true;
+	assert(glGetError() == GL_NO_ERROR);
+	return result;
 }
 
 // uploads a compressed/uncompressed 3D texture
@@ -511,7 +528,7 @@ bool DDSImage::upload_texture3D()
 		unsigned int numMipMaps = (unsigned int)images[0].mipmaps.size();
 		if (numMipMaps) {
 			for (unsigned int i = 0; i < numMipMaps; ++i) {
-				glCompressedTexImage3D(GL_TEXTURE_3D, i + 1, format,
+				glCompressedTexImage3D(GL_TEXTURE_3D, i + 1, internalFormat,
 									   images[0].mipmaps[i].width, images[0].mipmaps[i].height,
 									   images[0].depth, 0, images[0].mipmaps[i].size,
 									   images[0].mipmaps[i]);
@@ -521,7 +538,7 @@ bool DDSImage::upload_texture3D()
 		}
 	}
 	else {
-		glTexImage3D(GL_TEXTURE_3D, 0, components, images[0].width,
+		glTexImage3D(GL_TEXTURE_3D, 0, internalFormat, images[0].width,
 					 images[0].height, images[0].depth, 0, format, GL_UNSIGNED_BYTE,
 					 images[0]);
 
@@ -529,7 +546,7 @@ bool DDSImage::upload_texture3D()
 		unsigned int numMipMaps = (unsigned int)images[0].mipmaps.size();
 		if (numMipMaps) {
 			for (unsigned int i = 0; i < numMipMaps; ++i) {
-				glTexImage3D(GL_TEXTURE_3D, i + 1, components,
+				glTexImage3D(GL_TEXTURE_3D, i + 1, internalFormat,
 							 images[0].mipmaps[i].width, images[0].mipmaps[i].height,
 							 images[0].mipmaps[i].depth, 0, format, GL_UNSIGNED_BYTE,
 							 images[0].mipmaps[i]);
@@ -562,7 +579,7 @@ inline int DDSImage::get_line_width(int width, int bpp)
 inline int DDSImage::size_dxtc(int width, int height)
 {
 	return ((width + 3) / 4) * ((height + 3) / 4) *
-		(format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ? 8 : 16);
+		(internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ? 8 : 16);
 }
 
 // calculates size of uncompressed RGB texture in bytes
@@ -643,7 +660,7 @@ void DDSImage::flip(char* image, int width, int height, int depth, int size)
 		int yblocks = height / 4;
 		int blocksize;
 
-		switch (format) {
+		switch (internalFormat) {
 			case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
 				blocksize = 8;
 				flipblocks = &DDSImage::flip_blocks_dxtc1;

@@ -5,7 +5,7 @@
 		"visible": true,
 		"actions": [
 			{ "name": "Exit",			"bind": "down" },
-			{ "name": "Capture Mouse",	"bind": "down" },
+			{ "name": "Capture Mouse",	"bind": "up" },
 			{ "name": "Toggle Dev Camera", "bind": "down",  "visible": false },
 			{ "name": "Show/Hide Dev Console", "bind": "down", "visible": false }
 		],

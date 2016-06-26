@@ -4,7 +4,6 @@
 #include <cassert>
 #include <memory>
 #include <SDL_log.h>
-#include <utility/enum.h>
 
 namespace griffin {
 	namespace render {
@@ -29,7 +28,7 @@ namespace griffin {
 			int infoLogLength = 0;
 
 			// Compile Shader
-			SDL_Log("Compiling shader %u", shaderType);
+			SDL_Log("  compiling shader %u", shaderType);
 
 			GLuint shaderId = glCreateShader(shaderType);
 			
@@ -129,15 +128,16 @@ namespace griffin {
 			shaderSource = "#version 440 core\n#define _FRAGMENT_\n" + m_preprocessorMacros + m_shaderCode;
 			ok = ok && m_shaders[currentShader].compileShader(shaderSource.c_str(), GL_FRAGMENT_SHADER);
 
-
 			m_numShaders = currentShader + 1;
 
 			// Link the program
 			if (ok) {
-				SDL_Log("Linking program %s", programPath.c_str());
+				SDL_Log("  linking program %s", programPath.c_str());
 				GLuint programId = glCreateProgram();
 				for (const auto& s : m_shaders) {
-					glAttachShader(programId, s.getShaderId());
+					if (s.getShaderType() != 0) {
+						glAttachShader(programId, s.getShaderId());
+					}
 				}
 				glLinkProgram(programId);
 
@@ -159,13 +159,50 @@ namespace griffin {
 					glProgramParameteriEXT(programId, GL_GEOMETRY_VERTICES_OUT_EXT, 3);
 				}*/
 
-				if (result == GL_TRUE) {
+				ok = (result == GL_TRUE);
+				if (ok) {
 					m_programId = programId;
-					return true;
+
+					// get block index for all uniform blocks
+					for (int ubo = 0; ubo < UBOTypeCount; ++ubo) {
+						m_blockIndex[ubo] = glGetUniformBlockIndex(m_programId, UBOTypeToString(static_cast<UBOType>(ubo)));
+
+						#ifdef _DEBUG
+						if (m_blockIndex[ubo] != -1) {
+							GLint blockSize = 0;
+							glGetActiveUniformBlockiv(m_programId, m_blockIndex[ubo], GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
+							if (ubo == CameraUniforms) {
+								assert(blockSize == sizeof(CameraUniformsUBO));
+							}
+							else if (ubo == ObjectUniforms) {
+								assert(blockSize == sizeof(ObjectUniformsUBO));
+							}
+							SDL_Log("  uniform block \"%s\" index %u", UBOTypeToString(static_cast<UBOType>(ubo)), m_blockIndex[ubo]);
+						}
+						#endif
+					}
 				}
 			}
-			return false;
+
+			assert(glGetError() == GL_NO_ERROR);
+			return ok;
 		}
+
+		void ShaderProgram_GL::bindUniformBuffer(UBOType uboType, unsigned int uboHandle)
+		{
+			if (m_blockIndex[uboType] != -1 && uboHandle != 0) {
+				int m = 0;
+				glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &m);
+				SDL_Log("GL_MAX_UNIFORM_BUFFER_BINDINGS = %d", m);
+				glUniformBlockBinding(m_programId, m_blockIndex[uboType], uboType+1);
+				glBindBufferBase(GL_UNIFORM_BUFFER, uboType+1, uboHandle);
+				
+				assert(uboType + 1 <= 84); // 84 is the minimum number of binding points, should be more than enough
+			}
+
+			assert(glGetError() == GL_NO_ERROR);
+		}
+
 
 		/**
 		* Shader_GL binary file header, contains all properties needed for serialization

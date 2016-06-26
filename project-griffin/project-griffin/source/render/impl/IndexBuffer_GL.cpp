@@ -1,6 +1,6 @@
 #include "../IndexBuffer_GL.h"
 #include <GL/glew.h>
-
+#include <cassert>
 
 namespace griffin {
 	namespace render {
@@ -53,6 +53,7 @@ namespace griffin {
 
 			m_flags |= static_cast<uint8_t>(getSizeFlag(sizeOfElement));
 
+			assert(glGetError() == GL_NO_ERROR);
 			return (m_glIndexBuffer != 0);
 		}
 
@@ -71,6 +72,7 @@ namespace griffin {
 		void IndexBuffer_GL::bind() const
 		{
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_glIndexBuffer);
+			assert(glGetError() == GL_NO_ERROR);
 		}
 
 	}

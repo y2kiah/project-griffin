@@ -1,6 +1,4 @@
-//#define UniformLayout_ModelToWorld        0
-//#define UniformLayout_ViewProjection      1
-//#define UniformLayout_ModelViewProjection 2
+// VBO binding locations
 
 #define VertexLayout_Position      0
 #define VertexLayout_Normal        1
@@ -9,6 +7,11 @@
 #define VertexLayout_TextureCoords 4   // consumes up to 8 locations
 #define VertexLayout_Colors        12  // consumes up to 8 locations
 #define VertexLayout_CustomStart   20  // use for first custom binding location and increment
+
+
+// Subroutine uniform locations
+
+#define SubroutineUniform_SurfaceColor		0
 
 // #define PI 3.14159265
 #define DL    2.399963229728653			// PI * (3.0 - sqrt(5.0))

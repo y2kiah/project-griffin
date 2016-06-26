@@ -117,7 +117,7 @@ SceneNodeId SceneGraph::addToScene(EntityId entityId, const glm::dvec3& translat
 }
 
 
-SceneNodeId SceneGraph::addToSceneEntity(EntityId entityId, const glm::dvec3& translationLocal,
+SceneNodeId SceneGraph::addEntityToScene(EntityId entityId, const glm::dvec3& translationLocal,
 										 const glm::dquat& rotationLocal, EntityId parentNodeEntityId)
 {
 	SceneNodeId newSceneNodeId{};

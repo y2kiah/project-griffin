@@ -1,12 +1,14 @@
 #include "SkySystem.h"
 #include "atmosphere.h"
+#include <render/Render.h>
 #include <render/RenderResources.h>
 #include <render/RenderHelpers.h>
 #include <render/RenderTarget_GL.h>
 #include <render/RenderTarget3D_GL.h>
 #include <GL/glew.h>
 
-void precomputeAtmosphere(griffin::game::SkySystem& sky);
+void precomputeAtmosphere(griffin::game::SkySystem& sky,
+						  const griffin::render::RenderSystemPtr &renderSystemPtr);
 void setLayer(unsigned int prog, int layer);
 
 
@@ -21,13 +23,14 @@ void griffin::game::SkySystem::init(Game* pGame, const Engine& engine, const SDL
 	using namespace render;
 	using namespace resource;
 
-	auto skyTex = loadTextureCubeMap(L"textures/skybox.dds", CacheType::Cache_Permanent, true);
+	auto skyTex = loadTextureCubeMap(L"textures/skybox.dds", true, CacheType::Cache_Permanent);
 	skyBoxCubeMap = engine.resourceLoader->getResource(skyTex).get();
-	precomputeAtmosphere(*this);
+	precomputeAtmosphere(*this, engine.renderSystem);
 }
 
 
-void precomputeAtmosphere(griffin::game::SkySystem& sky)
+void precomputeAtmosphere(griffin::game::SkySystem& sky,
+						  const griffin::render::RenderSystemPtr &renderSystemPtr)
 {
 	using namespace griffin::render;
 	using griffin::resource::ResourcePtr;
@@ -94,16 +97,16 @@ void precomputeAtmosphere(griffin::game::SkySystem& sky)
 
 	// Load and compile shader programs
 
-	auto trans = loadShaderProgram(L"shaders/atmosphere/transmittance.glsl");
-	auto irr1 = loadShaderProgram(L"shaders/atmosphere/irradiance1.glsl");
-	auto irrN = loadShaderProgram(L"shaders/atmosphere/irradianceN.glsl");
-	auto insc1 = loadShaderProgram(L"shaders/atmosphere/inscatter1.glsl");
-	auto inscN = loadShaderProgram(L"shaders/atmosphere/inscatterN.glsl");
-	auto inscS = loadShaderProgram(L"shaders/atmosphere/inscatterS.glsl");
-	auto cpIr = loadShaderProgram(L"shaders/atmosphere/copyIrradiance.glsl");
-	auto cpIn1 = loadShaderProgram(L"shaders/atmosphere/copyInscatter1.glsl");
-	auto cpInN = loadShaderProgram(L"shaders/atmosphere/copyInscatterN.glsl");
-	auto atms = loadShaderProgram(L"shaders/atmosphere/atmosphere.glsl");
+	auto trans = loadShaderProgram(L"shaders/atmosphere/transmittance.glsl", renderSystemPtr);
+	auto irr1 = loadShaderProgram(L"shaders/atmosphere/irradiance1.glsl", renderSystemPtr);
+	auto irrN = loadShaderProgram(L"shaders/atmosphere/irradianceN.glsl", renderSystemPtr);
+	auto insc1 = loadShaderProgram(L"shaders/atmosphere/inscatter1.glsl", renderSystemPtr);
+	auto inscN = loadShaderProgram(L"shaders/atmosphere/inscatterN.glsl", renderSystemPtr);
+	auto inscS = loadShaderProgram(L"shaders/atmosphere/inscatterS.glsl", renderSystemPtr);
+	auto cpIr = loadShaderProgram(L"shaders/atmosphere/copyIrradiance.glsl", renderSystemPtr);
+	auto cpIn1 = loadShaderProgram(L"shaders/atmosphere/copyInscatter1.glsl", renderSystemPtr);
+	auto cpInN = loadShaderProgram(L"shaders/atmosphere/copyInscatterN.glsl", renderSystemPtr);
+	auto atms = loadShaderProgram(L"shaders/atmosphere/atmosphere.glsl", renderSystemPtr);
 
 	sky.transmittanceProgram = loader->getResource(trans).get();
 	sky.irradiance1Program = loader->getResource(irr1).get();
@@ -146,7 +149,9 @@ void precomputeAtmosphere(griffin::game::SkySystem& sky)
 	{
 		auto& prg = sky.irradiance1Program.get()->getResource<ShaderProgram_GL>();
 		prg.useProgram();
-		glUniform1i(glGetUniformLocation(prg.getProgramId(), "transmittanceSampler"), transmittanceUnit);
+		auto transmittanceSamplerLoc = glGetUniformLocation(prg.getProgramId(), "transmittanceSampler");
+		glUniform1i(transmittanceSamplerLoc, transmittanceUnit);
+
 		drawFullscreenQuad();
 	}
 	deltaETexture.stop();
@@ -158,6 +163,7 @@ void precomputeAtmosphere(griffin::game::SkySystem& sky)
 		auto& prg = sky.inscatter1Program.get()->getResource<ShaderProgram_GL>();
 		prg.useProgram();
 		glUniform1i(glGetUniformLocation(prg.getProgramId(), "transmittanceSampler"), transmittanceUnit);
+
 		for (int layer = 0; layer < RES_R; ++layer) {
 			setLayer(prg.getProgramId(), layer);
 			drawFullscreenQuad();
@@ -272,6 +278,9 @@ void precomputeAtmosphere(griffin::game::SkySystem& sky)
 
 		glDisable(GL_BLEND);
 	}
+	
+	glGetError(); // TEMP, the transmittanceSample uniform location above is returning -1 for some reason???
+	assert(glGetError() == GL_NO_ERROR);
 }
 
 

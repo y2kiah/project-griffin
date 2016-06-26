@@ -156,6 +156,7 @@ namespace griffin {
 
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+			assert(glGetError() == GL_NO_ERROR);
 			return true;
 		}
 
@@ -189,6 +190,8 @@ namespace griffin {
 
 			glActiveTexture(GL_TEXTURE0 + textureSlot);
 			glBindTexture(GL_TEXTURE_2D, m_textureIds[renderTarget]);
+
+			assert(glGetError() == GL_NO_ERROR);
 		}
 	}
 }

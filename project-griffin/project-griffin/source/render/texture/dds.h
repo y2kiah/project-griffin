@@ -290,6 +290,7 @@ namespace griffin {
 
 			int get_components() { return components; }
 			int get_format()     { return format; }
+			int get_internalFormat() { return internalFormat; }
 
 			bool is_compressed() { return compressed; }
 			bool is_cubemap()    { return cubemap; }
@@ -312,6 +313,7 @@ namespace griffin {
 			void flip_dxt5_alpha(DXT5AlphaBlock* block);
 
 			int  format;
+			int  internalFormat;
 			int  components;
 			bool compressed;
 			bool cubemap;
