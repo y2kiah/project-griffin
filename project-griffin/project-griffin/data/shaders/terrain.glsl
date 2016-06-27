@@ -19,7 +19,8 @@ layout(std140) uniform CameraUniforms {
 	mat4  viewProjection;
 	float frustumNear;
 	float frustumFar;
-	float inverseFrustumDistance; // inverse max distance of the camera, to get linear depth
+	float inverseFrustumDistance;	// inverse max distance of the camera, to get linear depth
+	float _pad;						// std140 is NOT CONSISTENT between AMD and Nvidia, this pad fixes it
 };
 
 layout(std140) uniform ObjectUniforms {

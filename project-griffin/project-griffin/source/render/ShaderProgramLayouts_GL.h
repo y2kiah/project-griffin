@@ -44,6 +44,7 @@ namespace griffin {
 			float		frustumNear;
 			float		frustumFar;
 			float		inverseFrustumDistance;
+			float		_pad;
 		};
 
 		/**
@@ -55,6 +56,7 @@ namespace griffin {
 			glm::mat4	modelViewProjection;
 			glm::mat4	normalMatrix;
 		};
+		
 	}
 }
 

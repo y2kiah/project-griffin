@@ -432,10 +432,10 @@ namespace griffin {
 			// TEMP create some test resources
 			try {
 				//auto mdl1 = loadModel(L"models/Spitfire/spitfire.gmd", CacheType::Cache_Models);
-				//auto mdl2 = loadModel(L"models/landing_platform.gmd", CacheType::Cache_Models);
+				auto mdl2 = loadModel(L"models/landing_platform.gmd", CacheType::Cache_Models);
 				//auto mdl3 = loadModel(L"models/collision_test/collision_test.gmd", CacheType::Cache_Models);
 				//auto mdl4 = loadModel(L"models/gunship/gunship.gmd", CacheType::Cache_Models);
-				auto mdl5 = loadModel(L"models/A-10C Pit.gmd", CacheType::Cache_Models);
+				//auto mdl5 = loadModel(L"models/A-10C Pit.gmd", CacheType::Cache_Models);
 				//auto mdl6 = loadModel(L"models/other_pit.gmd", CacheType::Cache_Models);
 				//auto mdl7 = loadModel(L"models/Bill/Bill.gmd", CacheType::Cache_Models);
 				//auto mdl8 = loadModel(L"models/ring/ring.gmd", CacheType::Cache_Models);
@@ -447,9 +447,9 @@ namespace griffin {
 				if (!loader) {
 					throw std::runtime_error("no resource loader");
 				}
-				//g_tempModel[0] = loader->getResource(mdl2).get();
+				g_tempModel[0] = loader->getResource(mdl2).get();
 				//g_tempModel[1] = loader->getResource(mdl4).get();
-				g_tempModel[2] = loader->getResource(mdl5).get();
+				//g_tempModel[2] = loader->getResource(mdl5).get();
 				//g_tempModel[3] = loader->getResource(mdl8).get();
 				loader->executeCallbacks();
 			}
@@ -662,7 +662,7 @@ namespace griffin {
 				ShaderProgram_GL& program = resourcePtr->getResource<ShaderProgram_GL>();
 				auto ok = program.compileAndLinkProgram();
 				if (!ok) {
-					SDL_Log("  program compilation/linking failed");
+					SDL_LogError(SDL_LOG_CATEGORY_RENDER, "  program compilation/linking failed");
 					throw std::runtime_error("program compilation/linking failed");
 				}
 

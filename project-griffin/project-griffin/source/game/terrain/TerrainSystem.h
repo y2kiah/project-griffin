@@ -16,7 +16,8 @@ namespace griffin {
 		struct TerrainSystem {
 			// Variables
 			
-			
+			float tempHeight[16*3] = {};
+
 			ResourcePtr terrainProgram = nullptr;		//<! terrain shader program
 
 			// Public Functions

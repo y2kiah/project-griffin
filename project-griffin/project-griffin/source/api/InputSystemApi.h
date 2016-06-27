@@ -101,7 +101,7 @@ extern "C" {
 		double						totalMs;			//<! total millis the state has been active
 		int64_t						startCounts;		//<! clock counts when state began
 		int64_t						totalCounts;		//<! currentCounts - startCounts + countsPerTick
-		int32_t						startFrame;			//<! frame number when state began
+		int64_t						startFrame;			//<! frame number when state began
 		int32_t						totalFrames;		//<! currentFrame - startFrame + 1
 		bool						handled;			//<! flag set to true when event has been handled by a callback
 	} griffin_MappedState;
