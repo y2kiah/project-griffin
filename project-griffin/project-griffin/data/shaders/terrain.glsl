@@ -46,8 +46,8 @@ layout(std140) uniform ObjectUniforms {
 	
 	layout(vertices = 16) out;
 
-	uniform float tessLevelInner;
-	uniform float tessLevelOuter;
+	const /*uniform*/ float tessLevelInner = 4.0;
+	const /*uniform*/ float tessLevelOuter = 4.0;
 
 	in vec3 vPosition[];
 	out vec3 tcPosition[];
@@ -170,7 +170,7 @@ layout(std140) uniform ObjectUniforms {
 
 	void main()
 	{
-		surfaceColor = normalViewspace; // TEMP
+		surfaceColor = vec3(1.0, 0.0, 0.0); // normalViewspace; // TEMP
 
 		albedoDisplacement = vec4(surfaceColor, 0.0);
 		eyeSpacePosition = vec4(positionViewspace.xyz, 0.0);

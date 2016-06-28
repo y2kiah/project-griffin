@@ -21,24 +21,49 @@ void griffin::game::TerrainSystem::renderFrameTick(Game* pGame, Engine& engine, 
 }
 
 
+void griffin::game::TerrainSystem::render(Id_T entityId, scene::Scene& scene, uint8_t viewport, Engine& engine)
+{
+}
+
+
+void griffin::game::TerrainSystem::draw(Id_T entityId, int drawSetIndex)
+{
+	glBindVertexArray(vao);
+	glPatchParameteri(GL_PATCH_VERTICES, 16);
+	glDrawArrays(GL_PATCHES, 0, 16);
+}
+
+
 void griffin::game::TerrainSystem::init(Game* pGame, const Engine& engine, const SDLApplication& app)
 {
 	using namespace griffin::render;
 	using namespace resource;
 
-	auto loader = g_resourceLoader.lock();
-	if (!loader) {
-		throw std::runtime_error("no resource loader");
-	}
-
 	auto terrainProg = loadShaderProgram(L"shaders/terrain.glsl", engine.renderSystem);
-
-	//terrainProgram = loader->getResource(terrainProg).get();
+	terrainProgram = engine.resourceLoader->getResource(terrainProg).get();
+	engine.resourceLoader->executeCallbacks();
 
 	// temp
-	//for (int i = 0; i < 16; ++i) {
-	//	tempHeight[i*3]   = static_cast<float>(i % 4);
-	//	tempHeight[i*3+1] = static_cast<float>(i / 4);
-	//	tempHeight[i*3+2] = (static_cast<float>(rand()) / RAND_MAX) * 32.0f;
-	//}
+	for (int i = 0; i < 16; ++i) {
+		tempHeight[i*3]   = static_cast<float>(i % 4) * 32.0f;
+		tempHeight[i*3+1] = static_cast<float>(i / 4) * 32.0f;
+		tempHeight[i*3+2] = (static_cast<float>(rand()) / RAND_MAX) * 32.0f;
+	}
+	
+	vertexBuffer.loadFromMemory(reinterpret_cast<const unsigned char*>(tempHeight), sizeof(tempHeight));
+
+	// build VAO for terrain
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+	vertexBuffer.bind();
+	glEnableVertexAttribArray(VertexLayout_Position);
+	glVertexAttribPointer(VertexLayout_Position, 3, GL_FLOAT, GL_FALSE, 0, 0);
+}
+
+
+void griffin::game::TerrainSystem::deinit()
+{
+	if (vao != 0) {
+		glDeleteVertexArrays(1, &vao);
+	}
 }

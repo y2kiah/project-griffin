@@ -16,6 +16,11 @@
 
 
 namespace griffin {
+	// TEMP
+	namespace render {
+		extern Game* g_pGame;
+	}
+
 	// Type Definitions
 
 	// Functions
@@ -83,6 +88,7 @@ namespace griffin {
 			
 			// set up terrain system
 			game.terrain.init(gamePtr.get(), engine, app);
+			render::g_pGame = &game; // TEMP
 
 			// set up sky system
 			game.sky.init(gamePtr.get(), engine, app);
@@ -113,7 +119,9 @@ namespace griffin {
 	*/
 	void destroy_game(const GamePtr& gamePtr)
 	{
-		
+		Game& game = *gamePtr.get();
+
+		game.terrain.deinit();
 	}
 
 }

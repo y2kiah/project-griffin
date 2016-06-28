@@ -21,6 +21,7 @@
 #include <render/model/ModelImport_Assimp.h>
 #include <render/RenderTarget_GL.h>
 
+#include <game/impl/GameImpl.h> // temp
 
 namespace griffin {
 	namespace render {
@@ -36,6 +37,7 @@ namespace griffin {
 
 		// TEMP
 		ResourcePtr		g_tempModel[4] = {};
+		Game *g_pGame; // temp
 
 		// defined in RenderHelpers.cpp
 		extern float			g_fullScreenQuadBufferData[3 * 6];
@@ -243,6 +245,9 @@ namespace griffin {
 				if (animTime > 2.5f) {
 					animTime = 0.0f;
 				}
+
+				// draw terrain
+				g_pGame->terrain.draw(NullId_T, 0);
 
 				// draw the test mesh
 				for (int i = 0; i < _countof(g_tempModel); ++i) {
