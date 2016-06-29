@@ -247,10 +247,10 @@ namespace griffin {
 				}
 
 				// draw terrain
-				g_pGame->terrain.draw(NullId_T, 0);
+				g_pGame->terrain.draw(engine, viewport.params.viewMat, viewport.params.projMat);
 
 				// draw the test mesh
-				for (int i = 0; i < _countof(g_tempModel); ++i) {
+				/*for (int i = 0; i < _countof(g_tempModel); ++i) {
 					if (g_tempModel[i]) {
 						auto& mdl = g_tempModel[i]->getResource<Model_GL>();
 						mdl.m_mesh.render(engine, 0,
@@ -259,7 +259,7 @@ namespace griffin {
 										  diffuseMapLoc, animTime,
 										  viewport.params.viewMat, viewport.params.projMat); // temporarily passing in the modelMatLoc
 					}
-				}
+				}*/
 
 				glDisable(GL_DEPTH_TEST);
 				

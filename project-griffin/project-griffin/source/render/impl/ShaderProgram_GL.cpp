@@ -225,6 +225,7 @@ namespace griffin {
 			glGetProgramiv(m_programId, GL_LINK_STATUS, &success);
 
 			if (!success) {
+			
 				// Something must have changed since the program binaries
 				// were cached away.  Fallback to source shader loading path,
 				// and then retrieve and cache new program binaries once again.
@@ -298,6 +299,9 @@ namespace griffin {
 		void ShaderProgram_GL::useProgram() const
 		{
 			glUseProgram(m_programId);
+
+			// TODO, do we need to bind uniform buffers again for each program change?
+			//glBindBuffer(GL_UNIFORM_BUFFER, renderSystem.getUBOHandle(ObjectUniforms));
 		}
 
 	}
