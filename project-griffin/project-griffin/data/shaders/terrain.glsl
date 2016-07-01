@@ -47,7 +47,7 @@ layout(std140) uniform ObjectUniforms {
 	
 	layout(vertices = 16) out;
 
-	const /*uniform*/ float tessLevelInner = 16.0;
+	const /*uniform*/ float tessLevelInner = 4.0;
 	const /*uniform*/ float tessLevelOuter = 16.0;
 
 	in vec3 positionModelspace[];

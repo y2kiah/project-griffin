@@ -44,6 +44,7 @@ void griffin::game::TerrainSystem::render(Id_T entityId, scene::Scene& scene, ui
 
 void griffin::game::TerrainSystem::draw(Engine &engine, const glm::dmat4& viewMat, const glm::mat4& projMat/*All TEMP*/)
 {
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	auto& renderSystem = *engine.renderSystem;
 
 	auto& program = terrainProgram.get()->getResource<render::ShaderProgram_GL>();
@@ -69,6 +70,7 @@ void griffin::game::TerrainSystem::draw(Engine &engine, const glm::dmat4& viewMa
 	glDrawArrays(GL_PATCHES, 0, 16);
 
 	assert(glGetError() == GL_NO_ERROR);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 
@@ -89,13 +91,13 @@ void griffin::game::TerrainSystem::init(Game* pGame, const Engine& engine, const
 
 	// temp
 	for (int i = 0; i < 16; ++i) {
-		tempHeight[i*3]   = static_cast<float>(i % 4) * 32.0f;
-		tempHeight[i*3+1] = static_cast<float>(i / 4) * 32.0f;
-		tempHeight[i*3+2] = (static_cast<float>(rand()) / RAND_MAX) * 32.0f;
+		tempHeight[i*3]   = static_cast<float>(i % 4) * 64.0f;
+		tempHeight[i*3+1] = static_cast<float>(i / 4) * 64.0f;
+		tempHeight[i * 3 + 2] = 0;// (static_cast<float>(rand()) / RAND_MAX) * 32.0f;
 	}
 	
 	vertexBuffer.loadFromMemory(reinterpret_cast<const unsigned char*>(tempHeight), sizeof(tempHeight));
-
+	
 	// build VAO for terrain
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
