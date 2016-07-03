@@ -13,12 +13,19 @@
 // Local Variables
 
 // x(t)  = (h0)(1/6)(1-3t+3t^2-t^3) + (h1)(1/6)(4-6t^2+3t^3) + (h2)(1/6)(1+3t+3t^2-3t^3) + (h3)(1/6)(t^3)
-glm::mat4 cubicBasis(glm::vec4( 1.0f,  4.0f,  1.0f, 0.0f) / 6.0f,
-					 glm::vec4(-3.0f,  0.0f,  3.0f, 0.0f) / 6.0f,
-					 glm::vec4( 3.0f, -6.0f,  3.0f, 0.0f) / 6.0f,
-					 glm::vec4(-1.0f,  3.0f, -3.0f, 1.0f) / 6.0f);
+glm::mat4 cubicBasis(glm::vec4(-1.0f, 3.0f,-3.0f, 1.0f) / 6.0F,
+					 glm::vec4( 3.0f,-6.0f, 0.0f, 4.0f) / 6.0F,
+					 glm::vec4(-3.0f, 3.0f, 3.0f, 1.0f) / 6.0F,
+					 glm::vec4( 1.0f, 0.0f, 0.0f, 0.0f) / 6.0F);
 
 glm::mat4 cubicBasisTranspose(glm::transpose(cubicBasis));
+
+glm::mat4 bezierBasis(glm::vec4(-1.0f, 3.0f,-3.0f, 1.0f),
+					  glm::vec4( 3.0f,-6.0f, 3.0f, 0.0f),
+					  glm::vec4(-3.0f, 3.0f, 0.0f, 0.0f),
+					  glm::vec4( 1.0f, 0.0f, 0.0f, 0.0f));
+
+glm::mat4 bezierBasisTranspose(glm::transpose(bezierBasis));
 
 
 // class TerrainSystem
@@ -67,7 +74,9 @@ void griffin::game::TerrainSystem::draw(Engine &engine, const glm::dmat4& viewMa
 	// draw the patch
 	glBindVertexArray(vao);
 	glPatchParameteri(GL_PATCH_VERTICES, 16);
-	glDrawArrays(GL_PATCHES, 0, 16);
+	//glDrawArrays(GL_PATCHES, 0, 16);
+	//glDrawRangeElements(GL_PATCHES, 0, 32 * 32, 29 * 29 * 16, GL_UNSIGNED_SHORT, 0);
+	glDrawElements(GL_PATCHES, (terrainX - 3) * (terrainY - 3) * 16, GL_UNSIGNED_SHORT, 0);
 
 	assert(glGetError() == GL_NO_ERROR);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -90,18 +99,34 @@ void griffin::game::TerrainSystem::init(Game* pGame, const Engine& engine, const
 	basisTransposeLoc = glGetUniformLocation(terrainProgramId, "basisTranspose");
 
 	// temp
-	for (int i = 0; i < 16; ++i) {
-		tempHeight[i*3]   = static_cast<float>(i % 4) * 64.0f;
-		tempHeight[i*3+1] = static_cast<float>(i / 4) * 64.0f;
-		tempHeight[i * 3 + 2] = 0;// (static_cast<float>(rand()) / RAND_MAX) * 32.0f;
+	for (int v = 0; v < (terrainX * terrainY); ++v) {
+		tempHeight[v*3]   = static_cast<float>(v % terrainX) * 32.0f;
+		tempHeight[v*3+1] = static_cast<float>(v / terrainX) * 32.0f;
+		tempHeight[v*3+2] = (static_cast<float>(rand()) / RAND_MAX) * 128.0f;
 	}
 	
+	int i = 0;
+	for (int yStart = 0; yStart < (terrainY - 3); ++yStart) {
+		for (int xStart = 0; xStart < (terrainX - 3); ++xStart) {
+			for (int yPatch = 0; yPatch < 4; ++yPatch) {
+				for (int xPatch = 0; xPatch < 4; ++xPatch) {
+					int y = yStart + yPatch;
+					int x = xStart + xPatch;
+					tempIndices[i] = y * terrainX + x;
+					++i;
+				}
+			}
+		}
+	}
+
 	vertexBuffer.loadFromMemory(reinterpret_cast<const unsigned char*>(tempHeight), sizeof(tempHeight));
-	
+	indexBuffer.loadFromMemory(reinterpret_cast<const unsigned char*>(tempIndices), sizeof(tempIndices), sizeof(uint16_t));
+
 	// build VAO for terrain
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 	vertexBuffer.bind();
+	indexBuffer.bind();
 	glEnableVertexAttribArray(VertexLayout_Position);
 	glVertexAttribPointer(VertexLayout_Position, 3, GL_FLOAT, GL_FALSE, 0, 0);
 

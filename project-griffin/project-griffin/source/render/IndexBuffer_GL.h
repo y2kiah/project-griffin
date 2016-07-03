@@ -35,7 +35,7 @@ namespace griffin {
 			*/
 			inline void set(std::unique_ptr<unsigned char[]>&& data, size_t size, IndexBufferFlags flags);
 
-			bool loadFromMemory(unsigned char* data, size_t size, int sizeOfElement = sizeof(uint32_t));
+			bool loadFromMemory(const unsigned char* data, size_t size, int sizeOfElement = sizeof(uint32_t));
 
 			bool loadFromInternalMemory(bool discard = true);
 

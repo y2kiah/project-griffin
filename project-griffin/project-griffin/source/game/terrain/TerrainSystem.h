@@ -7,6 +7,7 @@
 #include <application/UpdateInfo.h>
 #include <resource/ResourceLoader.h>
 #include "render/VertexBuffer_GL.h"
+#include "render/IndexBuffer_GL.h"
 
 #include <glm/mat4x4.hpp> // TEMP
 
@@ -14,6 +15,7 @@ namespace griffin {
 	using resource::ResourcePtr;
 	using resource::CacheType;
 	using render::VertexBuffer_GL;
+	using render::IndexBuffer_GL;
 
 	namespace scene {
 		class Scene;
@@ -24,11 +26,16 @@ namespace griffin {
 		struct TerrainSystem {
 			// Variables
 			
-			float tempHeight[16 * 3] = {};
+			static const int terrainX = 32;
+			static const int terrainY = 32;
+			
+			float tempHeight[terrainX * terrainY * 3] = {};
+			uint16_t tempIndices[(terrainX - 3)*(terrainY - 3) * 16] = {};
 
 			ResourcePtr terrainProgram = nullptr;		//<! terrain shader program
 
 			VertexBuffer_GL	vertexBuffer;
+			IndexBuffer_GL	indexBuffer;
 			unsigned int vao = 0;
 			unsigned int terrainProgramId = 0;
 			int basisLoc = 0;

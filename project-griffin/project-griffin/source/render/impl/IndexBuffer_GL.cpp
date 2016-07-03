@@ -39,7 +39,7 @@ namespace griffin {
 		}
 
 
-		bool IndexBuffer_GL::loadFromMemory(unsigned char* data, size_t size, int sizeOfElement)
+		bool IndexBuffer_GL::loadFromMemory(const unsigned char* data, size_t size, int sizeOfElement)
 		{
 			// generate the buffer
 			glGenBuffers(1, &m_glIndexBuffer);

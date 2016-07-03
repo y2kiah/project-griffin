@@ -35,10 +35,10 @@ layout(std140) uniform ObjectUniforms {
 	
 	layout(location = VertexLayout_Position) in vec3 vertexPosition_modelspace;
 
-	out vec3 positionModelspace;
+	out vec3 vPosition;
 
 	void main() {
-		positionModelspace = vertexPosition_modelspace.xyz;
+		vPosition = vertexPosition_modelspace.xyz;
 	}
 
 #endif
@@ -47,17 +47,18 @@ layout(std140) uniform ObjectUniforms {
 	
 	layout(vertices = 16) out;
 
-	const /*uniform*/ float tessLevelInner = 4.0;
-	const /*uniform*/ float tessLevelOuter = 16.0;
+	uniform mat4 basis;
+	uniform mat4 basisTranspose;
 
-	in vec3 positionModelspace[];
+	const /*uniform*/ float tessLevelInner = 8.0;
+	const /*uniform*/ float tessLevelOuter = 8.0;
 
-	out vec3 tcPosition[];
+	in vec3 vPosition[];
+
+	patch out mat4 cx, cy, cz;
 
 	void main()
 	{
-		tcPosition[gl_InvocationID] = positionModelspace[gl_InvocationID];
-
 		if (gl_InvocationID == 0) {
 			gl_TessLevelInner[0] = tessLevelInner;
 			gl_TessLevelInner[1] = tessLevelInner;
@@ -65,6 +66,29 @@ layout(std140) uniform ObjectUniforms {
 			gl_TessLevelOuter[1] = tessLevelOuter;
 			gl_TessLevelOuter[2] = tessLevelOuter;
 			gl_TessLevelOuter[3] = tessLevelOuter;
+
+			// calculate coefficient matrices for cubic surface
+			mat4 Px = mat4(
+				vPosition[0].x,  vPosition[1].x,  vPosition[2].x,  vPosition[3].x, 
+				vPosition[4].x,  vPosition[5].x,  vPosition[6].x,  vPosition[7].x, 
+				vPosition[8].x,  vPosition[9].x,  vPosition[10].x, vPosition[11].x, 
+				vPosition[12].x, vPosition[13].x, vPosition[14].x, vPosition[15].x);
+
+			mat4 Py = mat4(
+				vPosition[0].y,  vPosition[1].y,  vPosition[2].y,  vPosition[3].y, 
+				vPosition[4].y,  vPosition[5].y,  vPosition[6].y,  vPosition[7].y, 
+				vPosition[8].y,  vPosition[9].y,  vPosition[10].y, vPosition[11].y, 
+				vPosition[12].y, vPosition[13].y, vPosition[14].y, vPosition[15].y);
+
+			mat4 Pz = mat4(
+				vPosition[0].z,  vPosition[1].z,  vPosition[2].z,  vPosition[3].z, 
+				vPosition[4].z,  vPosition[5].z,  vPosition[6].z,  vPosition[7].z, 
+				vPosition[8].z,  vPosition[9].z,  vPosition[10].z, vPosition[11].z, 
+				vPosition[12].z, vPosition[13].z, vPosition[14].z, vPosition[15].z);
+
+			cx = basis * Px * basisTranspose;
+			cy = basis * Py * basisTranspose;
+			cz = basis * Pz * basisTranspose;
 		}
 	}
 
@@ -74,10 +98,7 @@ layout(std140) uniform ObjectUniforms {
 	
 	layout(quads) in;
 
-	uniform mat4 basis;
-	uniform mat4 basisTranspose;
-
-	in vec3 tcPosition[];
+	patch in mat4 cx, cy, cz;
 	
 	out vec4 tePatchDistance;
 	out vec4 positionViewspace;
@@ -88,28 +109,6 @@ layout(std140) uniform ObjectUniforms {
 	{
 		float u = gl_TessCoord.x;
 		float v = gl_TessCoord.y;
-
-		mat4 Px = mat4(
-			tcPosition[0].x,  tcPosition[1].x,  tcPosition[2].x,  tcPosition[3].x, 
-			tcPosition[4].x,  tcPosition[5].x,  tcPosition[6].x,  tcPosition[7].x, 
-			tcPosition[8].x,  tcPosition[9].x,  tcPosition[10].x, tcPosition[11].x, 
-			tcPosition[12].x, tcPosition[13].x, tcPosition[14].x, tcPosition[15].x);
-
-		mat4 Py = mat4(
-			tcPosition[0].y,  tcPosition[1].y,  tcPosition[2].y,  tcPosition[3].y, 
-			tcPosition[4].y,  tcPosition[5].y,  tcPosition[6].y,  tcPosition[7].y, 
-			tcPosition[8].y,  tcPosition[9].y,  tcPosition[10].y, tcPosition[11].y, 
-			tcPosition[12].y, tcPosition[13].y, tcPosition[14].y, tcPosition[15].y);
-
-		mat4 Pz = mat4(
-			tcPosition[0].z,  tcPosition[1].z,  tcPosition[2].z,  tcPosition[3].z, 
-			tcPosition[4].z,  tcPosition[5].z,  tcPosition[6].z,  tcPosition[7].z, 
-			tcPosition[8].z,  tcPosition[9].z,  tcPosition[10].z, tcPosition[11].z, 
-			tcPosition[12].z, tcPosition[13].z, tcPosition[14].z, tcPosition[15].z);
-
-		mat4 cx = basis * Px * basisTranspose;
-		mat4 cy = basis * Py * basisTranspose;
-		mat4 cz = basis * Pz * basisTranspose;
 
 		vec4 U = vec4(u*u*u, u*u, u, 1.0);
 		vec4 V = vec4(v*v*v, v*v, v, 1.0);
@@ -130,6 +129,13 @@ layout(std140) uniform ObjectUniforms {
 		linearDepth = (-positionViewspace.z - frustumNear) * inverseFrustumDistance; // map near..far linearly to 0..1
 
 		gl_Position = modelViewProjection * tePosition;
+
+		/*float u = gl_TessCoord.x;
+		float v = gl_TessCoord.y;
+		vec3 x = mix(vPosition[0], vPosition[3], u);
+		vec3 y = mix(vPosition[12], vPosition[15], u);
+		vec3 tePosition = mix(x, y, v);
+		gl_Position = modelViewProjection * vec4(tePosition, 1.0);*/
 	}
 
 #endif
