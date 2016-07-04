@@ -25,40 +25,55 @@
 
 	in vec3 vPosition[];
 
-	patch out mat4 cx, cy, cz;
+	// coefficient matrices should be "patch out" variables, but crashes AMD driver (at least on my 6900)
+	// to hack around the issue we use the first three elements of a normal out variable array
+	//patch out mat4 cx, cy, cz;
+	out mat4 cMat[]; // cMat[0] == cx, cMat[1] == cy, cMat[2] == cz, the rest are unused
+	//out vec3 tcPosition[];
 
 	void main()
 	{
-		if (gl_InvocationID == 0) {
-			gl_TessLevelInner[0] = tessLevelInner;
-			gl_TessLevelInner[1] = tessLevelInner;
-			gl_TessLevelOuter[0] = tessLevelOuter;
-			gl_TessLevelOuter[1] = tessLevelOuter;
-			gl_TessLevelOuter[2] = tessLevelOuter;
-			gl_TessLevelOuter[3] = tessLevelOuter;
+		//tcPosition[gl_InvocationID] = vPosition[gl_InvocationID];
 
-			// calculate coefficient matrices for cubic surface
-			mat4 Px = mat4(
-				vPosition[0].x,  vPosition[1].x,  vPosition[2].x,  vPosition[3].x, 
-				vPosition[4].x,  vPosition[5].x,  vPosition[6].x,  vPosition[7].x, 
-				vPosition[8].x,  vPosition[9].x,  vPosition[10].x, vPosition[11].x, 
-				vPosition[12].x, vPosition[13].x, vPosition[14].x, vPosition[15].x);
+		switch (gl_InvocationID) {
+			case 0: {
+				gl_TessLevelInner[0] = tessLevelInner;
+				gl_TessLevelInner[1] = tessLevelInner;
+				gl_TessLevelOuter[0] = tessLevelOuter;
+				gl_TessLevelOuter[1] = tessLevelOuter;
+				gl_TessLevelOuter[2] = tessLevelOuter;
+				gl_TessLevelOuter[3] = tessLevelOuter;
 
-			mat4 Py = mat4(
-				vPosition[0].y,  vPosition[1].y,  vPosition[2].y,  vPosition[3].y, 
-				vPosition[4].y,  vPosition[5].y,  vPosition[6].y,  vPosition[7].y, 
-				vPosition[8].y,  vPosition[9].y,  vPosition[10].y, vPosition[11].y, 
-				vPosition[12].y, vPosition[13].y, vPosition[14].y, vPosition[15].y);
+				// calculate coefficient matrices for cubic surface
+				mat4 Px = mat4(
+					vPosition[0].x,  vPosition[1].x,  vPosition[2].x,  vPosition[3].x, 
+					vPosition[4].x,  vPosition[5].x,  vPosition[6].x,  vPosition[7].x, 
+					vPosition[8].x,  vPosition[9].x,  vPosition[10].x, vPosition[11].x, 
+					vPosition[12].x, vPosition[13].x, vPosition[14].x, vPosition[15].x);
 
-			mat4 Pz = mat4(
-				vPosition[0].z,  vPosition[1].z,  vPosition[2].z,  vPosition[3].z, 
-				vPosition[4].z,  vPosition[5].z,  vPosition[6].z,  vPosition[7].z, 
-				vPosition[8].z,  vPosition[9].z,  vPosition[10].z, vPosition[11].z, 
-				vPosition[12].z, vPosition[13].z, vPosition[14].z, vPosition[15].z);
+				cMat[0] = basis * Px * basisTranspose;
+				break;
+			}
+			case 1: {
+				mat4 Py = mat4(
+					vPosition[0].y,  vPosition[1].y,  vPosition[2].y,  vPosition[3].y, 
+					vPosition[4].y,  vPosition[5].y,  vPosition[6].y,  vPosition[7].y, 
+					vPosition[8].y,  vPosition[9].y,  vPosition[10].y, vPosition[11].y, 
+					vPosition[12].y, vPosition[13].y, vPosition[14].y, vPosition[15].y);
 
-			cx = basis * Px * basisTranspose;
-			cy = basis * Py * basisTranspose;
-			cz = basis * Pz * basisTranspose;
+				cMat[1] = basis * Py * basisTranspose;
+				break;
+			}
+			case 2: {
+				mat4 Pz = mat4(
+					vPosition[0].z,  vPosition[1].z,  vPosition[2].z,  vPosition[3].z, 
+					vPosition[4].z,  vPosition[5].z,  vPosition[6].z,  vPosition[7].z, 
+					vPosition[8].z,  vPosition[9].z,  vPosition[10].z, vPosition[11].z, 
+					vPosition[12].z, vPosition[13].z, vPosition[14].z, vPosition[15].z);
+
+				cMat[2] = basis * Pz * basisTranspose;
+				break;
+			}
 		}
 	}
 
@@ -68,8 +83,10 @@
 	
 	layout(quads) in;
 
-	patch in mat4 cx, cy, cz;
-	
+	//patch in mat4 cx, cy, cz;
+	in mat4 cMat[];
+	//in vec3 tcPosition[];
+
 	out vec4 tePatchDistance;
 	out vec4 positionViewspace;
 	out vec3 normalViewspace;
@@ -83,29 +100,30 @@
 		vec4 U = vec4(u*u*u, u*u, u, 1.0);
 		vec4 V = vec4(v*v*v, v*v, v, 1.0);
 
-		float x = dot(cx * V, U);
-		float y = dot(cy * V, U);
-		float z = dot(cz * V, U);
+		float x = dot(cMat[0] * V, U);
+		float y = dot(cMat[1] * V, U);
+		float z = dot(cMat[2] * V, U);
 		
 		vec4 tePosition = vec4(x, y, z, 1.0);
 
 		tePatchDistance = vec4(u, v, 1.0-u, 1.0-v);
+		
+		/////
+		/*float u = gl_TessCoord.x;
+		float v = gl_TessCoord.y;
+		vec3 x = mix(tcPosition[0], tcPosition[3], u);
+		vec3 y = mix(tcPosition[12], tcPosition[15], u);
+		vec4 tePosition = vec4(mix(x, y, v), 1.0);*/
+		/////
 
 		// Get the position and normal in viewspace
 		positionViewspace = modelView * tePosition;
 		normalViewspace = vec3(1.0, 1.0, 1.0);
 		//normalViewspace = normalize(normalMatrix * vec4(vertexNormal, 0.0)).xyz;
-		
+
 		linearDepth = (-positionViewspace.z - frustumNear) * inverseFrustumDistance; // map near..far linearly to 0..1
 
 		gl_Position = modelViewProjection * tePosition;
-
-		/*float u = gl_TessCoord.x;
-		float v = gl_TessCoord.y;
-		vec3 x = mix(vPosition[0], vPosition[3], u);
-		vec3 y = mix(vPosition[12], vPosition[15], u);
-		vec3 tePosition = mix(x, y, v);
-		gl_Position = modelViewProjection * vec4(tePosition, 1.0);*/
 	}
 
 #endif
