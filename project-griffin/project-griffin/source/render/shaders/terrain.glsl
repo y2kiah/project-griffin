@@ -17,12 +17,26 @@
 	
 	layout(vertices = 16) out;
 
-	uniform mat4 basis;
-	uniform mat4 basisTranspose;
+	//uniform mat4 basis;
+	//uniform mat4 basisTranspose;
 
 	const /*uniform*/ float tessLevelInner = 8.0;
 	const /*uniform*/ float tessLevelOuter = 8.0;
 
+	const mat4 bicubicBasis = mat4(	1.0f/6,-3.0f/6, 3.0f/6,-1.0f/6,
+									4.0f/6, 0.0f/6,-6.0f/6, 3.0f/6,
+									1.0f/6, 3.0f/6, 3.0f/6,-3.0f/6,
+									0.0f/6, 0.0f/6, 0.0f/6, 1.0f/6);
+	
+	const mat4 bicubicBasisTranspose = transpose(bicubicBasis);
+
+	const mat4 bicubicTangentBasis = mat4(-3.0f/6,  6.0f/6,-3.0f/6, 0.0f/6,
+										   0.0f/6,-12.0f/6, 9.0f/6, 0.0f/6,
+										   3.0f/6,  6.0f/6,-9.0f/6, 0.0f/6,
+										   0.0f/6,  0.0f/6, 3.0f/6, 0.0f/6);
+
+	const mat4 bicubicTangentBasisTranspose = transpose(bicubicTangentBasis);
+	
 	in vec3 vPosition[];
 
 	// coefficient matrices should be "patch out" variables, but crashes AMD driver (at least on my 6900)
@@ -51,7 +65,7 @@
 					vPosition[8].x,  vPosition[9].x,  vPosition[10].x, vPosition[11].x, 
 					vPosition[12].x, vPosition[13].x, vPosition[14].x, vPosition[15].x);
 
-				cMat[0] = basis * Px * basisTranspose;
+				cMat[gl_InvocationID] = bicubicBasis * Px * bicubicBasisTranspose;
 				break;
 			}
 			case 1: {
@@ -61,7 +75,7 @@
 					vPosition[8].y,  vPosition[9].y,  vPosition[10].y, vPosition[11].y, 
 					vPosition[12].y, vPosition[13].y, vPosition[14].y, vPosition[15].y);
 
-				cMat[1] = basis * Py * basisTranspose;
+				cMat[gl_InvocationID] = bicubicBasis * Py * bicubicBasisTranspose;
 				break;
 			}
 			case 2: {
@@ -71,9 +85,39 @@
 					vPosition[8].z,  vPosition[9].z,  vPosition[10].z, vPosition[11].z, 
 					vPosition[12].z, vPosition[13].z, vPosition[14].z, vPosition[15].z);
 
-				cMat[2] = basis * Pz * basisTranspose;
+				cMat[gl_InvocationID] = bicubicBasis * Pz * bicubicBasisTranspose;
 				break;
 			}
+			/*case 3: {
+				mat4 Px = mat4(
+					vPosition[0].x,  vPosition[1].x,  vPosition[2].x,  vPosition[3].x, 
+					vPosition[4].x,  vPosition[5].x,  vPosition[6].x,  vPosition[7].x, 
+					vPosition[8].x,  vPosition[9].x,  vPosition[10].x, vPosition[11].x, 
+					vPosition[12].x, vPosition[13].x, vPosition[14].x, vPosition[15].x);
+
+				cMat[gl_InvocationID] = bicubicTangentBasis * Px * bicubicTangentBasisTranspose;
+				break;
+			}
+			case 4: {
+				mat4 Py = mat4(
+					vPosition[0].y,  vPosition[1].y,  vPosition[2].y,  vPosition[3].y, 
+					vPosition[4].y,  vPosition[5].y,  vPosition[6].y,  vPosition[7].y, 
+					vPosition[8].y,  vPosition[9].y,  vPosition[10].y, vPosition[11].y, 
+					vPosition[12].y, vPosition[13].y, vPosition[14].y, vPosition[15].y);
+
+				cMat[gl_InvocationID] = bicubicTangentBasis * Py * bicubicTangentBasisTranspose;
+				break;
+			}
+			case 5: {
+				mat4 Pz = mat4(
+					vPosition[0].z,  vPosition[1].z,  vPosition[2].z,  vPosition[3].z, 
+					vPosition[4].z,  vPosition[5].z,  vPosition[6].z,  vPosition[7].z, 
+					vPosition[8].z,  vPosition[9].z,  vPosition[10].z, vPosition[11].z, 
+					vPosition[12].z, vPosition[13].z, vPosition[14].z, vPosition[15].z);
+
+				cMat[gl_InvocationID] = bicubicTangentBasis * Pz * bicubicTangentBasisTranspose;
+				break;
+			}*/
 		}
 	}
 
@@ -87,7 +131,7 @@
 	in mat4 cMat[];
 	//in vec3 tcPosition[];
 
-	out vec4 tePatchDistance;
+	//out vec4 tePatchDistance;
 	out vec4 positionViewspace;
 	out vec3 normalViewspace;
 	out float linearDepth;
@@ -97,16 +141,31 @@
 		float u = gl_TessCoord.x;
 		float v = gl_TessCoord.y;
 
-		vec4 U = vec4(u*u*u, u*u, u, 1.0);
-		vec4 V = vec4(v*v*v, v*v, v, 1.0);
+		vec4 U = vec4(1.0, u, u*u, u*u*u);
+		vec4 V = vec4(1.0, v, v*v, v*v*v);
 
-		float x = dot(cMat[0] * V, U);
-		float y = dot(cMat[1] * V, U);
-		float z = dot(cMat[2] * V, U);
+		vec4 CVx = cMat[0] * V;
+		vec4 CVy = cMat[1] * V;
+		vec4 CVz = cMat[2] * V;
+		
+		float x = dot(CVx, U);
+		float y = dot(CVy, U);
+		float z = dot(CVz, U);
 		
 		vec4 tePosition = vec4(x, y, z, 1.0);
 
-		tePatchDistance = vec4(u, v, 1.0-u, 1.0-v);
+		// derivatives with respect to u and v
+		vec4 dU = vec4(0.0, 1.0, 2.0*u, 3.0*u*u);
+		vec4 dV = vec4(0.0, 1.0, 2.0*v, 3.0*v*v);
+		float nxU = dot(CVx, dU);
+		float nyU = dot(CVy, dU);
+		float nzU = dot(CVz, dU);
+		float nxV = dot(cMat[0] * dV, U);
+		float nyV = dot(cMat[1] * dV, U);
+		float nzV = dot(cMat[2] * dV, U);
+		vec3 teNormal = normalize(cross(vec3(nxU, nyU, nzU), vec3(nxV, nyV, nzV)));
+
+		//tePatchDistance = vec4(u, v, 1.0-u, 1.0-v);
 		
 		/////
 		/*float u = gl_TessCoord.x;
@@ -118,8 +177,7 @@
 
 		// Get the position and normal in viewspace
 		positionViewspace = modelView * tePosition;
-		normalViewspace = vec3(1.0, 1.0, 1.0);
-		//normalViewspace = normalize(normalMatrix * vec4(vertexNormal, 0.0)).xyz;
+		normalViewspace = normalize(normalMatrix * vec4(teNormal, 0.0)).xyz;
 
 		linearDepth = (-positionViewspace.z - frustumNear) * inverseFrustumDistance; // map near..far linearly to 0..1
 
@@ -168,7 +226,7 @@
 
 	void main()
 	{
-		surfaceColor = vec3(1.0, 0.0, 0.0); // normalViewspace; // TEMP
+		surfaceColor = normalViewspace; // TEMP
 
 		albedoDisplacement = vec4(surfaceColor, 0.0);
 		eyeSpacePosition = vec4(positionViewspace.xyz, 0.0);

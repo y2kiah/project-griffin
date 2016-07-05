@@ -38,8 +38,8 @@ namespace griffin {
 			IndexBuffer_GL	indexBuffer;
 			unsigned int vao = 0;
 			unsigned int terrainProgramId = 0;
-			int basisLoc = 0;
-			int basisTransposeLoc = 0;
+			//int basisLoc = 0;
+			//int basisTransposeLoc = 0;
 
 			// Public Functions
 
