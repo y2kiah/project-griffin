@@ -6,6 +6,7 @@
 #include <render/RenderTarget_GL.h>
 #include <render/RenderTarget3D_GL.h>
 #include <GL/glew.h>
+#include <utility/Debug.h>
 
 void precomputeAtmosphere(griffin::game::SkySystem& sky,
 						  const griffin::render::RenderSystemPtr &renderSystemPtr);
@@ -280,7 +281,7 @@ void precomputeAtmosphere(griffin::game::SkySystem& sky,
 	}
 	
 	glGetError(); // TEMP, the transmittanceSample uniform location above is returning -1 for some reason???
-	assert(glGetError() == GL_NO_ERROR);
+	ASSERT_GL_ERROR;
 }
 
 

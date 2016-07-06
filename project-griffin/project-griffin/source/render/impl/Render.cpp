@@ -20,6 +20,7 @@
 #include <render/model/Mesh_GL.h>
 #include <render/model/ModelImport_Assimp.h>
 #include <render/RenderTarget_GL.h>
+#include <utility/Debug.h>
 
 #include <game/impl/GameImpl.h> // temp
 
@@ -143,7 +144,7 @@ namespace griffin {
 			glStencilFunc(GL_ALWAYS, 1, 0xFF);
 			glStencilMask(0x00); // writing turned off to start
 
-			assert(glGetError() == GL_NO_ERROR);
+			ASSERT_GL_ERROR;
 		}
 
 
@@ -176,6 +177,11 @@ namespace griffin {
 				glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 				glStencilFunc(GL_ALWAYS, 1, 0xFF);
 				glStencilMask(0xFF);
+
+				// draw terrain
+				g_pGame->terrain.draw(engine, viewport.params.viewMat, viewport.params.projMat);
+
+				// set up for drawing meshes
 
 				auto& program = m_mrtProgram.get()->getResource<ShaderProgram_GL>();
 				program.useProgram();
@@ -246,11 +252,8 @@ namespace griffin {
 					animTime = 0.0f;
 				}
 
-				// draw terrain
-				g_pGame->terrain.draw(engine, viewport.params.viewMat, viewport.params.projMat);
-
 				// draw the test mesh
-				/*for (int i = 0; i < _countof(g_tempModel); ++i) {
+				for (int i = 0; i < _countof(g_tempModel); ++i) {
 					if (g_tempModel[i]) {
 						auto& mdl = g_tempModel[i]->getResource<Model_GL>();
 						mdl.m_mesh.render(engine, 0,
@@ -259,7 +262,7 @@ namespace griffin {
 										  diffuseMapLoc, animTime,
 										  viewport.params.viewMat, viewport.params.projMat); // temporarily passing in the modelMatLoc
 					}
-				}*/
+				}
 
 				glDisable(GL_DEPTH_TEST);
 				
@@ -350,7 +353,7 @@ namespace griffin {
 			}
 			// End post-processing
 
-			assert(glGetError() == GL_NO_ERROR);
+			ASSERT_GL_ERROR;
 		}
 
 		DeferredRenderer_GL::~DeferredRenderer_GL()
@@ -462,7 +465,7 @@ namespace griffin {
 				SDL_Log("%s", ex.what());
 			}
 
-			assert(glGetError() == GL_NO_ERROR);
+			ASSERT_GL_ERROR;
 		}
 
 

@@ -15,6 +15,7 @@
 #include <render/Render.h>
 #include <resource/ResourceLoader.h>
 #include <utility/profile/Profile.h>
+#include <utility/Debug.h>
 
 #define PROGRAM_NAME "Project Griffin"
 
@@ -294,7 +295,7 @@ void SDLApplication::initOpenGL()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	SDL_GL_SwapWindow(getPrimaryWindow().window);
 
-	assert(glGetError() == GL_NO_ERROR);
+	ASSERT_GL_ERROR;
 }
 
 

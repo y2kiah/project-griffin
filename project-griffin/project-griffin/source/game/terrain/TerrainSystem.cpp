@@ -9,6 +9,7 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec4.hpp>
 #include <glm/matrix.hpp>
+#include <utility/Debug.h>
 
 // Local Variables
 
@@ -89,7 +90,7 @@ void griffin::game::TerrainSystem::draw(Engine &engine, const glm::dmat4& viewMa
 	glPatchParameteri(GL_PATCH_VERTICES, 16);
 	glDrawElements(GL_PATCHES, (terrainX - 3) * (terrainY - 3) * 16, GL_UNSIGNED_SHORT, 0);
 
-	assert(glGetError() == GL_NO_ERROR);
+	ASSERT_GL_ERROR;
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
@@ -141,7 +142,7 @@ void griffin::game::TerrainSystem::init(Game* pGame, const Engine& engine, const
 	glEnableVertexAttribArray(VertexLayout_Position);
 	glVertexAttribPointer(VertexLayout_Position, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-	assert(glGetError() == GL_NO_ERROR);
+	ASSERT_GL_ERROR;
 }
 
 

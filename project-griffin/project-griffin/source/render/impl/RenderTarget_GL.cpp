@@ -1,4 +1,5 @@
 #include "../RenderTarget_GL.h"
+#include <utility/Debug.h>
 #include <GL/glew.h>
 #include <SDL_log.h>
 #include <cassert>
@@ -156,7 +157,7 @@ namespace griffin {
 
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-			assert(glGetError() == GL_NO_ERROR);
+			ASSERT_GL_ERROR;
 			return true;
 		}
 
@@ -191,7 +192,7 @@ namespace griffin {
 			glActiveTexture(GL_TEXTURE0 + textureSlot);
 			glBindTexture(GL_TEXTURE_2D, m_textureIds[renderTarget]);
 
-			assert(glGetError() == GL_NO_ERROR);
+			ASSERT_GL_ERROR;
 		}
 	}
 }

@@ -1,4 +1,5 @@
 #include "../VertexBuffer_GL.h"
+#include <utility/Debug.h>
 #include <GL/glew.h>
 #include <cassert>
 
@@ -36,7 +37,7 @@ namespace griffin {
 
 			m_sizeBytes = size;
 
-			assert(glGetError() == GL_NO_ERROR);
+			ASSERT_GL_ERROR;
 			return (m_glVertexBuffer != 0);
 		}
 
@@ -55,7 +56,7 @@ namespace griffin {
 		void VertexBuffer_GL::bind() const
 		{
 			glBindBuffer(GL_ARRAY_BUFFER, m_glVertexBuffer);
-			assert(glGetError() == GL_NO_ERROR);
+			ASSERT_GL_ERROR;
 		}
 	};
 

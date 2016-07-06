@@ -131,6 +131,7 @@
 #include <cstring>
 #include <cassert>
 #include <memory>
+#include <utility/Debug.h>
 
 
 using namespace griffin;
@@ -448,7 +449,7 @@ bool DDSImage::upload_texture2D(int imageIndex, GLenum target)
 				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, numMipMaps);
 			}
 			
-			assert(glGetError() == GL_NO_ERROR);
+			ASSERT_GL_ERROR;
 		}
 	}
 	else {
@@ -471,7 +472,7 @@ bool DDSImage::upload_texture2D(int imageIndex, GLenum target)
 		}
 	}
 
-	assert(glGetError() == GL_NO_ERROR);
+	ASSERT_GL_ERROR;
 	return true;
 }
 
@@ -511,7 +512,7 @@ bool DDSImage::upload_textureCubemap(bool swapY)
 		result = upload_texture2D(n, target);
 	}
 
-	assert(glGetError() == GL_NO_ERROR);
+	ASSERT_GL_ERROR;
 	return result;
 }
 

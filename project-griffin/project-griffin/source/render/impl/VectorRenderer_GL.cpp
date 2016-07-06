@@ -3,6 +3,7 @@
 * @author Jeff Kiah
 */
 #include "../Render.h"
+#include <utility/Debug.h>
 #include <GL/glew.h>
 #include <nanovg.h>
 #ifndef NANOVG_GL3_IMPLEMENTATION
@@ -127,7 +128,7 @@ void griffin::render::VectorRenderer_GL::renderViewport(Viewport& viewport, cons
 	glDisable(GL_BLEND);
 	glEnable(GL_CULL_FACE);
 
-	assert(glGetError() == GL_NO_ERROR);
+	ASSERT_GL_ERROR;
 }
 
 

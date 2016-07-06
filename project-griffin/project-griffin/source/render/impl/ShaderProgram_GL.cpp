@@ -1,4 +1,5 @@
 #include "../ShaderProgram_GL.h"
+#include <utility/Debug.h>
 #include <GL/glew.h>
 #include <vector>
 #include <cassert>
@@ -184,7 +185,7 @@ namespace griffin {
 				}
 			}
 
-			assert(glGetError() == GL_NO_ERROR);
+			ASSERT_GL_ERROR;
 			return ok;
 		}
 
@@ -200,7 +201,7 @@ namespace griffin {
 				assert(uboType + 1 <= 84); // 84 is the minimum number of binding points, should be more than enough
 			}
 
-			assert(glGetError() == GL_NO_ERROR);
+			ASSERT_GL_ERROR;
 		}
 
 

@@ -895,6 +895,9 @@
     <ClInclude Include="source\game\terrain\TerrainSystem.h">
       <Filter>game\terrain</Filter>
     </ClInclude>
+    <ClInclude Include="source\utility\Debug.h">
+      <Filter>utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="vendor\glm\glm\gtc\constants.inl">

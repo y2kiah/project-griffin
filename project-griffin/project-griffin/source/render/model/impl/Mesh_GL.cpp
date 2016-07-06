@@ -11,6 +11,7 @@
 #include <utility/container/vector_queue.h>
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <utility/Debug.h>
 
 #include <render/RenderResources.h> // TEMP (these two headers needed only for temp render function)
 #include <resource/ResourceLoader.h>
@@ -25,7 +26,7 @@ namespace griffin {
 		void Mesh_GL::bind(int drawSetIndex) const
 		{
 			glBindVertexArray(m_drawSets[drawSetIndex].glVAO);
-			assert(glGetError() == GL_NO_ERROR);
+			ASSERT_GL_ERROR;
 		}
 
 
@@ -33,16 +34,16 @@ namespace griffin {
 		{
 			assert(drawSetIndex >= 0 && drawSetIndex < static_cast<int>(m_numDrawSets) && "drawSetIndex out of range");
 			bind(drawSetIndex);
-
+			
 			GLenum indexType = m_indexBuffer.getIndexType();
 			DrawSet& drawSet = m_drawSets[drawSetIndex];
 
 			glDrawRangeElements(drawSet.glPrimitiveType, drawSet.indexRangeStart, drawSet.indexRangeEnd,
 								drawSet.numElements, indexType, reinterpret_cast<const GLvoid*>(drawSet.indexBaseOffset));
-
+			
 			//unbind(drawSetIndex);
 
-			assert(glGetError() == GL_NO_ERROR);
+			ASSERT_GL_ERROR;
 		}
 
 
@@ -255,7 +256,7 @@ namespace griffin {
 					glUniform3fv(diffuseLoc, 1, &mat.diffuseColor[0]);
 					glUniform3fv(specularLoc, 1, &mat.specularColor[0]);
 					glUniform1f(shininessLoc, mat.shininess);
-					
+
 					// renderer should do this as part of the render key sort/render, not the mesh
 					// TEMP, assuming one texture
 					if (mat.numTextures > 0) {
@@ -295,7 +296,7 @@ namespace griffin {
 				bfsQueue.pop();
 			}
 
-			assert(glGetError() == GL_NO_ERROR);
+			ASSERT_GL_ERROR;
 		}
 
 
@@ -383,7 +384,7 @@ namespace griffin {
 				}
 			}
 
-			assert(glGetError() == GL_NO_ERROR);
+			ASSERT_GL_ERROR;
 		}
 
 
