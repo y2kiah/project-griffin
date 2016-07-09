@@ -1,6 +1,6 @@
-#if (0)
+#if (1)
 
-#include "../ComponentStoreSerialization.h"
+//#include "../ComponentStoreSerialization.h"
 #include "../components.h"
 #include "../ComponentStore.h"
 #include <vector>
@@ -8,7 +8,7 @@
 #include <SDL_log.h>
 #include <boost/fusion/adapted/std_tuple.hpp>
 #include <boost/fusion/algorithm/iteration/for_each.hpp>
-#include <utility/prettyprint.h>
+//#include <utility/prettyprint.h>
 #include <fstream>
 #include <sstream>
 #include <memory>
@@ -16,13 +16,15 @@
 
 #include <application/Timer.h>
 #include <utility/concurrency.h>
+#include <scene/SceneGraph.h>
 
 using namespace griffin::entity;
+using namespace griffin;
 
 const size_t numTestComponents = 100000;
-ComponentStore<Person> personStore(numTestComponents);
+ComponentStore<scene::SceneNode> sceneNodeStore(numTestComponents);
 std::vector<ComponentId> componentIds;
-std::vector<std::unique_ptr<Person>> personHeap;
+std::vector<std::unique_ptr<scene::SceneNode>> sceneNodeHeap;
 griffin::Timer timer;
 
 struct Something {
@@ -51,55 +53,55 @@ auto getMemberVal(const T& t, F f) -> decltype(t.*f()) {
 */
 void addTestComponents() {
 	componentIds.reserve(numTestComponents);
-	personHeap.reserve(numTestComponents);
+	sceneNodeHeap.reserve(numTestComponents);
 
 	// profile these and compare
 	
 	timer.start();
 	// store 100,000 components in a ComponentStore
-	componentIds = personStore.createComponents(numTestComponents, {{{0,0,0,0}}});
+	componentIds = sceneNodeStore.createComponents(numTestComponents, {{{0,0,0,0}}});
 	timer.stop();
-	SDL_Log("**********\ncreate components in store\ntime = %f ms\ncounts = %lld\n\n", timer.millisPassed(), timer.countsPassed());
+	SDL_Log("**********\ncreate components in store\ntime = %f ms\ncounts = %lld\n\n", timer.getMillisPassed(), timer.getCountsPassed());
 
 	timer.start();
 	// store 100,000 components on the heap
 	for (int i = 0; i < numTestComponents; ++i) {
-		personHeap.push_back(std::unique_ptr<Person>(new Person{0}));
+		sceneNodeHeap.push_back(std::unique_ptr<scene::SceneNode>(new scene::SceneNode{ 0 }));
 	}
 	timer.stop();
-	SDL_Log("**********\ncreate components on heap\ntime = %f ms\ncounts = %lld\n\n", timer.millisPassed(), timer.countsPassed());
+	SDL_Log("**********\ncreate components on heap\ntime = %f ms\ncounts = %lld\n\n", timer.getMillisPassed(), timer.getCountsPassed());
 }
 
 void profileTestComponents() {
-	int age = 0;
+	glm::dvec3 trans = { 0, 0, 0 };
 
-	personStore.getComponent(componentIds.back()).age = 10;
+	sceneNodeStore.getComponent(componentIds.back()).translationLocal = { 10, 0, 0 };
 	timer.start();
 	for (int i = 0; i < numTestComponents; ++i) {
-		age += personStore.getComponent(componentIds[i]).age;
+		trans += sceneNodeStore.getComponent(componentIds[i]).translationLocal;
 	}
 	timer.stop();
-	SDL_Log("**********\nloop components with external id\ntime = %f ms\ncounts = %lld\n\n", timer.millisPassed(), timer.countsPassed());
-	SDL_Log("age=%d\n", age); // use age so it doesn't compile away in release build test
+	SDL_Log("**********\nloop components with external id\ntime = %f ms\ncounts = %lld\n\n", timer.getMillisPassed(), timer.getCountsPassed());
+	SDL_Log("trans={%d,%d,%d}\n", trans.x, trans.y, trans.z); // use trans so it doesn't compile away in release build test
 
-	auto cmp = personStore.getComponents().getItems();
+	auto cmp = sceneNodeStore.getComponents().getItems();
 	timer.start();
 	for (int i = 0; i < numTestComponents; ++i) {
-		age += cmp[i].component.age;
+		trans += cmp[i].component.translationLocal;
 	}
 	timer.stop();
-	SDL_Log("**********\nloop components inner array\ntime = %f ms\ncounts = %lld\n\n", timer.millisPassed(), timer.countsPassed());
-	SDL_Log("age=%d\n", age);
+	SDL_Log("**********\nloop components inner array\ntime = %f ms\ncounts = %lld\n\n", timer.getMillisPassed(), timer.getCountsPassed());
+	SDL_Log("trans={%d,%d,%d}\n", trans.x, trans.y, trans.z);
 
-	personHeap.back()->age = 5;
+	sceneNodeHeap.back()->translationLocal = { 5, 0, 0 };
 	timer.start();
 	for (int i = 0; i < numTestComponents; ++i) {
-		age += personHeap[i]->age;
+		trans += sceneNodeHeap[i]->translationLocal;
 	}
 	timer.stop();
-	SDL_Log("**********\nloop components on heap\ntime = %f ms\ncounts = %lld\n\n", timer.millisPassed(), timer.countsPassed());
+	SDL_Log("**********\nloop components on heap\ntime = %f ms\ncounts = %lld\n\n", timer.getMillisPassed(), timer.getCountsPassed());
 
-	SDL_Log("age=%d\n", age);
+	SDL_Log("trans={%d,%d,%d}\n", trans.x, trans.y, trans.z);
 }
 
 void griffin::entity::test_reflection() {
@@ -162,26 +164,27 @@ void griffin::entity::test_reflection() {
 	addTestComponents();
 	//profileTestComponents();
 
-	SDL_Log(personStore.to_string().c_str());
-	Person& person = personStore.getComponent(componentIds[0]);
+	SDL_Log(sceneNodeStore.to_string().c_str());
+	scene::SceneNode& node = sceneNodeStore.getComponent(componentIds[0]);
 	
-	auto& personProps = Person::Reflection::getProperties();
-	auto vals = Person::Reflection::getAllValues(person);
+	auto& nodeProps = scene::SceneNode::Reflection::getProperties();
+	auto vals = scene::SceneNode::Reflection::getAllValues(node);
 
-	SDL_Log("%s:\n", Person::Reflection::getClassType().c_str());
-	for (const auto &f : personProps) {
+	SDL_Log("%s:\n", scene::SceneNode::Reflection::getClassType().c_str());
+	for (const auto &f : nodeProps) {
 		SDL_Log("%s : %s\n", f.name.c_str(), f.description.c_str());
 	}
 	
-	int   a = std::get<Person::Reflection::age>(vals);
-	float b = std::get<Person::Reflection::speed>(vals);
-	char* c = std::get<Person::Reflection::name>(vals);
-	SDL_Log("person values: %d, %f, %s\n", a, b, c);
-	SDL_Log("age description: %s\n", personProps[Person::Reflection::FieldToEnum("age")].description.c_str());
-	std::get<Person::Reflection::age>(vals) = 30;
-	std::get<Person::Reflection::speed>(vals) = 4.0f;
-	SDL_Log("age after set = %d\n", person.age); // should now be 30
-	SDL_Log("speed after set = %1.1f\n", person.speed); // should now be 4
+	int a = std::get<scene::SceneNode::Reflection::numChildren>(vals);
+	uint8_t b = std::get<scene::SceneNode::Reflection::positionDirty>(vals);
+	uint8_t c = std::get<scene::SceneNode::Reflection::orientationDirty>(vals);
+	
+	SDL_Log("scene node values: %d, %d, %d\n", a, b, c);
+	SDL_Log("numChildren description: %s\n", nodeProps[scene::SceneNode::Reflection::FieldToEnum("numChildren")].description.c_str());
+	std::get<scene::SceneNode::Reflection::positionDirty>(vals) = 1;
+	std::get<scene::SceneNode::Reflection::orientationDirty>(vals) = 1;
+	SDL_Log("position dirty = %d\n", node.positionDirty); // should now be 1
+	SDL_Log("orientation dirty = %d\n", node.orientationDirty); // should now be 1
 
 	ComponentMask bit_test;
 	bit_test.set(ComponentType::SceneNode_T, true);
@@ -191,7 +194,7 @@ void griffin::entity::test_reflection() {
 	SDL_Log("bit_and  = %s\n", bit_and.to_string().c_str());
 	SDL_Log("bit_res  = %s\n", bit_res.to_string().c_str());
 
-	SDL_Log("Person is POD = %d\n", std::is_pod<Person>::value);
+	SDL_Log("SceneNode is POD = %d\n", std::is_pod<scene::SceneNode>::value);
 	SDL_Log("Something is POD = %d\n", std::is_pod<Something>::value);
 	SDL_Log("ComponentId is POD = %d\n", std::is_pod<ComponentId>::value);
 
@@ -199,15 +202,15 @@ void griffin::entity::test_reflection() {
 	auto s0 = getMemberVal(s, SomethingPred0{});
 	SDL_Log("s val 0 through template = %d\n", s0);
 
-	// output person properties
-	SDL_Log("%s {\n", Person::Reflection::getClassType().c_str());
-	for (auto p : Person::Reflection::getProperties()) {
+	// output scene node properties
+	SDL_Log("%s {\n", scene::SceneNode::Reflection::getClassType().c_str());
+	for (auto p : scene::SceneNode::Reflection::getProperties()) {
 		SDL_Log("  %s (%d): %s, isArray=%d, isTriviallyCopyable=%d\n", p.name.c_str(), p.size, p.description.c_str(), p.isArray, p.isTriviallyCopyable);
 	}
 	SDL_Log("}\n\n");
 
 	// testing tuple for_each
-	using namespace boost::fusion;
+/*	using namespace boost::fusion;
 	std::ostringstream oss;
 	oss << vals;
 	SDL_Log("\n\n%s\n\n", oss.str().c_str());
@@ -215,13 +218,13 @@ void griffin::entity::test_reflection() {
 	// testing ComponentId comparisons
 	// we want the ComponentType portion to sort at a higher priority than the index or generation,
 	vector<ComponentId> sortIds = {
-			{{{0, 0, ComponentType::Person_T, 0}}},
-			{{{0, 0, ComponentType::Person_T, 0}}},
-			{{{0xFFFFFFFF, 0xFFFF, ComponentType::Person_T, 0}}},
-			{{{50, 1, ComponentType::Person_T, 1}}},
-			{{{5, 1, ComponentType::Person_T, 0}}},
+			{{{0, 0, ComponentType::SceneNode_T, 0}}},
+			{{{0, 0, ComponentType::SceneNode_T, 0}}},
+			{{{0xFFFFFFFF, 0xFFFF, ComponentType::SceneNode_T, 0}}},
+			{{{50, 1, ComponentType::SceneNode_T, 1}}},
 			{{{5, 1, ComponentType::SceneNode_T, 0}}},
-			{{{5, 3, ComponentType::Person_T, 0}}}
+			{{{5, 1, ComponentType::SceneNode_T, 0}}},
+			{{{5, 3, ComponentType::SceneNode_T, 0}}}
 		};
 	std::sort(sortIds.begin(), sortIds.end());
 	oss.clear();
@@ -233,22 +236,23 @@ void griffin::entity::test_reflection() {
 	ofs.open("component_serialize.hex", std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
 	ofs.exceptions(std::ofstream::failbit | std::ofstream::badbit);
 	timer.start();
-	serialize(ofs, personStore);
+	serialize(ofs, sceneNodeStore);
 	timer.stop();
-	SDL_Log("**********\nsave components to file\ntime = %f ms\ncounts = %lld\n", timer.millisPassed(), timer.countsPassed());
+	SDL_Log("**********\nsave components to file\ntime = %f ms\ncounts = %lld\n", timer.getMillisPassed(), timer.getCountsPassed());
 	ofs.close();
-	SDL_Log("personStore saved:\n%s\n\n", personStore.to_string().c_str());
+	SDL_Log("sceneNodeStore saved:\n%s\n\n", sceneNodeStore.to_string().c_str());
 
-	ComponentStore<Person> personStoreReadTest(numTestComponents);
+	ComponentStore<scene::SceneNode> sceneNodeStoreReadTest(numTestComponents);
 	std::ifstream ifs;
 	ifs.open("component_serialize.hex", std::ifstream::in | std::ifstream::binary);
 	ifs.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 	timer.start();
-	deserialize(ifs, personStoreReadTest);
+	deserialize(ifs, sceneNodeStoreReadTest);
 	timer.stop();
-	SDL_Log("**********\nread components from file\ntime = %f ms\ncounts = %lld\n", timer.millisPassed(), timer.countsPassed());
+	SDL_Log("**********\nread components from file\ntime = %f ms\ncounts = %lld\n", timer.getMillisPassed(), timer.getCountsPassed());
 	ifs.close();
-	SDL_Log("personStore read:\n%s\n\n", personStoreReadTest.to_string().c_str());
+	SDL_Log("sceneNodeStore read:\n%s\n\n", sceneNodeStoreReadTest.to_string().c_str());
+*/
 }
 
 #endif

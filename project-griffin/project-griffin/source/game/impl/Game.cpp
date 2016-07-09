@@ -71,7 +71,7 @@ namespace griffin {
 		GamePtr gamePtr = std::make_shared<Game>();
 		Game& game = *gamePtr.get();
 
-		//entity::test_reflection(); // TEMP
+		entity::test_reflection(); // TEMP
 
 		// InputSystem.lua contains initInputSystem function
 		engine.scriptManager->doFile(engine.engineLuaState, "scripts/game/initGame.lua"); // throws on error
