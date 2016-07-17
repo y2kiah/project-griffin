@@ -280,6 +280,9 @@ void SDLApplication::initOpenGL()
 	// Enable multisampling
 	//glEnable(GL_MULTISAMPLE);
 
+	// Enable sRGB frame buffer
+	glEnable(GL_FRAMEBUFFER_SRGB);
+
 	// Enable back face culling
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);

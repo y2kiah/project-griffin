@@ -38,6 +38,7 @@ void griffin::game::DevCameraSystem::updateFrameTick(Game* pGame, Engine& engine
 		move.rotationDirty = 1;
 	}
 	else {
+		move.prevRotation = move.nextRotation;
 		move.rotationDirty = 0;
 	}
 
@@ -62,6 +63,7 @@ void griffin::game::DevCameraSystem::updateFrameTick(Game* pGame, Engine& engine
 		move.translationDirty = 1;
 	}
 	else {
+		move.prevTranslation = move.nextTranslation;
 		move.translationDirty = 0;
 	}
 

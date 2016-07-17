@@ -64,6 +64,7 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& en
 		move.rotationDirty = 1;
 	}
 	else {
+		move.prevRotation = move.nextRotation;
 		move.rotationDirty = 0;
 	}
 
@@ -173,7 +174,7 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& en
 		move.prevTranslation = move.nextTranslation;
 		move.nextTranslation += velocity;
 		move.nextTranslation.z = playerHeight - crouchZ - headBobZ;
-		move.translationDirty = 1;
+		move.translationDirty = (move.prevTranslation == move.nextTranslation) ? 0 : 1;
 	}
 
 	// reset movement vars for next frame
