@@ -10,11 +10,12 @@ namespace griffin {
 		enum Texture2D_Flags : uint8_t {
 			Texture2DFlag_None            = 0,
 			Texture2DFlag_GenerateMipmaps = 1,  // generate mipmaps, do not use if mipmaps are included in buffer
-			// the following flags are mutually exclusive
-			Texture2DFlag_Float           = 2,  // float format
-			Texture2DFlag_Int             = 4,  // int format
-			Texture2DFlag_UInt            = 8,  // unsigned int format
-			Texture2DFlag_sRGB            = 16  // texture in sRGB colorspace, use sRGB or sRGB_ALPHA format
+			Texture2DFlag_BGRA            = 2,  // buffer format is ordered BGRA instead of RGBA (default)
+			// internal format flags are mutually exclusive
+			Texture2DFlag_Float           = 4,  // float internal format
+			Texture2DFlag_Int             = 8,  // int internal format
+			Texture2DFlag_UInt            = 16, // unsigned int internal format
+			Texture2DFlag_sRGB            = 32  // texture in sRGB colorspace, use sRGB or sRGB_ALPHA format
 		};
 
 
@@ -31,10 +32,12 @@ namespace griffin {
 
 			/**
 			* create an image from memory as a new OpenGL texture
+			* @param flags		texture creation options
+			* @param format		OpenGL pixel format for incoming data (ex. GL_BGRA), 0 = auto-detect
 			*/
 			bool createFromMemory(unsigned char* data, size_t size, int width, int height,
 								  uint8_t components = 4, uint8_t componentSize = 1, uint8_t levels = 1,
-								  uint8_t flags = Texture2DFlag_None);
+								  uint8_t flags = Texture2DFlag_None, unsigned int format = 0);
 
 			/**
 			* load a DDS image from memory as a new OpenGL texture
@@ -54,7 +57,7 @@ namespace griffin {
 
 			/**
 			* Bind to an active texture slot (0 - 31) to be sampled from a shader
-			* @var	textureSlot		which texture slot to bind into, added to GL_TEXTURE0
+			* @param textureSlot	which texture slot to bind into, added to GL_TEXTURE0
 			*/
 			void bind(unsigned int textureSlot = 0) const;
 

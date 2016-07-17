@@ -2,6 +2,7 @@
 #include "noise.h"
 #include <render/texture/Texture2D_GL.h>
 #include <resource/ResourceLoader.h>
+#include <memory>
 
 using namespace griffin;
 using namespace griffin::render;
@@ -13,10 +14,9 @@ resource::ResourcePtr noise::createTestNoiseTexture() {
 	const int texSizeX = 64;
 	const int texSizeY = 64;
 	const float length = 1.0f;
-	const int numChannels = 1;
-	const int bufferSize = texSizeY * texSizeX * numChannels;
+	const int bufferSize = texSizeY * texSizeX * 4; // fixed 4 channels
 
-	uint8_t *buffer = new uint8_t[bufferSize];
+	std::unique_ptr<uint8_t[]> buffer(new uint8_t[bufferSize]);
 	
 	const float xStep = length / static_cast<float>(texSizeX);
 	const float yStep = length / static_cast<float>(texSizeY);
@@ -43,8 +43,11 @@ resource::ResourcePtr noise::createTestNoiseTexture() {
 			int iResult = static_cast<int>(round(nResult * 255));  // convert to int
 			uint8_t ucResult = (iResult > 255) ? 255 : ((iResult < 0) ? 0 : iResult); // convert to uint8_t
 
-			int index = (y*texSizeX*numChannels) + (x*numChannels);
-			for (int c = 0; c < numChannels; ++c) buffer[index + c] = ucResult;
+			int index = (y*texSizeX*4) + (x*4);
+			buffer[index]     = 0;			// B
+			buffer[index + 1] = 0;			// G
+			buffer[index + 2] = ucResult;	// R
+			buffer[index + 3] = 255;		// A
 
 			v[0] += xStep;
 		}
@@ -54,7 +57,7 @@ resource::ResourcePtr noise::createTestNoiseTexture() {
 
 	// create texture and add it to the materials cache
 	Texture2D_GL tex;
-	tex.createFromMemory(buffer, bufferSize, texSizeX, texSizeY, numChannels);
+	tex.createFromMemory(buffer.get(), bufferSize, texSizeX, texSizeY, 4, sizeof(uint8_t), 1, Texture2DFlag_BGRA);
 
 	resource::ResourcePtr resPtr = std::make_shared<resource::Resource_T>(std::move(tex), bufferSize);
 

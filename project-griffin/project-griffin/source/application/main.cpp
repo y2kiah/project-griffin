@@ -206,6 +206,9 @@ void SDLApplication::initWindow(const char* appName)
 	//SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
 	//SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
 
+	// Request sRGB capable framebuffer
+	SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
+
 	int width = 1600;
 	int height = 900;
 	//int width = 1920;

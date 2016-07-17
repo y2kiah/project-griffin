@@ -17,7 +17,7 @@ namespace griffin {
 
 		// Global variables
 
-		const GLenum g_formatLookup[4] = { GL_RED, GL_RG, GL_RGB, GL_RGBA };
+		const GLenum g_formatLookup[2][4] = { { GL_RED, GL_RG, GL_RGB, GL_RGBA }, { 0, 0, GL_BGR, GL_BGRA } };
 
 		const GLint g_internalFormatLookup[4][3][5] = {
 			{
@@ -97,8 +97,12 @@ namespace griffin {
 
 		bool Texture2D_GL::createFromMemory(unsigned char* data, size_t size, int width, int height,
 											uint8_t components, uint8_t componentSize, uint8_t levels,
-											uint8_t flags)
+											uint8_t flags, unsigned int format)
 		{
+			assert(components > 0 && components <= 4 && "components out of range");
+			assert(componentSize > 0 && componentSize <= 8 && "componentSize out of range");
+			assert(levels > 0 && levels <= 13 && "level (probably) out of range, need more than 13 mipmaps?");
+
 			m_sizeBytes = size;
 			m_width = width;
 			m_height = height;
@@ -117,7 +121,9 @@ namespace griffin {
 							   (flags & Texture2DFlag_UInt  ? 3 :
 							    (flags & Texture2DFlag_sRGB  ? 4 : 0))));
 
-			GLenum format = g_formatLookup[componentsLookup];
+			if (format == 0) {
+				format = g_formatLookup[(flags & Texture2DFlag_BGRA) ? 1 : 0][componentsLookup];
+			}
 			GLint internalFormat = g_internalFormatLookup[componentsLookup][componentSizeLookup][typeLookup];
 			
 			if (format == 0 || internalFormat == 0) {
