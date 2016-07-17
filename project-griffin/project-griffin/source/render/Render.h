@@ -14,6 +14,8 @@
 #include "RenderTarget_GL.h"
 #include "ShaderProgramLayouts_GL.h"
 
+#include <resource/Resource.h> // TEMP
+
 using std::unique_ptr;
 using std::weak_ptr;
 using std::shared_ptr;
@@ -316,7 +318,8 @@ namespace griffin {
 			static void loadGlobalFonts(VectorRenderer_GL& inst);
 
 		private:
-			NVGcontext *	m_nvg = nullptr;
+			NVGcontext *m_nvg = nullptr;
+			ResourcePtr testNoiseTexture;
 		};
 
 

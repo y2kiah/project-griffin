@@ -266,7 +266,7 @@ namespace griffin {
 						auto texPtr = g_resourceLoader.lock()->getResource(mat.textures[0].textureResourceHandle, CacheType::Cache_Materials);
 						if (texPtr) {
 							auto& tex = texPtr->getResource<Texture2D_GL>();
-							tex.bind(4);
+							tex.bind(SamplerBinding_Diffuse1);
 							//glUniform1i(diffuseMapLoc, 4);
 
 							// TEMP, these layout indexes should be in a header, and the gl call should be made after render key changes

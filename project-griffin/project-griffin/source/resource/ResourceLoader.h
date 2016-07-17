@@ -62,12 +62,11 @@ namespace griffin {
 			/**
 			* Injects a resource already in memory into the resource cache, and returns a resource
 			* handle. This allows resources to be manually loaded and then incorporated into the
-			* resource cache to be managed and shared. You are also asked to give the resource a
-			* unique wstring name, so it can be requested by other areas of code that don't know
-			* its resource id. Throws an exception if the name already exists.
+			* resource cache to be managed and shared. You can optionally give the resource a
+			* unique name, so it can be requested by name in other areas of code.
 			*/
 			template <typename T>
-			ResourceHandle<T> addResourceToCache(ResourcePtr resource, CacheType cache_/*, const wstring& name */);
+			ResourceHandle<T> addResourceToCache(ResourcePtr resource, CacheType cache_, const wchar_t* name = nullptr);
 
 			/**
 			* Asynchronously gets a ResourcePtr by handle.
@@ -81,6 +80,13 @@ namespace griffin {
 			* @return	pointer to resource or nullptr if resource not found
 			*/
 			ResourcePtr getResource(Id_T h, CacheType cache_);
+
+			/**
+			* Blocking call, gets a resource directly from the cache. Try to store the ResourcePtr
+			* instead of calling this a lot, due to the performance penalty of this call.
+			* @return	pointer to resource or nullptr if resource not found
+			*/
+			ResourcePtr getResource(const wstring& name, CacheType cache_);
 
 			/**
 			* Blocking call, register a cache with the loader. Done during engine init.

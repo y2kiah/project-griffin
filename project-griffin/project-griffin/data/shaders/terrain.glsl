@@ -9,9 +9,17 @@
 #define VertexLayout_CustomStart   20  // use for first custom binding location and increment
 
 
+// Sampler binding locations
+
+#define SamplerBinding_Diffuse1    4
+#define SamplerBinding_Diffuse2    5
+#define SamplerBinding_Diffuse3    6
+#define SamplerBinding_Diffuse4    7
+
+
 // Subroutine uniform locations
 
-#define SubroutineUniform_SurfaceColor		0
+#define SubroutineUniform_SurfaceColor    0
 // UBO definitions
 
 layout(std140) uniform CameraUniforms {
@@ -35,10 +43,14 @@ layout(std140) uniform ObjectUniforms {
 	
 	layout(location = VertexLayout_Position) in vec3 vertexPosition_modelspace;
 
+	layout(binding = SamplerBinding_Diffuse1) uniform sampler2D heightMap;
+
 	out vec3 vPosition;
 
 	void main() {
-		vPosition = vertexPosition_modelspace.xyz;
+		vPosition.xy = vertexPosition_modelspace.xy * 64 * 100;
+		vPosition.z = texture(heightMap, vec2(vertexPosition_modelspace.x, vertexPosition_modelspace.y)).r * 1000.0;
+
 	}
 
 #endif
@@ -236,7 +248,6 @@ layout(std140) uniform ObjectUniforms {
 	layout(location = 0) out vec4 albedoDisplacement;
 	layout(location = 1) out vec4 eyeSpacePosition;
 	layout(location = 2) out vec4 normalReflectance;
-	
 
 	/*float3 blend(float4 texture1, float a1, float4 texture2, float a2)
 	{

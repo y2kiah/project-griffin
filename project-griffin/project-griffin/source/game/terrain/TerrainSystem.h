@@ -26,13 +26,14 @@ namespace griffin {
 		struct TerrainSystem {
 			// Variables
 			
-			static const int terrainX = 32;
-			static const int terrainY = 32;
+			static const int terrainX = 64;
+			static const int terrainY = 64;
 			
 			float tempHeight[terrainX * terrainY * 3] = {};
 			uint16_t tempIndices[(terrainX - 3)*(terrainY - 3) * 16] = {};
 
 			ResourcePtr terrainProgram = nullptr;		//<! terrain shader program
+			ResourcePtr tempNoiseTex = nullptr;
 
 			VertexBuffer_GL	vertexBuffer;
 			IndexBuffer_GL	indexBuffer;

@@ -440,13 +440,13 @@ namespace griffin {
 			// TEMP create some test resources
 			try {
 				//auto mdl1 = loadModel(L"models/Spitfire/spitfire.gmd", CacheType::Cache_Models);
-				auto mdl2 = loadModel(L"models/landing_platform.gmd", CacheType::Cache_Models);
+				//auto mdl2 = loadModel(L"models/landing_platform.gmd", CacheType::Cache_Models);
 				//auto mdl3 = loadModel(L"models/collision_test/collision_test.gmd", CacheType::Cache_Models);
 				//auto mdl4 = loadModel(L"models/gunship/gunship.gmd", CacheType::Cache_Models);
 				//auto mdl5 = loadModel(L"models/A-10C Pit.gmd", CacheType::Cache_Models);
 				//auto mdl6 = loadModel(L"models/other_pit.gmd", CacheType::Cache_Models);
 				//auto mdl7 = loadModel(L"models/Bill/Bill.gmd", CacheType::Cache_Models);
-				//auto mdl8 = loadModel(L"models/ring/ring.gmd", CacheType::Cache_Models);
+				auto mdl8 = loadModel(L"models/ring/ring.gmd", CacheType::Cache_Models);
 				//auto mdl9 = loadModel(L"models/building_001.gmd", CacheType::Cache_Models);
 				//auto mdl10 = loadModel(L"models/scene/scene.gmd", CacheType::Cache_Models);
 
@@ -455,10 +455,10 @@ namespace griffin {
 				if (!loader) {
 					throw std::runtime_error("no resource loader");
 				}
-				g_tempModel[0] = loader->getResource(mdl2).get();
+				//g_tempModel[0] = loader->getResource(mdl2).get();
 				//g_tempModel[1] = loader->getResource(mdl4).get();
 				//g_tempModel[2] = loader->getResource(mdl5).get();
-				//g_tempModel[3] = loader->getResource(mdl8).get();
+				g_tempModel[3] = loader->getResource(mdl8).get();
 				loader->executeCallbacks();
 			}
 			catch (std::exception ex) {
@@ -614,7 +614,7 @@ namespace griffin {
 				SDL_Log("callback texture of size %d", size);
 				// the unique_ptr of data is stored within the texture, this call deletes the data after
 				// sending texture to OpenGL
-				tex.loadFromInternalMemory();
+				tex.loadDDSFromInternalMemory();
 			};
 
 			return loader->load<Texture2D_GL>(texturePath, cache, textureResourceBuilder, textureResourceCallback);

@@ -16,7 +16,7 @@ namespace griffin {
 
 		template <typename T, typename BuilderFunc>
 		ResourceHandle<T> ResourceLoader::load(
-			const wstring &name,
+			const wstring& name,
 			CacheType cache_,
 			BuilderFunc&& builder,
 			CallbackFunc_T callback)
@@ -80,14 +80,21 @@ namespace griffin {
 
 
 		template <typename T>
-		ResourceHandle<T> ResourceLoader::addResourceToCache(ResourcePtr resource, CacheType cache_)
+		ResourceHandle<T> ResourceLoader::addResourceToCache(ResourcePtr resource, CacheType cache_, const wchar_t* name)
 		{
 			ResourceHandle<T> handle;
 
 			auto f = m_c([=](Impl& impl) {
 				auto& cache = *impl.m_caches[cache_].get();
 
-				return cache.addResource(resource);
+				Id_T id = cache.addResource(resource);
+				
+				// add handle to index
+				if (name != nullptr) {
+					impl.m_nameToHandle[name] = id;
+				}
+
+				return id;
 			});
 
 			handle.resourceId = f;

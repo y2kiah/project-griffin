@@ -14,7 +14,6 @@
 #include <utility/container/handle_map.h>
 #include <SDL_log.h>
 
-
 namespace griffin {
 	// TEMP
 	namespace render {

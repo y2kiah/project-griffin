@@ -9,9 +9,17 @@
 #define VertexLayout_CustomStart   20  // use for first custom binding location and increment
 
 
+// Sampler binding locations
+
+#define SamplerBinding_Diffuse1    4
+#define SamplerBinding_Diffuse2    5
+#define SamplerBinding_Diffuse3    6
+#define SamplerBinding_Diffuse4    7
+
+
 // Subroutine uniform locations
 
-#define SubroutineUniform_SurfaceColor		0
+#define SubroutineUniform_SurfaceColor    0
 
 // #define PI 3.14159265
 #define DL    2.399963229728653			// PI * (3.0 - sqrt(5.0))

@@ -7,6 +7,20 @@
 namespace griffin {
 	namespace render {
 
+		enum Texture2D_Flags : uint8_t {
+			Texture2DFlag_None            = 0,
+			Texture2DFlag_GenerateMipmaps = 1,  // generate mipmaps, do not use if mipmaps are included in buffer
+			// the following flags are mutually exclusive
+			Texture2DFlag_Float           = 2,  // float format
+			Texture2DFlag_Int             = 4,  // int format
+			Texture2DFlag_UInt            = 8,  // unsigned int format
+			Texture2DFlag_sRGB            = 16  // texture in sRGB colorspace, use sRGB or sRGB_ALPHA format
+		};
+
+
+		/**
+		* @class Texture2D_GL
+		*/
 		class Texture2D_GL {
 		public:
 			explicit Texture2D_GL() = default;
@@ -16,20 +30,27 @@ namespace griffin {
 			~Texture2D_GL();
 
 			/**
-			* load an image from memory as a new OpenGL texture
+			* create an image from memory as a new OpenGL texture
 			*/
-			bool loadFromMemory(unsigned char* data, size_t size);
+			bool createFromMemory(unsigned char* data, size_t size, int width, int height,
+								  uint8_t components = 4, uint8_t componentSize = 1, uint8_t levels = 1,
+								  uint8_t flags = Texture2DFlag_None);
 
 			/**
-			* load an image from the m_tmpData pointer as a new OpenGL texture
+			* load a DDS image from memory as a new OpenGL texture
+			*/
+			bool loadDDSFromMemory(unsigned char* data, size_t size);
+
+			/**
+			* load a DDS image from the m_tmpData pointer as a new OpenGL texture
 			* @param discard	true (default) to delete the memory after upload to GPU
 			*/
-			bool loadFromInternalMemory(bool discard = true);
+			bool loadDDSFromInternalMemory(bool discard = true);
 
 			/**
-			* load an image file directly as a new OpenGL texture
+			* load a DDS image file directly as a new OpenGL texture
 			*/
-			bool loadFromFile(const char *filename);
+			bool loadDDSFromFile(const char *filename);
 
 			/**
 			* Bind to an active texture slot (0 - 31) to be sampled from a shader
@@ -44,7 +65,7 @@ namespace griffin {
 			unsigned int getGLTexture() { return m_glTexture; }
 
 		private:
-			void setFilteringMode(bool mipmaps);
+			void setTextureParameters();
 
 			size_t			m_sizeBytes = 0;
 			unsigned int	m_glTexture = 0;

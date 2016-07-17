@@ -35,15 +35,18 @@ namespace griffin {
 			}
 		}
 
-		void TextureCubeMap_GL::setFilteringMode(bool mipmaps)
+		void TextureCubeMap_GL::setTextureParameters()
 		{
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 			
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			if (mipmaps) {
+			if (m_numMipmaps > 0) {
 				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, m_numMipmaps);
 			}
 			else {
 				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -69,7 +72,13 @@ namespace griffin {
 					  image.upload_textureCubemap(swapY);
 
 			if (ok) {
-				setFilteringMode(image.get_num_mipmaps() > 0);
+				m_sizeBytes = size;
+				m_width = image.get_width();
+				m_height = image.get_height();
+				m_numMipmaps = image.get_num_mipmaps();
+				m_components = image.get_components();
+
+				setTextureParameters();
 
 				/*
 				m_glTexture = SOIL_load_OGL_texture_from_memory(
@@ -78,12 +87,6 @@ namespace griffin {
 				SOIL_CREATE_NEW_ID,
 				SOIL_FLAG_INVERT_Y | SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_MIPMAPS | SOIL_FLAG_DDS_LOAD_DIRECT | SOIL_FLAG_COMPRESS_TO_DXT);
 				*/
-
-				m_sizeBytes = size;
-				m_width = image.get_width();
-				m_height = image.get_height();
-				m_numMipmaps = image.get_num_mipmaps();
-				m_components = image.get_components();
 
 				// check for an error during the load process
 				//if (m_glTexture == 0) {
@@ -119,13 +122,13 @@ namespace griffin {
 					  image.upload_textureCubemap(swapY);
 
 			if (ok) {
-				setFilteringMode(image.get_num_mipmaps() > 0);
-
 				m_sizeBytes = image.get_size();
 				m_width = image.get_width();
 				m_height = image.get_height();
 				m_numMipmaps = image.get_num_mipmaps();
 				m_components = image.get_components();
+
+				setTextureParameters();
 
 				/*m_glTexture = SOIL_load_OGL_texture(
 				name.c_str(),

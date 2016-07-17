@@ -32,6 +32,13 @@ namespace griffin {
 			VertexLayout_Colors        = 12  // consumes up to 8 locations
 		};
 
+		enum SamplerBindingLocation : uint8_t {
+			SamplerBinding_Diffuse1 = 4, // sampler bindings start at 4 because 0-3 are for G-buffer MRT
+			SamplerBinding_Diffuse2,
+			SamplerBinding_Diffuse3,
+			SamplerBinding_Diffuse4
+		};
+
 
 		// Structs
 

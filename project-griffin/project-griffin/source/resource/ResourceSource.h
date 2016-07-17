@@ -7,17 +7,13 @@
 #define GRIFFIN_RESOURCE_SOURCE_
 
 #include <cstdint>
-#include <memory>
 #include <string>
+#include "ResourceTypedefs.h"
 
 namespace griffin {
 	namespace resource {
 
 		using std::wstring;
-		using std::unique_ptr;
-		using std::shared_ptr;
-
-		typedef unique_ptr<unsigned char[]> DataPtr;
 
 		/**
 		*
@@ -53,8 +49,6 @@ namespace griffin {
 
 			wstring m_dataPath;
 		};
-
-		typedef shared_ptr<IResourceSource>		IResourceSourcePtr;
 	}
 }
 

@@ -43,7 +43,7 @@ namespace griffin {
 			int getComponents() const { return m_components; }
 
 		private:
-			void setFilteringMode(bool mipmaps);
+			void setTextureParameters();
 
 			size_t			m_sizeBytes = 0;
 			unsigned int	m_glTexture = 0;

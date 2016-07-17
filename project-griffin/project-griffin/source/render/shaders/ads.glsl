@@ -96,7 +96,7 @@
 	layout(location = 1) out vec4 eyeSpacePosition;
 	layout(location = 2) out vec4 normalReflectance;
 
-	layout(binding = 4) uniform sampler2D diffuseMap;
+	layout(binding = SamplerBinding_Diffuse1) uniform sampler2D diffuse1;
 	
 	// Subroutines
 
@@ -107,7 +107,7 @@
 
 	layout(index = 0) subroutine(SurfaceColorSubroutine) vec3 getSurfaceColorFromTexture()
 	{
-		return texture(diffuseMap, uv).rgb;
+		return texture(diffuse1, uv).rgb;
 	}
 
 	layout(index = 1) subroutine(SurfaceColorSubroutine) vec3 getSurfaceColorFromMaterial()
@@ -230,13 +230,6 @@
 	}
 
 	void main() {
-		// get diffuse surface color
-		//#ifdef _HAS_DIFFUSE_MAP
-		//	vec3 surfaceColor = texture(diffuseMap, uv).rgb;
-		//#else
-		//	vec3 surfaceColor = material.Md;
-		//#endif
-		/////
 		vec3 surfaceColor = getSurfaceColor();
 
 		vec3 lightIntensity = blinnPhongDirectionalLight(positionViewspace, normalViewspace, surfaceColor);

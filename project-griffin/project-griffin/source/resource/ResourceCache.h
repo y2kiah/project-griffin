@@ -8,25 +8,19 @@
 
 #pragma warning(disable:4003)	// not enough actual parameters for macro 'BOOST_PP_EXPAND_I' 
 
-#include <memory>
 #include <utility/container/handle_map.h>
 #include <utility/enum.h>
+#include "ResourceTypedefs.h"
 
 namespace griffin {
 	namespace resource {
-
-		using std::shared_ptr;
-		using std::unique_ptr;
-
-		class Resource_T;
-		typedef shared_ptr<Resource_T> ResourcePtr;
 
 		MakeEnum(CacheType, uint16_t,
 				 (Cache_Permanent)
 				 (Cache_Materials)
 				 (Cache_Models)
 				 (Cache_Scripts)
-				 , );
+				 ,);
 
 		/**
 		*
@@ -83,8 +77,6 @@ namespace griffin {
 
 			size_t		m_initialReserve;
 		};
-
-		typedef shared_ptr<ResourceCache>	ResourceCachePtr;
 
 
 		// Inline Functions

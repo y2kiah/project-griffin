@@ -179,6 +179,9 @@
     <Filter Include="render\shaders\terrain">
       <UniqueIdentifier>{c3cd8f1b-7fb9-40ad-b27c-3eaf920c7d5a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="render\noise">
+      <UniqueIdentifier>{43401b99-f03f-447d-a899-8c7f1be38594}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">
@@ -327,6 +330,12 @@
     </ClCompile>
     <ClCompile Include="source\game\terrain\TerrainSystem.cpp">
       <Filter>game\terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\noise\noise.cpp">
+      <Filter>render\noise</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\noise\noiseTexture.cpp">
+      <Filter>render\noise</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -897,6 +906,15 @@
     </ClInclude>
     <ClInclude Include="source\utility\Debug.h">
       <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\noise\noise.h">
+      <Filter>render\noise</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\noise\noiseTexture.h">
+      <Filter>render\noise</Filter>
+    </ClInclude>
+    <ClInclude Include="source\resource\ResourceTypedefs.h">
+      <Filter>resource</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

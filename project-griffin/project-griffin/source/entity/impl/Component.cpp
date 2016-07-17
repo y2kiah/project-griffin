@@ -108,7 +108,7 @@ void griffin::entity::test_reflection() {
 	// test concurrency system
 	griffin::task<int> tsk;
 	tsk.run([]{
-		std::this_thread::sleep_for(std::chrono::seconds(30));
+		std::this_thread::sleep_for(std::chrono::seconds(10));
 		SDL_Log("task 1 step 1");
 		return 1;
 	});

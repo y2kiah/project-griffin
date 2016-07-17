@@ -21,6 +21,31 @@ namespace griffin {
 			return f.get();
 		}
 
+
+		ResourcePtr ResourceLoader::getResource(const wstring& name, CacheType cache_)
+		{
+			auto f = m_c([=](Impl& impl) {
+				auto iter = impl.m_nameToHandle.find(name);
+				if (iter == impl.m_nameToHandle.end()) {
+					throw std::runtime_error("resource not found by handle");
+				}
+
+				Id_T h = iter->second;
+				auto& cache = *impl.m_caches[cache_].get();
+
+				if (!cache.hasResource(h)) {
+					throw std::runtime_error("resource not found by handle");
+				}
+				return cache.getResource(h);
+			});
+
+			if (f.get().get() == nullptr) {
+				return nullptr;
+			}
+			return f.get();
+		}
+
+
 		void ResourceLoader::executeCallbacks()
 		{
 			std::vector<std::function<void()>> callbacks;

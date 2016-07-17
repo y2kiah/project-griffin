@@ -10,6 +10,8 @@
 #define NANOVG_GL3_IMPLEMENTATION
 #endif
 #include <nanovg_gl.h>
+#include <render/noise/noiseTexture.h>
+#include <render/texture/Texture2D_GL.h>
 
 #ifdef _DEBUG
 #	pragma comment(lib, "freetype261d.lib")
@@ -29,7 +31,7 @@ void drawWindow(NVGcontext* nvg, const char* title, float x, float y, float w, f
 	using namespace griffin::render;
 
 	float cornerRadius = 3.0f;
-	
+
 	nvgSave(nvg);
 
 	// Window
@@ -118,6 +120,17 @@ void griffin::render::VectorRenderer_GL::renderViewport(Viewport& viewport, cons
 		nvgFillPaint(m_nvg, paint);
 		nvgFill(m_nvg);
 
+		// draw noise image
+		nvgBeginPath(m_nvg);
+		nvgRect(m_nvg, viewport.width - 400.0f, 0.0f, 400.0f, 400.0f);
+		Texture2D_GL& tex = testNoiseTexture->getResource<Texture2D_GL>();
+		int nvgImageHandle = nvglCreateImageFromHandle(m_nvg, tex.getGLTexture(), tex.getWidth(), tex.getHeight(), 0);
+		NVGpaint imagePaint = nvgImagePattern(m_nvg, viewport.width - 400.0f, 0.0f,
+											  400.0f, 400.0f,
+											  0.0f, nvgImageHandle, 1.0f);
+		nvgFillPaint(m_nvg, imagePaint);
+		nvgFill(m_nvg);
+
 		nvgRestore(m_nvg);
 	}
 
@@ -139,6 +152,8 @@ void griffin::render::VectorRenderer_GL::init(int viewportWidth, int viewportHei
 	if (m_nvg == nullptr) {
 		throw std::runtime_error("nanovg initialization failed");
 	}
+
+	testNoiseTexture = render::noise::createTestNoiseTexture(); // TEMP
 }
 
 void griffin::render::VectorRenderer_GL::loadGlobalFonts(VectorRenderer_GL& inst) {

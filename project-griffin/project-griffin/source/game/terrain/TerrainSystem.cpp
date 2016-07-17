@@ -5,6 +5,7 @@
 #include <render/RenderTarget_GL.h>
 #include <render/RenderTarget3D_GL.h>
 #include <render/ShaderProgram_GL.h>
+#include <render/texture/Texture2D_GL.h>
 #include <GL/glew.h>
 #include <glm/mat4x4.hpp>
 #include <glm/vec4.hpp>
@@ -71,6 +72,10 @@ void griffin::game::TerrainSystem::draw(Engine &engine, const glm::dmat4& viewMa
 	auto& program = terrainProgram.get()->getResource<render::ShaderProgram_GL>();
 	program.useProgram();
 
+	// bind the patch heightmap texture
+	auto& tex = tempNoiseTex->getResource<render::Texture2D_GL>();
+	tex.bind(render::SamplerBinding_Diffuse1);
+
 	// set the object UBO values
 	render::ObjectUniformsUBO objectUniformsUBO{};
 	glBindBuffer(GL_UNIFORM_BUFFER, renderSystem.getUBOHandle(render::ObjectUniforms));
@@ -112,9 +117,9 @@ void griffin::game::TerrainSystem::init(Game* pGame, const Engine& engine, const
 
 	// temp
 	for (int v = 0; v < (terrainX * terrainY); ++v) {
-		tempHeight[v*3]   = static_cast<float>(v % terrainX) * 32.0f;
-		tempHeight[v*3+1] = static_cast<float>(v / terrainX) * 32.0f;
-		tempHeight[v*3+2] = (static_cast<float>(rand()) / RAND_MAX) * 128.0f;
+		tempHeight[v*3]   = static_cast<float>(v % terrainX) / terrainX;
+		tempHeight[v*3+1] = static_cast<float>(v / terrainX) / terrainY;
+		tempHeight[v*3+2] = (static_cast<float>(rand()) / RAND_MAX);
 	}
 	
 	int i = 0;
@@ -131,16 +136,20 @@ void griffin::game::TerrainSystem::init(Game* pGame, const Engine& engine, const
 		}
 	}
 
-	vertexBuffer.loadFromMemory(reinterpret_cast<const unsigned char*>(tempHeight), sizeof(tempHeight));
-	indexBuffer.loadFromMemory(reinterpret_cast<const unsigned char*>(tempIndices), sizeof(tempIndices), sizeof(uint16_t));
-
 	// build VAO for terrain
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
-	vertexBuffer.bind();
-	indexBuffer.bind();
+	
+	vertexBuffer.loadFromMemory(reinterpret_cast<const unsigned char*>(tempHeight), sizeof(tempHeight));
+	indexBuffer.loadFromMemory(reinterpret_cast<const unsigned char*>(tempIndices), sizeof(tempIndices), sizeof(uint16_t));
+
 	glEnableVertexAttribArray(VertexLayout_Position);
 	glVertexAttribPointer(VertexLayout_Position, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	
+	glBindVertexArray(0);
+
+	// TEMP, load noise texture
+	tempNoiseTex = engine.resourceLoader->getResource(L"temp_noise", Cache_Materials);
 
 	ASSERT_GL_ERROR;
 }
