@@ -121,15 +121,17 @@ namespace griffin {
 		*/
 		COMPONENT(MovementComponent,
 			// flags
-			(uint8_t,		translationDirty,,	"position needs recalc"),
-			(uint8_t,		rotationDirty,,		"orientation needs recalc"),
-			(uint8_t,		_padding_0,[6],		""),
+			(uint8_t,		translationDirty,,		"position needs recalc"),
+			(uint8_t,		rotationDirty,,			"orientation needs recalc"),
+			(uint8_t,		prevTranslationDirty,,	"previous value of translationDirty"),
+			(uint8_t,		prevRotationDirty,,		"previous value of rotationDirty"),
+			(uint8_t,		_padding_0,[4],			""),
 
 			// movement vars
-			(glm::dvec3,	prevTranslation,,	"previous local translation"),
-			(glm::dvec3,	nextTranslation,,	"next local translation"),
-			(glm::dquat,	prevRotation,,		"previous local rotation"),
-			(glm::dquat,	nextRotation,,		"next local rotation")
+			(glm::dvec3,	prevTranslation,,		"previous local translation"),
+			(glm::dvec3,	nextTranslation,,		"next local translation"),
+			(glm::dquat,	prevRotation,,			"previous local rotation"),
+			(glm::dquat,	nextRotation,,			"next local rotation")
 		)
 		
 		/**

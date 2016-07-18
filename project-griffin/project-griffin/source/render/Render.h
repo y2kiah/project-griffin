@@ -278,6 +278,7 @@ namespace griffin {
 
 		private:
 			RenderTarget_GL		m_gbuffer;							//<! g-buffer for deferred rendering
+			RenderTarget_GL		m_colorBuffer;						//<! color buffer for FXAA
 
 			ResourcePtr			m_mrtProgram = nullptr;				//<! multiple render target geometry pass, renders the g-buffer
 			ResourcePtr			m_skyboxProgram = nullptr;			//<! skybox render from cubemap texture
@@ -289,8 +290,6 @@ namespace griffin {
 			
 			// temp, will be part of render queue in its own layer
 			ResourcePtr			m_skyboxTexture = nullptr;			//<! optional skybox cubemap passed in from external source
-
-			RenderTarget_GL		m_colorBuffer;						//<! color buffer for FXAA
 		};
 
 
@@ -319,6 +318,8 @@ namespace griffin {
 
 		private:
 			NVGcontext *m_nvg = nullptr;
+			RenderTarget_GL m_colorBuffer;	//<! color buffer for rendering in linear space
+
 			ResourcePtr testNoiseTexture;
 		};
 

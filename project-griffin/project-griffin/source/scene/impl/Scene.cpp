@@ -259,7 +259,9 @@ void interpolateSceneNodes(entity::EntityManager& entityMgr, float interpolation
 	auto& moveComponents = entityMgr.getComponentStore<scene::MovementComponent>().getComponents();
 
 	for (auto& move : moveComponents.getItems()) {
-		if (move.component.rotationDirty == 0 && move.component.translationDirty == 0) {
+		if (move.component.rotationDirty == 0 && move.component.prevRotationDirty == 0 &&
+			move.component.translationDirty == 0 && move.component.prevTranslationDirty == 0)
+		{
 			continue;
 		}
 
@@ -273,11 +275,19 @@ void interpolateSceneNodes(entity::EntityManager& entityMgr, float interpolation
 											static_cast<double>(interpolation));
 			node.orientationDirty = 1;
 		}
+		else if (move.component.prevRotationDirty == 1) {
+			node.rotationLocal = move.component.nextRotation;
+			node.orientationDirty = 1;
+		}
 
 		if (move.component.translationDirty == 1) {
 			node.translationLocal = glm::mix(move.component.prevTranslation,
 											 move.component.nextTranslation,
 											 static_cast<double>(interpolation));
+			node.positionDirty = 1;
+		}
+		else if (move.component.prevTranslationDirty == 1) {
+			node.translationLocal = move.component.nextTranslation;
 			node.positionDirty = 1;
 		}
 	}

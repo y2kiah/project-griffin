@@ -61,10 +61,13 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& en
 								angleAxis(yawAngle, dvec3(0, 0, 1.0))
 								* move.prevRotation
 								* angleAxis(pitchAngle, dvec3(1.0, 0, 0)));
+		
+		move.prevRotationDirty = move.rotationDirty;
 		move.rotationDirty = 1;
 	}
 	else {
 		move.prevRotation = move.nextRotation;
+		move.prevRotationDirty = move.rotationDirty;
 		move.rotationDirty = 0;
 	}
 
@@ -174,6 +177,7 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& en
 		move.prevTranslation = move.nextTranslation;
 		move.nextTranslation += velocity;
 		move.nextTranslation.z = playerHeight - crouchZ - headBobZ;
+		move.prevTranslationDirty = move.translationDirty;
 		move.translationDirty = (move.prevTranslation == move.nextTranslation) ? 0 : 1;
 	}
 

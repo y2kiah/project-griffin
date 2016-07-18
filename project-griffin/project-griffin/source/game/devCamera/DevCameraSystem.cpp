@@ -35,10 +35,12 @@ void griffin::game::DevCameraSystem::updateFrameTick(Game* pGame, Engine& engine
 
 		move.prevRotation = move.nextRotation;
 		move.nextRotation = normalize(dquat(angles) * move.prevRotation);
+		move.prevRotationDirty = move.rotationDirty;
 		move.rotationDirty = 1;
 	}
 	else {
 		move.prevRotation = move.nextRotation;
+		move.prevRotationDirty = move.rotationDirty;
 		move.rotationDirty = 0;
 	}
 
@@ -60,10 +62,12 @@ void griffin::game::DevCameraSystem::updateFrameTick(Game* pGame, Engine& engine
 
 		move.prevTranslation = move.nextTranslation;
 		move.nextTranslation += velocity;
+		move.prevTranslationDirty = move.translationDirty;
 		move.translationDirty = 1;
 	}
 	else {
 		move.prevTranslation = move.nextTranslation;
+		move.prevTranslationDirty = move.translationDirty;
 		move.translationDirty = 0;
 	}
 
