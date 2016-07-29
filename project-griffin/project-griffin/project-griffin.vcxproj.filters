@@ -916,7 +916,7 @@
     <ClInclude Include="source\utility\Logger.h">
       <Filter>utility</Filter>
     </ClInclude>
-    <ClInclude Include="source\utility\debugs.h">
+    <ClInclude Include="source\utility\debug.h">
       <Filter>utility</Filter>
     </ClInclude>
   </ItemGroup>
