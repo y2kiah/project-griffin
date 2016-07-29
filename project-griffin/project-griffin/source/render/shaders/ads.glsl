@@ -122,13 +122,13 @@
 		vec3 specular = vec3(0.0);
 		
 		vec3 normal = normalize(normalViewspace);
-		float lambertian = max(dot(toLight,normal), 0.0);
+		float lambertian = dot(toLight,normal);
 
-		if (lambertian > 0.0) {
+		if (lambertian > -0.00001) {
 			vec3 viewDir = normalize(vec3(-positionViewspace));
 			vec3 halfDir = normalize(toLight + viewDir);
 
-			float specAngle = .5;//max(dot(halfDir, normal), 0.0);
+			float specAngle = max(dot(halfDir, normal), 0.0);
 
 			// determines the specular highlight color with a "metallic" property
 			// specular highlight of plastics is light * specular reflectivity, metallic is mostly surface * specular reflectivity
@@ -141,7 +141,7 @@
 
 		vec3 ambient = light.La * surfaceColor * material.Ma;
 		vec3 emissive = material.Me;
-		vec3 diffuse = light.Lds * surfaceColor * material.Md * lambertian;
+		vec3 diffuse = light.Lds * surfaceColor * material.Md * max(lambertian, 0.0);
 
 		return ambient + emissive + diffuse + specular;
 	}
@@ -155,11 +155,11 @@
 		float attenuation = 1.0 / (light.Kc + light.Kl * distanceToLight + light.Kq * distanceToLight * distanceToLight);
 
 		vec3 normal = normalize(normalViewspace);
-		float lambertian = max(dot(toLight,normal), 0.0) * attenuation;
+		float lambertian = dot(toLight,normal) * attenuation;
 
 		vec3 specular = vec3(0.0);
 
-		if (lambertian > 0.0) {
+		if (lambertian > -0.00001) {
 			vec3 viewDir = normalize(vec3(-positionViewspace));
 			vec3 halfDir = normalize(toLight + viewDir);
 
@@ -174,9 +174,9 @@
 			specular = specColor * pow(specAngle, material.shininess * 4.0) * attenuation;
 		}
 
-		vec3 ambient = light.La * material.Ma;
+		vec3 ambient = light.La * surfaceColor * material.Ma;
 		vec3 emissive = material.Me;
-		vec3 diffuse = light.Lds * material.Md * lambertian;
+		vec3 diffuse = light.Lds * surfaceColor * material.Md * max(lambertian, 0.0);
 		
 		return ambient + emissive + diffuse + specular;
 	}
@@ -200,9 +200,9 @@
 			float attenuation = 1.0 / (light.Kc + light.Kl * distanceToLight + light.Kq * distanceToLight * distanceToLight);
 
 			vec3 normal = normalize(normalViewspace);
-			lambertian = max(dot(toLight,normal), 0.0) * angleFalloff * attenuation;
+			lambertian = dot(toLight,normal) * angleFalloff * attenuation;
 
-			if (lambertian > 0.0) {
+			if (lambertian > -0.00001) {
 				vec3 viewDir = normalize(vec3(-positionViewspace));
 				vec3 halfDir = normalize(toLight + viewDir);
 
@@ -220,7 +220,7 @@
 
 		vec3 ambient = light.La * surfaceColor * material.Ma;
 		vec3 emissive = material.Me;
-		vec3 diffuse = light.Lds * surfaceColor * material.Md * lambertian;
+		vec3 diffuse = light.Lds * surfaceColor * material.Md * max(lambertian, 0.0);
 
 		return ambient + emissive + diffuse + specular;
 	}

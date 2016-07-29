@@ -215,8 +215,8 @@ namespace griffin {
 				glm::vec3 lightDirViewspace = glm::normalize(glm::vec3(viewport.params.viewMat * lightDir));
 				//glm::vec4 lightPosViewspace{ 0.0f, 0.0f, 0.0f, 1.0f };
 				//glm::vec3 lightDirViewspace{ 0.0f, 0.0f, -1.0f };
-				glm::vec3 lightLa{ 0.8f, 0.9f, 1.0f };
-				glm::vec3 lightLds{ 0.8f, 0.6f, 0.3f };
+				glm::vec3 lightLa{ 0.2f, 0.2f, 0.2f };
+				glm::vec3 lightLds{ 0.5f, 0.3f, 0.2f };
 				glUniform4fv(lightPosLoc, 1, &lightPosViewspace[0]);
 				glUniform3fv(lightDirLoc, 1, &lightDirViewspace[0]);
 				glUniform3fv(lightLaLoc, 1, &lightLa[0]);
