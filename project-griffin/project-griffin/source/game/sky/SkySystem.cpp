@@ -24,7 +24,7 @@ void griffin::game::SkySystem::init(Game* pGame, const Engine& engine, const SDL
 	using namespace render;
 	using namespace resource;
 
-	auto skyTex = loadTextureCubeMap(L"textures/skybox.dds", true, CacheType::Cache_Permanent);
+	auto skyTex = loadTextureCubeMap(L"textures/skybox.dds", CacheType::Cache_Permanent, true, true);
 	skyBoxCubeMap = engine.resourceLoader->getResource(skyTex).get();
 	precomputeAtmosphere(*this, engine.renderSystem);
 }

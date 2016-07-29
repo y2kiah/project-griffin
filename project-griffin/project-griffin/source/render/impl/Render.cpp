@@ -115,7 +115,7 @@ namespace griffin {
 			//L"shaders/linearDepth.glsl"
 			//L"shaders/SimpleShader.glsl"
 
-			auto nrml = loadTexture2D(L"textures/normal-noise.dds", CacheType::Cache_Permanent);
+			auto nrml = loadTexture2D(L"textures/normal-noise.dds", CacheType::Cache_Permanent, false);
 
 			//m_fullScreenQuadProgram = loader->getResource(fsq).get(); // wait on the futures and assign shared_ptrs
 			m_mrtProgram = loader->getResource(mrt).get();
@@ -592,7 +592,9 @@ namespace griffin {
 
 		// Free Functions, RenderResources.h
 
-		ResourceHandle<Texture2D_GL> loadTexture2D(wstring texturePath, CacheType cache)
+		// TODO: for these functions (if they even survive) consider passing in bit flags rather than bools, to support more options
+
+		ResourceHandle<Texture2D_GL> loadTexture2D(wstring texturePath, CacheType cache, bool sRGB)
 		{
 			using namespace resource;
 
@@ -609,19 +611,19 @@ namespace griffin {
 			};
 
 			// need a way to specify thread affinity for the callback so it knows to run on update or render thread
-			auto textureResourceCallback = [](const ResourcePtr& resourcePtr, Id_T handle, size_t size) {
+			auto textureResourceCallback = [sRGB](const ResourcePtr& resourcePtr, Id_T handle, size_t size) {
 				Texture2D_GL& tex = resourcePtr->getResource<Texture2D_GL>();
 				SDL_Log("callback texture of size %d", size);
 				// the unique_ptr of data is stored within the texture, this call deletes the data after
 				// sending texture to OpenGL
-				tex.loadDDSFromInternalMemory();
+				tex.loadDDSFromInternalMemory(true, sRGB);
 			};
 
 			return loader->load<Texture2D_GL>(texturePath, cache, textureResourceBuilder, textureResourceCallback);
 		}
 
 
-		ResourceHandle<TextureCubeMap_GL> loadTextureCubeMap(wstring texturePath, bool swapY, CacheType cache)
+		ResourceHandle<TextureCubeMap_GL> loadTextureCubeMap(wstring texturePath, CacheType cache, bool swapY, bool sRGB)
 		{
 			using namespace resource;
 
@@ -639,12 +641,12 @@ namespace griffin {
 
 			// need a way to specify thread affinity for the callback so it knows to run on update or render thread
 			// TODO: switch to using task system, take advantage of thread affinity in that system
-			auto textureResourceCallback = [](const ResourcePtr& resourcePtr, Id_T handle, size_t size) {
+			auto textureResourceCallback = [swapY, sRGB](const ResourcePtr& resourcePtr, Id_T handle, size_t size) {
 				TextureCubeMap_GL& tex = resourcePtr->getResource<TextureCubeMap_GL>();
 				SDL_Log("callback texture of size %d", size);
 				// the unique_ptr of data is stored within the texture, this call deletes the data after
 				// sending texture to OpenGL
-				tex.loadFromInternalMemory(true, true);
+				tex.loadDDSFromInternalMemory(true, swapY, sRGB);
 			};
 
 			return loader->load<TextureCubeMap_GL>(texturePath, cache, textureResourceBuilder, textureResourceCallback);

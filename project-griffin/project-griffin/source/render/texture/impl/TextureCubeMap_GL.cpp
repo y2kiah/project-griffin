@@ -60,14 +60,14 @@ namespace griffin {
 			}
 		}
 
-		bool TextureCubeMap_GL::loadFromMemory(unsigned char* data, size_t size, bool swapY)
+		bool TextureCubeMap_GL::loadDDSFromMemory(unsigned char* data, size_t size, bool swapY, bool sRGB)
 		{
 			// if image is already loaded, do some cleanup?
 
 			glGenTextures(1, &m_glTexture);
 			glBindTexture(GL_TEXTURE_CUBE_MAP, m_glTexture);
 			DDSImage image;
-			bool ok = image.loadFromMemory(data, true) &&
+			bool ok = image.loadFromMemory(data, true, sRGB) &&
 					  image.is_cubemap() &&
 					  image.upload_textureCubemap(swapY);
 
@@ -100,9 +100,9 @@ namespace griffin {
 			return ok;// (m_glTexture != 0);
 		}
 
-		bool TextureCubeMap_GL::loadFromInternalMemory(bool discard, bool swapY)
+		bool TextureCubeMap_GL::loadDDSFromInternalMemory(bool discard, bool swapY, bool sRGB)
 		{
-			bool result = loadFromMemory(m_tmpData.get(), m_sizeBytes, swapY);
+			bool result = loadDDSFromMemory(m_tmpData.get(), m_sizeBytes, swapY, sRGB);
 			if (discard) {
 				m_tmpData.reset();
 			}
@@ -110,14 +110,14 @@ namespace griffin {
 			return result;
 		}
 
-		bool TextureCubeMap_GL::loadFromFile(const char* filename, bool swapY)
+		bool TextureCubeMap_GL::loadDDSFromFile(const char* filename, bool swapY, bool sRGB)
 		{
 			// if image is already loaded, do some cleanup?
 
 			glGenTextures(1, &m_glTexture);
 			glBindTexture(GL_TEXTURE_CUBE_MAP, m_glTexture);
 			DDSImage image;
-			bool ok = image.load(filename, true) &&
+			bool ok = image.load(filename, true, sRGB) &&
 					  image.is_cubemap() &&
 					  image.upload_textureCubemap(swapY);
 

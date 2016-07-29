@@ -166,8 +166,12 @@ namespace griffin {
 						wName = filePath.substr(0, filePath.find_last_of(L'/')) + L'/' + wName;
 						SDL_Log("trying to load %s", aName.assign(wName.begin(), wName.end()).c_str());
 
+						// diffuse maps are in sRGB space, all others are not
+						bool sRGB = (tex.textureType == MaterialTexture_Diffuse || tex.textureType == MaterialTexture_Diffuse_AO ||
+									 tex.textureType == MaterialTexture_Diffuse_Opacity || tex.textureType == MaterialTexture_Diffuse_OpacityMask);
+
 						// TEMP, right now loading is blocking, called on opengl thread. Once tasks are used, switch to calling from the loading thread.
-						auto resHandle = render::loadTexture2D(wName, resource::CacheType::Cache_Materials);
+						auto resHandle = render::loadTexture2D(wName, resource::CacheType::Cache_Materials, sRGB);
 
 						// TEMP, blocking call, need to make this async, use task system
 						// BUT, the continuation must update this handle, assuming "this" pointer is captured by reference,

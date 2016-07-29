@@ -596,19 +596,6 @@ namespace griffin {
 							SDL_Log("Warning: texture name length %d too long, \"%s\"", static_cast<int>(path.length), path.C_Str());
 							break;
 						}
-
-						// do synchronous loading of texture since this is a utility function
-						// injects the texture into cache, pass assumeCached=true
-						// prefix texture path with the path to the model being loaded
-						auto pathStart = meshFilename.find("models");
-						auto pathEnd = meshFilename.find_last_of('/');
-						string aName = meshFilename.substr(pathStart, pathEnd - pathStart) + '/' + mat.textures[samplerIndex].name;
-						wstring wName;
-						wName.assign(aName.begin(), aName.end());
-						auto resHandle = render::loadTexture2D(wName);
-
-						auto resPtr = g_resourceLoader.lock()->getResource(resHandle);
-						auto& tex = resPtr.get()->getResource<Texture2D_GL>();
 						
 						// if texture name matches a known pattern, change the texture type despite the assimp type assigned
 						if (strstr(mat.textures[samplerIndex].name, "_diffuse") != nullptr) {
@@ -684,6 +671,23 @@ namespace griffin {
 							key.hasMetallicReflectiveAOMap = 1;
 							key.isReflective = 1;
 						}
+
+						// diffuse maps are in sRGB space, all others are not
+						bool sRGB = (texType == MaterialTexture_Diffuse || texType == MaterialTexture_Diffuse_AO ||
+									 texType == MaterialTexture_Diffuse_Opacity || texType == MaterialTexture_Diffuse_OpacityMask);
+
+						// do synchronous loading of texture since this is a utility function
+						// injects the texture into cache, pass assumeCached=true
+						// prefix texture path with the path to the model being loaded
+						auto pathStart = meshFilename.find("models");
+						auto pathEnd = meshFilename.find_last_of('/');
+						string aName = meshFilename.substr(pathStart, pathEnd - pathStart) + '/' + mat.textures[samplerIndex].name;
+						wstring wName;
+						wName.assign(aName.begin(), aName.end());
+						auto resHandle = render::loadTexture2D(wName, CacheType::Cache_Materials, sRGB);
+
+						auto resPtr = g_resourceLoader.lock()->getResource(resHandle);
+						auto& tex = resPtr.get()->getResource<Texture2D_GL>();
 
 						// everything converted successfully, set the texture type away from None
 						mat.textures[samplerIndex].textureType = texType;

@@ -26,10 +26,11 @@ namespace griffin {
 		extern weak_ptr<resource::ResourceLoader> g_resourceLoader;
 
 		// Resource Loading Functions
-		ResourceHandle<Texture2D_GL>		loadTexture2D(wstring texturePath, CacheType cache = CacheType::Cache_Materials);
+		ResourceHandle<Texture2D_GL>		loadTexture2D(wstring texturePath, CacheType cache = CacheType::Cache_Materials,
+														  bool sRGB = true);
 
-		ResourceHandle<TextureCubeMap_GL>	loadTextureCubeMap(wstring texturePath, bool swapY = false,
-															   CacheType cache = CacheType::Cache_Materials);
+		ResourceHandle<TextureCubeMap_GL>	loadTextureCubeMap(wstring texturePath, CacheType cache = CacheType::Cache_Materials,
+															   bool swapY = false, bool sRGB = true);
 
 		ResourceHandle<ShaderProgram_GL>	loadShaderProgram(wstring programPath, const shared_ptr<RenderSystem> &renderSystemPtr,
 															  CacheType cache = CacheType::Cache_Materials);

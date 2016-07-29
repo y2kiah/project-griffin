@@ -157,11 +157,12 @@
     <ClInclude Include="source\utility\container\serial_task_queue.h" />
     <ClInclude Include="source\utility\container\vector_list.h" />
     <ClInclude Include="source\utility\container\vector_queue.h" />
-    <ClInclude Include="source\utility\Debug.h" />
+    <ClInclude Include="source\utility\debugs.h" />
     <ClInclude Include="source\utility\enum.h" />
     <ClInclude Include="source\utility\concurrency.h" />
     <ClInclude Include="source\utility\export.h" />
     <ClInclude Include="source\utility\JsonSerializer.h" />
+    <ClInclude Include="source\utility\Logger.h" />
     <ClInclude Include="source\utility\memory_reserve.h" />
     <ClInclude Include="source\utility\prettyprint.h" />
     <ClInclude Include="source\utility\profile\Profile.h" />

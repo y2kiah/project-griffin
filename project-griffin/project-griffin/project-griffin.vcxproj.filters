@@ -904,9 +904,6 @@
     <ClInclude Include="source\game\terrain\TerrainSystem.h">
       <Filter>game\terrain</Filter>
     </ClInclude>
-    <ClInclude Include="source\utility\Debug.h">
-      <Filter>utility</Filter>
-    </ClInclude>
     <ClInclude Include="source\render\noise\noise.h">
       <Filter>render\noise</Filter>
     </ClInclude>
@@ -915,6 +912,12 @@
     </ClInclude>
     <ClInclude Include="source\resource\ResourceTypedefs.h">
       <Filter>resource</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utility\Logger.h">
+      <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utility\debugs.h">
+      <Filter>utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

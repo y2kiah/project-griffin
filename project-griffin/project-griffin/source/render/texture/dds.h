@@ -233,8 +233,8 @@ namespace griffin {
 			DDSImage();
 			~DDSImage();
 
-			bool loadFromMemory(unsigned char* data, bool flipImage = true);
-			bool load(const char* filename, bool flipImage = true);
+			bool loadFromMemory(unsigned char* data, bool flipImage = true, bool sRGB = false);
+			bool load(const char* filename, bool flipImage = true, bool sRGB = false);
 			void clear();
 
 			operator char*();

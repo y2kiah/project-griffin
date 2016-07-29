@@ -18,18 +18,18 @@ namespace griffin {
 			/**
 			* load an image from memory as a new OpenGL texture
 			*/
-			bool loadFromMemory(unsigned char* data, size_t size, bool swapY = false);
+			bool loadDDSFromMemory(unsigned char* data, size_t size, bool swapY = false, bool sRGB = false);
 
 			/**
 			* load an image from the m_tmpData pointer as a new OpenGL texture
 			* @param discard	true (default) to delete the memory after upload to GPU
 			*/
-			bool loadFromInternalMemory(bool discard = true, bool swapY = false);
+			bool loadDDSFromInternalMemory(bool discard = true, bool swapY = false, bool sRGB = false);
 
 			/**
 			* load an image file directly as a new OpenGL texture
 			*/
-			bool loadFromFile(const char *filename, bool swapY = false);
+			bool loadDDSFromFile(const char *filename, bool swapY = false, bool sRGB = false);
 
 			/**
 			* Bind to an active texture slot (0 - 31) to be sampled from a shader

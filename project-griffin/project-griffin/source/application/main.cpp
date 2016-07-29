@@ -207,7 +207,7 @@ void SDLApplication::initWindow(const char* appName)
 	//SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
 
 	// Request sRGB capable framebuffer
-	SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
+	SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1); // or, opt for gamma control in fragment shader?
 
 	int width = 1600;
 	int height = 900;
@@ -284,7 +284,7 @@ void SDLApplication::initOpenGL()
 	//glEnable(GL_MULTISAMPLE);
 
 	// Enable sRGB frame buffer
-	glEnable(GL_FRAMEBUFFER_SRGB);
+	//glEnable(GL_FRAMEBUFFER_SRGB); // or, opt for gamma control in fragment shader?
 
 	// Enable back face culling
 	glEnable(GL_CULL_FACE);

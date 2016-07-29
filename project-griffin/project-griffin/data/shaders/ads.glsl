@@ -166,7 +166,7 @@ layout(std140) uniform ObjectUniforms {
 			vec3 viewDir = normalize(vec3(-positionViewspace));
 			vec3 halfDir = normalize(toLight + viewDir);
 
-			float specAngle = max(dot(halfDir, normal), 0.0);
+			float specAngle = .5;//max(dot(halfDir, normal), 0.0);
 
 			// determines the specular highlight color with a "metallic" property
 			// specular highlight of plastics is light * specular reflectivity, metallic is mostly surface * specular reflectivity

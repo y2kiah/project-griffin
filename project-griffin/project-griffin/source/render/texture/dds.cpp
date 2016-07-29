@@ -156,7 +156,7 @@ DDSImage::~DDSImage()
 {
 }
 
-bool DDSImage::loadFromMemory(unsigned char* data, bool flipImage)
+bool DDSImage::loadFromMemory(unsigned char* data, bool flipImage, bool sRGB)
 {
 	int (DDSImage::*sizefunc)(int, int);
 
@@ -189,17 +189,17 @@ bool DDSImage::loadFromMemory(unsigned char* data, bool flipImage)
 	if (ddsh.ddspf.dwFlags & DDS_FOURCC) {
 		switch (ddsh.ddspf.dwFourCC) {
 			case FOURCC_DXT1:
-				internalFormat = GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
+				internalFormat = (sRGB ? GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT : GL_COMPRESSED_RGBA_S3TC_DXT1_EXT);
 				components = 3;
 				compressed = true;
 				break;
 			case FOURCC_DXT3:
-				internalFormat = GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT;
+				internalFormat = (sRGB ? GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT : GL_COMPRESSED_RGBA_S3TC_DXT3_EXT);
 				components = 4;
 				compressed = true;
 				break;
 			case FOURCC_DXT5:
-				internalFormat = GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT;
+				internalFormat = (sRGB ? GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT : GL_COMPRESSED_RGBA_S3TC_DXT5_EXT);
 				components = 4;
 				compressed = true;
 				break;
@@ -209,25 +209,25 @@ bool DDSImage::loadFromMemory(unsigned char* data, bool flipImage)
 	}
 	else if (ddsh.ddspf.dwFlags == DDS_RGBA && ddsh.ddspf.dwRGBBitCount == 32) {
 		format = GL_BGRA;
-		internalFormat = GL_SRGB8_ALPHA8;
+		internalFormat = (sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8);
 		compressed = false;
 		components = 4;
 	}
 	else if (ddsh.ddspf.dwFlags == DDS_RGB  && ddsh.ddspf.dwRGBBitCount == 32) {
 		format = GL_BGRA;
-		internalFormat = GL_SRGB8_ALPHA8;
+		internalFormat = (sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8);
 		compressed = false;
 		components = 4;
 	}
 	else if (ddsh.ddspf.dwFlags == DDS_RGB  && ddsh.ddspf.dwRGBBitCount == 24) {
 		format = GL_BGR;
-		internalFormat = GL_SRGB8;
+		internalFormat = (sRGB ? GL_SRGB8 : GL_RGB8);
 		compressed = false;
 		components = 3;
 	}
 	else if (ddsh.ddspf.dwRGBBitCount == 8) {
 		format = GL_RED;
-		internalFormat = GL_SLUMINANCE8;
+		internalFormat = (sRGB ? GL_SLUMINANCE8 : GL_R8);
 		compressed = false;
 		components = 1;
 	}
@@ -312,7 +312,7 @@ bool DDSImage::loadFromMemory(unsigned char* data, bool flipImage)
 //
 // filename - fully qualified name of DDS image
 // flipImage - specifies whether image is flipped on load, default is true
-bool DDSImage::load(const char* filename, bool flipImage)
+bool DDSImage::load(const char* filename, bool flipImage, bool sRGB)
 {
 	FILE* fp = nullptr;
 	if (fopen_s(&fp, filename, "rb")) {
@@ -325,7 +325,7 @@ bool DDSImage::load(const char* filename, bool flipImage)
 		fread(dataPtr.get(), 1, size, fp);
 		fclose(fp);
 
-		return loadFromMemory(dataPtr.get(), flipImage);
+		return loadFromMemory(dataPtr.get(), flipImage, sRGB);
 	}
 	return false;
 }
@@ -576,7 +576,8 @@ inline int DDSImage::get_line_width(int width, int bpp)
 inline int DDSImage::size_dxtc(int width, int height)
 {
 	return ((width + 3) / 4) * ((height + 3) / 4) *
-		(internalFormat == GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT ? 8 : 16);
+		(internalFormat == GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT ||
+		 internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ? 8 : 16);
 }
 
 // calculates size of uncompressed RGB texture in bytes
@@ -658,14 +659,17 @@ void DDSImage::flip(char* image, int width, int height, int depth, int size)
 		int blocksize;
 
 		switch (internalFormat) {
+			case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT: // yes, the fall through is on purpose
 			case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT:
 				blocksize = 8;
 				flipblocks = &DDSImage::flip_blocks_dxtc1;
 				break;
+			case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
 			case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT:
 				blocksize = 16;
 				flipblocks = &DDSImage::flip_blocks_dxtc3;
 				break;
+			case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
 			case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT:
 				blocksize = 16;
 				flipblocks = &DDSImage::flip_blocks_dxtc5;

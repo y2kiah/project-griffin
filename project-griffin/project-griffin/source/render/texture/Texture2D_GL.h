@@ -42,18 +42,18 @@ namespace griffin {
 			/**
 			* load a DDS image from memory as a new OpenGL texture
 			*/
-			bool loadDDSFromMemory(unsigned char* data, size_t size);
+			bool loadDDSFromMemory(unsigned char* data, size_t size, bool sRGB = false);
 
 			/**
 			* load a DDS image from the m_tmpData pointer as a new OpenGL texture
 			* @param discard	true (default) to delete the memory after upload to GPU
 			*/
-			bool loadDDSFromInternalMemory(bool discard = true);
+			bool loadDDSFromInternalMemory(bool discard = true, bool sRGB = false);
 
 			/**
 			* load a DDS image file directly as a new OpenGL texture
 			*/
-			bool loadDDSFromFile(const char *filename);
+			bool loadDDSFromFile(const char *filename, bool sRGB = false);
 
 			/**
 			* Bind to an active texture slot (0 - 31) to be sampled from a shader

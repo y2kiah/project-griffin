@@ -295,6 +295,9 @@ vec2 rcpFrame = vec2(1.0/viewportWidth, 1.0/viewportHeight);
 	
 	void main()
 	{
+		//const float gamma = 1.8;
+		//outColor = pow(fxaaPixelShader(posPos.xy, colorMap, rcpFrame).rgb, vec3(1.0 / gamma));
+		//outColor = sqrt(fxaaPixelShader(posPos.xy, colorMap, rcpFrame).rgb); // gamma correction, close to pow(C, 1.0/2.2)
 		outColor = fxaaPixelShader(posPos.xy, colorMap, rcpFrame).rgb;
 	}
 

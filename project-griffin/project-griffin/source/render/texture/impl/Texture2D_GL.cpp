@@ -17,8 +17,19 @@ namespace griffin {
 
 		// Global variables
 
+		/**
+		* Table of texture pixel formats
+		* first dimension is RGBA vs. BGRA
+		* second dimension is # components
+		*/
 		const GLenum g_formatLookup[2][4] = { { GL_RED, GL_RG, GL_RGB, GL_RGBA }, { 0, 0, GL_BGR, GL_BGRA } };
 
+		/**
+		* Table of internal formats
+		* first dimension is # components
+		* second dimension is component size
+		* third dimension is data type
+		*/
 		const GLint g_internalFormatLookup[4][3][5] = {
 			{
 			/* R ----- standard ---- float --------- int ----------- uint ----------- sRGB -------------------- */
@@ -163,7 +174,7 @@ namespace griffin {
 			return true;
 		}
 
-		bool Texture2D_GL::loadDDSFromMemory(unsigned char* data, size_t size)
+		bool Texture2D_GL::loadDDSFromMemory(unsigned char* data, size_t size, bool sRGB)
 		{
 			// if image is already loaded, do some cleanup?
 
@@ -171,7 +182,7 @@ namespace griffin {
 			glBindTexture(GL_TEXTURE_2D, m_glTexture);
 			
 			DDSImage image;
-			bool ok = image.loadFromMemory(data, true) &&
+			bool ok = image.loadFromMemory(data, true, sRGB) &&
 					  !image.is_cubemap() && !image.is_volume() &&
 					  image.upload_texture2D();
 
@@ -206,9 +217,9 @@ namespace griffin {
 			return ok;// (m_glTexture != 0);
 		}
 
-		bool Texture2D_GL::loadDDSFromInternalMemory(bool discard)
+		bool Texture2D_GL::loadDDSFromInternalMemory(bool discard, bool sRGB)
 		{
-			bool result = loadDDSFromMemory(m_tmpData.get(), m_sizeBytes);
+			bool result = loadDDSFromMemory(m_tmpData.get(), m_sizeBytes, sRGB);
 			if (discard) {
 				m_tmpData.reset();
 			}
@@ -216,14 +227,14 @@ namespace griffin {
 			return result;
 		}
 
-		bool Texture2D_GL::loadDDSFromFile(const char* filename)
+		bool Texture2D_GL::loadDDSFromFile(const char* filename, bool sRGB)
 		{
 			// if image is already loaded, do some cleanup?
 
 			glGenTextures(1, &m_glTexture);
 			glBindTexture(GL_TEXTURE_2D, m_glTexture);
 			DDSImage image;
-			bool ok = image.load(filename, true) &&
+			bool ok = image.load(filename, true, sRGB) &&
 					  !image.is_cubemap() && !image.is_volume() &&
 					  image.upload_texture2D();
 
