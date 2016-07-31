@@ -15,7 +15,7 @@
 #include <render/Render.h>
 #include <resource/ResourceLoader.h>
 #include <utility/profile/Profile.h>
-#include <utility/Debug.h>
+#include <utility/debug.h>
 
 #define PROGRAM_NAME "Project Griffin"
 

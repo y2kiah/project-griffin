@@ -6,7 +6,7 @@
 #include <render/RenderTarget_GL.h>
 #include <render/RenderTarget3D_GL.h>
 #include <GL/glew.h>
-#include <utility/Debug.h>
+#include <utility/debug.h>
 
 void precomputeAtmosphere(griffin::game::SkySystem& sky,
 						  const griffin::render::RenderSystemPtr &renderSystemPtr);

@@ -1,5 +1,5 @@
 #include "../VertexBuffer_GL.h"
-#include <utility/Debug.h>
+#include <utility/debug.h>
 #include <GL/glew.h>
 #include <cassert>
 

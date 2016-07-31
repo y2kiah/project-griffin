@@ -20,7 +20,7 @@
 #include <render/model/Mesh_GL.h>
 #include <render/model/ModelImport_Assimp.h>
 #include <render/RenderTarget_GL.h>
-#include <utility/Debug.h>
+#include <utility/debug.h>
 
 #include <game/impl/GameImpl.h> // temp
 
@@ -215,8 +215,8 @@ namespace griffin {
 				glm::vec3 lightDirViewspace = glm::normalize(glm::vec3(viewport.params.viewMat * lightDir));
 				//glm::vec4 lightPosViewspace{ 0.0f, 0.0f, 0.0f, 1.0f };
 				//glm::vec3 lightDirViewspace{ 0.0f, 0.0f, -1.0f };
-				glm::vec3 lightLa{ 0.2f, 0.2f, 0.2f };
-				glm::vec3 lightLds{ 0.5f, 0.3f, 0.2f };
+				glm::vec3 lightLa{ 0.15f, 0.15f, 0.15f };
+				glm::vec3 lightLds{ 0.4f, 0.3f, 0.2f };
 				glUniform4fv(lightPosLoc, 1, &lightPosViewspace[0]);
 				glUniform3fv(lightDirLoc, 1, &lightDirViewspace[0]);
 				glUniform3fv(lightLaLoc, 1, &lightLa[0]);
@@ -447,7 +447,7 @@ namespace griffin {
 				//auto mdl6 = loadModel(L"models/other_pit.gmd", CacheType::Cache_Models);
 				//auto mdl7 = loadModel(L"models/Bill/Bill.gmd", CacheType::Cache_Models);
 				auto mdl8 = loadModel(L"models/ring/ring.gmd", CacheType::Cache_Models);
-				//auto mdl9 = loadModel(L"models/building_001.gmd", CacheType::Cache_Models);
+				auto mdl9 = loadModel(L"models/building_001.gmd", CacheType::Cache_Models);
 				//auto mdl10 = loadModel(L"models/scene/scene.gmd", CacheType::Cache_Models);
 
 				using namespace resource;
@@ -458,7 +458,7 @@ namespace griffin {
 				//g_tempModel[0] = loader->getResource(mdl2).get();
 				//g_tempModel[1] = loader->getResource(mdl4).get();
 				//g_tempModel[2] = loader->getResource(mdl5).get();
-				g_tempModel[3] = loader->getResource(mdl8).get();
+				g_tempModel[3] = loader->getResource(mdl9).get();
 				loader->executeCallbacks();
 			}
 			catch (std::exception ex) {

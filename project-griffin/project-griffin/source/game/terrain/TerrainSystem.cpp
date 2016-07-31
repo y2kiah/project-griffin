@@ -10,7 +10,7 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec4.hpp>
 #include <glm/matrix.hpp>
-#include <utility/Debug.h>
+#include <utility/debug.h>
 
 // Local Variables
 

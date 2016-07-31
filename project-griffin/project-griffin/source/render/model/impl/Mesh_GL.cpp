@@ -11,7 +11,7 @@
 #include <utility/container/vector_queue.h>
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <utility/Debug.h>
+#include <utility/debug.h>
 
 #include <render/RenderResources.h> // TEMP (these two headers needed only for temp render function)
 #include <resource/ResourceLoader.h>

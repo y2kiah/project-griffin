@@ -3,7 +3,7 @@
 * @author Jeff Kiah
 */
 #include "../Render.h"
-#include <utility/Debug.h>
+#include <utility/debug.h>
 #include <GL/glew.h>
 #include <nanovg.h>
 #ifndef NANOVG_GL3_IMPLEMENTATION

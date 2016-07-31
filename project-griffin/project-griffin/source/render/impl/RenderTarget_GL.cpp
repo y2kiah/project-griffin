@@ -1,5 +1,5 @@
 #include "../RenderTarget_GL.h"
-#include <utility/Debug.h>
+#include <utility/debug.h>
 #include <GL/glew.h>
 #include <SDL_log.h>
 #include <cassert>
@@ -54,7 +54,7 @@ namespace griffin {
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depthBufferId);
 			*/
 
-			if (m_type != TypeDepthStencil) {
+			if (m_type == TypeColor || m_type == TypeColorDepthStencil || m_type == TypeGBuffer) {
 				unsigned int albedo = m_textureIds[Albedo_Displacement];
 
 				if (albedo != 0) {
@@ -111,7 +111,7 @@ namespace griffin {
 				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, normal, 0);
 			}
 
-			if (m_type != TypeColor) {
+			if (m_type == TypeColorDepthStencil || m_type == TypeDepthStencil || m_type == TypeGBuffer) {
 				unsigned int depth = m_textureIds[Depth_Stencil];
 
 				if (depth != 0) {

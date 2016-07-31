@@ -131,7 +131,7 @@
 #include <cstring>
 #include <cassert>
 #include <memory>
-#include <utility/Debug.h>
+#include <utility/debug.h>
 
 
 using namespace griffin;

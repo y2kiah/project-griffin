@@ -1,6 +1,6 @@
 #include "../Texture2D_GL.h"
 #include "../dds.h"
-#include <utility/Debug.h>
+#include <utility/debug.h>
 #include <GL/glew.h>
 #include <cmath>
 #include <SDL_log.h>
