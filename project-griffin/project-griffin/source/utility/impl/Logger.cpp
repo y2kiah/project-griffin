@@ -4,8 +4,7 @@
 
 using namespace griffin;
 
-Logger::Logger(Mode mode) :
-	m_mode{ mode },
+Logger::Logger() :
 	m_q(RESERVE_LOGGER_QUEUE)
 {
 	m_popArray.reserve(RESERVE_LOGGER_QUEUE);
@@ -20,14 +19,6 @@ Logger::Logger(Mode mode) :
 	m_priority[Category_Render]      = Priority_Critical;
 	m_priority[Category_Input]       = Priority_Critical;
 	m_priority[Category_Test]        = Priority_Verbose;
-}
-
-Logger::~Logger() {
-	flush();
-
-	if (m_q.unsafe_capacity() > RESERVE_LOGGER_QUEUE) {
-		SDL_Log("check RESERVE_LOGGER_QUEUE: original=%d, highest=%d", RESERVE_LOGGER_QUEUE, m_q.unsafe_capacity());
-	}
 }
 
 void Logger::log(Category c, Priority p, const char *s)
@@ -59,6 +50,15 @@ void Logger::setPriority(Category c, Priority p)
 void Logger::setAllPriority(Priority p)
 {
 	memset(m_priority, p, sizeof(m_priority));
+}
+
+void Logger::deinit()
+{
+	flush();
+
+	if (m_q.unsafe_capacity() > RESERVE_LOGGER_QUEUE) {
+		SDL_Log("check RESERVE_LOGGER_QUEUE: original=%d, highest=%d", RESERVE_LOGGER_QUEUE, m_q.unsafe_capacity());
+	}
 }
 
 void Logger::write(const LogInfo& li) const

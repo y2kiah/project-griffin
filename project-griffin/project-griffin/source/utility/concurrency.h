@@ -405,7 +405,7 @@ namespace griffin {
 
 
 	template <typename Task, size_t N>
-	task<void> when_all(Task tasks[N])
+	task<void> when_all(std::array<Task, N>& tasks)
 	{
 		task<void> newTask;
 

@@ -37,7 +37,6 @@ int main(int argc, char *argv[])
 		SDLApplication app;
 		app.initWindow(PROGRAM_NAME);
 		
-		Logger log(Logger::Mode_Deferred_Thread_Safe);
 		log.setAllPriority(Logger::Priority_Verbose);
 
 		app.initOpenGL();
@@ -46,8 +45,8 @@ int main(int argc, char *argv[])
 		auto game = make_game(engine, app, &log);
 
 		// run tests at startup
-		test::TestRunner tests(log);
-		test::TestRunner::registerTest(std::make_shared<test::ConcurrencyTest>());
+		test::TestRunner tests;
+		tests.registerAllTests(log);
 		tests.runAllTests();
 
 		atomic<bool> done = false;

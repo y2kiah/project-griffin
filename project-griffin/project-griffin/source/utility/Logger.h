@@ -9,17 +9,29 @@ namespace griffin {
 
 	class Logger {
 	public:
+		static Logger& getInstance()
+		{
+			static Logger instance; // instantiated on first use, guaranteed to be destroyed
+			return instance;
+		}
+
 		/**
-		* Logging mode. Normally you'd set Immediate_Thread_Unsafe for early initialization before
-		* multiple threads are running, and Deferred_Thread_Safe while multiple threads are running.
+		* Logging mode. Normally you'd set Immediate_Thread_Unsafe only for early initialization
+		* before multiple threads are running, and Deferred_Thread_Safe while multiple threads are
+		* running. If you use Immediate mode, SDL logging must have already been initialized before
+		* calling any logging function. With Deferred mode, SDL must be initialized before the
+		* first flush.
 		*/
 		enum Mode : uint8_t {
-			Mode_Immediate_Thread_Unsafe = 0, //<! (default) message written immediately, not thread safe
-			Mode_Deferred_Thread_Safe         //<! messages are queued and must be flushed, thread safe
+			Mode_Deferred_Thread_Safe = 0,	//<! (default) messages are queued and must be flushed, thread safe
+			Mode_Immediate_Thread_Unsafe	//<! message written immediately, not thread safe
 		};
 
 		/**
-		* Logging categories. Each category can target a different write destination, and 
+		* Logging categories. Each category can target a different write destination and priority
+		* level. Mirroring SDL, by default the Application category is enabled at the Info level,
+		* the Assert category is enabled at the Warn level, Test is enabled at the Verbose level,
+		* and all other categories are enabled at the Critical level.
 		*/
 		enum Category : uint8_t {
 			Category_Application = 0, Category_Error, Category_Assert, Category_System,
@@ -53,6 +65,8 @@ namespace griffin {
 		#endif
 		inline void verbose(Category c, const char *s)  { log(c, Priority_Verbose, s); }
 
+		inline void test(const char *s)					{ log(Category_Test, Priority_Info, s); }
+
 		void log(Category c, Priority p, const char *s);
 
 		/**
@@ -83,17 +97,15 @@ namespace griffin {
 		void setAllPriority(Priority p);
 
 		/**
-		* Must be constructed after SDL init has been called.
-		* Mirroring SDL, by default the Application category is enabled at the Info level,
-		* the Assert category is enabled at the Warn level, Test is enabled at the Verbose level,
-		* and all other categories are enabled at the Critical level.
+		* Does capacity check and final flush. Call prior to calling SDL quit.
 		*/
-		explicit Logger(Mode mode = Mode_Immediate_Thread_Unsafe);
+		void deinit();
 
 		/**
-		* Logger should be destructed prior to calling SDL quit.
+		* Prevent copy.
 		*/
-		~Logger();
+		Logger(const Logger &) = delete;
+		void operator=(const Logger &) = delete;
 
 	private:
 		struct LogInfo {
@@ -103,47 +115,23 @@ namespace griffin {
 			//uint8_t     _padding_1[1];
 			std::string message;
 		};
+		
+		// Functions
+
+		explicit Logger();
 
 		void write(const LogInfo& l) const;
 
 		// Variables
 
-		Mode     m_mode;
+		Mode     m_mode = Mode_Deferred_Thread_Safe;
 		Priority m_priority[_Category_Count];
 
 		std::vector<LogInfo>      m_popArray;
 		concurrent_queue<LogInfo> m_q;
 	};
 
-
-	/**
-	* Class for hierarchical logging support. This object can be created on the stack to manage the
-	* logging of a single process, on a single thread. This object should not be shared between
-	* different processes or threads since the level state (set by calls to push/pop) will start to
-	* conflict. The explicit level setting makes it unnecessary to manually indent your logged
-	* messages, and makes it possible for a GUI to render collapsible trees. 
-	*/
-	// TODO: need a thread-safe static counter with mutex for unique identity to maintain hierarchy
-	/*
-	class LevelLogger {
-	public:
-		explicit LevelLogger(Logger *pLogger) :
-			m_pLogger{ pLogger }
-		{}
-
-		inline uint8_t pushLevel() {
-			m_level += (m_level == 255 ? 0 : 1);
-		}
-
-		inline uint8_t popLevel() {
-			m_level -= (m_level == 0 ? 0 : 1);
-		}
-
-	private:
-		Logger* m_pLogger = nullptr;
-		uint8_t m_level = 0;
-	};
-	*/
+	#define log Logger::getInstance()
 }
 
 #endif

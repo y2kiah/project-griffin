@@ -3,21 +3,26 @@
 using namespace griffin;
 using namespace griffin::test;
 
+#define REGISTER_TEST(testFunc)	extern void testFunc(Logger&);\
+								s_testRegistry.push_back([&log](){\
+									concurrencyTest(log);\
+								});
 
-std::vector<std::shared_ptr<Test>> TestRunner::s_testRegistry;
+std::vector<std::function<void()>> TestRunner::s_testRegistry;
 
 
-Test::Test() {
-//	g_testRegistry[0] = this;// .push_back(this);
+void TestRunner::runAllTests()
+{
+	for (auto& t : s_testRegistry) {
+		t();
+	}
 }
 
+void TestRunner::registerAllTests(Logger& log)
+{
+	#pragma warning(disable : 4101)
+	
+	// register all tests in this section
+	REGISTER_TEST(concurrencyTest)
 
-TestRunner::TestRunner(Logger& _log) :
-	log{ _log }
-{}
-
-void TestRunner::runAllTests() {
-	for (auto& t : s_testRegistry) {
-		t->run(log);
-	}
 }
