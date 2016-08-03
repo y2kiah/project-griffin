@@ -31,7 +31,6 @@
     <ClCompile Include="source\application\impl\platform.cpp" />
     <ClCompile Include="source\application\impl\Timer_win32.cpp" />
     <ClCompile Include="source\application\main.cpp" />
-    <ClCompile Include="source\entity\impl\Component.cpp" />
     <ClCompile Include="source\entity\impl\Entity.cpp" />
     <ClCompile Include="source\entity\impl\EntityManager.cpp" />
     <ClCompile Include="source\game\devCamera\DevCameraSystem.cpp" />
@@ -74,8 +73,14 @@
     <ClCompile Include="source\scene\impl\SceneApi.cpp" />
     <ClCompile Include="source\scene\impl\SceneGraph.cpp" />
     <ClCompile Include="source\script\impl\ScriptManager_LuaJIT.cpp" />
+    <ClCompile Include="source\tests\concurrency_tests.cpp" />
+    <ClCompile Include="source\tests\container_tests.cpp" />
+    <ClCompile Include="source\tests\entity_tests.cpp" />
+    <ClCompile Include="source\tests\scene_tests.cpp" />
+    <ClCompile Include="source\tests\Test.cpp" />
     <ClCompile Include="source\tools\impl\GriffinTools.cpp" />
     <ClCompile Include="source\tools\impl\GriffinToolsApi.cpp" />
+    <ClCompile Include="source\utility\impl\Logger.cpp" />
     <ClCompile Include="source\utility\profile\impl\Profile.cpp" />
     <ClCompile Include="vendor\nanovg\src\nanovg.c" />
   </ItemGroup>
@@ -143,7 +148,7 @@
     <ClInclude Include="source\scene\Scene.h" />
     <ClInclude Include="source\scene\SceneGraph.h" />
     <ClInclude Include="source\script\ScriptManager_LuaJIT.h" />
-    <ClInclude Include="source\test\Test.h" />
+    <ClInclude Include="source\tests\Test.h" />
     <ClInclude Include="source\tools\GriffinTools.h" />
     <ClInclude Include="source\utility\algorithms.h" />
     <ClInclude Include="source\utility\auto_lister.h" />

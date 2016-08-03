@@ -152,9 +152,9 @@ namespace griffin {
 		// The Fixed threads are not owned by the thread-pool itself, but participate by taking the
 		//   tasks that specify affinity for them, and (optionally) share in executing general
 		//   tasks at some pre-determined point of their own loop.
-		// Only fixed threads can be specified for affinity. Fixed threads should use try_pop to
-		//   pull tasks from the queue, whereas worker threads should wait on the queue's condition
-		//   variable using wait_pop.
+		// Only fixed threads can be specified for affinity. Fixed threads use try_pop to pull
+		//   tasks from the queue, whereas worker threads wait on the queue's condition variable
+		//   using wait_pop.
 
 	private:
 		ThreadList		m_threads;		//<! worker threads owned by the thread_pool
@@ -356,25 +356,69 @@ namespace griffin {
 		}
 	};
 
+
+	// working, but the return vector is not necessary
 	/*template <typename Iterator,
 			  typename std::enable_if<!std::is_void<typename std::iterator_traits<Iterator>::value_type::result_type>::value>::type* = 0>
 	auto when_all(Iterator first, Iterator last) -> task<std::vector<typename std::iterator_traits<Iterator>::value_type::result_type>>
 	{
-		task<std::vector<typename std::iterator_traits<Iterator>::value_type::result_type>> tsk;
+		typedef std::vector<typename std::iterator_traits<Iterator>::value_type::result_type>	result_type_set;
+		typedef std::vector<typename std::iterator_traits<Iterator>::value_type>				value_type_set;
 
-		tsk.run([first, last]{
-			std::vector<typename std::iterator_traits<Iterator>::value_type::result_type> ret;
-			//ret.reserve();
-			
-			for (auto i = first; i != last; ++i) {
-				ret.push_back(i->get());
+		task<result_type_set> newTask;
+		
+		value_type_set tasks(first, last);
+
+		// newTask.run([tasks](){		// C++14-compatible move capture
+		newTask.run([tasks](){
+			result_type_set ret;
+			ret.reserve(tasks.size());
+
+			for (auto& t : tasks) {
+				ret.push_back(t.get());
 			}
 
 			return ret;
 		});
 
-		return tsk;
+		return newTask;
 	}*/
+
+	template <typename Iterator>
+	task<void> when_all(Iterator first, Iterator last)
+	{
+		typedef std::vector<typename std::iterator_traits<Iterator>::value_type> value_type_set;
+
+		task<void> newTask;
+		
+		value_type_set tasks(first, last);
+
+		// newTask.run([&&tasks](){		// C++14-compatible move capture
+		newTask.run([tasks](){
+			for (auto& t : tasks) {
+				t.wait();
+			}
+		});
+
+		return newTask;
+	}
+
+
+	template <typename Task, size_t N>
+	task<void> when_all(Task tasks[N])
+	{
+		task<void> newTask;
+
+		// newTask.run([&&tasks](){		// C++14-compatible move capture
+		newTask.run([tasks](){
+			for (int t = 0; t < N; ++t) {
+				tasks[t].wait();
+			}
+		});
+
+		return newTask;
+	}
+
 
 	/*template <typename...Tasks>
 	task<void> when_all(Tasks...tasks) {
@@ -403,19 +447,17 @@ namespace griffin {
 
 
 	/**
-	* @class concurrent
-	* The concurrent class wraps any class T and accepts lambdas that take a reference to the
-	* contained object for performing operations (via member-function calls presumably) in a thread
-	* safe manner. Lambdas are queued by chaining task continuations without occupying a thread
+	* @class serialize
+	* The serialize class wraps any class T and accepts lambdas that take a reference to the
+	* contained object for performing operations (via member-function calls) in a thread-safe
+	* manner. Lambdas are queued by chaining task continuations without occupying a thread
 	* while waiting. This is the non-blocking asychronous way to wrap a class for thread safety.
-	* This should wrap a high level class with few instances. See the backgrounder class example
-	* below for an illustration.
 	* @tparam	T	type of class or data wrapped for concurrency
 	*/
 	template <typename T>
-	class concurrent2 {
+	class serialize {
 	public:
-		concurrent2(T t_ = T{}) :
+		serialize(T t_ = T{}) :
 			t(std::move(t_))
 		{}
 
@@ -506,7 +548,7 @@ namespace griffin {
 	private:
 		mutable T t;
 		mutable concurrent_queue<std::function<void()>> q;
-		bool done = false;
+		atomic<bool> done = false;
 		std::thread worker;
 
 		/**

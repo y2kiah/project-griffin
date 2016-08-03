@@ -1,11 +1,9 @@
-#if (1)
-
+#include "Test.h"
 //#include "../ComponentStoreSerialization.h"
-#include "../components.h"
-#include "../ComponentStore.h"
+#include <entity/components.h>
+#include <entity/ComponentStore.h>
 #include <vector>
 #include <tuple>
-#include <SDL_log.h>
 #include <boost/fusion/adapted/std_tuple.hpp>
 #include <boost/fusion/algorithm/iteration/for_each.hpp>
 //#include <utility/prettyprint.h>
@@ -13,10 +11,11 @@
 #include <sstream>
 #include <memory>
 #include <utility/profile/Profile.h>
-
-#include <application/Timer.h>
-#include <utility/concurrency.h>
+#include <utility/Logger.h>
 #include <scene/SceneGraph.h>
+#include <application/Timer.h>
+#include <utility/Logger.h>
+
 
 using namespace griffin::entity;
 using namespace griffin;
@@ -56,10 +55,10 @@ void addTestComponents() {
 	sceneNodeHeap.reserve(numTestComponents);
 
 	// profile these and compare
-	
+
 	timer.start();
 	// store 100,000 components in a ComponentStore
-	componentIds = sceneNodeStore.createComponents(numTestComponents, {{{0,0,0,0}}});
+	componentIds = sceneNodeStore.createComponents(numTestComponents, { { { 0, 0, 0, 0 } } });
 	timer.stop();
 	SDL_Log("**********\ncreate components in store\ntime = %f ms\ncounts = %lld\n\n", timer.getMillisPassed(), timer.getCountsPassed());
 
@@ -104,61 +103,7 @@ void profileTestComponents() {
 	SDL_Log("trans={%d,%d,%d}\n", trans.x, trans.y, trans.z);
 }
 
-void griffin::entity::test_reflection() {
-	// test concurrency system
-	griffin::task<int> tsk;
-	tsk.run([]{
-		std::this_thread::sleep_for(std::chrono::seconds(10));
-		SDL_Log("task 1 step 1");
-		return 1;
-	});
-	auto& fut2 = tsk.then([]{
-		SDL_Log("task 1 step 2");
-		return 2.0f;
-	});
-
-	griffin::task<void> tsk2;
-	tsk2.run([](std::shared_future<int> tsk1Fut, float f){
-		SDL_Log("task 2 step 1, see value %d, %.1f", tsk1Fut.get(), f);
-	}, tsk.get_future(), 3.0f) // to support non-lambda functions, this syntax can be used to pass a parameter instead of capturing it
-	.then([]{
-		std::this_thread::sleep_for(std::chrono::seconds(5));
-		SDL_Log("task 2 step 2");
-	})
-	.then([]{
-		SDL_Log("task 2 step 3 OpenGL");
-	}, ThreadAffinity::Thread_OpenGL_Render);
-
-	fut2.then([fut2]{ // when using lambda you can capture a previous step's task/future and get its value
-		SDL_Log("task 1 step 3, see value %.1f", fut2.get());
-	})
-	.then([]{
-		SDL_Log("task 1 step 4");
-	});
-
-	griffin::task<int> tsk3;
-	tsk3.run([]{
-		SDL_Log("task 3");
-		return 3;
-	});
-
-/*	std::array<task<int>,2> whenAllTasks = { tsk, tsk3 };
-	auto fut3 = when_all(whenAllTasks.cbegin(), whenAllTasks.cend());
-	fut3.then([fut3]{
-		SDL_Log("when_all finished");
-		std::vector<int> newVec = fut3.get();
-		SDL_Log("  length of returned vector = %d", newVec.size());
-		//auto& vec = fut3.get();
-		//for (auto& v : vec) {
-		//	SDL_Log("  value %d", v);
-		//}
-	});
-	*/
-	/*when_all(tsk, tsk2, tsk3).then([]{
-		SDL_Log("when_all finished");
-	});
-	*/
-
+void testReflection() {
 	//////////
 	// test component store
 	addTestComponents();
@@ -166,7 +111,7 @@ void griffin::entity::test_reflection() {
 
 	SDL_Log(sceneNodeStore.to_string().c_str());
 	scene::SceneNode& node = sceneNodeStore.getComponent(componentIds[0]);
-	
+
 	auto& nodeProps = scene::SceneNode::Reflection::getProperties();
 	auto vals = scene::SceneNode::Reflection::getAllValues(node);
 
@@ -174,11 +119,11 @@ void griffin::entity::test_reflection() {
 	for (const auto &f : nodeProps) {
 		SDL_Log("%s : %s\n", f.name.c_str(), f.description.c_str());
 	}
-	
+
 	int a = std::get<scene::SceneNode::Reflection::numChildren>(vals);
 	uint8_t b = std::get<scene::SceneNode::Reflection::positionDirty>(vals);
 	uint8_t c = std::get<scene::SceneNode::Reflection::orientationDirty>(vals);
-	
+
 	SDL_Log("scene node values: %d, %d, %d\n", a, b, c);
 	SDL_Log("numChildren description: %s\n", nodeProps[scene::SceneNode::Reflection::FieldToEnum("numChildren")].description.c_str());
 	std::get<scene::SceneNode::Reflection::positionDirty>(vals) = 1;
@@ -210,7 +155,7 @@ void griffin::entity::test_reflection() {
 	SDL_Log("}\n\n");
 
 	// testing tuple for_each
-/*	using namespace boost::fusion;
+	/*	using namespace boost::fusion;
 	std::ostringstream oss;
 	oss << vals;
 	SDL_Log("\n\n%s\n\n", oss.str().c_str());
@@ -218,14 +163,14 @@ void griffin::entity::test_reflection() {
 	// testing ComponentId comparisons
 	// we want the ComponentType portion to sort at a higher priority than the index or generation,
 	vector<ComponentId> sortIds = {
-			{{{0, 0, ComponentType::SceneNode_T, 0}}},
-			{{{0, 0, ComponentType::SceneNode_T, 0}}},
-			{{{0xFFFFFFFF, 0xFFFF, ComponentType::SceneNode_T, 0}}},
-			{{{50, 1, ComponentType::SceneNode_T, 1}}},
-			{{{5, 1, ComponentType::SceneNode_T, 0}}},
-			{{{5, 1, ComponentType::SceneNode_T, 0}}},
-			{{{5, 3, ComponentType::SceneNode_T, 0}}}
-		};
+	{{{0, 0, ComponentType::SceneNode_T, 0}}},
+	{{{0, 0, ComponentType::SceneNode_T, 0}}},
+	{{{0xFFFFFFFF, 0xFFFF, ComponentType::SceneNode_T, 0}}},
+	{{{50, 1, ComponentType::SceneNode_T, 1}}},
+	{{{5, 1, ComponentType::SceneNode_T, 0}}},
+	{{{5, 1, ComponentType::SceneNode_T, 0}}},
+	{{{5, 3, ComponentType::SceneNode_T, 0}}}
+	};
 	std::sort(sortIds.begin(), sortIds.end());
 	oss.clear();
 	oss << sortIds;
@@ -252,7 +197,5 @@ void griffin::entity::test_reflection() {
 	SDL_Log("**********\nread components from file\ntime = %f ms\ncounts = %lld\n", timer.getMillisPassed(), timer.getCountsPassed());
 	ifs.close();
 	SDL_Log("sceneNodeStore read:\n%s\n\n", sceneNodeStoreReadTest.to_string().c_str());
-*/
+	*/
 }
-
-#endif

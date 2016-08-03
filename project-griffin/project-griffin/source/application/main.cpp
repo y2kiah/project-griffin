@@ -16,6 +16,8 @@
 #include <resource/ResourceLoader.h>
 #include <utility/profile/Profile.h>
 #include <utility/debug.h>
+#include <utility/Logger.h>
+#include <tests/Test.h>
 
 #define PROGRAM_NAME "Project Griffin"
 
@@ -24,6 +26,8 @@ using std::unique_ptr;
 using std::vector;
 using std::string;
 
+class ConcurrencyTest;
+extern ConcurrencyTest instance;
 
 int main(int argc, char *argv[])
 {
@@ -32,12 +36,21 @@ int main(int argc, char *argv[])
 	try {
 		SDLApplication app;
 		app.initWindow(PROGRAM_NAME);
+		
+		Logger log(Logger::Mode_Deferred_Thread_Safe);
+		log.setAllPriority(Logger::Priority_Verbose);
+
 		app.initOpenGL();
 
-		auto engine = make_engine(app);
-		auto game = make_game(engine, app);
+		auto engine = make_engine(app, &log);
+		auto game = make_game(engine, app, &log);
 
-		bool done = false;
+		// run tests at startup
+		test::TestRunner tests(log);
+		test::TestRunner::registerTest(std::make_shared<test::ConcurrencyTest>());
+		tests.runAllTests();
+
+		atomic<bool> done = false;
 		uint64_t frame = 0;
 
 		SDL_GL_MakeCurrent(nullptr, 0); // make no gl context current on the input thread
@@ -99,7 +112,7 @@ int main(int argc, char *argv[])
 			destroy_game(game);
 			destroy_engine(engine); // delete the engine on the GL thread
 		};
-		
+
 		// This starts the update-render thread. OpenGL context is transferred to this thread
 		// after OpenGL is initialized on the OS thread. This thread joins in SDL_QUIT.
 		auto gameThread = std::async(std::launch::async, gameProcess);
@@ -142,10 +155,14 @@ int main(int argc, char *argv[])
 			// run thread_pool deferred task check (when_any, when_all)
 			//   engine.taskPool.checkDeferredTasks();
 
+			// flush the logger queue, writing out all of the messages
+			log.flush();
+
 			platform::yieldThread();
 		}
 
-	} catch (std::exception& e) {
+	}
+	catch (std::exception& e) {
 		platform::showErrorBox(e.what(), "Error");
 	}
 	
@@ -168,7 +185,8 @@ void SDLApplication::initWindow(const char* appName)
 	}
 
 	// enable logging
-	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_INFO);
+	// Logger takes over the priority filtering from SDL, so we just set the max level for SDL
+	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
 
 	// turn off text input to start
 	SDL_StopTextInput();

@@ -12,7 +12,6 @@
 #include <scene/Scene.h>
 #include <tools/GriffinTools.h>
 #include <game/Game.h>
-#include <SDL.h>
 
 using std::make_unique;
 using std::make_shared;
@@ -69,9 +68,11 @@ namespace griffin {
 	/**
 	* Create and init the systems of the griffin engine, and do dependency injection
 	*/
-	Engine make_engine(const SDLApplication& app)
+	Engine make_engine(const SDLApplication& app, Logger* log)
 	{
 		Engine engine;
+
+		engine.log = log;
 
 		/**
 		* Create thread pool, one worker thread per logical core

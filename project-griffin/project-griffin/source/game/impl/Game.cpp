@@ -12,7 +12,7 @@
 #include <input/InputSystem.h>
 #include <render/Render.h>
 #include <utility/container/handle_map.h>
-#include <SDL_log.h>
+
 
 namespace griffin {
 	// TEMP
@@ -65,12 +65,12 @@ namespace griffin {
 	/**
 	* Create and init the initial game state and game systems and do dependency injection
 	*/
-	GamePtr make_game(const Engine& engine, const SDLApplication& app)
+	GamePtr make_game(const Engine& engine, const SDLApplication& app, Logger* log)
 	{
 		GamePtr gamePtr = std::make_shared<Game>();
 		Game& game = *gamePtr.get();
 
-		entity::test_reflection(); // TEMP
+		game.log = log;
 
 		// InputSystem.lua contains initInputSystem function
 		engine.scriptManager->doFile(engine.engineLuaState, "scripts/game/initGame.lua"); // throws on error

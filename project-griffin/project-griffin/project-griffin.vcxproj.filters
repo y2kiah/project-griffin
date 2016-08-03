@@ -14,9 +14,6 @@
     <Filter Include="utility">
       <UniqueIdentifier>{811970e0-03dd-4faf-9b2d-d9421328c38d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="test">
-      <UniqueIdentifier>{4606fcbf-46e5-4ddc-ac84-2cc2652f67ef}</UniqueIdentifier>
-    </Filter>
     <Filter Include="utility\impl">
       <UniqueIdentifier>{ea34148e-c179-4a59-91c1-d1a165498389}</UniqueIdentifier>
     </Filter>
@@ -182,6 +179,9 @@
     <Filter Include="render\noise">
       <UniqueIdentifier>{43401b99-f03f-447d-a899-8c7f1be38594}</UniqueIdentifier>
     </Filter>
+    <Filter Include="tests">
+      <UniqueIdentifier>{4606fcbf-46e5-4ddc-ac84-2cc2652f67ef}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">
@@ -243,9 +243,6 @@
     </ClCompile>
     <ClCompile Include="source\render\impl\RenderTarget_GL.cpp">
       <Filter>render\system\impl</Filter>
-    </ClCompile>
-    <ClCompile Include="source\entity\impl\Component.cpp">
-      <Filter>entity\impl</Filter>
     </ClCompile>
     <ClCompile Include="source\entity\impl\Entity.cpp">
       <Filter>entity\impl</Filter>
@@ -337,6 +334,24 @@
     <ClCompile Include="source\render\noise\noiseTexture.cpp">
       <Filter>render\noise</Filter>
     </ClCompile>
+    <ClCompile Include="source\utility\impl\Logger.cpp">
+      <Filter>utility\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\tests\concurrency_tests.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="source\tests\container_tests.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="source\tests\entity_tests.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="source\tests\scene_tests.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="source\tests\Test.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\application\main.h">
@@ -362,9 +377,6 @@
     </ClInclude>
     <ClInclude Include="source\application\Timer.h">
       <Filter>application</Filter>
-    </ClInclude>
-    <ClInclude Include="source\test\Test.h">
-      <Filter>test</Filter>
     </ClInclude>
     <ClInclude Include="source\utility\auto_lister.h">
       <Filter>utility</Filter>
@@ -918,6 +930,9 @@
     </ClInclude>
     <ClInclude Include="source\utility\debug.h">
       <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="source\tests\Test.h">
+      <Filter>tests</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

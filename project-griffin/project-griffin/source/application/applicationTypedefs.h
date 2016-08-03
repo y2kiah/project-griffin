@@ -10,6 +10,11 @@
 #include <memory>
 
 namespace griffin {
+	struct Engine;
+	struct Game;
+	class Logger;
+	typedef std::shared_ptr<Game>	GamePtr;
+
 	namespace script {
 		class ScriptManager;
 		typedef std::shared_ptr<ScriptManager>		ScriptManagerPtr;
