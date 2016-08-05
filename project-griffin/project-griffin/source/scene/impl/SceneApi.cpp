@@ -1,7 +1,7 @@
 #include <api/SceneApi.h>
 #include <scene/Scene.h>
 #include <entity/EntityManager.h>
-#include <SDL_log.h>
+#include <utility/Logger.h>
 
 griffin::scene::SceneManagerPtr g_sceneMgrPtr = nullptr;
 
@@ -168,7 +168,7 @@ extern "C" {
 			}
 		}
 		catch (std::exception ex) {
-			SDL_Log("griffin_scene_createEmptySceneNode: %s", ex.what());
+			logger.error("griffin_scene_createEmptySceneNode: %s", ex.what());
 		}
 		return 0;
 	}
@@ -194,7 +194,7 @@ extern "C" {
 				return entityId.value;
 			}
 			catch (std::exception ex) {
-				SDL_Log("griffin_scene_createMeshInstance: %s", ex.what());
+				logger.error("griffin_scene_createMeshInstance: %s", ex.what());
 			}
 		}
 		return 0;
@@ -233,7 +233,7 @@ extern "C" {
 				return entityId.value;
 			}
 			catch (std::exception ex) {
-				SDL_Log("griffin_scene_createMeshInstance: %s", ex.what());
+				logger.error("griffin_scene_createMeshInstance: %s", ex.what());
 			}
 		}
 
@@ -265,7 +265,7 @@ extern "C" {
 			}
 		}
 		catch (std::exception ex) {
-			SDL_Log("griffin_scene_getSceneNode: %s", ex.what());
+			logger.error("griffin_scene_getSceneNode: %s", ex.what());
 		}
 		return nullptr;
 	}

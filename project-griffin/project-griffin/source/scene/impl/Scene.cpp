@@ -14,7 +14,7 @@
 #include <render/Render.h>
 #include <render/geometry/Intersection.h>
 #include <render/model/Model_GL.h>
-#include <SDL_log.h>
+#include <utility/Logger.h>
 
 
 using namespace griffin;
@@ -85,7 +85,7 @@ Scene::Scene(const std::string& _name, bool _active) :
 
 Scene::~Scene() {
 	if (cameras.capacity() > RESERVE_SCENE_CAMERAS) {
-		SDL_Log("check RESERVE_SCENE_CAMERAS: original=%d, highest=%d", RESERVE_SCENE_CAMERAS, cameras.capacity());
+		logger.info("check RESERVE_SCENE_CAMERAS: original=%d, highest=%d", RESERVE_SCENE_CAMERAS, cameras.capacity());
 	}
 }
 
@@ -247,7 +247,7 @@ SceneManager::SceneManager() :
 
 SceneManager::~SceneManager() {
 	if (m_scenes.capacity() > RESERVE_SCENEMANAGER_SCENES) {
-		SDL_Log("check RESERVE_SCENEMANAGER_SCENES: original=%d, highest=%d", RESERVE_SCENEMANAGER_SCENES, m_scenes.capacity());
+		logger.info("check RESERVE_SCENEMANAGER_SCENES: original=%d, highest=%d", RESERVE_SCENEMANAGER_SCENES, m_scenes.capacity());
 	}
 }
 

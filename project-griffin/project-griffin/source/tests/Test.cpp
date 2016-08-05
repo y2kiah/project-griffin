@@ -1,12 +1,11 @@
 #include "Test.h"
+#include <utility/Logger.h>
 
 using namespace griffin;
 using namespace griffin::test;
 
-#define REGISTER_TEST(testFunc)	extern void testFunc(Logger&);\
-								s_testRegistry.push_back([&log](){\
-									concurrencyTest(log);\
-								});
+#define REGISTER_TEST(testFunc)	extern void testFunc();\
+								s_testRegistry.push_back(testFunc);
 
 std::vector<std::function<void()>> TestRunner::s_testRegistry;
 
@@ -18,7 +17,7 @@ void TestRunner::runAllTests()
 	}
 }
 
-void TestRunner::registerAllTests(Logger& log)
+void TestRunner::registerAllTests()
 {
 	#pragma warning(disable : 4101)
 	

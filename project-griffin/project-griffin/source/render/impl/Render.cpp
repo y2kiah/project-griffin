@@ -9,7 +9,6 @@
 //#include <gl/glcorearb.h>
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <SDL_log.h>
 
 #include <application/Engine.h>
 #include <resource/ResourceLoader.h>
@@ -21,6 +20,7 @@
 #include <render/model/ModelImport_Assimp.h>
 #include <render/RenderTarget_GL.h>
 #include <utility/debug.h>
+#include <utility/Logger.h>
 
 #include <game/impl/GameImpl.h> // temp
 
@@ -75,7 +75,7 @@ namespace griffin {
 		RenderQueue::~RenderQueue()
 		{
 			if (keys.capacity() > RESERVE_RENDER_QUEUE) {
-				SDL_Log("check RESERVE_RENDER_QUEUE: original=%d, highest=%d", RESERVE_RENDER_QUEUE, keys.capacity());
+				logger.info("check RESERVE_RENDER_QUEUE: original=%d, highest=%d", RESERVE_RENDER_QUEUE, keys.capacity());
 			}
 		}
 
@@ -462,7 +462,7 @@ namespace griffin {
 				loader->executeCallbacks();
 			}
 			catch (std::exception ex) {
-				SDL_Log("%s", ex.what());
+				logger.error(Logger::Category_Error, "%s", ex.what());
 			}
 
 			ASSERT_GL_ERROR;
@@ -606,14 +606,14 @@ namespace griffin {
 
 			auto textureResourceBuilder = [](DataPtr data, size_t size) {
 				Texture2D_GL tex(move(data), size);
-				SDL_Log("building texture of size %d", size);
+				logger.verbose(Logger::Category_Render, "building texture of size %d", size);
 				return tex;
 			};
 
 			// need a way to specify thread affinity for the callback so it knows to run on update or render thread
 			auto textureResourceCallback = [sRGB](const ResourcePtr& resourcePtr, Id_T handle, size_t size) {
 				Texture2D_GL& tex = resourcePtr->getResource<Texture2D_GL>();
-				SDL_Log("callback texture of size %d", size);
+				logger.verbose(Logger::Category_Render, "callback texture of size %d", size);
 				// the unique_ptr of data is stored within the texture, this call deletes the data after
 				// sending texture to OpenGL
 				tex.loadDDSFromInternalMemory(true, sRGB);
@@ -635,7 +635,7 @@ namespace griffin {
 
 			auto textureResourceBuilder = [](DataPtr data, size_t size) {
 				TextureCubeMap_GL tex(move(data), size);
-				SDL_Log("building texture of size %d", size);
+				logger.verbose(Logger::Category_Render, "building texture of size %d", size);
 				return tex;
 			};
 
@@ -643,7 +643,7 @@ namespace griffin {
 			// TODO: switch to using task system, take advantage of thread affinity in that system
 			auto textureResourceCallback = [swapY, sRGB](const ResourcePtr& resourcePtr, Id_T handle, size_t size) {
 				TextureCubeMap_GL& tex = resourcePtr->getResource<TextureCubeMap_GL>();
-				SDL_Log("callback texture of size %d", size);
+				logger.verbose(Logger::Category_Render, "callback texture of size %d", size);
 				// the unique_ptr of data is stored within the texture, this call deletes the data after
 				// sending texture to OpenGL
 				tex.loadDDSFromInternalMemory(true, swapY, sRGB);
@@ -672,7 +672,7 @@ namespace griffin {
 				ShaderProgram_GL& program = resourcePtr->getResource<ShaderProgram_GL>();
 				auto ok = program.compileAndLinkProgram();
 				if (!ok) {
-					SDL_LogError(SDL_LOG_CATEGORY_RENDER, "  program compilation/linking failed");
+					logger.error(Logger::Category_Render, "  program compilation/linking failed");
 					throw std::runtime_error("program compilation/linking failed");
 				}
 

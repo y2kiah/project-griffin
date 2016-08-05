@@ -1,8 +1,8 @@
 #include "../RenderTarget_GL.h"
 #include <utility/debug.h>
 #include <GL/glew.h>
-#include <SDL_log.h>
 #include <cassert>
+#include <utility/Logger.h>
 
 namespace griffin {
 	namespace render {
@@ -38,7 +38,7 @@ namespace griffin {
 			int maxDrawBuffers = 0;
 			glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxDrawBuffers);
 			if (maxDrawBuffers < 4) {
-				SDL_Log("System does not support enough draw buffers.");
+				logger.critical(Logger::Category_Video, "System does not support enough draw buffers.");
 				return false;
 			}
 
@@ -151,7 +151,7 @@ namespace griffin {
 			// Check if all worked fine and unbind the FBO
 			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 			if (status != GL_FRAMEBUFFER_COMPLETE) {
-				SDL_Log("Can't initialize an FBO render texture. FBO initialization failed.");
+				logger.critical(Logger::Category_Video, "Can't initialize an FBO render texture. FBO initialization failed.");
 				return false;
 			}
 

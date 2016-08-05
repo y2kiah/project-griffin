@@ -26,27 +26,22 @@ using std::unique_ptr;
 using std::vector;
 using std::string;
 
-class ConcurrencyTest;
-extern ConcurrencyTest instance;
-
 int main(int argc, char *argv[])
 {
 	Timer::initHighPerfTimer();
+	logger.setAllPriority(Logger::Priority_Verbose);
 
 	try {
 		SDLApplication app;
 		app.initWindow(PROGRAM_NAME);
-		
-		log.setAllPriority(Logger::Priority_Verbose);
-
 		app.initOpenGL();
 
-		auto engine = make_engine(app, &log);
-		auto game = make_game(engine, app, &log);
+		auto engine = make_engine(app);
+		auto game = make_game(engine, app);
 
 		// run tests at startup
 		test::TestRunner tests;
-		tests.registerAllTests(log);
+		tests.registerAllTests();
 		tests.runAllTests();
 
 		atomic<bool> done = false;
@@ -71,7 +66,7 @@ int main(int argc, char *argv[])
 
 				UpdateInfo ui = { virtualTime, gameTime, deltaCounts, frame, deltaMs, deltaT, gameSpeed };
 
-				/*SDL_Log("Update virtualTime=%lu: gameTime=%ld: deltaCounts=%ld: countsPerMs=%ld\n",
+				/*logger.verbose("Update virtualTime=%lu: gameTime=%ld: deltaCounts=%ld: countsPerMs=%ld\n",
 						virtualTime, gameTime, deltaCounts, Timer::timerFreq() / 1000);*/
 
 				engine.threadPool->executeFixedThreadTasks(ThreadAffinity::Thread_Update);
@@ -91,7 +86,7 @@ int main(int argc, char *argv[])
 					float interpolation = update.tick(realTime, countsPassed, 1.0f);
 
 					//SDL_Delay(1000);
-					/*SDL_Log("Render realTime=%lu: interpolation=%0.3f: threadIdHash=%lu\n",
+					/*logger.verbose("Render realTime=%lu: interpolation=%0.3f: threadIdHash=%lu\n",
 							realTime, interpolation, std::this_thread::get_id().hash());*/
 
 					engine.threadPool->executeFixedThreadTasks(ThreadAffinity::Thread_OpenGL_Render);
@@ -103,7 +98,7 @@ int main(int argc, char *argv[])
 					platform::yieldThread();
 				}
 				catch (std::exception& e) {
-					SDL_Log("%s", e.what());
+					logger.error(Logger::Category_Error, "%s", e.what());
 					done = true;
 				}
 			}
@@ -140,7 +135,7 @@ int main(int argc, char *argv[])
 							break;
 
 						default: {
-							SDL_Log("event type=%d\n", event.type);
+							logger.verbose(Logger::Category_Input, "event type=%d\n", event.type);
 						}
 					}
 				}
@@ -155,16 +150,17 @@ int main(int argc, char *argv[])
 			//   engine.taskPool.checkDeferredTasks();
 
 			// flush the logger queue, writing out all of the messages
-			log.flush();
+			logger.flush();
 
 			platform::yieldThread();
 		}
 
+		logger.deinit();
 	}
 	catch (std::exception& e) {
 		platform::showErrorBox(e.what(), "Error");
 	}
-	
+
 	return 0;
 }
 
@@ -268,17 +264,18 @@ void SDLApplication::initOpenGL()
 	glewExperimental = true; // Needed in core profile
 	GLenum err = glewInit();
 	if (err != GLEW_OK) {
-		SDL_Log("Failed to initialize GLEW\n");
+		logger.critical(Logger::Category_Error, "Failed to initialize GLEW\n");
 		throw std::runtime_error((const char *)glewGetErrorString(err));
 	}
 	glGetError(); // clear any error created by GLEW init
 
-	SDL_Log("OpenGL Information:\n  Vendor: %s\n  Renderer: %s\n  Version: %s\n  Shading Language Version: %s\n",
-			glGetString(GL_VENDOR),
-			glGetString(GL_RENDERER),
-			glGetString(GL_VERSION),
-			glGetString(GL_SHADING_LANGUAGE_VERSION)
-			);
+	logger.debug(Logger::Category_Video,
+				 "OpenGL Information:\n  Vendor: %s\n  Renderer: %s\n  Version: %s\n  Shading Language Version: %s\n",
+				 glGetString(GL_VENDOR),
+				 glGetString(GL_RENDERER),
+				 glGetString(GL_VERSION),
+				 glGetString(GL_SHADING_LANGUAGE_VERSION));
+
 	std::ostringstream glExtensionsSS;
 	//PFNGLGETSTRINGIPROC glGetStringi = (PFNGLGETSTRINGIPROC)SDL_GL_GetProcAddress("glGetStringi");
 
@@ -289,7 +286,7 @@ void SDLApplication::initOpenGL()
 		glExtensionsSS << (const char*)glGetStringi(GL_EXTENSIONS, i) << " ";
 	}
 	string glExtensions(glExtensionsSS.str());
-	SDL_Log("OpenGL Extensions: %s\n", glExtensions.c_str());
+	logger.debug(Logger::Category_Video, "OpenGL Extensions: %s\n", glExtensions.c_str());
 
 	// give the extensions string to the SOIL library
 	//SOIL_set_gl_extensions_string(glExtensions.c_str());

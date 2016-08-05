@@ -1,11 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "project-griffin", "project-griffin\project-griffin.vcxproj", "{0699B998-133B-4F7A-8AAF-99D139407963}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "project-griffin-test", "project-griffin-test\project-griffin-test.vcxproj", "{80209BC2-37C9-4016-AF54-E4118A730A2E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,24 +36,6 @@ Global
 		{0699B998-133B-4F7A-8AAF-99D139407963}.ReleaseCTP|Win32.Build.0 = ReleaseCTP|Win32
 		{0699B998-133B-4F7A-8AAF-99D139407963}.ReleaseCTP|x64.ActiveCfg = ReleaseCTP|x64
 		{0699B998-133B-4F7A-8AAF-99D139407963}.ReleaseCTP|x64.Build.0 = ReleaseCTP|x64
-		{80209BC2-37C9-4016-AF54-E4118A730A2E}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{80209BC2-37C9-4016-AF54-E4118A730A2E}.Debug|Mixed Platforms.Build.0 = Debug|Win32
-		{80209BC2-37C9-4016-AF54-E4118A730A2E}.Debug|Win32.ActiveCfg = Debug|Win32
-		{80209BC2-37C9-4016-AF54-E4118A730A2E}.Debug|Win32.Build.0 = Debug|Win32
-		{80209BC2-37C9-4016-AF54-E4118A730A2E}.Debug|x64.ActiveCfg = Debug|x64
-		{80209BC2-37C9-4016-AF54-E4118A730A2E}.Debug|x64.Build.0 = Debug|x64
-		{80209BC2-37C9-4016-AF54-E4118A730A2E}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{80209BC2-37C9-4016-AF54-E4118A730A2E}.Release|Mixed Platforms.Build.0 = Release|Win32
-		{80209BC2-37C9-4016-AF54-E4118A730A2E}.Release|Win32.ActiveCfg = Release|Win32
-		{80209BC2-37C9-4016-AF54-E4118A730A2E}.Release|Win32.Build.0 = Release|Win32
-		{80209BC2-37C9-4016-AF54-E4118A730A2E}.Release|x64.ActiveCfg = Release|x64
-		{80209BC2-37C9-4016-AF54-E4118A730A2E}.Release|x64.Build.0 = Release|x64
-		{80209BC2-37C9-4016-AF54-E4118A730A2E}.ReleaseCTP|Mixed Platforms.ActiveCfg = ReleaseCTP|Win32
-		{80209BC2-37C9-4016-AF54-E4118A730A2E}.ReleaseCTP|Mixed Platforms.Build.0 = ReleaseCTP|Win32
-		{80209BC2-37C9-4016-AF54-E4118A730A2E}.ReleaseCTP|Win32.ActiveCfg = ReleaseCTP|Win32
-		{80209BC2-37C9-4016-AF54-E4118A730A2E}.ReleaseCTP|Win32.Build.0 = ReleaseCTP|Win32
-		{80209BC2-37C9-4016-AF54-E4118A730A2E}.ReleaseCTP|x64.ActiveCfg = ReleaseCTP|x64
-		{80209BC2-37C9-4016-AF54-E4118A730A2E}.ReleaseCTP|x64.Build.0 = ReleaseCTP|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

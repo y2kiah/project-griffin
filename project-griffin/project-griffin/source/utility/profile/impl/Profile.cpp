@@ -24,14 +24,14 @@ namespace griffin {
 	monitor<ProfileAggregateMap> g_aggregates;
 
 	// Class ProfileAggregate
-	//#include <SDL_log.h>
+	//#include <utility/Logger.h>
 
 	/*ProfileAggregate::ProfileAggregate() {
-		SDL_Log("ProfileAggregate created on thread %lu\n", std::this_thread::get_id().hash());
+		logger.verbose("ProfileAggregate created on thread %lu\n", std::this_thread::get_id().hash());
 	}
 
 	ProfileAggregate::~ProfileAggregate() {
-		SDL_Log("ProfileAggregate destroyed on thread %lu\n", std::this_thread::get_id().hash());
+		logger.verbose("ProfileAggregate destroyed on thread %lu\n", std::this_thread::get_id().hash());
 	}*/
 
 	void ProfileAggregate::invoke(int64_t countsPassed, int64_t frame) {

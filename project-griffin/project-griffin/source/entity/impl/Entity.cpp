@@ -3,7 +3,7 @@
 * @author Jeff Kiah
 */
 #include "../Entity.h"
-#include <SDL_log.h>
+#include <utility/Logger.h>
 
 using namespace griffin::entity;
 
@@ -71,7 +71,7 @@ bool Entity::removeComponentsOfType(ComponentType ct)
 Entity::~Entity()
 {
 	if (components.capacity() > RESERVE_ENTITY_COMPONENTS) {
-		SDL_Log("check RESERVE_ENTITY_COMPONENTS: original=%d, highest=%d", RESERVE_ENTITY_COMPONENTS, components.capacity());
+		logger.info("check RESERVE_ENTITY_COMPONENTS: original=%d, highest=%d", RESERVE_ENTITY_COMPONENTS, components.capacity());
 	}
 }
 #endif

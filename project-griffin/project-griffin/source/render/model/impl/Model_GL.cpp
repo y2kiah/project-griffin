@@ -164,7 +164,7 @@ namespace griffin {
 
 						// prefix texture path with the path to the model being loaded
 						wName = filePath.substr(0, filePath.find_last_of(L'/')) + L'/' + wName;
-						SDL_Log("trying to load %s", aName.assign(wName.begin(), wName.end()).c_str());
+						logger.verbose(Logger::Category_Render, "trying to load %s", aName.assign(wName.begin(), wName.end()).c_str());
 
 						// diffuse maps are in sRGB space, all others are not
 						bool sRGB = (tex.textureType == MaterialTexture_Diffuse || tex.textureType == MaterialTexture_Diffuse_AO ||

@@ -4,7 +4,7 @@
 #include <vector>
 #include <cassert>
 #include <memory>
-#include <SDL_log.h>
+#include <utility/Logger.h>
 
 namespace griffin {
 	namespace render {
@@ -16,9 +16,9 @@ namespace griffin {
 
 		Shader_GL::~Shader_GL()
 		{
-			SDL_Log("deleting shader with m_shaderId = %d", m_shaderId);
+			logger.verbose(Logger::Category_Render, "deleting shader with m_shaderId = %d", m_shaderId);
 			if (m_shaderId != 0) {
-				SDL_Log("deleting shader in opengl land");
+				logger.verbose(Logger::Category_Render, "deleting shader in opengl land");
 				glDeleteShader(m_shaderId);
 			}
 		}
@@ -29,7 +29,7 @@ namespace griffin {
 			int infoLogLength = 0;
 
 			// Compile Shader
-			SDL_Log("  compiling shader %u", shaderType);
+			logger.verbose(Logger::Category_Render, "  compiling shader %u", shaderType);
 
 			GLuint shaderId = glCreateShader(shaderType);
 			
@@ -42,7 +42,7 @@ namespace griffin {
 			if (infoLogLength > 0) {
 				vector<char> shaderErrorMessage(infoLogLength);
 				glGetShaderInfoLog(shaderId, infoLogLength, nullptr, &shaderErrorMessage[0]);
-				SDL_Log(&shaderErrorMessage[0]);
+				logger.error(Logger::Category_Render, &shaderErrorMessage[0]);
 			}
 
 			if (result == GL_TRUE) {
@@ -63,7 +63,7 @@ namespace griffin {
 			m_shaderCode(std::move(other.m_shaderCode)),
 			m_programPath(std::move(other.m_programPath))
 		{
-			SDL_Log("moving shader program with m_programId = %d", m_programId);
+			logger.verbose(Logger::Category_Render, "moving shader program with m_programId = %d", m_programId);
 			other.m_programId = 0;
 			for (uint32_t s = 0; s < other.m_numShaders; ++s) {
 				m_shaders[s] = std::move(other.m_shaders[s]);
@@ -77,7 +77,7 @@ namespace griffin {
 		ShaderProgram_GL::~ShaderProgram_GL()
 		{
 			if (m_programId != 0) {
-				SDL_Log("deleting program");
+				logger.verbose(Logger::Category_Render, "deleting program");
 				glDeleteProgram(m_programId);
 			}
 		}
@@ -92,7 +92,7 @@ namespace griffin {
 			}
 			
 			string programPath(m_programPath.begin(), m_programPath.end());
-			SDL_Log("compiling program %s", programPath.c_str());
+			logger.verbose(Logger::Category_Render, "compiling program %s", programPath.c_str());
 
 			bool hasGeometryStage    = (m_shaderCode.find("_GEOMETRY_", 0) != string::npos);
 			bool hasTessControlStage = (m_shaderCode.find("_TESS_CONTROL_", 0) != string::npos);
@@ -133,7 +133,7 @@ namespace griffin {
 
 			// Link the program
 			if (ok) {
-				SDL_Log("  linking program %s", programPath.c_str());
+				logger.verbose(Logger::Category_Render, "  linking program %s", programPath.c_str());
 				GLuint programId = glCreateProgram();
 				for (const auto& s : m_shaders) {
 					if (s.getShaderType() != 0) {
@@ -151,7 +151,7 @@ namespace griffin {
 				if (infoLogLength > 0) {
 					vector<char> programErrorMessage(infoLogLength);
 					glGetProgramInfoLog(programId, infoLogLength, nullptr, &programErrorMessage[0]);
-					SDL_Log(&programErrorMessage[0]);
+					logger.error(Logger::Category_Render, &programErrorMessage[0]);
 				}
 
 				/*if (hasGeometryStage) {
@@ -178,7 +178,7 @@ namespace griffin {
 							else if (ubo == ObjectUniforms) {
 								assert(blockSize == sizeof(ObjectUniformsUBO));
 							}
-							SDL_Log("  uniform block \"%s\" index %u", UBOTypeToString(static_cast<UBOType>(ubo)), m_blockIndex[ubo]);
+							logger.verbose(Logger::Category_Render, "  uniform block \"%s\" index %u", UBOTypeToString(static_cast<UBOType>(ubo)), m_blockIndex[ubo]);
 						}
 						#endif
 					}
@@ -194,7 +194,7 @@ namespace griffin {
 			if (m_blockIndex[uboType] != -1 && uboHandle != 0) {
 				int m = 0;
 				glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &m);
-				SDL_Log("GL_MAX_UNIFORM_BUFFER_BINDINGS = %d", m);
+				logger.debug(Logger::Category_Video, "GL_MAX_UNIFORM_BUFFER_BINDINGS = %d", m);
 				glUniformBlockBinding(m_programId, m_blockIndex[uboType], uboType+1);
 				glBindBufferBase(GL_UNIFORM_BUFFER, uboType+1, uboHandle);
 				

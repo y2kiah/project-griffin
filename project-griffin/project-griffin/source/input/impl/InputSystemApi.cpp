@@ -1,6 +1,5 @@
 #include <api/InputSystemApi.h>
 #include <input/InputSystem.h>
-#include <SDL_log.h>
 
 griffin::input::InputSystemPtr g_inputPtr = nullptr;
 

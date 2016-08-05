@@ -1,7 +1,7 @@
 #include "script/ScriptManager_LuaJIT.h"
 #include <lua.hpp>
-#include <SDL_log.h>
 #include <utility/export.h>
+#include <utility/Logger.h>
 
 #pragma comment ( lib, "lua51.lib" )
 
@@ -10,7 +10,7 @@
 extern "C" {
 	GRIFFIN_EXPORT
 	void debug_printf(const char *fmt) {
-		SDL_Log(fmt);
+		logger.info(fmt);
 	}
 }
 
@@ -84,25 +84,25 @@ namespace griffin {
 			}
 			
 			if (e == LUA_ERRRUN) {
-				SDL_Log("ScriptManager: Lua runtime error: %s", lua_tostring(state, -1));
+				logger.error("ScriptManager: Lua runtime error: %s", lua_tostring(state, -1));
 				if (throwOnError) {
 					throw std::runtime_error("ScriptManager: Lua runtime error: " + string{ lua_tostring(state, -1) });
 				}
 			}
 			else if (e == LUA_ERRSYNTAX) {
-				SDL_Log("ScriptManager: Lua syntax error: %s", lua_tostring(state, -1));
+				logger.error("ScriptManager: Lua syntax error: %s", lua_tostring(state, -1));
 				if (throwOnError) {
 					throw std::runtime_error("ScriptManager: Lua syntax error: " + string{ lua_tostring(state, -1) });
 				}
 			}
 			else if (e == LUA_ERRFILE) {
-				SDL_Log("ScriptManager: couldn't load file: %s", lua_tostring(state, -1));
+				logger.error("ScriptManager: couldn't load file: %s", lua_tostring(state, -1));
 				if (throwOnError) {
 					throw std::runtime_error("ScriptManager: couldn't load file: " + string{ lua_tostring(state, -1) });
 				}
 			}
 			else if (e == LUA_ERRMEM) {
-				SDL_Log("ScriptManager: Lua out of memory");
+				logger.error("ScriptManager: Lua out of memory");
 				if (throwOnError) {
 					throw std::runtime_error("Lua out of memory");
 				}
@@ -125,19 +125,19 @@ namespace griffin {
 			lua_getglobal(state, func);
 			int e = lua_pcall(state, 0, 0, 0);
 			if (e == LUA_ERRRUN) {
-				SDL_Log("ScriptManager: Lua runtime error: %s", lua_tostring(state, -1));
+				logger.error("ScriptManager: Lua runtime error: %s", lua_tostring(state, -1));
 				if (throwOnError) {
 					throw std::runtime_error("ScriptManager: Lua runtime error: " + string{ lua_tostring(state, -1) });
 				}
 			}
 			else if (e == LUA_ERRMEM) {
-				SDL_Log("ScriptManager: Lua out of memory");
+				logger.error("ScriptManager: Lua out of memory");
 				if (throwOnError) {
 					throw std::runtime_error("Lua out of memory");
 				}
 			}
 			else if (e == LUA_ERRERR) {
-				SDL_Log("ScriptManager: Lua error running error handler");
+				logger.error("ScriptManager: Lua error running error handler");
 				if (throwOnError) {
 					throw std::runtime_error("ScriptManager: Lua error handler: " + string{ lua_tostring(state, -1) });
 				}

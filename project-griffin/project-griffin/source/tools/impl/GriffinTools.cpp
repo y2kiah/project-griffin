@@ -1,7 +1,7 @@
 #include <tools/GriffinTools.h>
 #include <future>
 #include <application/platform.h>
-#include <SDL_log.h>
+#include <utility/Logger.h>
 
 
 #ifdef GRIFFIN_TOOLS_BUILD
@@ -35,7 +35,7 @@ namespace griffin {
 						scriptPtr->callLuaGlobalFunction(m_toolsLuaStateId, "frameToolsHandler");
 					}
 					catch (std::exception ex) {
-						SDL_LogWarn(SDL_LOG_CATEGORY_ERROR, "tools server exception: %s", ex.what());
+						logger.warn(Logger::Category_Error, "tools server exception: %s", ex.what());
 					}
 
 					platform::yieldThread();

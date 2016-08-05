@@ -60,7 +60,7 @@ void addTestComponents() {
 	// store 100,000 components in a ComponentStore
 	componentIds = sceneNodeStore.createComponents(numTestComponents, { { { 0, 0, 0, 0 } } });
 	timer.stop();
-	SDL_Log("**********\ncreate components in store\ntime = %f ms\ncounts = %lld\n\n", timer.getMillisPassed(), timer.getCountsPassed());
+	logger.test("**********\ncreate components in store\ntime = %f ms\ncounts = %lld\n\n", timer.getMillisPassed(), timer.getCountsPassed());
 
 	timer.start();
 	// store 100,000 components on the heap
@@ -68,7 +68,7 @@ void addTestComponents() {
 		sceneNodeHeap.push_back(std::unique_ptr<scene::SceneNode>(new scene::SceneNode{ 0 }));
 	}
 	timer.stop();
-	SDL_Log("**********\ncreate components on heap\ntime = %f ms\ncounts = %lld\n\n", timer.getMillisPassed(), timer.getCountsPassed());
+	logger.test("**********\ncreate components on heap\ntime = %f ms\ncounts = %lld\n\n", timer.getMillisPassed(), timer.getCountsPassed());
 }
 
 void profileTestComponents() {
@@ -80,8 +80,8 @@ void profileTestComponents() {
 		trans += sceneNodeStore.getComponent(componentIds[i]).translationLocal;
 	}
 	timer.stop();
-	SDL_Log("**********\nloop components with external id\ntime = %f ms\ncounts = %lld\n\n", timer.getMillisPassed(), timer.getCountsPassed());
-	SDL_Log("trans={%d,%d,%d}\n", trans.x, trans.y, trans.z); // use trans so it doesn't compile away in release build test
+	logger.test("**********\nloop components with external id\ntime = %f ms\ncounts = %lld\n\n", timer.getMillisPassed(), timer.getCountsPassed());
+	logger.test("trans={%d,%d,%d}\n", trans.x, trans.y, trans.z); // use trans so it doesn't compile away in release build test
 
 	auto cmp = sceneNodeStore.getComponents().getItems();
 	timer.start();
@@ -89,8 +89,8 @@ void profileTestComponents() {
 		trans += cmp[i].component.translationLocal;
 	}
 	timer.stop();
-	SDL_Log("**********\nloop components inner array\ntime = %f ms\ncounts = %lld\n\n", timer.getMillisPassed(), timer.getCountsPassed());
-	SDL_Log("trans={%d,%d,%d}\n", trans.x, trans.y, trans.z);
+	logger.test("**********\nloop components inner array\ntime = %f ms\ncounts = %lld\n\n", timer.getMillisPassed(), timer.getCountsPassed());
+	logger.test("trans={%d,%d,%d}\n", trans.x, trans.y, trans.z);
 
 	sceneNodeHeap.back()->translationLocal = { 5, 0, 0 };
 	timer.start();
@@ -98,9 +98,9 @@ void profileTestComponents() {
 		trans += sceneNodeHeap[i]->translationLocal;
 	}
 	timer.stop();
-	SDL_Log("**********\nloop components on heap\ntime = %f ms\ncounts = %lld\n\n", timer.getMillisPassed(), timer.getCountsPassed());
+	logger.test("**********\nloop components on heap\ntime = %f ms\ncounts = %lld\n\n", timer.getMillisPassed(), timer.getCountsPassed());
 
-	SDL_Log("trans={%d,%d,%d}\n", trans.x, trans.y, trans.z);
+	logger.test("trans={%d,%d,%d}\n", trans.x, trans.y, trans.z);
 }
 
 void testReflection() {
@@ -109,56 +109,56 @@ void testReflection() {
 	addTestComponents();
 	//profileTestComponents();
 
-	SDL_Log(sceneNodeStore.to_string().c_str());
+	logger.test(sceneNodeStore.to_string().c_str());
 	scene::SceneNode& node = sceneNodeStore.getComponent(componentIds[0]);
 
 	auto& nodeProps = scene::SceneNode::Reflection::getProperties();
 	auto vals = scene::SceneNode::Reflection::getAllValues(node);
 
-	SDL_Log("%s:\n", scene::SceneNode::Reflection::getClassType().c_str());
+	logger.test("%s:\n", scene::SceneNode::Reflection::getClassType().c_str());
 	for (const auto &f : nodeProps) {
-		SDL_Log("%s : %s\n", f.name.c_str(), f.description.c_str());
+		logger.test("%s : %s\n", f.name.c_str(), f.description.c_str());
 	}
 
 	int a = std::get<scene::SceneNode::Reflection::numChildren>(vals);
 	uint8_t b = std::get<scene::SceneNode::Reflection::positionDirty>(vals);
 	uint8_t c = std::get<scene::SceneNode::Reflection::orientationDirty>(vals);
 
-	SDL_Log("scene node values: %d, %d, %d\n", a, b, c);
-	SDL_Log("numChildren description: %s\n", nodeProps[scene::SceneNode::Reflection::FieldToEnum("numChildren")].description.c_str());
+	logger.test("scene node values: %d, %d, %d\n", a, b, c);
+	logger.test("numChildren description: %s\n", nodeProps[scene::SceneNode::Reflection::FieldToEnum("numChildren")].description.c_str());
 	std::get<scene::SceneNode::Reflection::positionDirty>(vals) = 1;
 	std::get<scene::SceneNode::Reflection::orientationDirty>(vals) = 1;
-	SDL_Log("position dirty = %d\n", node.positionDirty); // should now be 1
-	SDL_Log("orientation dirty = %d\n", node.orientationDirty); // should now be 1
+	logger.test("position dirty = %d\n", node.positionDirty); // should now be 1
+	logger.test("orientation dirty = %d\n", node.orientationDirty); // should now be 1
 
 	ComponentMask bit_test;
 	bit_test.set(ComponentType::SceneNode_T, true);
 	ComponentMask bit_and(0xFFFFFFFF);
 	ComponentMask bit_res = bit_test | bit_and;
-	SDL_Log("bit_test = %s\n", bit_test.to_string().c_str());
-	SDL_Log("bit_and  = %s\n", bit_and.to_string().c_str());
-	SDL_Log("bit_res  = %s\n", bit_res.to_string().c_str());
+	logger.test("bit_test = %s\n", bit_test.to_string().c_str());
+	logger.test("bit_and  = %s\n", bit_and.to_string().c_str());
+	logger.test("bit_res  = %s\n", bit_res.to_string().c_str());
 
-	SDL_Log("SceneNode is POD = %d\n", std::is_pod<scene::SceneNode>::value);
-	SDL_Log("Something is POD = %d\n", std::is_pod<Something>::value);
-	SDL_Log("ComponentId is POD = %d\n", std::is_pod<ComponentId>::value);
+	logger.test("SceneNode is POD = %d\n", std::is_pod<scene::SceneNode>::value);
+	logger.test("Something is POD = %d\n", std::is_pod<Something>::value);
+	logger.test("ComponentId is POD = %d\n", std::is_pod<ComponentId>::value);
 
 	Something s = { 1, 2, "hi" };
 	auto s0 = getMemberVal(s, SomethingPred0{});
-	SDL_Log("s val 0 through template = %d\n", s0);
+	logger.test("s val 0 through template = %d\n", s0);
 
 	// output scene node properties
-	SDL_Log("%s {\n", scene::SceneNode::Reflection::getClassType().c_str());
+	logger.test("%s {\n", scene::SceneNode::Reflection::getClassType().c_str());
 	for (auto p : scene::SceneNode::Reflection::getProperties()) {
-		SDL_Log("  %s (%d): %s, isArray=%d, isTriviallyCopyable=%d\n", p.name.c_str(), p.size, p.description.c_str(), p.isArray, p.isTriviallyCopyable);
+		logger.test("  %s (%d): %s, isArray=%d, isTriviallyCopyable=%d\n", p.name.c_str(), p.size, p.description.c_str(), p.isArray, p.isTriviallyCopyable);
 	}
-	SDL_Log("}\n\n");
+	logger.test("}\n\n");
 
 	// testing tuple for_each
 	/*	using namespace boost::fusion;
 	std::ostringstream oss;
 	oss << vals;
-	SDL_Log("\n\n%s\n\n", oss.str().c_str());
+	logger.test("\n\n%s\n\n", oss.str().c_str());
 
 	// testing ComponentId comparisons
 	// we want the ComponentType portion to sort at a higher priority than the index or generation,
@@ -174,7 +174,7 @@ void testReflection() {
 	std::sort(sortIds.begin(), sortIds.end());
 	oss.clear();
 	oss << sortIds;
-	SDL_Log(oss.str().c_str());
+	logger.test(oss.str().c_str());
 
 	// test ComponentStore serialization
 	std::ofstream ofs;
@@ -183,9 +183,9 @@ void testReflection() {
 	timer.start();
 	serialize(ofs, sceneNodeStore);
 	timer.stop();
-	SDL_Log("**********\nsave components to file\ntime = %f ms\ncounts = %lld\n", timer.getMillisPassed(), timer.getCountsPassed());
+	logger.test("**********\nsave components to file\ntime = %f ms\ncounts = %lld\n", timer.getMillisPassed(), timer.getCountsPassed());
 	ofs.close();
-	SDL_Log("sceneNodeStore saved:\n%s\n\n", sceneNodeStore.to_string().c_str());
+	logger.test("sceneNodeStore saved:\n%s\n\n", sceneNodeStore.to_string().c_str());
 
 	ComponentStore<scene::SceneNode> sceneNodeStoreReadTest(numTestComponents);
 	std::ifstream ifs;
@@ -194,8 +194,8 @@ void testReflection() {
 	timer.start();
 	deserialize(ifs, sceneNodeStoreReadTest);
 	timer.stop();
-	SDL_Log("**********\nread components from file\ntime = %f ms\ncounts = %lld\n", timer.getMillisPassed(), timer.getCountsPassed());
+	logger.test("**********\nread components from file\ntime = %f ms\ncounts = %lld\n", timer.getMillisPassed(), timer.getCountsPassed());
 	ifs.close();
-	SDL_Log("sceneNodeStore read:\n%s\n\n", sceneNodeStoreReadTest.to_string().c_str());
+	logger.test("sceneNodeStore read:\n%s\n\n", sceneNodeStoreReadTest.to_string().c_str());
 	*/
 }

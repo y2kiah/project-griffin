@@ -1,7 +1,7 @@
 #include "../TextureCubeMap_GL.h"
 #include "../dds.h"
 #include <GL/glew.h>
-#include <SDL_log.h>
+#include <utility/Logger.h>
 //#include <SOIL.h>
 
 //#ifdef _DEBUG
@@ -90,11 +90,11 @@ namespace griffin {
 
 				// check for an error during the load process
 				//if (m_glTexture == 0) {
-				//	SDL_Log("SOIL loading error: %s\n", SOIL_last_result());
+				//	logger.warn(Logger::Category_Render, "SOIL loading error: %s\n", SOIL_last_result());
 				//}
 			}
 			else {
-				SDL_Log("texture loading error\n");
+				logger.warn(Logger::Category_Render, "texture loading error\n");
 			}
 
 			return ok;// (m_glTexture != 0);
@@ -139,11 +139,11 @@ namespace griffin {
 
 				// check for an error during the load process
 				//if (m_glTexture == 0) {
-				//	SDL_Log("SOIL loading error: %s\n", SOIL_last_result());
+				//	logger.warn(Logger::Category_Render, "SOIL loading error: %s\n", SOIL_last_result());
 				//}
 			}
 			else {
-				SDL_Log("texture loading error\n");
+				logger.warn(Logger::Category_Render, "texture loading error\n");
 			}
 
 			return ok;// (m_glTexture != 0);

@@ -8,8 +8,8 @@
 #include <render/model/Mesh_GL.h>
 #include <render/model/ModelImport_Assimp.h>
 #include <utility/concurrency.h>
-#include <SDL_log.h>
 #include <fstream>
+#include <utility/Logger.h>
 
 namespace griffin {
 	namespace tools {
@@ -62,7 +62,7 @@ extern "C" {
 			return tsk.get();
 		}
 		catch (std::exception ex) {
-			SDL_LogWarn(SDL_LOG_CATEGORY_ERROR, "griffin_tools_importMesh exception: %s", ex.what());
+			logger.warn(Logger::Category_Error, "griffin_tools_importMesh exception: %s", ex.what());
 			return 0;
 		}
 	}
@@ -83,7 +83,7 @@ extern "C" {
 			auto& res = resPtr->getResource<Mesh_GL>();
 
 			std::ofstream ofs;
-			SDL_Log("saving mesh %llu to %s", mesh, filename);
+			logger.info("saving mesh %llu to %s", mesh, filename);
 			ofs.open(filename, std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
 			ofs.exceptions(std::ofstream::failbit | std::ofstream::badbit);
 
@@ -94,7 +94,7 @@ extern "C" {
 			return true;
 		}
 		catch (std::exception ex) {
-			SDL_LogWarn(SDL_LOG_CATEGORY_ERROR, "griffin_tools_saveMesh exception: %s", ex.what());
+			logger.warn(Logger::Category_Error, "griffin_tools_saveMesh exception: %s", ex.what());
 			return false;
 		}
 	}

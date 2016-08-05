@@ -2,7 +2,6 @@
 * @file EntityManager.cpp
 * @author Jeff Kiah
 */
-#include <SDL_log.h>
 #include <entity/components.h>
 #include <entity/EntityManager.h>
 

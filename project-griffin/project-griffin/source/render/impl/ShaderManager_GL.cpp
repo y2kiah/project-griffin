@@ -1,6 +1,6 @@
 #include "../ShaderManager_GL.h"
 #include <sys/stat.h>
-#include <SDL_log.h>
+#include <utility/Logger.h>
 
 using namespace griffin;
 using namespace griffin::render;
@@ -10,7 +10,7 @@ using namespace griffin::render;
 ShaderManager_GL::~ShaderManager_GL()
 {
 	if (m_shaderPrograms.capacity() > RESERVE_SHADER_PROGRAMS) {
-		SDL_Log("check RESERVE_SHADER_PROGRAMS: original=%d, highest=%d", RESERVE_SHADER_PROGRAMS, m_shaderPrograms.capacity());
+		logger.info("check RESERVE_SHADER_PROGRAMS: original=%d, highest=%d", RESERVE_SHADER_PROGRAMS, m_shaderPrograms.capacity());
 	}
 }
 

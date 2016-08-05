@@ -3,7 +3,7 @@
 #include <utility/debug.h>
 #include <GL/glew.h>
 #include <cmath>
-#include <SDL_log.h>
+#include <utility/Logger.h>
 //#include <SOIL.h>
 
 //#ifdef _DEBUG
@@ -138,7 +138,7 @@ namespace griffin {
 			GLint internalFormat = g_internalFormatLookup[componentsLookup][componentSizeLookup][typeLookup];
 			
 			if (format == 0 || internalFormat == 0) {
-				SDL_Log("invalid texture format\n");
+				logger.warn(Logger::Category_Render, "invalid texture format\n");
 				return false;
 			}
 
@@ -205,12 +205,12 @@ namespace griffin {
 
 				// check for an error during the load process
 				//if (m_glTexture == 0) {
-				//	SDL_Log("SOIL loading error: %s\n", SOIL_last_result());
+				//	logger.warn(Logger::Category_Render, "SOIL loading error: %s\n", SOIL_last_result());
 				//}
 
 			}
 			else {
-				SDL_Log("texture loading error\n");
+				logger.warn(Logger::Category_Render, "texture loading error\n");
 			}
 
 			ASSERT_GL_ERROR;
@@ -256,11 +256,11 @@ namespace griffin {
 
 				// check for an error during the load process
 				//if (m_glTexture == 0) {
-				//	SDL_Log("SOIL loading error: %s\n", SOIL_last_result());
+				//	logger.warn(Logger::Category_Render, "SOIL loading error: %s\n", SOIL_last_result());
 				//}
 			}
 			else {
-				SDL_Log("texture loading error\n");
+				logger.warn(Logger::Category_Render, "texture loading error\n");
 			}
 
 			return ok;// (m_glTexture != 0);

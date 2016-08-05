@@ -4,7 +4,7 @@
 */
 #include "../ResourceCache.h"
 #include "../Resource.h"
-#include <SDL_log.h>
+#include <utility/Logger.h>
 
 namespace griffin {
 	namespace resource {
@@ -106,7 +106,7 @@ namespace griffin {
 		ResourceCache::~ResourceCache()
 		{
 			if (m_resourceCache.capacity() > m_initialReserve) {
-				SDL_Log("check ResourceCache %d RESERVE: original=%d, highest=%d", m_resourceCache.getItemTypeId(), m_initialReserve, m_resourceCache.capacity());
+				logger.info("check ResourceCache %d RESERVE: original=%d, highest=%d", m_resourceCache.getItemTypeId(), m_initialReserve, m_resourceCache.capacity());
 			}
 		}
 

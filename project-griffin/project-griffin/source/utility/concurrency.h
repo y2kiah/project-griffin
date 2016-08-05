@@ -14,8 +14,8 @@
 #include <bitset>
 #include <utility/container/concurrent_queue.h>
 #include <utility/memory_reserve.h>
+#include <utility/Logger.h>
 
-#include <SDL_log.h>
 
 namespace griffin {
 
@@ -66,19 +66,20 @@ namespace griffin {
 		}
 		
 		thread_pool(const thread_pool&) = delete; // can't copy a thread_pool
+		void operator=(const thread_pool&) = delete;
 
 		/**
 		* Thread pool destructor clears the workers queue and joins all worker threads
 		*/
 		~thread_pool() {
-			SDL_Log("thread pool deleted");
+			logger.verbose("thread pool deleted");
 
 			m_tasks[Thread_Workers].clear();
 			m_done = true;
 			
 			// push a "done" task for each worker thread
 			for (int i = 0; i < m_numWorkerThreads; ++i) {
-				SDL_Log("pushing done task");
+				logger.verbose("pushing done task");
 				m_tasks[Thread_Workers].push([=]{
 					m_done = true;
 				});
@@ -87,7 +88,7 @@ namespace griffin {
 			// join all worker threads
 			for (auto& t : m_threads) {
 				if (t.joinable()) {
-					SDL_Log("joining thread %llu", t.get_id().hash());
+					logger.verbose("joining thread %llu", t.get_id().hash());
 					t.join();
 				}
 			}
@@ -95,7 +96,7 @@ namespace griffin {
 			// checked pop task lists for reserve capacity overflow
 			for (auto& pt : m_popTasks) {
 				if (pt.capacity() > RESERVE_CONCURRENCY_POP_TASK_LIST) {
-					SDL_Log("check RESERVE_CONCURRENCY_POP_TASK_LIST: original=%d, highest=%d", RESERVE_CONCURRENCY_POP_TASK_LIST, pt.capacity());
+					logger.info("check RESERVE_CONCURRENCY_POP_TASK_LIST: original=%d, highest=%d", RESERVE_CONCURRENCY_POP_TASK_LIST, pt.capacity());
 				}
 			}
 		}

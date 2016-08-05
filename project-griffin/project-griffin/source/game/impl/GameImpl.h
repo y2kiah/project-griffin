@@ -33,8 +33,6 @@ namespace griffin {
 		game::DevConsoleSystem		devConsole;
 
 		uint16_t					gameComponentStoreIds[MAX_GAME_COMPONENTS] = {};
-
-		Logger*						log;
 	};
 
 

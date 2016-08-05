@@ -258,7 +258,7 @@ void griffin::game::DevCameraSystem::init(Game* pGame, const Engine& engine, con
 			* Handle Mouse-Look
 			*/
 			engine.inputSystem->handleInputAxis(lookXId, mi, [this](MappedAxis& ma, InputContext& c){
-				/*SDL_Log("devcamera axis %s,  handled motion, relRaw=%d, relMapped=%0.1f",
+				/*logger.verbose(Logger::Category_Input, "devcamera axis %s,  handled motion, relRaw=%d, relMapped=%0.1f",
 						ma.inputMapping->name, ma.axisMotion->relRaw, ma.axisMotion->relMapped);*/
 				yawRaw += ma.axisMotion->relRaw;
 				yawMapped += ma.axisMotion->relMapped;
@@ -266,7 +266,7 @@ void griffin::game::DevCameraSystem::init(Game* pGame, const Engine& engine, con
 			});
 
 			engine.inputSystem->handleInputAxis(lookYId, mi, [this](MappedAxis& ma, InputContext& c){
-				/*SDL_Log("devcamera axis %s,  handled motion, relRaw=%d, relMapped=%0.1f",
+				/*logger.verbose(Logger::Category_Input, "devcamera axis %s,  handled motion, relRaw=%d, relMapped=%0.1f",
 						ma.inputMapping->name, ma.axisMotion->relRaw, ma.axisMotion->relMapped);*/
 				pitchRaw += ma.axisMotion->relRaw;
 				pitchMapped += ma.axisMotion->relMapped;

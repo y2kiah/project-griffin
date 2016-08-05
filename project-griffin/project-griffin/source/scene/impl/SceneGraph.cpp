@@ -3,9 +3,9 @@
 * @author Jeff Kiah
 */
 #include "../SceneGraph.h"
-#include <SDL_log.h>
 #include <utility/memory_reserve.h>
 #include <entity/EntityManager.h>
+#include <utility/Logger.h>
 
 using namespace griffin::scene;
 
@@ -350,6 +350,6 @@ SceneGraph::SceneGraph(EntityManager& _entityMgr) :
 
 SceneGraph::~SceneGraph() {
 	if (m_bfsQueue.capacity() > RESERVE_SCENEGRAPH_TRAVERSAL_QUEUE) {
-		SDL_Log("check RESERVE_SCENEGRAPH_TRAVERSAL_QUEUE: original=%d, highest=%d", RESERVE_SCENEGRAPH_TRAVERSAL_QUEUE, m_bfsQueue.capacity());
+		logger.info("check RESERVE_SCENEGRAPH_TRAVERSAL_QUEUE: original=%d, highest=%d", RESERVE_SCENEGRAPH_TRAVERSAL_QUEUE, m_bfsQueue.capacity());
 	}
 }

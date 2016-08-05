@@ -30,7 +30,6 @@
 #include <resource/ResourceLoader.h>
 
 #include <glm/vec4.hpp>
-#include <SDL_log.h>
 
 using namespace Assimp;
 using std::string;
@@ -72,7 +71,7 @@ namespace griffin {
 			const aiScene* p_scene = importer.ReadFile(filename, ppFlags);
 
 			if (!p_scene) {
-				SDL_Log("importModelFile: %s\n", importer.GetErrorString());
+				logger.warn(Logger::Category_Render, "importModelFile: %s\n", importer.GetErrorString());
 				return nullptr;
 			}
 			auto& scene = *p_scene;
@@ -545,12 +544,12 @@ namespace griffin {
 					for (uint32_t i = 0; i < assimpMat->GetTextureCount((aiTextureType)tt); ++i) {
 						// check for maximum samplers per material
 						if (samplerIndex == MAX_MATERIAL_TEXTURES) {
-							SDL_Log("Warning: more than %d textures in material, unsupported %u", MAX_MATERIAL_TEXTURES, tt);
+							logger.warn(Logger::Category_Render, "Warning: more than %d textures in material, unsupported %u", MAX_MATERIAL_TEXTURES, tt);
 							break;
 						}
 						// only support texture stack for diffuse channel
 						if ((tt == aiTextureType_DIFFUSE && i > 3) || (tt != aiTextureType_DIFFUSE && i > 0)) {
-							SDL_Log("Warning: trying to assign stack of texture type %u, index %u, unsupported", tt, i);
+							logger.warn(Logger::Category_Render, "Warning: trying to assign stack of texture type %u, index %u, unsupported", tt, i);
 							break;
 						}
 
@@ -593,7 +592,7 @@ namespace griffin {
 							strcpy_s(mat.textures[samplerIndex].name, MAX_MATERIAL_TEXTURE_NAME_SIZE, path.C_Str());
 						}
 						else {
-							SDL_Log("Warning: texture name length %d too long, \"%s\"", static_cast<int>(path.length), path.C_Str());
+							logger.warn(Logger::Category_Render, "Warning: texture name length %d too long, \"%s\"", static_cast<int>(path.length), path.C_Str());
 							break;
 						}
 						

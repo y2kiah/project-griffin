@@ -43,31 +43,32 @@ namespace griffin {
 			Priority_Off = 0, Priority_Critical, Priority_Error, Priority_Warn, Priority_Info, Priority_Debug, Priority_Verbose
 		};
 
-		inline void critical(const char *s) { log(Category_Application, Priority_Critical, s); }
-		inline void error(const char *s)    { log(Category_Application, Priority_Error, s); }
-		inline void warn(const char *s)     { log(Category_Application, Priority_Warn, s); }
-		inline void info(const char *s)     { log(Category_Application, Priority_Info, s); }
+		void critical(const char *s, ...);
+		void error(const char *s, ...);
+		void warn(const char *s, ...);
+		void info(const char *s, ...);
 		#ifdef _DEBUG
-		inline void debug(const char *s)    { log(Category_Application, Priority_Debug, s); }
+		void debug(const char *s, ...);
 		#else
-		inline void debug(const char *s)    {}
+		void debug(const char *s, ...) {}
 		#endif
-		inline void verbose(const char *s)  { log(Category_Application, Priority_Verbose, s); }
+		void verbose(const char *s, ...);
 
-		inline void critical(Category c, const char *s) { log(c, Priority_Critical, s); }
-		inline void error(Category c, const char *s)    { log(c, Priority_Error, s); }
-		inline void warn(Category c, const char *s)     { log(c, Priority_Warn, s); }
-		inline void info(Category c, const char *s)     { log(c, Priority_Info, s); }
+		void critical(Category c, const char *s, ...);
+		void error(Category c, const char *s, ...);
+		void warn(Category c, const char *s, ...);
+		void info(Category c, const char *s, ...);
 		#ifdef _DEBUG
-		inline void debug(Category c, const char *s)    { log(c, Priority_Debug, s); }
+		void debug(Category c, const char *s, ...);
 		#else
-		inline void debug(Category c, const char *s)    {}
+		void debug(Category c, const char *s, ...) {}
 		#endif
-		inline void verbose(Category c, const char *s)  { log(c, Priority_Verbose, s); }
+		void verbose(Category c, const char *s, ...);
 
-		inline void test(const char *s)					{ log(Category_Test, Priority_Info, s); }
+		void test(const char *s, ...);
 
-		void log(Category c, Priority p, const char *s);
+		void log(Category c, Priority p, const char *s, ...);
+		void log(Category c, Priority p, const char *s, va_list args);
 
 		/**
 		* Empties the thread-safe queue and writes all messages. Call this at least once per frame
@@ -104,8 +105,10 @@ namespace griffin {
 		/**
 		* Prevent copy.
 		*/
-		Logger(const Logger &) = delete;
-		void operator=(const Logger &) = delete;
+		Logger(const Logger&) = delete;
+		void operator=(const Logger&) = delete;
+
+		~Logger();
 
 	private:
 		struct LogInfo {
@@ -131,7 +134,7 @@ namespace griffin {
 		concurrent_queue<LogInfo> m_q;
 	};
 
-	#define log Logger::getInstance()
+	#define logger griffin::Logger::getInstance()
 }
 
 #endif

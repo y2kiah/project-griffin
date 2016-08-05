@@ -4,7 +4,7 @@
 
 #include <vector>
 #include <memory>
-#include <utility/Logger.h>
+#include <functional>
 
 namespace griffin {
 	namespace test {
@@ -12,14 +12,14 @@ namespace griffin {
 		class Test {
 		public:
 			virtual ~Test() {}
-			virtual void run(Logger&) = 0;
+			virtual void run() = 0;
 		};
 
 
 		class TestRunner {
 		public:
 			void runAllTests();
-			void registerAllTests(Logger& log);
+			void registerAllTests();
 
 		private:
 			static std::vector<std::function<void()>> s_testRegistry;

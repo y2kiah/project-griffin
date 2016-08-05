@@ -1,7 +1,6 @@
 #include <input/InputSystem.h>
 #include <application/main.h>
 #include <application/Timer.h>
-#include <SDL_log.h>
 #include <codecvt>
 
 using namespace griffin;
@@ -67,10 +66,10 @@ void InputSystem::updateFrameTick(const UpdateInfo& ui)
 
 	// TEMP output mapped inputs
 	/*for (const auto& s : m_frameMappedInput.states) {
-		SDL_Log("state \"%s\" active", s.inputMapping->name);
+		logger.debug(Logger::Category_Input, "state \"%s\" active", s.inputMapping->name);
 	}
 	for (const auto& a : m_frameMappedInput.actions) {
-		SDL_Log("action \"%s\" triggered", a.inputMapping->name);
+		logger.debug(Logger::Category_Input, "action \"%s\" triggered", a.inputMapping->name);
 	}*/
 
 	// invoke all callbacks in priority order, passing this frame's mapped input
@@ -470,8 +469,9 @@ bool InputSystem::handleMessage(const SDL_Event& event)
 		case SDL_KEYDOWN:
 		case SDL_KEYUP: {
 			if (event.key.repeat == 0) {
-				/*SDL_Log("key event=%d: state=%d: key=%d: repeat=%d: realTime=%lu\n",
-						event.type, event.key.state, event.key.keysym.scancode, event.key.repeat, timestamp);*/
+				/*logger.verbose(Logger::Category_Input,
+							   "key event=%d: state=%d: key=%d: repeat=%d: realTime=%lu\n",
+							   event.type, event.key.state, event.key.keysym.scancode, event.key.repeat, timestamp);*/
 
 				m_eventsQueue.push({ timestamp, std::move(event), Event_Keyboard, {} });
 			}
@@ -480,8 +480,9 @@ bool InputSystem::handleMessage(const SDL_Event& event)
 		}
 
 		case SDL_TEXTEDITING: {
-			/*SDL_Log("key event=%d: text=%s: length=%d: start=%d: windowID=%d: realTime=%lu\n",
-					event.type, event.edit.text, event.edit.length, event.edit.start, event.edit.windowID, timestamp);*/
+			/*logger.verbose(Logger::Category_Input,
+						   "key event=%d: text=%s: length=%d: start=%d: windowID=%d: realTime=%lu\n",
+						   event.type, event.edit.text, event.edit.length, event.edit.start, event.edit.windowID, timestamp);*/
 
 			m_eventsQueue.push({ timestamp, std::move(event), Event_TextInput, {} });
 
@@ -489,8 +490,9 @@ bool InputSystem::handleMessage(const SDL_Event& event)
 			break;
 		}
 		case SDL_TEXTINPUT: {
-			/*SDL_Log("key event=%d: text=%s: windowID=%d: realTime=%lu\n",
-					event.type, event.text.text, event.text.windowID, timestamp);*/
+			/*logger.verbose(Logger::Category_Input,
+						   "key event=%d: text=%s: windowID=%d: realTime=%lu\n",
+						   event.type, event.text.text, event.text.windowID, timestamp);*/
 
 			m_eventsQueue.push({ timestamp, std::move(event), Event_TextInput, {} });
 
@@ -499,16 +501,18 @@ bool InputSystem::handleMessage(const SDL_Event& event)
 		}
 
 		case SDL_MOUSEMOTION: {
-			/*SDL_Log("mouse motion event=%d: which=%d: state=%d: window=%d: x,y=%d,%d: xrel,yrel=%d,%d: realTime=%lu\n",
-					event.type, event.motion.which, event.motion.state, event.motion.windowID,
-					event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel, timestamp);*/
+			/*logger.verbose(Logger::Category_Input,
+						   "mouse motion event=%d: which=%d: state=%d: window=%d: x,y=%d,%d: xrel,yrel=%d,%d: realTime=%lu\n",
+						   event.type, event.motion.which, event.motion.state, event.motion.windowID,
+						   event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel, timestamp);*/
 			m_motionEventsQueue.push({ timestamp, std::move(event), Event_Mouse, {} });
 			handled = true;
 			break;
 		}
 		case SDL_JOYAXISMOTION:
-			/*SDL_Log("joystick motion event=%d: which=%d: axis=%d: value=%d: realTime=%lu\n",
-					event.type, event.jaxis.which, event.jaxis.axis, event.jaxis.value, timestamp);*/
+			/*logger.verbose(Logger::Category_Input,
+						   "joystick motion event=%d: which=%d: axis=%d: value=%d: realTime=%lu\n",
+						   event.type, event.jaxis.which, event.jaxis.axis, event.jaxis.value, timestamp);*/
 		case SDL_JOYBALLMOTION:
 		case SDL_JOYHATMOTION: {
 			m_motionEventsQueue.push({ timestamp, std::move(event), Event_Joystick, {} });
@@ -517,9 +521,10 @@ bool InputSystem::handleMessage(const SDL_Event& event)
 		}
 
 		case SDL_MOUSEWHEEL: {
-			SDL_Log("mouse wheel event=%d: which=%d: window=%d: x,y=%d,%d: realTime=%lu\n",
-					event.type, event.wheel.which, event.wheel.windowID,
-					event.wheel.x, event.wheel.y, timestamp);
+			logger.verbose(Logger::Category_Input,
+						   "mouse wheel event=%d: which=%d: window=%d: x,y=%d,%d: realTime=%lu\n",
+						   event.type, event.wheel.which, event.wheel.windowID,
+						   event.wheel.x, event.wheel.y, timestamp);
 
 			m_eventsQueue.push({ timestamp, std::move(event), Event_Mouse, {} });
 			handled = true;
@@ -527,9 +532,10 @@ bool InputSystem::handleMessage(const SDL_Event& event)
 		}
 		case SDL_MOUSEBUTTONDOWN:
 		case SDL_MOUSEBUTTONUP: {
-			SDL_Log("mouse button event=%d: which=%d: button=%d: state=%d: clicks=%d: window=%d: x,y=%d,%d: realTime=%lu\n",
-					event.type, event.button.which, event.button.button, event.button.state,
-					event.button.clicks, event.button.windowID, event.button.x, event.button.y, timestamp);
+			logger.verbose(Logger::Category_Input,
+						   "mouse button event=%d: which=%d: button=%d: state=%d: clicks=%d: window=%d: x,y=%d,%d: realTime=%lu\n",
+						   event.type, event.button.which, event.button.button, event.button.state,
+						   event.button.clicks, event.button.windowID, event.button.x, event.button.y, timestamp);
 
 			m_eventsQueue.push({ timestamp, std::move(event), Event_Mouse, {} });
 			handled = true;
@@ -545,8 +551,9 @@ bool InputSystem::handleMessage(const SDL_Event& event)
 		
 		case SDL_JOYBUTTONDOWN:
 		case SDL_JOYBUTTONUP: {
-			SDL_Log("joystick button event=%d: which=%d: button=%d: state=%d: realTime=%lu\n",
-					event.type, event.jbutton.which, event.jbutton.button, event.jbutton.state, timestamp);
+			logger.verbose(Logger::Category_Input,
+						   "joystick button event=%d: which=%d: button=%d: state=%d: realTime=%lu\n",
+						   event.type, event.jbutton.which, event.jbutton.button, event.jbutton.state, timestamp);
 			
 			m_eventsQueue.push({ timestamp, std::move(event), Event_Joystick, {} });
 			handled = true;
@@ -619,17 +626,18 @@ void InputSystem::initialize() // should this be the constructor?
 			char guid[33] = {};
 			SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joy), guid, sizeof(guid));
 
-			SDL_Log("Opened Joystick %d", j);
-			SDL_Log("  Name: %s", SDL_JoystickNameForIndex(j));
-			SDL_Log("  Number of Axes: %d", SDL_JoystickNumAxes(joy));
-			SDL_Log("  Number of Buttons: %d", SDL_JoystickNumButtons(joy));
-			SDL_Log("  Number of Hats: %d", SDL_JoystickNumHats(joy));
-			SDL_Log("  Number of Balls: %d", SDL_JoystickNumBalls(joy));
-			SDL_Log("  Instance ID: %d", SDL_JoystickInstanceID(joy));
-			SDL_Log("  GUID: %s", guid);
+			logger.debug(Logger::Category_Input, "Opened Joystick %d", j);
+			logger.debug(Logger::Category_Input, "  Name: %s", SDL_JoystickNameForIndex(j));
+			logger.debug(Logger::Category_Input, "  Number of Axes: %d", SDL_JoystickNumAxes(joy));
+			logger.debug(Logger::Category_Input, "  Number of Buttons: %d", SDL_JoystickNumButtons(joy));
+			logger.debug(Logger::Category_Input, "  Number of Hats: %d", SDL_JoystickNumHats(joy));
+			logger.debug(Logger::Category_Input, "  Number of Balls: %d", SDL_JoystickNumBalls(joy));
+			logger.debug(Logger::Category_Input, "  Instance ID: %d", SDL_JoystickInstanceID(joy));
+			logger.debug(Logger::Category_Input, "  GUID: %s", guid);
 			
-		} else {
-			SDL_Log("Couldn't open Joystick %d", j);
+		}
+		else {
+			logger.warn(Logger::Category_Input, "Couldn't open Joystick %d", j);
 		}
 	}
 	// The device_index passed as an argument refers to the N'th joystick presently recognized by SDL on the system.
@@ -777,32 +785,32 @@ InputSystem::~InputSystem()
 
 	// check memory reserves
 	if (m_eventsQueue.unsafe_capacity() > RESERVE_INPUTSYSTEM_EVENTSQUEUE) {
-		SDL_Log("check RESERVE_INPUTSYSTEM_EVENTSQUEUE: original=%d, highest=%d", RESERVE_INPUTSYSTEM_EVENTSQUEUE, m_eventsQueue.unsafe_capacity());
+		logger.info("check RESERVE_INPUTSYSTEM_EVENTSQUEUE: original=%d, highest=%d", RESERVE_INPUTSYSTEM_EVENTSQUEUE, m_eventsQueue.unsafe_capacity());
 	}
 	if (m_motionEventsQueue.unsafe_capacity() > RESERVE_INPUTSYSTEM_MOTIONEVENTSQUEUE) {
-		SDL_Log("check RESERVE_INPUTSYSTEM_MOTIONEVENTSQUEUE: original=%d, highest=%d", RESERVE_INPUTSYSTEM_MOTIONEVENTSQUEUE, m_motionEventsQueue.unsafe_capacity());
+		logger.info("check RESERVE_INPUTSYSTEM_MOTIONEVENTSQUEUE: original=%d, highest=%d", RESERVE_INPUTSYSTEM_MOTIONEVENTSQUEUE, m_motionEventsQueue.unsafe_capacity());
 	}
 	if (m_popEvents.capacity() > RESERVE_INPUTSYSTEM_POPQUEUE) {
-		SDL_Log("check RESERVE_INPUTSYSTEM_POPQUEUE (popEvents): original=%d, highest=%d", RESERVE_INPUTSYSTEM_POPQUEUE, m_popEvents.capacity());
+		logger.info("check RESERVE_INPUTSYSTEM_POPQUEUE (popEvents): original=%d, highest=%d", RESERVE_INPUTSYSTEM_POPQUEUE, m_popEvents.capacity());
 	}
 	if (m_popMotionEvents.capacity() > RESERVE_INPUTSYSTEM_MOTIONPOPQUEUE) {
-		SDL_Log("check RESERVE_INPUTSYSTEM_MOTIONPOPQUEUE: original=%d, highest=%d", RESERVE_INPUTSYSTEM_MOTIONPOPQUEUE, m_popMotionEvents.capacity());
+		logger.info("check RESERVE_INPUTSYSTEM_MOTIONPOPQUEUE: original=%d, highest=%d", RESERVE_INPUTSYSTEM_MOTIONPOPQUEUE, m_popMotionEvents.capacity());
 	}
 	if (m_inputMappings.capacity() > RESERVE_INPUTSYSTEM_MAPPINGS) {
-		SDL_Log("check RESERVE_INPUTSYSTEM_MAPPINGS: original=%d, highest=%d", RESERVE_INPUTSYSTEM_MAPPINGS, m_inputMappings.capacity());
+		logger.info("check RESERVE_INPUTSYSTEM_MAPPINGS: original=%d, highest=%d", RESERVE_INPUTSYSTEM_MAPPINGS, m_inputMappings.capacity());
 	}
 	if (m_inputContexts.capacity() > RESERVE_INPUTSYSTEM_CONTEXTS) {
-		SDL_Log("check RESERVE_INPUTSYSTEM_CONTEXTS: original=%d, highest=%d", RESERVE_INPUTSYSTEM_CONTEXTS, m_inputContexts.capacity());
+		logger.info("check RESERVE_INPUTSYSTEM_CONTEXTS: original=%d, highest=%d", RESERVE_INPUTSYSTEM_CONTEXTS, m_inputContexts.capacity());
 	}
 	if (m_callbacks.capacity() > RESERVE_INPUTSYSTEM_CALLBACKS) {
-		SDL_Log("check RESERVE_INPUTSYSTEM_CALLBACKS: original=%d, highest=%d", RESERVE_INPUTSYSTEM_CALLBACKS, m_callbacks.capacity());
+		logger.info("check RESERVE_INPUTSYSTEM_CALLBACKS: original=%d, highest=%d", RESERVE_INPUTSYSTEM_CALLBACKS, m_callbacks.capacity());
 	}
 	// FrameMappedInput reserves
 	if (m_frameMappedInput.actions.capacity() > RESERVE_INPUTSYSTEM_POPQUEUE) {
-		SDL_Log("check RESERVE_INPUTSYSTEM_POPQUEUE (actions): original=%d, highest=%d", RESERVE_INPUTSYSTEM_POPQUEUE, m_frameMappedInput.actions.capacity());
+		logger.info("check RESERVE_INPUTSYSTEM_POPQUEUE (actions): original=%d, highest=%d", RESERVE_INPUTSYSTEM_POPQUEUE, m_frameMappedInput.actions.capacity());
 	}
 	if (m_frameMappedInput.states.capacity() > RESERVE_INPUTSYSTEM_POPQUEUE) {
-		SDL_Log("check RESERVE_INPUTSYSTEM_POPQUEUE (states): original=%d, highest=%d", RESERVE_INPUTSYSTEM_POPQUEUE, m_frameMappedInput.states.capacity());
+		logger.info("check RESERVE_INPUTSYSTEM_POPQUEUE (states): original=%d, highest=%d", RESERVE_INPUTSYSTEM_POPQUEUE, m_frameMappedInput.states.capacity());
 	}
 }
 
@@ -812,6 +820,6 @@ InputSystem::~InputSystem()
 InputContext::~InputContext()
 {
 	if (inputMappings.capacity() > RESERVE_INPUTCONTEXT_MAPPINGS) {
-		SDL_Log("check RESERVE_INPUTCONTEXT_MAPPINGS: original=%d, highest=%d", RESERVE_INPUTCONTEXT_MAPPINGS, inputMappings.capacity());
+		logger.info("check RESERVE_INPUTCONTEXT_MAPPINGS: original=%d, highest=%d", RESERVE_INPUTCONTEXT_MAPPINGS, inputMappings.capacity());
 	}
 }

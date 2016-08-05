@@ -68,11 +68,9 @@ namespace griffin {
 	/**
 	* Create and init the systems of the griffin engine, and do dependency injection
 	*/
-	Engine make_engine(const SDLApplication& app, Logger* log)
+	Engine make_engine(const SDLApplication& app)
 	{
 		Engine engine;
-
-		engine.log = log;
 
 		/**
 		* Create thread pool, one worker thread per logical core
@@ -239,5 +237,9 @@ namespace griffin {
 
 		// Destroy the resource system
 		engine.resourceLoader.reset();
+
+		// Destroy the thread pool
+		engine.threadPool.reset();
+		task_base::s_threadPool.reset();
 	}
 }
