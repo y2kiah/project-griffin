@@ -22,11 +22,6 @@ Logger::Logger() :
 	m_priority[Category_Test]        = Priority_Verbose;
 }
 
-Logger::~Logger()
-{
-	SDL_Log("deleting logger");
-}
-
 void Logger::log(Category c, Priority p, const char *s, va_list args)
 {
 	// write formatted string

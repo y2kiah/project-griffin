@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 		* Game Update-Render Thread, runs the main rendering frame loop and the inner
 		* fixed-timestep game update loop
 		*/
-		auto gameProcess = [&](){
+		auto gameProcess = [&app, &frame, &done, &game, &engine](){
 			SDL_GL_MakeCurrent(app.getPrimaryWindow().window, app.getPrimaryWindow().glContext); // gl context made current on the main loop thread
 			Timer timer;
 			
@@ -103,12 +103,14 @@ int main(int argc, char *argv[])
 				}
 			}
 
-			destroy_game(game);
-			destroy_engine(engine); // delete the engine on the GL thread
+			// NOTE: be sure to wait on important futures here for processes that must finish before exit (e.g. save game)
+
+			SDL_GL_MakeCurrent(nullptr, 0); // quitting, make no gl context current on the game thread
+			glGetError(); // clear GL error from SDL call above
 		};
 
 		// This starts the update-render thread. OpenGL context is transferred to this thread
-		// after OpenGL is initialized on the OS thread. This thread joins in SDL_QUIT.
+		// after OpenGL is initialized on the OS thread. This thread joins after SDL_QUIT.
 		auto gameThread = std::async(std::launch::async, gameProcess);
 
 		/**
@@ -126,7 +128,6 @@ int main(int argc, char *argv[])
 					switch (event.type) {
 						case SDL_QUIT: {
 							done = true; // input/GUI and game threads read this to exit
-							gameThread.wait(); // waiting on the future forces the game thread to join
 							break;
 						}
 
@@ -142,9 +143,7 @@ int main(int argc, char *argv[])
 			}
 			
 			// run tasks with Thread_OS_Input thread affinity
-			if (engine.threadPool) {
-				engine.threadPool->executeFixedThreadTasks(ThreadAffinity::Thread_OS_Input);
-			}
+			engine.threadPool->executeFixedThreadTasks(ThreadAffinity::Thread_OS_Input);
 			
 			// run thread_pool deferred task check (when_any, when_all)
 			//   engine.taskPool.checkDeferredTasks();
@@ -154,6 +153,11 @@ int main(int argc, char *argv[])
 
 			platform::yieldThread();
 		}
+
+		gameThread.wait(); // waiting on the future forces the game thread to join
+		SDL_GL_MakeCurrent(app.getPrimaryWindow().window, app.getPrimaryWindow().glContext); // gl context made current on the OS/Input thread for destruction
+		destroy_game(game);
+		destroy_engine(engine); // must delete the engine on the GL thread
 
 		logger.deinit();
 	}

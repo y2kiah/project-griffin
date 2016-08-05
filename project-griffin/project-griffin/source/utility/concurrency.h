@@ -143,6 +143,16 @@ namespace griffin {
 			return m_numWorkerThreads;
 		}
 
+
+		/**
+		* Check if done has been set. Continuations will not run if triggered after done is set.
+		*/
+		bool isDone() const
+		{
+			return m_done;
+		}
+
+
 		// Implements FIFO scheduling, with a thread affinity system
 		//   If affinity is set a thread will execute that task first and leave the worker tasks
 		//   it skips to be executed by a worker thread. In that way, tasks that specify affinity
@@ -256,19 +266,26 @@ namespace griffin {
 			assert(!run_called() && "run called twice, invalid usage");
 			_pImpl->flags |= Flags::Task_Valid | Flags::Task_Run_Called;
 
-			auto pImpl = _pImpl;
-			bool run = s_threadPool->run(_pImpl->threadAffinity, [pImpl, func, args...]{
-				auto& impl = *pImpl;
-				try {
-					set_value(impl.p, func, args...);
-				}
-				catch (...) {
-					impl.p.set_exception(std::current_exception());
-				}
-				// call the continuation, it will run immediately if theadAffinity is the same,
-				// otherwise it will queue up in the thread pool
-				if (impl.fCont) { impl.fCont(impl.threadAffinity); }
-			});
+			bool run = false;
+
+			if (s_threadPool) {
+				auto pImpl = _pImpl;
+
+				run = s_threadPool->run(_pImpl->threadAffinity, [pImpl, func, args...]{
+					auto& impl = *pImpl;
+					try {
+						set_value(impl.p, func, args...);
+					}
+					catch (...) {
+						impl.p.set_exception(std::current_exception());
+					}
+					// call the continuation, it will run immediately if theadAffinity is the same,
+					// otherwise it will queue up in the thread pool
+					if (impl.fCont) {
+						impl.fCont(impl.threadAffinity);
+					}
+				});
+			}
 
 			// if thread pool is exiting, 
 			if (!run) {
@@ -330,7 +347,11 @@ namespace griffin {
 						catch (...) {
 							impl.p.set_exception(std::current_exception());
 						}
-						if (impl.fCont) { impl.fCont(impl.threadAffinity); }
+
+						// run the next continuation in the chain, if there is one
+						if (impl.fCont) {
+							impl.fCont(impl.threadAffinity);
+						}
 					}
 					else {
 						// push to the thread pool

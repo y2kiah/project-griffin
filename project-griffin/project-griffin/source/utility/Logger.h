@@ -108,8 +108,6 @@ namespace griffin {
 		Logger(const Logger&) = delete;
 		void operator=(const Logger&) = delete;
 
-		~Logger();
-
 	private:
 		struct LogInfo {
 			Category    category;

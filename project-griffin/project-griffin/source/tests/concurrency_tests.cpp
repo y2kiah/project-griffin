@@ -45,12 +45,12 @@ void concurrencyTest()
 
 	std::array<task<int>,2> whenAllTasks = { tsk, tsk3 };
 	// we can group up tasks with the same return type into a container for when_all/when_any
-	//when_all(whenAllTasks)//std::begin(whenAllTasks), std::end(whenAllTasks))
-	//.then([tsk, tsk3]{
-	//	logger.test("when_all finished");
-	//	logger.test("  tsk  value = %d", tsk.get());
-	//	logger.test("  tsk3 value = %d", tsk3.get());
-	//});
+	when_all(whenAllTasks)//std::begin(whenAllTasks), std::end(whenAllTasks))
+	.then([tsk, tsk3]{
+		logger.test("when_all finished");
+		logger.test("  tsk  value = %d", tsk.get());
+		logger.test("  tsk3 value = %d", tsk3.get());
+	});
 
 	/*when_all(tsk, tsk2, tsk3).then([]{
 		logger.test("when_all finished");

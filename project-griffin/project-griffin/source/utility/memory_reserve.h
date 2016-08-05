@@ -42,6 +42,6 @@
 #define RESERVE_CONCURRENCY_POP_TASK_LIST		32
 
 // Logging System
-#define RESERVE_LOGGER_QUEUE					100
+#define RESERVE_LOGGER_QUEUE					500
 
 #endif
