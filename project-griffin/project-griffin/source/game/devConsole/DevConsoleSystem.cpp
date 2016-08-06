@@ -5,19 +5,16 @@
 #include <game/impl/GameImpl.h>
 
 
-void griffin::game::DevConsoleSystem::renderFrameTick(Game* pGame, Engine& engine, float interpolation,
+void griffin::game::DevConsoleSystem::renderFrameTick(Game& game, Engine& engine, float interpolation,
 													  const int64_t realTime, const int64_t countsPassed)
 {
-	Game& game = *pGame;
 	
-
 }
 
 
-void griffin::game::DevConsoleSystem::init(Game* pGame, const Engine& engine, const SDLApplication& app)
+void griffin::game::DevConsoleSystem::init(Game& game, const Engine& engine, const SDLApplication& app)
 {
 	using namespace griffin::scene;
-	Game& game = *pGame;
 	auto& scene = engine.sceneManager->getScene(game.sceneId);
 
 	// create game component stores for this system

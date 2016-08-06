@@ -44,15 +44,15 @@ namespace griffin {
 
 			// Public Functions
 
-			void updateFrameTick(Game* pGame, Engine& engine, const UpdateInfo& ui);
+			void updateFrameTick(Game& game, Engine& engine, const UpdateInfo& ui);
 			
-			void renderFrameTick(Game* pGame, Engine& engine, float interpolation,
+			void renderFrameTick(Game& game, Engine& engine, float interpolation,
 								 const int64_t realTime, const int64_t countsPassed);
 
 			void render(Id_T entityId, scene::Scene& scene, uint8_t viewport, Engine& engine);
 			void draw(Engine &engine, const glm::dmat4& viewMat, const glm::mat4& projMat/*All TEMP*/);
 
-			void init(Game* pGame, const Engine& engine, const SDLApplication& app);
+			void init(Game& game, const Engine& engine, const SDLApplication& app);
 			void deinit();
 		};
 

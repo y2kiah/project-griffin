@@ -10,11 +10,10 @@
 #include <scene/Camera.h>
 
 
-void griffin::game::DevCameraSystem::updateFrameTick(Game* pGame, Engine& engine, const UpdateInfo& ui)
+void griffin::game::DevCameraSystem::updateFrameTick(Game& game, Engine& engine, const UpdateInfo& ui)
 {
 	using namespace glm;
 
-	Game& game = *pGame;
 	auto& scene = engine.sceneManager->getScene(game.sceneId);
 	auto& move = scene.entityManager->getComponent<scene::MovementComponent>(movementComponentId);
 
@@ -78,10 +77,9 @@ void griffin::game::DevCameraSystem::updateFrameTick(Game* pGame, Engine& engine
 }
 
 
-void griffin::game::DevCameraSystem::init(Game* pGame, const Engine& engine, const SDLApplication& app)
+void griffin::game::DevCameraSystem::init(Game& game, const Engine& engine, const SDLApplication& app)
 {
 	using namespace griffin::scene;
-	Game& game = *pGame;
 	auto& scene = engine.sceneManager->getScene(game.sceneId);
 
 	// create game component stores for this system

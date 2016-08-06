@@ -34,12 +34,12 @@ namespace griffin {
 		#endif
 	};
 
-	void engineUpdateFrameTick(Engine& engine, Game* pGgame, UpdateInfo& ui);
-	void engineRenderFrameTick(Engine& engine, Game* pGame, float interpolation,
+	void engineUpdateFrameTick(Engine& engine, Game& game, UpdateInfo& ui);
+	void engineRenderFrameTick(Engine& engine, Game& game, float interpolation,
 							   const int64_t realTime, const int64_t countsPassed);
 
-	Engine make_engine(const SDLApplication& app);
-	void destroy_engine(Engine& engine);
+	EnginePtr make_engine(const SDLApplication& app);
+	void destroy_engine(const EnginePtr& enginePtr);
 }
 
 #endif

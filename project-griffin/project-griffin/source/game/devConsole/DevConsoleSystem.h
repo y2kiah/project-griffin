@@ -18,10 +18,10 @@ namespace griffin {
 			Id_T		devConsoleInputContextId;		//<! handle for the devconsole input context
 			Id_T		toggleId;						//<! input to show/hide devconsole
 
-			void renderFrameTick(Game* pGame, Engine& engine, float interpolation,
+			void renderFrameTick(Game& game, Engine& engine, float interpolation,
 								 const int64_t realTime, const int64_t countsPassed);
 
-			void init(Game* pGame, const Engine& engine, const SDLApplication& app);
+			void init(Game& game, const Engine& engine, const SDLApplication& app);
 
 		};
 	}

@@ -31,20 +31,26 @@ int main(int argc, char *argv[])
 	Timer::initHighPerfTimer();
 	logger.setAllPriority(Logger::Priority_Verbose);
 
+	atomic<bool> done = false;
+	SDLApplication app;
+	EnginePtr enginePtr;
+	GamePtr gamePtr;
+
 	try {
-		SDLApplication app;
 		app.initWindow(PROGRAM_NAME);
 		app.initOpenGL();
 
-		auto engine = make_engine(app);
-		auto game = make_game(engine, app);
+		enginePtr = make_engine(app);
+		Engine& engine = *enginePtr;
+
+		gamePtr = make_game(engine, app);
+		Game& game = *gamePtr;
 
 		// run tests at startup
 		test::TestRunner tests;
 		tests.registerAllTests();
 		tests.runAllTests();
-
-		atomic<bool> done = false;
+		
 		uint64_t frame = 0;
 
 		SDL_GL_MakeCurrent(nullptr, 0); // make no gl context current on the input thread
@@ -71,7 +77,7 @@ int main(int argc, char *argv[])
 
 				engine.threadPool->executeFixedThreadTasks(ThreadAffinity::Thread_Update);
 
-				engineUpdateFrameTick(engine, game.get(), ui);
+				engineUpdateFrameTick(engine, game, ui);
 			});
 
 			int64_t realTime = timer.start();
@@ -91,7 +97,7 @@ int main(int argc, char *argv[])
 
 					engine.threadPool->executeFixedThreadTasks(ThreadAffinity::Thread_OpenGL_Render);
 
-					engineRenderFrameTick(engine, game.get(), interpolation, realTime, countsPassed);
+					engineRenderFrameTick(engine, game, interpolation, realTime, countsPassed);
 
 					SDL_GL_SwapWindow(app.getPrimaryWindow().window);
 
@@ -155,15 +161,19 @@ int main(int argc, char *argv[])
 		}
 
 		gameThread.wait(); // waiting on the future forces the game thread to join
-		SDL_GL_MakeCurrent(app.getPrimaryWindow().window, app.getPrimaryWindow().glContext); // gl context made current on the OS/Input thread for destruction
-		destroy_game(game);
-		destroy_engine(engine); // must delete the engine on the GL thread
 
-		logger.deinit();
 	}
 	catch (std::exception& e) {
 		platform::showErrorBox(e.what(), "Error");
 	}
+
+	// gl context made current on the OS/Input thread for destruction
+	SDL_GL_MakeCurrent(app.getPrimaryWindow().window, app.getPrimaryWindow().glContext);
+
+	destroy_game(gamePtr);
+	destroy_engine(enginePtr); // must delete the engine on the GL thread
+
+	logger.deinit();
 
 	return 0;
 }

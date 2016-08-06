@@ -12,6 +12,7 @@
 namespace griffin {
 	struct Engine;
 	struct Game;
+	typedef std::shared_ptr<Engine>	EnginePtr;
 	typedef std::shared_ptr<Game>	GamePtr;
 
 	namespace script {

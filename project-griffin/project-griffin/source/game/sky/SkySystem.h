@@ -28,8 +28,8 @@ namespace griffin {
 			
 			ResourcePtr	atmosphereProgram = nullptr;	//<! post-process atmospheric scattering shader
 
-			void updateFrameTick(Game* pGame, Engine& engine, const UpdateInfo& ui);
-			void init(Game* pGame, const Engine& engine, const SDLApplication& app);
+			void updateFrameTick(Game& game, Engine& engine, const UpdateInfo& ui);
+			void init(Game& game, const Engine& engine, const SDLApplication& app);
 		};
 
 	}

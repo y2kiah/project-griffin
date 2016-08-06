@@ -24,11 +24,10 @@
 #define crouchRate				2.0f	// 1/s
 
 
-void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& engine, const UpdateInfo& ui)
+void griffin::game::PlayerControlSystem::updateFrameTick(Game& game, Engine& engine, const UpdateInfo& ui)
 {
 	using namespace glm;
 
-	Game& game = *pGame;
 	auto& scene = engine.sceneManager->getScene(game.sceneId);
 	auto& move = scene.entityManager->getComponent<scene::MovementComponent>(movementComponentId);
 
@@ -188,10 +187,9 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game* pGame, Engine& en
 }
 
 
-void griffin::game::PlayerControlSystem::init(Game* pGame, const Engine& engine, const SDLApplication& app)
+void griffin::game::PlayerControlSystem::init(Game& game, const Engine& engine, const SDLApplication& app)
 {
 	using namespace griffin::scene;
-	Game& game = *pGame;
 	auto& scene = engine.sceneManager->getScene(game.sceneId);
 
 	// create player scene node

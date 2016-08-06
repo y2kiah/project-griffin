@@ -30,21 +30,20 @@ namespace griffin {
 	* position and orientation are interpolated automatically, but other values like color that
 	* need smooth interpolation for rendering should be handled manually.
 	*/
-	void gameUpdateFrameTick(Game* pGame, Engine& engine, UpdateInfo& ui)
+	void gameUpdateFrameTick(Game& game, Engine& engine, UpdateInfo& ui)
 	{
-		Game& game = *pGame;
 		// if all systems operate on 1(+) frame-old-data, can all systems be run in parallel?
 		// should this list become a task flow graph?
 
-		game.player.updateFrameTick(pGame, engine, ui);
+		game.player.updateFrameTick(game, engine, ui);
 
-		game.devCamera.updateFrameTick(pGame, engine, ui);
+		game.devCamera.updateFrameTick(game, engine, ui);
 
-		game.terrain.updateFrameTick(pGame, engine, ui);
+		game.terrain.updateFrameTick(game, engine, ui);
 
 		// TODO: consider running this less frequently, and spread the load with other systems that
 		//	don't run every frame by offsetting the frame that it runs on
-		game.sky.updateFrameTick(pGame, engine, ui);
+		game.sky.updateFrameTick(game, engine, ui);
 	}
 
 
@@ -53,12 +52,10 @@ namespace griffin {
 	* smooth animation, state must be kept from the two most recent update ticks, and interpolated
 	* in this loop for final rendering.
 	*/
-	void gameRenderFrameTick(Game* pGame, Engine& engine, float interpolation,
+	void gameRenderFrameTick(Game& game, Engine& engine, float interpolation,
 							 const int64_t realTime, const int64_t countsPassed)
 	{
-		Game& game = *pGame;
-
-		game.devConsole.renderFrameTick(pGame, engine, interpolation, realTime, countsPassed);
+		game.devConsole.renderFrameTick(game, engine, interpolation, realTime, countsPassed);
 	}
 
 
@@ -68,7 +65,7 @@ namespace griffin {
 	GamePtr make_game(const Engine& engine, const SDLApplication& app)
 	{
 		GamePtr gamePtr = std::make_shared<Game>();
-		Game& game = *gamePtr.get();
+		Game& game = *gamePtr;
 
 		// InputSystem.lua contains initInputSystem function
 		engine.scriptManager->doFile(engine.engineLuaState, "scripts/game/initGame.lua"); // throws on error
@@ -84,22 +81,22 @@ namespace griffin {
 			auto& scene = engine.sceneManager->getScene(game.sceneId);
 			
 			// set up terrain system
-			game.terrain.init(gamePtr.get(), engine, app);
+			game.terrain.init(game, engine, app);
 			render::g_pGame = &game; // TEMP
 
 			// set up sky system
-			game.sky.init(gamePtr.get(), engine, app);
+			game.sky.init(game, engine, app);
 			// TODO: scene should have a setSkybox convenience function or something like that
 			//scene.setSkybox(game.sky.skyBoxCubeMap);
 			// temp, will be part of scene as above
 			engine.renderSystem->setSkyboxTexture(game.sky.skyBoxCubeMap);
 
 			// set up input control systems
-			game.player.init(gamePtr.get(), engine, app);
-			game.devCamera.init(gamePtr.get(), engine, app);
+			game.player.init(game, engine, app);
+			game.devCamera.init(game, engine, app);
 
 			// set up development tools
-			game.devConsole.init(gamePtr.get(), engine, app);
+			game.devConsole.init(game, engine, app);
 			
 			// ...
 		}
@@ -116,9 +113,11 @@ namespace griffin {
 	*/
 	void destroy_game(const GamePtr& gamePtr)
 	{
-		Game& game = *gamePtr.get();
+		if (gamePtr) {
+			Game& game = *gamePtr;
 
-		game.terrain.deinit();
+			game.terrain.deinit();
+		}
 	}
 
 }

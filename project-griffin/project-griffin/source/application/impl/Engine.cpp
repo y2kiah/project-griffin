@@ -24,14 +24,14 @@ namespace griffin {
 	/**
 	*
 	*/
-	void engineUpdateFrameTick(Engine& engine, Game* pGame, UpdateInfo& ui)
+	void engineUpdateFrameTick(Engine& engine, Game& game, UpdateInfo& ui)
 	{
 		// if all systems operate on 1(+) frame-old-data, can all systems be run in parallel?
 		// should this list become a task flow graph?
 
 		engine.inputSystem->updateFrameTick(ui);
 
-		gameUpdateFrameTick(pGame, engine, ui);
+		gameUpdateFrameTick(game, engine, ui);
 
 		//	ResourceLoader
 		//	AISystem
@@ -52,12 +52,12 @@ namespace griffin {
 	/**
 	*
 	*/
-	void engineRenderFrameTick(Engine& engine, Game* pGame, float interpolation,
+	void engineRenderFrameTick(Engine& engine, Game& game, float interpolation,
 							   const int64_t realTime, const int64_t countsPassed)
 	{
 		engine.resourceLoader->executeCallbacks();
 
-		gameRenderFrameTick(pGame, engine, interpolation, realTime, countsPassed);
+		gameRenderFrameTick(game, engine, interpolation, realTime, countsPassed);
 
 		engine.sceneManager->renderActiveScenes(interpolation, engine);
 
@@ -68,9 +68,10 @@ namespace griffin {
 	/**
 	* Create and init the systems of the griffin engine, and do dependency injection
 	*/
-	Engine make_engine(const SDLApplication& app)
+	EnginePtr make_engine(const SDLApplication& app)
 	{
-		Engine engine;
+		EnginePtr enginePtr = std::make_shared<Engine>();
+		Engine& engine = *enginePtr;
 
 		/**
 		* Create thread pool, one worker thread per logical core
@@ -218,28 +219,32 @@ namespace griffin {
 			engine.sceneManager = scenePtr;
 		}
 		
-		return engine;
+		return enginePtr;
 	}
 
 
 	/**
 	* Called to destroy the systems that should specifically be removed on the OpenGL thread
 	*/
-	void destroy_engine(Engine& engine)
+	void destroy_engine(const EnginePtr& enginePtr)
 	{
-		// Destroy the tools system
-		#ifdef GRIFFIN_TOOLS_BUILD
-		engine.toolsManager.reset();
-		#endif
+		if (enginePtr) {
+			Engine& engine = *enginePtr;
 
-		// Destroy the render system
-		engine.renderSystem.reset();
+			// Destroy the tools system
+			#ifdef GRIFFIN_TOOLS_BUILD
+			engine.toolsManager.reset();
+			#endif
 
-		// Destroy the resource system
-		engine.resourceLoader.reset();
+			// Destroy the render system
+			engine.renderSystem.reset();
 
-		// Destroy the thread pool
-		engine.threadPool.reset();
-		task_base::s_threadPool.reset();
+			// Destroy the resource system
+			engine.resourceLoader.reset();
+
+			// Destroy the thread pool
+			engine.threadPool.reset();
+			task_base::s_threadPool.reset();
+		}
 	}
 }

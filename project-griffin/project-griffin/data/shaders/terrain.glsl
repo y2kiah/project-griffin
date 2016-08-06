@@ -48,8 +48,8 @@ layout(std140) uniform ObjectUniforms {
 	out vec3 vPosition;
 
 	void main() {
-		vPosition.xy = vertexPosition_modelspace.xy * 64 * 100;
-		vPosition.z = texture(heightMap, vec2(vertexPosition_modelspace.x, vertexPosition_modelspace.y)).r * 1000.0;
+		vPosition.xy = vertexPosition_modelspace.xy * 64 * 100; // 100 = horizontal scalar
+		vPosition.z = texture(heightMap, vec2(vertexPosition_modelspace.x, vertexPosition_modelspace.y)).r * 1000.0; // 1000.0 = height scalar
 
 	}
 
@@ -177,6 +177,8 @@ layout(std140) uniform ObjectUniforms {
 	out vec4 positionViewspace;
 	out vec3 normalViewspace;
 	out float linearDepth;
+	
+	out float slope;
 
 	void main()
 	{
@@ -221,6 +223,12 @@ layout(std140) uniform ObjectUniforms {
 		positionViewspace = modelView * tePosition;
 		normalViewspace = normalize(normalMatrix * vec4(teNormal, 0.0)).xyz;
 
+		// Get dot product between surface normal and geocentric normal for slope
+		vec4 geocentricNormal = vec4(0,0,1.0,0); // simplified for now as straight up z-axis, eventually needs to be vector to center of planet
+		vec3 geocentricNormalViewspace = normalize(normalMatrix * geocentricNormal).xyz;
+		slope = dot(normalViewspace, geocentricNormalViewspace);
+		
+		// linear depth for z buffer
 		linearDepth = (-positionViewspace.z - frustumNear) * inverseFrustumDistance; // map near..far linearly to 0..1
 
 		gl_Position = modelViewProjection * tePosition;
@@ -238,6 +246,8 @@ layout(std140) uniform ObjectUniforms {
 	in vec4 positionViewspace;
 	in vec3 normalViewspace;
 	in float linearDepth;
+	
+	in float slope;
 
 	//in vec4 color;
 	//in vec2 uv;
@@ -248,6 +258,9 @@ layout(std140) uniform ObjectUniforms {
 	layout(location = 0) out vec4 albedoDisplacement;
 	layout(location = 1) out vec4 eyeSpacePosition;
 	layout(location = 2) out vec4 normalReflectance;
+
+	layout(binding = SamplerBinding_Diffuse1) uniform sampler2D diffuse1;
+	layout(binding = SamplerBinding_Diffuse2) uniform sampler2D diffuse2;
 
 	/*float3 blend(float4 texture1, float a1, float4 texture2, float a2)
 	{
@@ -267,7 +280,7 @@ layout(std140) uniform ObjectUniforms {
 
 	void main()
 	{
-		surfaceColor = normalViewspace; // TEMP
+		vec3 surfaceColor = vec3(slope);//normalViewspace; // TEMP
 
 		albedoDisplacement = vec4(surfaceColor, 0.0);
 		eyeSpacePosition = vec4(positionViewspace.xyz, 0.0);
