@@ -21,7 +21,6 @@ namespace griffin {
 							 const int64_t realTime, const int64_t countsPassed);
 
 	GamePtr make_game(const Engine& engine, const SDLApplication& app);
-	void destroy_game(const GamePtr& gamePtr);
 
 }
 

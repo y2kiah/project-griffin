@@ -32,6 +32,8 @@ namespace griffin {
 		tools::GriffinToolsManagerPtr	toolsManager	= nullptr;
 		Id_T							toolsLuaState	= NullId_T;
 		#endif
+
+		~Engine();
 	};
 
 	void engineUpdateFrameTick(Engine& engine, Game& game, UpdateInfo& ui);
@@ -39,7 +41,6 @@ namespace griffin {
 							   const int64_t realTime, const int64_t countsPassed);
 
 	EnginePtr make_engine(const SDLApplication& app);
-	void destroy_engine(const EnginePtr& enginePtr);
 }
 
 #endif
