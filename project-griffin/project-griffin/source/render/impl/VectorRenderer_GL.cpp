@@ -163,14 +163,14 @@ void griffin::render::VectorRenderer_GL::loadGlobalFonts(VectorRenderer_GL& inst
 		const char*	file;
 	};
 	FontDefinition fontDefs[] = {
-		{ Sans,				"data/fonts/open-sans/OpenSans-Regular.ttf" },
-		{ SansBold,			"data/fonts/open-sans/OpenSans-Bold.ttf" },
-		{ SansItalic,		"data/fonts/open-sans/OpenSans-Italic.ttf" },
-		{ SansBoldItalic,	"data/fonts/open-sans/OpenSans-BoldItalic.ttf" },
-		{ Exo,				"data/fonts/exo/Exo-Regular.otf" },
-		{ ExoBold,			"data/fonts/exo/Exo-Bold.otf" },
-		{ ExoItalic,		"data/fonts/exo/Exo-Italic.otf" },
-		{ ExoBoldItalic,	"data/fonts/exo/Exo-BoldItalic.otf" }
+		{ Sans,				"data/assets/fonts/open-sans/OpenSans-Regular.ttf" },
+		{ SansBold,			"data/assets/fonts/open-sans/OpenSans-Bold.ttf" },
+		{ SansItalic,		"data/assets/fonts/open-sans/OpenSans-Italic.ttf" },
+		{ SansBoldItalic,	"data/assets/fonts/open-sans/OpenSans-BoldItalic.ttf" },
+		{ Exo,				"data/assets/fonts/exo/Exo-Regular.otf" },
+		{ ExoBold,			"data/assets/fonts/exo/Exo-Bold.otf" },
+		{ ExoItalic,		"data/assets/fonts/exo/Exo-Italic.otf" },
+		{ ExoBoldItalic,	"data/assets/fonts/exo/Exo-BoldItalic.otf" }
 	};
 
 	const int numFonts = sizeof(fontDefs) / sizeof(FontDefinition);

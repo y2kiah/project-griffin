@@ -115,7 +115,7 @@ namespace griffin {
 			//L"shaders/linearDepth.glsl"
 			//L"shaders/SimpleShader.glsl"
 
-			auto nrml = loadTexture2D(L"textures/normal-noise.dds", CacheType::Cache_Permanent, false);
+			auto nrml = loadTexture2D(L"assets/textures/normal-noise.dds", CacheType::Cache_Permanent, false);
 
 			//m_fullScreenQuadProgram = loader->getResource(fsq).get(); // wait on the futures and assign shared_ptrs
 			m_mrtProgram = loader->getResource(mrt).get();
@@ -439,16 +439,16 @@ namespace griffin {
 
 			// TEMP create some test resources
 			try {
-				//auto mdl1 = loadModel(L"models/Spitfire/spitfire.gmd", CacheType::Cache_Models);
-				//auto mdl2 = loadModel(L"models/landing_platform.gmd", CacheType::Cache_Models);
-				//auto mdl3 = loadModel(L"models/collision_test/collision_test.gmd", CacheType::Cache_Models);
-				//auto mdl4 = loadModel(L"models/gunship/gunship.gmd", CacheType::Cache_Models);
-				//auto mdl5 = loadModel(L"models/A-10C Pit.gmd", CacheType::Cache_Models);
-				//auto mdl6 = loadModel(L"models/other_pit.gmd", CacheType::Cache_Models);
-				//auto mdl7 = loadModel(L"models/Bill/Bill.gmd", CacheType::Cache_Models);
-				auto mdl8 = loadModel(L"models/ring/ring.gmd", CacheType::Cache_Models);
-				auto mdl9 = loadModel(L"models/building_001.gmd", CacheType::Cache_Models);
-				//auto mdl10 = loadModel(L"models/scene/scene.gmd", CacheType::Cache_Models);
+				//auto mdl1 = loadModel(L"assets/models/Spitfire/spitfire.gmd", CacheType::Cache_Models);
+				//auto mdl2 = loadModel(L"assets/models/landing_platform.gmd", CacheType::Cache_Models);
+				//auto mdl3 = loadModel(L"assets/models/collision_test/collision_test.gmd", CacheType::Cache_Models);
+				//auto mdl4 = loadModel(L"assets/models/gunship/gunship.gmd", CacheType::Cache_Models);
+				//auto mdl5 = loadModel(L"assets/models/A-10C Pit.gmd", CacheType::Cache_Models);
+				//auto mdl6 = loadModel(L"assets/models/other_pit.gmd", CacheType::Cache_Models);
+				//auto mdl7 = loadModel(L"assets/models/Bill/Bill.gmd", CacheType::Cache_Models);
+				auto mdl8 = loadModel(L"assets/models/ring/ring.gmd", CacheType::Cache_Models);
+				auto mdl9 = loadModel(L"assets/models/building_001.gmd", CacheType::Cache_Models);
+				//auto mdl10 = loadModel(L"assets/models/scene/scene.gmd", CacheType::Cache_Models);
 
 				using namespace resource;
 				auto loader = g_resourceLoader.lock();
