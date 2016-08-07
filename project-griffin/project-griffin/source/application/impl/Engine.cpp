@@ -224,27 +224,23 @@ namespace griffin {
 
 
 	/**
-	* Called to destroy the systems that should specifically be removed on the OpenGL thread
+	* Destructor releases all systems on the OpenGL thread
 	*/
-	void destroy_engine(const EnginePtr& enginePtr)
+	Engine::~Engine()
 	{
-		if (enginePtr) {
-			Engine& engine = *enginePtr;
+		// Destroy the tools system
+		#ifdef GRIFFIN_TOOLS_BUILD
+		toolsManager.reset();
+		#endif
 
-			// Destroy the tools system
-			#ifdef GRIFFIN_TOOLS_BUILD
-			engine.toolsManager.reset();
-			#endif
+		// Destroy the render system
+		renderSystem.reset();
 
-			// Destroy the render system
-			engine.renderSystem.reset();
+		// Destroy the resource system
+		resourceLoader.reset();
 
-			// Destroy the resource system
-			engine.resourceLoader.reset();
-
-			// Destroy the thread pool
-			engine.threadPool.reset();
-			task_base::s_threadPool.reset();
-		}
+		// Destroy the thread pool
+		threadPool.reset();
+		task_base::s_threadPool.reset();
 	}
 }

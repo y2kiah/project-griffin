@@ -37,8 +37,8 @@ namespace griffin {
 		resource::ResourceLoaderWeakPtr g_resourceLoader;
 
 		// TEMP
-		ResourcePtr		g_tempModel[4] = {};
-		Game *g_pGame; // temp
+		ResourcePtr	g_tempModel[4] = {};
+		Game*		g_pGame; // temp
 
 		// defined in RenderHelpers.cpp
 		extern float			g_fullScreenQuadBufferData[3 * 6];

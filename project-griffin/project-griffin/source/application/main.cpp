@@ -170,8 +170,8 @@ int main(int argc, char *argv[])
 	// gl context made current on the OS/Input thread for destruction
 	SDL_GL_MakeCurrent(app.getPrimaryWindow().window, app.getPrimaryWindow().glContext);
 
-	destroy_game(gamePtr);
-	destroy_engine(enginePtr); // must delete the engine on the GL thread
+	gamePtr.reset();
+	enginePtr.reset(); // must delete the engine on the GL thread
 
 	logger.deinit();
 

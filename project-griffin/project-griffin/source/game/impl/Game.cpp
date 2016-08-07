@@ -82,7 +82,7 @@ namespace griffin {
 			
 			// set up terrain system
 			game.terrain.init(game, engine, app);
-			render::g_pGame = &game; // TEMP
+			render::g_pGame = gamePtr.get(); // TEMP
 
 			// set up sky system
 			game.sky.init(game, engine, app);
@@ -109,15 +109,11 @@ namespace griffin {
 
 
 	/**
-	* Called to destroy the systems that should specifically be removed on the OpenGL thread
+	* Destructor releases all systems on the OpenGL thread
 	*/
-	void destroy_game(const GamePtr& gamePtr)
+	Game::~Game()
 	{
-		if (gamePtr) {
-			Game& game = *gamePtr;
-
-			game.terrain.deinit();
-		}
+		terrain.deinit();
 	}
 
 }
