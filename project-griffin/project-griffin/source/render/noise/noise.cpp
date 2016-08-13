@@ -120,10 +120,22 @@ static inline float sCurve(float t)
 	return t * t * (3.0f - 2.0f * t);
 }
 
-// Quintic curve
+// Cubic curve 1st derivative = 6t - 6t^2
+static inline float sCurveDeriv(float t)
+{
+	return 6.0f * t * (1.0f - t);
+}
+
+// Quintic curve = 6t^5 - 15t^4 + 10t^3
 static inline float qCurve(float t)
 {
 	return t * t * t * (t * (t * 6.0f - 15.0f) + 10.0f);
+}
+
+// Quintic curve 1st derivative = 30t^4 - 60t^3 + 30t^2
+static inline float qCurveDeriv(float t)
+{
+	return t * t * (t * (t * 30.0f - 60.0f) + 30.0f);
 }
 
 // Cosine curve
@@ -559,19 +571,22 @@ float noise::perlinNoise2(float x, float y)
 	int ix = static_cast<int>(floor(x));
 	int iy = static_cast<int>(floor(y));
 
-	x -= ix; y -= iy;
-	float x1 = x - 1.0f; float y1 = y - 1.0f;
+	x -= ix;
+	y -= iy;
+	float x1 = x - 1.0f;
+	float y1 = y - 1.0f;
 
-	ix &= 255; iy &= 255;
+	ix &= 255;
+	iy &= 255;
 
 	float s = qCurve(x);
 	float t = qCurve(y);
 
-	int a = p[ix] + iy;
+	int a = p[ix]     + iy;
 	int b = p[ix + 1] + iy;
 
-	return lerp(lerp(grad(p[a], x,  y),
-					 grad(p[b], x1, y), s),
+	return lerp(lerp(grad(p[a],     x,  y),
+					 grad(p[b],     x1, y),  s),
 				lerp(grad(p[a + 1], x,  y1),
 					 grad(p[b + 1], x1, y1), s), t) * PERLIN2_MULT;
 }
@@ -584,29 +599,39 @@ float noise::perlinNoise3(float x, float y, float z)
 	int iz = static_cast<int>(floor(z));
 
 	// Find relative x y z of point in cube
-	x -= ix; y -= iy; z -= iz;
-	float x1 = x - 1.0f; float y1 = y - 1.0f; float z1 = z - 1.0f;
+	x -= ix;
+	y -= iy;
+	z -= iz;
+	float x1 = x - 1.0f;
+	float y1 = y - 1.0f;
+	float z1 = z - 1.0f;
 
 	// Wrap integer cells at a 255 period
-	ix &= 255; iy &= 255; iz &= 255;
+	ix &= 255;
+	iy &= 255;
+	iz &= 255;
 
 	float s = qCurve(x);
 	float t = qCurve(y);
-	float r = qCurve(z);
+	float u = qCurve(z);
 
 	// Hash coordinates of the 8 cube corners
-	int a = p[ix] + iy; int aa = p[a] + iz; int ab = p[a + 1] + iz;
-	int b = p[ix + 1] + iy; int ba = p[b] + iz; int bb = p[b + 1] + iz;
+	int a  = p[ix]     + iy;
+	int aa = p[a]      + iz;
+	int ab = p[a + 1]  + iz;
+	int b  = p[ix + 1] + iy;
+	int ba = p[b]      + iz;
+	int bb = p[b + 1]  + iz;
 
 	// Add blended results from 8 cube corners
-	return lerp(lerp(lerp(grad(p[aa], x,  y,  z),
-						  grad(p[ba], x1, y,  z), s),
-					 lerp(grad(p[ab], x,  y1, z),
-						  grad(p[bb], x1, y1, z), s), t),
+	return lerp(lerp(lerp(grad(p[aa],     x,  y,  z),
+						  grad(p[ba],     x1, y,  z),  s),
+					 lerp(grad(p[ab],     x,  y1, z),
+						  grad(p[bb],     x1, y1, z),  s), t),
 				lerp(lerp(grad(p[aa + 1], x,  y,  z1),
 						  grad(p[ba + 1], x1, y,  z1), s),
 					 lerp(grad(p[ab + 1], x,  y1, z1),
-						  grad(p[bb + 1], x1, y1, z1), s), t), r); // * PERLIN3_MULT;
+						  grad(p[bb + 1], x1, y1, z1), s), t), u); // * PERLIN3_MULT;
 }
 
 float noise::perlinNoise4(float x, float y, float z, float w)
@@ -616,31 +641,50 @@ float noise::perlinNoise4(float x, float y, float z, float w)
 	int iz = static_cast<int>(floor(z));
 	int iw = static_cast<int>(floor(w));
 
-	x -= ix; y -= iy; z -= iz; w -= iw;
-	float x1 = x - 1.0f; float y1 = y - 1.0f; float z1 = z - 1.0f; float w1 = w - 1.0f;
+	x -= ix;
+	y -= iy;
+	z -= iz;
+	w -= iw;
+	float x1 = x - 1.0f;
+	float y1 = y - 1.0f;
+	float z1 = z - 1.0f;
+	float w1 = w - 1.0f;
 
-	ix &= 255; iy &= 255; iz &= 255; iw &= 255;
+	ix &= 255;
+	iy &= 255;
+	iz &= 255;
+	iw &= 255;
 
 	float s = qCurve(x);
 	float t = qCurve(y);
-	float r = qCurve(z);
-	float q = qCurve(w);
+	float u = qCurve(z);
+	float v = qCurve(w);
 
 	// Hash coordinates of the 16 corners
-	int a = p[ix] + iy; int aa = p[a] + iz; int ab = p[a + 1] + iz;
-	int b = p[ix + 1] + iy; int ba = p[b] + iz; int bb = p[b + 1] + iz;
-	int aaa = p[aa] + iw; int aba = p[ab] + iw; int aab = p[aa + 1] + iw; int abb = p[ab + 1] + iw;
-	int	baa = p[ba] + iw; int bba = p[bb] + iw; int bab = p[ba + 1] + iw; int bbb = p[bb + 1] + iw;
+	int a   = p[ix]     + iy;
+	int aa  = p[a]      + iz;
+	int ab  = p[a + 1]  + iz;
+	int b   = p[ix + 1] + iy;
+	int ba  = p[b]      + iz;
+	int bb  = p[b + 1]  + iz;
+	int aaa = p[aa]     + iw;
+	int aba = p[ab]     + iw;
+	int aab = p[aa + 1] + iw;
+	int abb = p[ab + 1] + iw;
+	int	baa = p[ba]     + iw;
+	int bba = p[bb]     + iw;
+	int bab = p[ba + 1] + iw;
+	int bbb = p[bb + 1] + iw;
 
 	// Add blended results from 16 corners
-	return lerp(lerp(lerp(lerp(grad(p[aaa], x,  y,  z,  w),
-							   grad(p[baa], x1, y,  z,  w), s),
-						  lerp(grad(p[aba], x,  y1, z,  w),
-							   grad(p[bba], x1, y1, z,  w), s), t),
-					 lerp(lerp(grad(p[aab], x,  y,  z1, w),
-							   grad(p[bab], x1, y,  z1, w), s),
-						  lerp(grad(p[abb], x,  y1, z1, w),
-							   grad(p[bbb], x1, y1, z1, w), s), t), r),
+	return lerp(lerp(lerp(lerp(grad(p[aaa],     x,  y,  z,  w),
+							   grad(p[baa],     x1, y,  z,  w),  s),
+						  lerp(grad(p[aba],     x,  y1, z,  w),
+							   grad(p[bba],     x1, y1, z,  w),  s), t),
+					 lerp(lerp(grad(p[aab],     x,  y,  z1, w),
+							   grad(p[bab],     x1, y,  z1, w),  s),
+						  lerp(grad(p[abb],     x,  y1, z1, w),
+							   grad(p[bbb],     x1, y1, z1, w),  s), t), u),
 				lerp(lerp(lerp(grad(p[aaa + 1], x,  y,  z,  w1),
 							   grad(p[baa + 1], x1, y,  z,  w1), s),
 						  lerp(grad(p[aba + 1], x,  y1, z,  w1),
@@ -648,7 +692,7 @@ float noise::perlinNoise4(float x, float y, float z, float w)
 					 lerp(lerp(grad(p[aab + 1], x,  y,  z1, w1),
 							   grad(p[bab + 1], x1, y,  z1, w1), s),
 						  lerp(grad(p[abb + 1], x,  y1, z1, w1),
-							   grad(p[bbb + 1], x1, y1, z1, w1), s), t), r), q) * PERLIN4_MULT;
+							   grad(p[bbb + 1], x1, y1, z1, w1), s), t), u), v) * PERLIN4_MULT;
 }
 
 //----------------------------------------------------------------------------------------
@@ -662,8 +706,10 @@ float noise::simplexNoise1(float x)
 
 	ix &= 255;
 
-	float t0 = 1.0f - x*x;   t0 *= t0;
-	float t1 = 1.0f - x1*x1; t1 *= t1;
+	float t0 = 1.0f - x*x;
+	t0 *= t0;
+	float t1 = 1.0f - x1*x1;
+	t1 *= t1;
 
 	// the maximum value of this noise is 8*(3/4)^4 = 2.53125
 	// so a factor of 0.395 scales it to fit exactly within [-1,1]
@@ -696,7 +742,8 @@ float noise::simplexNoise2(float x, float y)
 	float x2 = x - 1.0f + (2.0f * G2);
 	float y2 = y - 1.0f + (2.0f * G2);
 
-	ix &= 255; iy &= 255;
+	ix &= 255;
+	iy &= 255;
 
 	float n = 0.0f;
 	t = 0.5f - x*x - y*y;
@@ -771,7 +818,9 @@ float noise::simplexNoise3(float x, float y, float z)
 	float y3 = y - 1.0f + (3.0f * G3);
 	float z3 = z - 1.0f + (3.0f * G3);
 
-	ix &= 255; iy &= 255; iz &= 255;
+	ix &= 255;
+	iy &= 255;
+	iz &= 255;
 
 	float n = 0.0f;
 	t = 0.6f - x*x - y*y - z*z;
@@ -868,7 +917,10 @@ float noise::simplexNoise4(float x, float y, float z, float w)
 	float w4 = w - 1.0f + (4.0f * G4);
 
 	// wrap the integer indices at 256, to avoid indexing p[] out of bounds
-	ix &= 255; iy &= 255; iz &= 255; iw &= 255;
+	ix &= 255;
+	iy &= 255;
+	iz &= 255;
+	iw &= 255;
 
 	// calculate the contribution from the five corners
 	float n = 0.0f;
@@ -1086,4 +1138,195 @@ float noise::cachedNoise2(float x, float y)
 					 n[iy1 * 256 + ix1], x), y);
 }
 */
-// TEMP
+// end TEMP
+
+/*
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
+#include <glm/common.hpp>
+
+using namespace glm;
+
+vec3 perlinNoiseDeriv(vec2 p, float seed)
+{
+	// Calculate 2D integer coordinates i and fraction f.
+	vec2 i = floor(p);
+	vec2 f = p - i;
+
+	// Get weights from the coordinate fraction
+	vec2 w = f * f * f * (f * (f * 6.0f - 15.0f) + 10.0f); // 6f^5 - 15f^4 + 10f^3
+	vec4 w4 = vec4(1, w.x, w.y, w.x * w.y);
+
+	// Get the derivative dw/df
+	vec2 dw = f * f * (f * (f * 30.0f - 60.0f) + 30.0f); // 30f^4 - 60f^3 + 30f^2
+
+	// Get the derivative d(w*f)/df
+	vec2 dwp = f * f * f * (f * (f * 36.0f - 75.0f) + 40.0f); // 36f^5 - 75f^4 + 40f^3
+
+	i /= 256.0f;
+
+	// Get the four randomly permutated indices from the noise lattice nearest to
+	// p and offset these numbers with the seed number.
+	vec4 perm = tex2D(samplerPerlinPerm2D, i / 256.0f) + seed;
+	int permx = p[i.x] + i.y;
+	int permy = p[i.x + 1] + i.y;
+
+	// Permutate the four offseted indices again and get the 2D gradient for each
+	// of the four permutated coordinates-seed pairs.
+	vec4 g1 = tex2D(samplerPerlinGrad2D, perm.xy) * 2.0f - 1.0f;
+	vec4 g2 = tex2D(samplerPerlinGrad2D, perm.zw) * 2.0f - 1.0f;
+
+	// Evaluate the four lattice gradients at p
+	float a = dot(g1.xy, f);
+	float b = dot(g2.xy, f + vec2(-1.0f,  0.0f));
+	float c = dot(g1.zw, f + vec2( 0.0f, -1.0f));
+	float d = dot(g2.zw, f + vec2(-1.0f, -1.0f));
+
+	// Bi-linearly blend between the gradients, using w4 as blend factors.
+	vec4 grads = vec4(a, b - a, c - a, a - b - c + d);
+	float n = dot(grads, w4);
+
+	// Calculate the derivatives dn/dx and dn/dy
+	float dx = (g1.x + (g1.z-g1.x)*w.y) + 
+				((g2.y-g1.y)*f.y - g2.x +
+					((g1.y-g2.y-g1.w+g2.w)*f.y + g2.x + g1.w - g2.z - g2.w)*w.y
+				) * dw.x +
+				((g2.x-g1.x) + (g1.x-g2.x-g1.z+g2.z)*w.y)*dwp.x;
+	float dy = (g1.y + (g2.y-g1.y)*w.x) +
+				((g1.z-g1.x)*f.x - g1.w +
+					((g1.x-g2.x-g1.z+g2.z)*f.x + g2.x + g1.w - g2.z - g2.w)*w.x
+				) * dw.y +
+				((g1.w-g1.y) + (g1.y-g2.y-g1.w+g2.w)*w.x)*dwp.y;
+
+	// Return the noise value, roughly normalized in the range [-1, 1]
+	// Also return the pseudo dn/dx and dn/dy, scaled by the same factor
+	return vec3(n, dx, dy) * 1.5f;
+}
+*/
+
+
+noise::Noise3Deriv noise::perlinNoise3Deriv(float x, float y, float z)
+{
+	Noise3Deriv out{};
+
+	int ix = static_cast<int>(floor(x));
+	int iy = static_cast<int>(floor(y));
+	int iz = static_cast<int>(floor(z));
+
+	x -= ix;
+	y -= iy;
+	z -= iz;
+	float x1 = x - 1.0f;
+	float y1 = y - 1.0f;
+	float z1 = z - 1.0f;
+
+	ix &= 255;
+	iy &= 255;
+	iz &= 255;
+
+	float s = qCurve(x);
+	float t = qCurve(y);
+	float u = qCurve(z);
+
+	float dx = qCurveDeriv(x);
+	float dy = qCurveDeriv(y);
+	float dz = qCurveDeriv(z);
+
+	// Hash coordinates of the 8 cube corners
+	int p_a  = p[ix]    + iy;
+	int p_aa = p[p_a]   + iz;
+	int p_ab = p[p_a+1] + iz;
+	int p_b  = p[ix+1]  + iy;
+	int p_ba = p[p_b]   + iz;
+	int p_bb = p[p_b+1] + iz;
+
+	int a = p[p_aa];
+	int b = p[p_ba];
+	int c = p[p_ab];
+	int d = p[p_bb];
+	int e = p[p_aa + 1];
+	int f = p[p_ba + 1];
+	int g = p[p_ab + 1];
+	int h = p[p_bb + 1];
+
+	float k0 = static_cast<float>(a);
+	float k1 = static_cast<float>(b - a);
+	float k2 = static_cast<float>(c - a);
+	float k3 = static_cast<float>(e - a);
+	float k4 = static_cast<float>(a - b - c + d);
+	float k5 = static_cast<float>(a - c - e + g);
+	float k6 = static_cast<float>(a - b - e + f);
+	float k7 = static_cast<float>(-a + b + c - d + e - f - g + h);
+
+	out.n = k0 + k1*s + k2*t + k3*u + k4*s*t + k5*t*u + k6*s*u + k7*s*t*u;
+	out.dx = dx * (k1 + k4*t + k6*u + k7*t*u);
+	out.dy = dy * (k2 + k5*u + k4*s + k7*s*u);
+	out.dz = dz * (k3 + k6*s + k5*t + k7*s*t);
+	return out;
+}
+
+
+float noise::swissTurbulence(float x, float y, float z, int octaves,
+							 float lacunarity, float persistence, float warp)
+{
+	float sum = 0.0f;
+	float freq = 1.0f;
+	float amp = 1.0f;
+	float dxSum = 0.0f;
+	float dySum = 0.0f;
+
+	for (int i = 0; i < octaves; ++i) {
+		float u = (x + warp * dxSum) * freq;
+		float v = (y + warp * dySum) * freq;
+		auto noise = perlinNoise3Deriv(u, v, z + i);
+		sum += amp * (1.0f - abs(noise.n));
+		dxSum += amp * noise.dx * -noise.n;
+		dySum += amp * noise.dy * -noise.n;
+		freq *= lacunarity;
+		amp *= persistence * clamp(0.0f, 1.0f, sum);
+	}
+	return sum;
+}
+
+
+float noise::jordanTurbulence(float x, float y, float z,
+							  int octaves, float lacunarity,
+							  float gain1, float gain,
+							  float warp0, float warp,
+							  float damp0, float damp,
+							  float damp_scale)
+{
+	auto noise = perlinNoise3Deriv(x, y, z);
+	Noise3Deriv noise2{ noise.n*noise.n, noise.dx*noise.n, noise.dy*noise.n };
+	float sum = noise2.n;
+	
+	float dxsum_warp = warp0*noise2.dx;
+	float dysum_warp = warp0*noise2.dy;
+
+	float dxsum_damp = damp0*noise2.dx;
+	float dysum_damp = damp0*noise2.dy;
+
+	float amp = gain1;
+	float freq = lacunarity;
+	float damped_amp = amp * gain;
+
+	for (int i = 1; i < octaves; ++i) {
+		float u = x * freq + dxsum_warp;
+		float v = y * freq + dysum_warp;
+		noise = perlinNoise3Deriv(u, v, z + i / 256.0f);
+		noise2 = { noise.n*noise.n, noise.dx*noise.n, noise.dy*noise.n };
+		sum += damped_amp * noise2.n;
+		
+		dxsum_warp += warp * noise2.dx;
+		dysum_warp += warp * noise2.dy;
+		
+		dxsum_damp += damp * noise2.dx;
+		dysum_damp += damp * noise2.dy;
+
+		freq *= lacunarity;
+		amp *= gain;
+		damped_amp = amp * (1.0f - damp_scale / (1.0f + (dxsum_damp*dxsum_damp + dysum_damp*dysum_damp)));
+	}
+	return sum;
+}

@@ -1398,6 +1398,9 @@
     <None Include="source\render\shaders\terrain.glsl">
       <Filter>render\shaders\terrain</Filter>
     </None>
+    <None Include="source\render\shaders\blinnPhong.glsl">
+      <Filter>render\shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="project-griffin.rc">

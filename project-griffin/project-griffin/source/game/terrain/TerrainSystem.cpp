@@ -73,8 +73,14 @@ void griffin::game::TerrainSystem::draw(Engine &engine, const glm::dmat4& viewMa
 	program.useProgram();
 
 	// bind the patch heightmap texture
-	auto& tex = tempNoiseTex->getResource<render::Texture2D_GL>();
-	tex.bind(render::SamplerBinding_Diffuse1);
+	auto& heightTex = tempNoiseTex->getResource<render::Texture2D_GL>();
+	heightTex.bind(render::SamplerBinding_Diffuse1);
+
+	// bind the rock and grass textures
+	auto& rockTex = tempRockTex->getResource<render::Texture2D_GL>();
+	rockTex.bind(render::SamplerBinding_Diffuse2);
+	auto& grassTex = tempGrassTex->getResource<render::Texture2D_GL>();
+	grassTex.bind(render::SamplerBinding_Diffuse3);
 
 	// set the object UBO values
 	render::ObjectUniformsUBO objectUniformsUBO{};
@@ -150,6 +156,14 @@ void griffin::game::TerrainSystem::init(Game& game, const Engine& engine, const 
 
 	// TEMP, load noise texture
 	tempNoiseTex = engine.resourceLoader->getResource(L"temp_noise", Cache_Materials);
+
+	// TEMP, load rock and grass textures
+	auto tmpRock  = loadTexture2D(L"assets/textures/terrain/rock001/rock001_diffuse.dds");
+	auto tmpGrass = loadTexture2D(L"assets/textures/terrain/grass001/grass001_diffuse.dds");
+
+	tempRockTex  = engine.resourceLoader->getResource(tmpRock).get();
+	tempGrassTex = engine.resourceLoader->getResource(tmpGrass).get();
+	engine.resourceLoader->executeCallbacks();
 
 	ASSERT_GL_ERROR;
 }

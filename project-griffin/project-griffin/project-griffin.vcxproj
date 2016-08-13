@@ -348,6 +348,7 @@
     <None Include="source\render\shaders\atmosphere\irradiance1.glsl" />
     <None Include="source\render\shaders\atmosphere\irradianceN.glsl" />
     <None Include="source\render\shaders\atmosphere\transmittance.glsl" />
+    <None Include="source\render\shaders\blinnPhong.glsl" />
     <None Include="source\render\shaders\Font.glsl" />
     <None Include="source\render\shaders\fxaa.glsl" />
     <None Include="source\render\shaders\hbao.glsl" />

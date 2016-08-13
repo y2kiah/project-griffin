@@ -10,8 +10,8 @@
 	out vec3 vPosition;
 
 	void main() {
-		vPosition.xy = vertexPosition_modelspace.xy * 64 * 100; // 100 = horizontal scalar
-		vPosition.z = texture(heightMap, vec2(vertexPosition_modelspace.x, vertexPosition_modelspace.y)).r * 1000.0; // 1000.0 = height scalar
+		vPosition.xy = vertexPosition_modelspace.xy * 64 * 1000; // 100 = horizontal scalar
+		vPosition.z = texture(heightMap, vec2(vertexPosition_modelspace.x, vertexPosition_modelspace.y)).r * 10000.0; // 1000.0 = height scalar
 
 	}
 
@@ -24,8 +24,8 @@
 	//uniform mat4 basis;
 	//uniform mat4 basisTranspose;
 
-	const /*uniform*/ float tessLevelInner = 8.0;
-	const /*uniform*/ float tessLevelOuter = 8.0;
+	const /*uniform*/ float tessLevelInner = 16.0;
+	const /*uniform*/ float tessLevelOuter = 16.0;
 
 	const mat4 bicubicBasis = mat4(	1.0f/6,-3.0f/6, 3.0f/6,-1.0f/6,
 									4.0f/6, 0.0f/6,-6.0f/6, 3.0f/6,
@@ -131,6 +131,8 @@
 	
 	layout(quads) in;
 
+	layout(binding = SamplerBinding_Diffuse1) uniform sampler2D heightMap;
+
 	//patch in mat4 cx, cy, cz;
 	in mat4 cMat[];
 	//in vec3 tcPosition[];
@@ -140,12 +142,13 @@
 	out vec3 normalViewspace;
 	out float linearDepth;
 	
+	out float u, v;
 	out float slope;
 
 	void main()
 	{
-		float u = gl_TessCoord.x;
-		float v = gl_TessCoord.y;
+		u = gl_TessCoord.x;
+		v = gl_TessCoord.y;
 
 		vec4 U = vec4(1.0, u, u*u, u*u*u);
 		vec4 V = vec4(1.0, v, v*v, v*v*v);
@@ -188,8 +191,11 @@
 		// Get dot product between surface normal and geocentric normal for slope
 		vec4 geocentricNormal = vec4(0,0,1.0,0); // simplified for now as straight up z-axis, eventually needs to be vector to center of planet
 		vec3 geocentricNormalViewspace = normalize(normalMatrix * geocentricNormal).xyz;
-		slope = dot(normalViewspace, geocentricNormalViewspace);
+		slope = 1.0 - dot(normalViewspace, geocentricNormalViewspace);
 		
+		// offset surface by noise texture
+		tePosition.z += texture(heightMap, vec2(x / 64.0 / 1000.0 * 8, y / 64.0 / 1000.0 * 8)).r * 1000.0f * (slope * 4.0);
+
 		// linear depth for z buffer
 		linearDepth = (-positionViewspace.z - frustumNear) * inverseFrustumDistance; // map near..far linearly to 0..1
 
@@ -209,6 +215,7 @@
 	in vec3 normalViewspace;
 	in float linearDepth;
 	
+	in float u, v;
 	in float slope;
 
 	//in vec4 color;
@@ -221,8 +228,10 @@
 	layout(location = 1) out vec4 eyeSpacePosition;
 	layout(location = 2) out vec4 normalReflectance;
 
-	layout(binding = SamplerBinding_Diffuse1) uniform sampler2D diffuse1;
-	layout(binding = SamplerBinding_Diffuse2) uniform sampler2D diffuse2;
+	layout(binding = SamplerBinding_Diffuse2) uniform sampler2D diffuse1;
+	layout(binding = SamplerBinding_Diffuse3) uniform sampler2D diffuse2;
+
+	// Functions
 
 	/*float3 blend(float4 texture1, float a1, float4 texture2, float a2)
 	{
@@ -242,9 +251,13 @@
 
 	void main()
 	{
-		vec3 surfaceColor = vec3(slope);//normalViewspace; // TEMP
+		vec3 d1 = texture(diffuse1, vec2(u, v)).rgb;
+		vec3 d2 = texture(diffuse2, vec2(u, v)).rgb;
+		//vec3 surfaceColor = mix(d1, d2, step(0.8, slope)) * slope;
+		vec3 surfaceColor = vec3(slope);
+		//vec3 surfaceColor = normalViewspace; // TEMP
 
-		albedoDisplacement = vec4(surfaceColor, 0.0);
+		albedoDisplacement = vec4(surfaceColor, 1.0);
 		eyeSpacePosition = vec4(positionViewspace.xyz, 0.0);
 		normalReflectance = vec4(normalViewspace, 0.0);
 		gl_FragDepth = linearDepth;

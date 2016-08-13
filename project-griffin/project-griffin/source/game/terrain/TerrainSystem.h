@@ -35,6 +35,9 @@ namespace griffin {
 			ResourcePtr terrainProgram = nullptr;		//<! terrain shader program
 			ResourcePtr tempNoiseTex = nullptr;
 
+			ResourcePtr tempGrassTex = nullptr;
+			ResourcePtr tempRockTex = nullptr;
+
 			VertexBuffer_GL	vertexBuffer;
 			IndexBuffer_GL	indexBuffer;
 			unsigned int vao = 0;

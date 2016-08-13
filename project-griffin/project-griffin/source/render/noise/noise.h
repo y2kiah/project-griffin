@@ -117,6 +117,24 @@ namespace griffin {
 							   MultiFractalOperation operation = MultiFractalOperation_Add,
 							   CoherentNoiseType noiseType = CoherentNoiseType_Simplex);
 
+			struct Noise3Deriv {
+				float n;
+				float dx;
+				float dy;
+				float dz;
+			};
+
+			Noise3Deriv perlinNoise3Deriv(float x, float y, float z);
+
+			float swissTurbulence(float x, float y, float z, int octaves,
+								  float lacunarity = 2.0f, float persistence = 0.5f, float warp = 0.15f);
+
+			float jordanTurbulence(float x, float y, float z,
+								   int octaves, float lacunarity = 2.0f,
+								   float gain1 = 0.8f, float gain = 0.5f,
+								   float warp0 = 0.4f, float warp = 0.35f,
+								   float damp0 = 1.0f, float damp = 0.8f,
+								   float damp_scale = 1.0f);
 
 			// Inline Function Definitions
 

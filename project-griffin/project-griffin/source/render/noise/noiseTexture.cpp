@@ -28,6 +28,7 @@ resource::ResourcePtr noise::createTestNoiseTexture() {
 			//float nResult = noise::simplexNoise2(x/length, y/length);
 			//float nResult = noise::coherentNoise(2, v, CoherentNoiseType_Simplex);
 			float nResult = noise::fBm(2, v, 8, 2.0f, 0.4f, 1.25f, MultiFractalOperation_Add_Abs);
+			//float nResult = noise::swissTurbulence(v[0], v[1], 0.0f, 8, 2.0f, 0.5f, 0.15f);
 			
 			//nResult *= noise::simplexNoise2(x/32.0f, y/32.0f);
 
