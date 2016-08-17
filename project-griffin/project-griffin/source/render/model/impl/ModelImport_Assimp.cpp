@@ -530,13 +530,13 @@ namespace griffin {
 					auto texType = MaterialTexture_None;
 					switch (tt) {
 						case aiTextureType_DIFFUSE:    texType = MaterialTexture_Diffuse; break;
-						case aiTextureType_SPECULAR:   texType = MaterialTexture_Specular; break;
-						case aiTextureType_AMBIENT:    texType = MaterialTexture_Metallic_Reflectivity_AO; break;
+						case aiTextureType_SPECULAR:   texType = MaterialTexture_Diffuse_Specular; break;
+						case aiTextureType_AMBIENT:    texType = MaterialTexture_Diffuse_Occlusion; break;
 						case aiTextureType_EMISSIVE:   texType = MaterialTexture_Emissive; break;
 						case aiTextureType_NORMALS:    texType = MaterialTexture_Normal; break;
-						case aiTextureType_HEIGHT:     texType = MaterialTexture_Normal_Height; break;
-						case aiTextureType_SHININESS:  texType = MaterialTexture_Specular; break;
-						case aiTextureType_REFLECTION: texType = MaterialTexture_Metallic_Reflectivity_AO; break;
+						case aiTextureType_HEIGHT:     texType = MaterialTexture_Diffuse_Height; break;
+						case aiTextureType_SHININESS:  texType = MaterialTexture_Diffuse_Specular; break;
+						case aiTextureType_REFLECTION: texType = MaterialTexture_Specular_Metallic_Reflectivity_Occlusion; break;
 						case aiTextureType_OPACITY:    texType = MaterialTexture_Diffuse_Opacity; break;
 					}
 					
@@ -606,11 +606,14 @@ namespace griffin {
 						else if (strstr(mat.textures[samplerIndex].name, "_diffuse_opacity_mask") != nullptr) {
 							texType = MaterialTexture_Diffuse_OpacityMask;
 						}
-						else if (strstr(mat.textures[samplerIndex].name, "_diffuse_ao") != nullptr) {
-							texType = MaterialTexture_Diffuse_AO;
+						else if (strstr(mat.textures[samplerIndex].name, "_diffuse_occlusion") != nullptr) {
+							texType = MaterialTexture_Diffuse_Occlusion;
 						}
-						else if (strstr(mat.textures[samplerIndex].name, "_specular") != nullptr) {
-							texType = MaterialTexture_Specular;
+						else if (strstr(mat.textures[samplerIndex].name, "_diffuse_height") != nullptr) {
+							texType = MaterialTexture_Diffuse_Height;
+						}
+						else if (strstr(mat.textures[samplerIndex].name, "_diffuse_specular") != nullptr) {
+							texType = MaterialTexture_Diffuse_Height;
 						}
 						else if (strstr(mat.textures[samplerIndex].name, "_emissive") != nullptr) {
 							texType = MaterialTexture_Emissive;
@@ -621,15 +624,18 @@ namespace griffin {
 						else if (strstr(mat.textures[samplerIndex].name, "_normal_height") != nullptr) {
 							texType = MaterialTexture_Normal_Height;
 						}
-						else if (strstr(mat.textures[samplerIndex].name, "_metallic_reflectivity_ao") != nullptr) {
-							texType = MaterialTexture_Metallic_Reflectivity_AO;
+						else if (strstr(mat.textures[samplerIndex].name, "_normal_specular") != nullptr) {
+							texType = MaterialTexture_Normal_Specular;
+						}
+						else if (strstr(mat.textures[samplerIndex].name, "_specular_metallic_reflectivity_occlusion") != nullptr) {
+							texType = MaterialTexture_Specular_Metallic_Reflectivity_Occlusion;
 						}
 
 						// set shader key params
 						if (texType == MaterialTexture_Diffuse ||
 							texType == MaterialTexture_Diffuse_Opacity ||
 							texType == MaterialTexture_Diffuse_OpacityMask ||
-							texType == MaterialTexture_Diffuse_AO)
+							texType == MaterialTexture_Diffuse_Occlusion)
 						{
 							++key.numDiffuseTextures;
 							assert(key.numDiffuseTextures <= 4);
@@ -647,12 +653,15 @@ namespace griffin {
 									key.hasFirstDiffuseOpacityMap = 1;
 									key.usesAlphaTest = 1;
 								}
-								else if (texType == MaterialTexture_Diffuse_AO) {
+								else if (texType == MaterialTexture_Diffuse_Occlusion) {
 									key.hasFirstDiffuseAOMap = 1;
 								}
 							}
 						}
-						else if (texType == MaterialTexture_Specular) {
+						else if (texType == MaterialTexture_Diffuse_Specular ||
+								 texType == MaterialTexture_Normal_Specular ||
+								 texType == MaterialTexture_Specular_Metallic_Reflectivity_Occlusion)
+						{
 							key.hasSpecularMap = 1;
 						}
 						else if (texType == MaterialTexture_Emissive) {
@@ -662,18 +671,21 @@ namespace griffin {
 							key.hasNormalMap = 1;
 							key.usesBumpMapping = 1;
 						}
-						else if (texType == MaterialTexture_Normal_Height) {
+						else if (texType == MaterialTexture_Diffuse_Height ||
+								 texType == MaterialTexture_Normal_Height)
+						{
 							key.hasNormalHeightMap = 1; // height, if used, is always bundled with normal
 							key.usesDisplacementMapping = 1;
 						}
-						else if (texType == MaterialTexture_Metallic_Reflectivity_AO) {
+						else if (texType == MaterialTexture_Specular_Metallic_Reflectivity_Occlusion) {
 							key.hasMetallicReflectiveAOMap = 1;
 							key.isReflective = 1;
 						}
 
 						// diffuse maps are in sRGB space, all others are not
-						bool sRGB = (texType == MaterialTexture_Diffuse || texType == MaterialTexture_Diffuse_AO ||
-									 texType == MaterialTexture_Diffuse_Opacity || texType == MaterialTexture_Diffuse_OpacityMask);
+						bool sRGB = (texType == MaterialTexture_Diffuse || texType == MaterialTexture_Diffuse_Occlusion ||
+									 texType == MaterialTexture_Diffuse_Opacity || texType == MaterialTexture_Diffuse_OpacityMask ||
+									 texType == MaterialTexture_Diffuse_Height || texType == MaterialTexture_Diffuse_Specular);
 
 						// do synchronous loading of texture since this is a utility function
 						// injects the texture into cache, pass assumeCached=true

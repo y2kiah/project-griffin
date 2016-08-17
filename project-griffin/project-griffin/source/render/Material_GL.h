@@ -17,12 +17,14 @@ namespace griffin {
 			MaterialTexture_Diffuse			= 1,			// RGB - diffuse surface color,			A - unused
 			MaterialTexture_Diffuse_Opacity = 2,			// RGB - diffuse surface color,			A - opacity (alpha blend)
 			MaterialTexture_Diffuse_OpacityMask = 3,		// RGB - diffuse surface color,			A - opacity (no blend, alpha test only)
-			MaterialTexture_Diffuse_AO		= 4,			// RGB - diffuse surface color,			A - ambient occlusion
-			MaterialTexture_Specular		= 5,			// RGB - specular reflectivity color,	A - specular power/shininess
-			MaterialTexture_Emissive		= 6,			// RGB - emissive light color,			A - brightness
-			MaterialTexture_Normal			= 7,			// RGB - normal map,					A - unused
-			MaterialTexture_Normal_Height	= 8,			// RGB - normal map,					A - height map
-			MaterialTexture_Metallic_Reflectivity_AO = 9	// R - metallic, G - reflectivity, B - ambient occlusion, A - *Unused/Available*
+			MaterialTexture_Diffuse_Occlusion = 4,			// RGB - diffuse surface color,			A - occlusion
+			MaterialTexture_Diffuse_Height	= 5,			// RGB - diffuse surface color,			A - height
+			MaterialTexture_Diffuse_Specular = 6,			// RGB - diffuse surface color,			A - specular
+			MaterialTexture_Emissive		= 7,			// RGB - emissive light color,			A - brightness
+			MaterialTexture_Normal			= 8,			// RGB - normal map,					A - unused
+			MaterialTexture_Normal_Height	= 9,			// RGB - normal map,					A - height
+			MaterialTexture_Normal_Specular = 10,			// RGB - normal map,					A - specular
+			MaterialTexture_Specular_Metallic_Reflectivity_Occlusion = 11	// R - specular, G - metallic, B - reflectivity, A - occlusion
 		};
 
 		enum MaterialTextureMappingMode : uint8_t {

@@ -167,8 +167,9 @@ namespace griffin {
 						logger.verbose(Logger::Category_Render, "trying to load %s", aName.assign(wName.begin(), wName.end()).c_str());
 
 						// diffuse maps are in sRGB space, all others are not
-						bool sRGB = (tex.textureType == MaterialTexture_Diffuse || tex.textureType == MaterialTexture_Diffuse_AO ||
-									 tex.textureType == MaterialTexture_Diffuse_Opacity || tex.textureType == MaterialTexture_Diffuse_OpacityMask);
+						bool sRGB = (tex.textureType == MaterialTexture_Diffuse || tex.textureType == MaterialTexture_Diffuse_Occlusion ||
+									 tex.textureType == MaterialTexture_Diffuse_Opacity || tex.textureType == MaterialTexture_Diffuse_OpacityMask ||
+									 tex.textureType == MaterialTexture_Diffuse_Height || tex.textureType == MaterialTexture_Diffuse_Specular);
 
 						// TEMP, right now loading is blocking, called on opengl thread. Once tasks are used, switch to calling from the loading thread.
 						auto resHandle = render::loadTexture2D(wName, resource::CacheType::Cache_Materials, sRGB);

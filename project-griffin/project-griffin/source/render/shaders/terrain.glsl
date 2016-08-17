@@ -138,17 +138,20 @@
 	//in vec3 tcPosition[];
 
 	//out vec4 tePatchDistance;
+	//out vec4 positionWorldspace;
 	out vec4 positionViewspace;
+
+	//out vec3 normalWorldspace;
 	out vec3 normalViewspace;
+
 	out float linearDepth;
 	
-	out float u, v;
 	out float slope;
 
 	void main()
 	{
-		u = gl_TessCoord.x;
-		v = gl_TessCoord.y;
+		float u = gl_TessCoord.x;
+		float v = gl_TessCoord.y;
 
 		vec4 U = vec4(1.0, u, u*u, u*u*u);
 		vec4 V = vec4(1.0, v, v*v, v*v*v);
@@ -161,9 +164,13 @@
 		float y = dot(CVy, U);
 		float z = dot(CVz, U);
 		
-		vec4 tePosition = vec4(x, y, z, 1.0);
+		vec4 positionWorldspace = vec4(x, y, z, 1.0);
+		
+		// offset surface by noise texture
+		positionWorldspace.z += texture(heightMap, vec2(x / 64.0 / 1000.0 * 8, y / 64.0 / 1000.0 * 8)).r * 1000.0f * (slope * 4.0);
 
 		// derivatives with respect to u and v
+		// TODO: does not account for noise displacement of z
 		vec4 dU = vec4(0.0, 1.0, 2.0*u, 3.0*u*u);
 		vec4 dV = vec4(0.0, 1.0, 2.0*v, 3.0*v*v);
 		float nxU = dot(CVx, dU);
@@ -172,7 +179,7 @@
 		float nxV = dot(cMat[0] * dV, U);
 		float nyV = dot(cMat[1] * dV, U);
 		float nzV = dot(cMat[2] * dV, U);
-		vec3 teNormal = normalize(cross(vec3(nxU, nyU, nzU), vec3(nxV, nyV, nzV)));
+		vec3 normalWorldspace = normalize(cross(vec3(nxU, nyU, nzU), vec3(nxV, nyV, nzV)));
 
 		//tePatchDistance = vec4(u, v, 1.0-u, 1.0-v);
 		
@@ -181,25 +188,22 @@
 		float v = gl_TessCoord.y;
 		vec3 x = mix(tcPosition[0], tcPosition[3], u);
 		vec3 y = mix(tcPosition[12], tcPosition[15], u);
-		vec4 tePosition = vec4(mix(x, y, v), 1.0);*/
+		vec4 positionWorldspace = vec4(mix(x, y, v), 1.0);*/
 		/////
 
 		// Get the position and normal in viewspace
-		positionViewspace = modelView * tePosition;
-		normalViewspace = normalize(normalMatrix * vec4(teNormal, 0.0)).xyz;
+		positionViewspace = modelView * positionWorldspace;
+		normalViewspace = normalize(vec3(normalMatrix * vec4(normalWorldspace, 0.0)));
 
 		// Get dot product between surface normal and geocentric normal for slope
 		vec4 geocentricNormal = vec4(0,0,1.0,0); // simplified for now as straight up z-axis, eventually needs to be vector to center of planet
-		vec3 geocentricNormalViewspace = normalize(normalMatrix * geocentricNormal).xyz;
+		vec3 geocentricNormalViewspace = normalize(vec3(normalMatrix * geocentricNormal));
 		slope = 1.0 - dot(normalViewspace, geocentricNormalViewspace);
-		
-		// offset surface by noise texture
-		tePosition.z += texture(heightMap, vec2(x / 64.0 / 1000.0 * 8, y / 64.0 / 1000.0 * 8)).r * 1000.0f * (slope * 4.0);
 
 		// linear depth for z buffer
 		linearDepth = (-positionViewspace.z - frustumNear) * inverseFrustumDistance; // map near..far linearly to 0..1
 
-		gl_Position = modelViewProjection * tePosition;
+		gl_Position = modelViewProjection * positionWorldspace;
 	}
 
 #endif
@@ -211,11 +215,14 @@
 
 	// Input Variables
 
+	//in vec4 positionWorldspace;
 	in vec4 positionViewspace;
+
+	//in vec3 normalWorldspace;
 	in vec3 normalViewspace;
+	
 	in float linearDepth;
 	
-	in float u, v;
 	in float slope;
 
 	//in vec4 color;
@@ -233,11 +240,15 @@
 
 	// Functions
 
+	// the following two functions are from http://www.gamasutra.com/blogs/AndreyMishkinis/20130716/196339/Advanced_Terrain_Texture_Splatting.php
+
+	// this blends without per-vertex alpha mask
 	/*float3 blend(float4 texture1, float a1, float4 texture2, float a2)
 	{
 		return texture1.a + a1 > texture2.a + a2 ? texture1.rgb : texture2.rgb;
 	}*/
 
+	// this blends with a per-vertex alpha mask
 	/*float3 blend(float4 texture1, float a1, float4 texture2, float a2)
 	{
 		float depth = 0.2;
@@ -251,13 +262,26 @@
 
 	void main()
 	{
-		vec3 d1 = texture(diffuse1, vec2(u, v)).rgb;
-		vec3 d2 = texture(diffuse2, vec2(u, v)).rgb;
-		//vec3 surfaceColor = mix(d1, d2, step(0.8, slope)) * slope;
-		vec3 surfaceColor = vec3(slope);
-		//vec3 surfaceColor = normalViewspace; // TEMP
+		//vec4 d1 = texture(diffuse1, positionWorldspace.xy / 64.0 / 1000.0 * 8.0);
+		//vec4 d2 = texture(diffuse2, positionWorldspace.xy / 64.0 / 1000.0 * 8.0);
+		//vec4 surfaceColor = mix(d2, d1, smoothstep(0.2, 0.4, slope));
+		//vec4 surfaceColor = vec4(slope, slope, slope, 0.0);
+		vec4 surfaceColor = vec4(normalViewspace, 0.0);
 
-		albedoDisplacement = vec4(surfaceColor, 1.0);
+		// tri-planar mapping
+		//vec3 blending = abs(normalWorldspace);
+		//blending = normalize(max(blending, 0.0000001)); // Force weights to sum to 1.0
+		//float b = 1.0 / (blending.x + blending.y + blending.z);
+		//blending *= vec3(b);
+		
+		//vec4 xaxis = texture(diffuse1, positionWorldspace.yz / 64.0 / 1000.0 * 8.0);
+		//vec4 yaxis = texture(diffuse1, positionWorldspace.xz / 64.0 / 1000.0 * 8.0);
+		//vec4 zaxis = texture(diffuse2, positionWorldspace.xy / 64.0 / 1000.0 * 8.0);
+		// blend the results of the 3 planar projections.
+		//vec4 surfaceColor = xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;
+
+		// write to g-buffer
+		albedoDisplacement = surfaceColor;
 		eyeSpacePosition = vec4(positionViewspace.xyz, 0.0);
 		normalReflectance = vec4(normalViewspace, 0.0);
 		gl_FragDepth = linearDepth;

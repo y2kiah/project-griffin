@@ -158,11 +158,12 @@ void griffin::game::TerrainSystem::init(Game& game, const Engine& engine, const 
 	tempNoiseTex = engine.resourceLoader->getResource(L"temp_noise", Cache_Materials);
 
 	// TEMP, load rock and grass textures
-	auto tmpRock  = loadTexture2D(L"assets/textures/terrain/rock001/rock001_diffuse.dds");
-	auto tmpGrass = loadTexture2D(L"assets/textures/terrain/grass001/grass001_diffuse.dds");
+	auto tmpRock  = loadTexture2D(L"assets/textures/terrain/rock002/rock002_diffuse_height.dds");
+	auto tmpGrass = loadTexture2D(L"assets/textures/terrain/grass002/grass002_diffuse_height.dds");
 
 	tempRockTex  = engine.resourceLoader->getResource(tmpRock).get();
 	tempGrassTex = engine.resourceLoader->getResource(tmpGrass).get();
+	
 	engine.resourceLoader->executeCallbacks();
 
 	ASSERT_GL_ERROR;
