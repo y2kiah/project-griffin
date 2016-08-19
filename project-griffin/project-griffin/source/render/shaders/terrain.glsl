@@ -24,7 +24,7 @@
 	//uniform mat4 basis;
 	//uniform mat4 basisTranspose;
 
-	const /*uniform*/ float tessLevelInner = 16.0;
+	const /*uniform*/ float tessLevelInner = 8.0;
 	const /*uniform*/ float tessLevelOuter = 16.0;
 
 	const mat4 bicubicBasis = mat4(	1.0f/6,-3.0f/6, 3.0f/6,-1.0f/6,
@@ -138,10 +138,10 @@
 	//in vec3 tcPosition[];
 
 	//out vec4 tePatchDistance;
-	//out vec4 positionWorldspace;
+	out vec4 positionWorldspace;
 	out vec4 positionViewspace;
 
-	//out vec3 normalWorldspace;
+	out vec3 normalWorldspace;
 	out vec3 normalViewspace;
 
 	out float linearDepth;
@@ -164,7 +164,7 @@
 		float y = dot(CVy, U);
 		float z = dot(CVz, U);
 		
-		vec4 positionWorldspace = vec4(x, y, z, 1.0);
+		positionWorldspace = vec4(x, y, z, 1.0);
 		
 		// offset surface by noise texture
 		positionWorldspace.z += texture(heightMap, vec2(x / 64.0 / 1000.0 * 8, y / 64.0 / 1000.0 * 8)).r * 1000.0f * (slope * 4.0);
@@ -179,7 +179,7 @@
 		float nxV = dot(cMat[0] * dV, U);
 		float nyV = dot(cMat[1] * dV, U);
 		float nzV = dot(cMat[2] * dV, U);
-		vec3 normalWorldspace = normalize(cross(vec3(nxU, nyU, nzU), vec3(nxV, nyV, nzV)));
+		normalWorldspace = normalize(cross(vec3(nxU, nyU, nzU), vec3(nxV, nyV, nzV)));
 
 		//tePatchDistance = vec4(u, v, 1.0-u, 1.0-v);
 		
@@ -209,16 +209,41 @@
 #endif
 
 #ifdef _FRAGMENT_
-	
+
+	// TODO: these are duplicated
+	struct Light {
+		vec4 positionViewspace;		// Light position in viewspace
+		vec3 directionViewspace;	// Light spot direction in viewspace
+		vec3 La;					// light color ambient
+		vec3 Lds;					// light color diffuse and specular
+		float Kc;					// attenuation base constant
+		float Kl;					// attenuation linear constant
+		float Kq;					// attenuation quadratic constant
+		float spotAngleCutoff;		// spotlight angle cutoff, dot product comparison (% from 90deg)
+		float spotEdgeBlendPct;		// spotlight edge blend, in % of spot radius
+	};
+
+	struct Material {
+		vec3 Ma;					// Ambient reflectivity
+		vec3 Md;					// Diffuse reflectivity
+		vec3 Ms;					// Specular reflectivity
+		vec3 Me;					// Emissive reflectivity
+		float shininess;			// Specular shininess factor
+		float metallic;				// Metallic determines color of specular highlight
+	};
+
+	Light light;
+	Material material;
+
 	// Globals
 	vec3 surfaceColor;
 
 	// Input Variables
 
-	//in vec4 positionWorldspace;
+	in vec4 positionWorldspace;
 	in vec4 positionViewspace;
 
-	//in vec3 normalWorldspace;
+	in vec3 normalWorldspace;
 	in vec3 normalViewspace;
 	
 	in float linearDepth;
@@ -239,6 +264,8 @@
 	layout(binding = SamplerBinding_Diffuse3) uniform sampler2D diffuse2;
 
 	// Functions
+
+	#include "source/render/shaders/blinnPhong.glsl"
 
 	// the following two functions are from http://www.gamasutra.com/blogs/AndreyMishkinis/20130716/196339/Advanced_Terrain_Texture_Splatting.php
 
@@ -262,26 +289,51 @@
 
 	void main()
 	{
+		// all TEMP for light
+		vec4 lightPos = vec4( 0.1, 1.0, 150.0, 1.0 );
+		vec4 lightDir = normalize(vec4( 0.0, 1.5, -1.0, 0.0 ));
+		light.positionViewspace = modelView * lightPos;
+		light.directionViewspace = normalize(vec3(modelView * lightDir));
+				
+		light.La = vec3( 0.10, 0.10, 0.10 );
+		light.Lds = vec3( 0.6, 0.5, 0.4 );
+		light.Kc = 1.0;
+		light.Kl = 0.007;
+		light.Kq = 0.0002;
+		light.spotAngleCutoff = 0.96;
+		light.spotEdgeBlendPct = 0.4;
+
+		material.Ma = vec3( 1.0 );
+		material.Md = vec3( 1.0 );
+		material.Ms = vec3( 0.0 );
+		material.Me = vec3( 0.0 );
+		material.shininess = 0.0;
+		material.metallic = 0.0;
+		/////
+
 		//vec4 d1 = texture(diffuse1, positionWorldspace.xy / 64.0 / 1000.0 * 8.0);
 		//vec4 d2 = texture(diffuse2, positionWorldspace.xy / 64.0 / 1000.0 * 8.0);
 		//vec4 surfaceColor = mix(d2, d1, smoothstep(0.2, 0.4, slope));
-		//vec4 surfaceColor = vec4(slope, slope, slope, 0.0);
-		vec4 surfaceColor = vec4(normalViewspace, 0.0);
 
 		// tri-planar mapping
-		//vec3 blending = abs(normalWorldspace);
-		//blending = normalize(max(blending, 0.0000001)); // Force weights to sum to 1.0
-		//float b = 1.0 / (blending.x + blending.y + blending.z);
-		//blending *= vec3(b);
+		vec3 uvw = positionWorldspace.xyz / 64.0 / 1000.0 * 8.0;
+
+		vec3 blending = abs(normalWorldspace);
+		blending = normalize(max(blending, 0.0000001)); // Force weights to sum to 1.0
+		float b = 1.0 / (blending.x + blending.y + blending.z);
+		blending *= vec3(b);
 		
-		//vec4 xaxis = texture(diffuse1, positionWorldspace.yz / 64.0 / 1000.0 * 8.0);
-		//vec4 yaxis = texture(diffuse1, positionWorldspace.xz / 64.0 / 1000.0 * 8.0);
-		//vec4 zaxis = texture(diffuse2, positionWorldspace.xy / 64.0 / 1000.0 * 8.0);
+		vec4 xaxis = texture(diffuse1, uvw.yz);
+		vec4 yaxis = texture(diffuse1, uvw.xz);
+		vec4 zaxis = texture(diffuse2, uvw.xy);
 		// blend the results of the 3 planar projections.
-		//vec4 surfaceColor = xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;
+		vec4 surfaceColor = xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;
+
+		vec3 lightIntensity = blinnPhongDirectionalLight(positionViewspace, normalViewspace, light.directionViewspace, surfaceColor.rgb);
+		//vec3 lightIntensity = blinnPhongDirectionalLight(positionWorldspace, normalWorldspace, lightDir.xyz, vec3(1.0)/*surfaceColor.rgb*/);
 
 		// write to g-buffer
-		albedoDisplacement = surfaceColor;
+		albedoDisplacement = vec4(lightIntensity, 1.0);
 		eyeSpacePosition = vec4(positionViewspace.xyz, 0.0);
 		normalReflectance = vec4(normalViewspace, 0.0);
 		gl_FragDepth = linearDepth;

@@ -440,7 +440,7 @@ namespace griffin {
 			// TEMP create some test resources
 			try {
 				//auto mdl1 = loadModel(L"assets/models/Spitfire/spitfire.gmd", CacheType::Cache_Models);
-				//auto mdl2 = loadModel(L"assets/models/landing_platform.gmd", CacheType::Cache_Models);
+				auto mdl2 = loadModel(L"assets/models/landing_platform.gmd", CacheType::Cache_Models);
 				//auto mdl3 = loadModel(L"assets/models/collision_test/collision_test.gmd", CacheType::Cache_Models);
 				//auto mdl4 = loadModel(L"assets/models/gunship/gunship.gmd", CacheType::Cache_Models);
 				//auto mdl5 = loadModel(L"assets/models/A-10C Pit.gmd", CacheType::Cache_Models);
@@ -455,10 +455,10 @@ namespace griffin {
 				if (!loader) {
 					throw std::runtime_error("no resource loader");
 				}
-				//g_tempModel[0] = loader->getResource(mdl2).get();
+				g_tempModel[0] = loader->getResource(mdl2).get();
 				//g_tempModel[1] = loader->getResource(mdl4).get();
 				//g_tempModel[2] = loader->getResource(mdl5).get();
-				g_tempModel[3] = loader->getResource(mdl9).get();
+				//g_tempModel[3] = loader->getResource(mdl9).get();
 				loader->executeCallbacks();
 			}
 			catch (std::exception ex) {

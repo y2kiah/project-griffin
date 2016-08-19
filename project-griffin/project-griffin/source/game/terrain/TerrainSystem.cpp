@@ -66,6 +66,8 @@ void griffin::game::TerrainSystem::render(Id_T entityId, scene::Scene& scene, ui
 
 void griffin::game::TerrainSystem::draw(Engine &engine, const glm::dmat4& viewMat, const glm::mat4& projMat/*All TEMP*/)
 {
+	using namespace glm;
+
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	auto& renderSystem = *engine.renderSystem;
 
@@ -86,10 +88,24 @@ void griffin::game::TerrainSystem::draw(Engine &engine, const glm::dmat4& viewMa
 	render::ObjectUniformsUBO objectUniformsUBO{};
 	glBindBuffer(GL_UNIFORM_BUFFER, renderSystem.getUBOHandle(render::ObjectUniforms));
 	
-	objectUniformsUBO.modelToWorld = glm::mat4();
-	objectUniformsUBO.modelView = viewMat;
-	objectUniformsUBO.modelViewProjection = projMat * glm::mat4(viewMat);
-	objectUniformsUBO.normalMatrix = glm::mat4(glm::transpose(glm::inverse(glm::mat3(viewMat))));
+	dmat4 modelToWorld;
+	dmat4 modelView_World(viewMat * modelToWorld);
+
+	dvec4 nodeTranslationWorld(modelToWorld[0][3], modelToWorld[1][3], modelToWorld[2][3], 1.0);
+	vec3 nodeTranslation_Camera(nodeTranslationWorld * modelView_World);
+
+	mat4 modelView_Camera(modelView_World);
+	modelView_Camera[0][3] = nodeTranslation_Camera.x;
+	modelView_Camera[1][3] = nodeTranslation_Camera.y;
+	modelView_Camera[2][3] = nodeTranslation_Camera.z;
+
+	mat4 mvp(projMat * modelView_Camera);
+	mat4 normalMat(transpose(inverse(mat3(modelView_Camera))));
+
+	objectUniformsUBO.modelToWorld = mat4(modelToWorld);
+	objectUniformsUBO.modelView = modelView_Camera;
+	objectUniformsUBO.modelViewProjection = mvp;
+	objectUniformsUBO.normalMatrix = normalMat;
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(render::ObjectUniformsUBO), &objectUniformsUBO);
 
 	// set basis matrix uniforms

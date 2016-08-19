@@ -126,7 +126,7 @@
 	void main() {
 		vec3 surfaceColor = getSurfaceColor();
 
-		vec3 lightIntensity = blinnPhongDirectionalLight(positionViewspace, normalViewspace, surfaceColor);
+		vec3 lightIntensity = blinnPhongDirectionalLight(positionViewspace, normalViewspace, light.directionViewspace, surfaceColor);
 		//vec3 lightIntensity = blinnPhongPointLight(positionViewspace, normalViewspace, surfaceColor);
 		//vec3 lightIntensity = blinnPhongSpotlight(positionViewspace, normalViewspace, surfaceColor);
 

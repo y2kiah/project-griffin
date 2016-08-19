@@ -145,17 +145,17 @@ layout(std140) uniform ObjectUniforms {
 
 	// Functions
 
-	vec3 blinnPhongDirectionalLight(vec4 positionViewspace, vec3 normalViewspace, vec3 surfaceColor)
+	vec3 blinnPhongDirectionalLight(vec4 position, vec3 normal, vec3 lightDirection, vec3 surfaceColor)
 {
-	vec3 toLight = -normalize(light.directionViewspace);
+	vec3 toLight = -normalize(lightDirection);
 
 	vec3 specular = vec3(0.0);
 		
-	vec3 normal = normalize(normalViewspace);
+	normal = normalize(normal);
 	float lambertian = dot(toLight,normal);
 
 	if (lambertian > -0.00001) {
-		vec3 viewDir = normalize(vec3(-positionViewspace));
+		vec3 viewDir = normalize(vec3(-position));
 		vec3 halfDir = normalize(toLight + viewDir);
 
 		float specAngle = max(dot(halfDir, normal), 0.0);
@@ -166,7 +166,8 @@ layout(std140) uniform ObjectUniforms {
 								material.Ms * surfaceColor,
 								material.metallic);
 
-		specular = specColor * pow(specAngle, material.shininess * 4.0);
+		specular = specColor * vec3(pow(specAngle, material.shininess * 4.0));
+		specular *= smoothstep(0.0, 0.2, lambertian); // take out the hard specular edge without losing too much brightness with smoothstep
 	}
 
 	vec3 ambient = light.La * surfaceColor * material.Ma;
@@ -202,6 +203,7 @@ vec3 blinnPhongPointLight(vec4 positionViewspace, vec3 normalViewspace, vec3 sur
 								material.metallic);
 
 		specular = specColor * pow(specAngle, material.shininess * 4.0) * attenuation;
+		specular *= smoothstep(0.0, 0.2, lambertian); // take out the hard specular edge without losing too much brightness with smoothstep
 	}
 
 	vec3 ambient = light.La * surfaceColor * material.Ma;
@@ -273,7 +275,7 @@ vec3 blinnPhongSpotlight(vec4 positionViewspace, vec3 normalViewspace, vec3 surf
 	void main() {
 		vec3 surfaceColor = getSurfaceColor();
 
-		vec3 lightIntensity = blinnPhongDirectionalLight(positionViewspace, normalViewspace, surfaceColor);
+		vec3 lightIntensity = blinnPhongDirectionalLight(positionViewspace, normalViewspace, light.directionViewspace, surfaceColor);
 		//vec3 lightIntensity = blinnPhongPointLight(positionViewspace, normalViewspace, surfaceColor);
 		//vec3 lightIntensity = blinnPhongSpotlight(positionViewspace, normalViewspace, surfaceColor);
 
