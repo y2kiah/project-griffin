@@ -205,7 +205,7 @@ layout(std140) uniform ObjectUniforms {
 		positionWorldspace = vec4(x, y, z, 1.0);
 		
 		// offset surface by noise texture
-		positionWorldspace.z += texture(heightMap, vec2(x / 64.0 / 1000.0 * 8, y / 64.0 / 1000.0 * 8)).r * 1000.0f * (slope * 4.0);
+		//positionWorldspace.z += texture(heightMap, vec2(x / 64.0 / 1000.0 * 8, y / 64.0 / 1000.0 * 8)).r * 1000.0f;
 
 		// derivatives with respect to u and v
 		// TODO: does not account for noise displacement of z

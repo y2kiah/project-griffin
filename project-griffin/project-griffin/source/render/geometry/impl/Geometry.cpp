@@ -71,7 +71,6 @@ void Frustum::extractFromMatrixGL(float matrix[16], bool normalize)
 	d[Bottom]  = m._44 + m._24;
 
 	if (normalize) {
-		// TODO: find a faster way to normalize all planes, use SIMD code like the collision detection routine would
 		Plane planes[6] = {};
 		getPlanes(planes);
 		for (int p = 0; p < 6; ++p) {

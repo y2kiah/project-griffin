@@ -1,6 +1,7 @@
 #include "../Intersection.h"
 //#include <glm/gtx/intersect.hpp>
 #include <xmmintrin.h>
+#include <glm/geometric.hpp>
 
 
 using namespace griffin;
@@ -305,4 +306,20 @@ void CullAABBList_SSE_4(AABB* aabbList, unsigned int numAABBs, Plane* frustumPla
 
 		result[iAABB] = thisResult;
 	}
+}
+
+
+// Point-Sphere
+
+/**
+* Point-Sphere horizon culling.
+*/
+bool beyondHorizon(const glm::dvec3& p, const glm::dvec3& camera, const glm::dvec3 &center, double offset)
+{
+	auto vt = p - camera;
+	auto vc = center - camera;
+
+	float d = glm::dot(vt, vc);
+
+	return d > length2(vc) - offset;
 }

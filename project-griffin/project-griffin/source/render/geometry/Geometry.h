@@ -122,6 +122,21 @@ namespace griffin {
 				plane.d = d[p];
 			}
 		}
+
+
+	}
+
+
+	// Vector Functions
+
+	inline float length2(const glm::vec3& v)
+	{
+		return (v.x*v.x + v.y*v.y + v.z*v.z);
+	}
+
+	inline double length2(const glm::dvec3& v)
+	{
+		return (v.x*v.x + v.y*v.y + v.z*v.z);
 	}
 }
 

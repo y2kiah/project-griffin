@@ -35,6 +35,9 @@ namespace griffin {
 		// Frustum-AABB
 		void CullAABBList_SSE_1(AABB* aabbList, unsigned int numAABBs, Plane* frustumPlanes, unsigned int* result);
 		void CullAABBList_SSE_4(AABB* aabbList, unsigned int numAABBs, Plane* frustumPlanes, unsigned int* result);
+
+		// Point-Sphere
+		bool beyondHorizon(const glm::dvec3& p, const glm::dvec3& camera, const glm::dvec3 &center, double offset = 1.0);
 	}
 }
 
