@@ -1,6 +1,7 @@
 /**
-* @file	handle_map.h
+* @file handle_map.h
 * @author Jeff Kiah
+* @copyright The MIT License (MIT), Copyright (c) 2015 Jeff Kiah
 */
 #pragma once
 #ifndef GRIFFIN_HANDLE_MAP_H_
@@ -18,9 +19,9 @@ namespace griffin {
 	* @var	generation	incrementing generation of data at the index, for tracking accesses to old data
 	* @var	index		When used as a handle (outer id, given to the client):
 	*						free==0, index of id in the sparseIds array
-	*						free==1, index of next free slot, forming an embedded linked list
 	*					When used as an inner id (stored in sparseIds array):
-	*						index of the item in the dense items array
+	*						free==0, index of the item in the dense items array
+	*						free==1, index of next free slot, forming an embedded linked list
 	* @var	value		unioned with the above four vars, used for direct comparison of ids
 	*/
 	struct Id_T {
@@ -168,7 +169,7 @@ namespace griffin {
 		* @returns index into the inner DenseSet for a given outer id
 		*/
 		uint32_t			getInnerIndex(Id_T handle) const;
-
+		
 		/**
 		* Constructor
 		* @param	itemTypeId		typeId used by the Id_T::typeId variable for this container

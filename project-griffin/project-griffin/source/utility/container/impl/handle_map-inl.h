@@ -1,7 +1,8 @@
 /**
- * @file	handle_map-inl.h
- * @author	Jeff Kiah
- */
+* @file handle_map-inl.h
+* @author Jeff Kiah
+* @copyright The MIT License (MIT), Copyright (c) 2015 Jeff Kiah
+*/
 #pragma once
 #ifndef GRIFFIN_HANDLE_MAP_INL_H_
 #define GRIFFIN_HANDLE_MAP_INL_H_
