@@ -1,6 +1,7 @@
 /**
-* @file	handle_map.h
+* @file handle_map.h
 * @author Jeff Kiah
+* @copyright The MIT License (MIT), Copyright (c) 2015 Jeff Kiah
 */
 #pragma once
 #ifndef GRIFFIN_HANDLE_MAP_H_
@@ -18,9 +19,9 @@ namespace griffin {
 	* @var	generation	incrementing generation of data at the index, for tracking accesses to old data
 	* @var	index		When used as a handle (outer id, given to the client):
 	*						free==0, index of id in the sparseIds array
-	*						free==1, index of next free slot, forming an embedded linked list
 	*					When used as an inner id (stored in sparseIds array):
-	*						index of the item in the dense items array
+	*						free==0, index of the item in the dense items array
+	*						free==1, index of next free slot, forming an embedded linked list
 	* @var	value		unioned with the above four vars, used for direct comparison of ids
 	*/
 	struct Id_T {
@@ -134,6 +135,24 @@ namespace griffin {
 		Id_T insert(const T& i);
 
 		/**
+		* Removes all items, leaving the m_sparseIds set intact by adding each entry to the free-
+		* list and incrementing its generation. This operation is slower than @c reset, but safer
+		* for the detection of stale handle lookups later (in debug builds). Prefer to use @c reset
+		* if safety is not a concern.
+		* Complexity is linear.
+		*/
+		void clear() _NOEXCEPT;
+
+		/**
+		* Removes all items, destroying the m_sparseIds set. Leaves the container's capacity, but
+		* otherwise equivalent to a default-constructed container. This is faster than @c clear,
+		* but cannot safely detect lookups by stale handles obtained before the reset. Use @c clear
+		* if safety is a concern, at least until it's proven not to be a problem.
+		* Complexity is constant.
+		*/
+		void reset() _NOEXCEPT;
+
+		/**
 		* @returns true if handle handle refers to a valid item
 		*/
 		bool isValid(Id_T handle) const;
@@ -146,7 +165,7 @@ namespace griffin {
 		/**
 		* @returns capacity of the dense items array
 		*/
-		size_t capacity() const _NOEXCEPT{ return m_items.capacity(); }
+		size_t capacity() const _NOEXCEPT { return m_items.capacity(); }
 
 		/**
 		* defragmentSort uses the comparison function @c comp to establish an ideal order for the
@@ -188,7 +207,7 @@ namespace griffin {
 		* @returns index into the inner DenseSet for a given outer id
 		*/
 		uint32_t			getInnerIndex(Id_T handle) const;
-
+		
 		/**
 		* Constructor
 		* @param	itemTypeId		typeId used by the Id_T::typeId variable for this container

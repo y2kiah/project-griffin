@@ -24,7 +24,7 @@ const size_t numTestComponents = 100000;
 ComponentStore<scene::SceneNode> sceneNodeStore(numTestComponents);
 std::vector<ComponentId> componentIds;
 std::vector<std::unique_ptr<scene::SceneNode>> sceneNodeHeap;
-griffin::Timer timer;
+static Timer timer;
 
 struct Something {
 	int x, y;
@@ -107,7 +107,7 @@ void testReflection() {
 	//////////
 	// test component store
 	addTestComponents();
-	//profileTestComponents();
+	profileTestComponents();
 
 	logger.test(sceneNodeStore.to_string().c_str());
 	scene::SceneNode& node = sceneNodeStore.getComponent(componentIds[0]);

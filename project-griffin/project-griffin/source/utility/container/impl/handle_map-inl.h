@@ -1,7 +1,8 @@
 /**
- * @file	handle_map-inl.h
- * @author	Jeff Kiah
- */
+* @file handle_map-inl.h
+* @author Jeff Kiah
+* @copyright The MIT License (MIT), Copyright (c) 2015 Jeff Kiah
+*/
 #pragma once
 #ifndef GRIFFIN_HANDLE_MAP_INL_H_
 #define GRIFFIN_HANDLE_MAP_INL_H_
@@ -139,6 +140,41 @@ namespace griffin {
 	}
 
 	
+	template <typename T>
+	void handle_map<T>::clear() _NOEXCEPT
+	{
+		uint32_t size = static_cast<uint32_t>(m_sparseIds.size());
+
+		if (size > 0) {
+			m_items.clear();
+			m_meta.clear();
+
+			m_freeListFront = 0;
+			m_freeListBack = size - 1;
+
+			for (uint32_t i = 0; i < size; ++i) {
+				auto& id = m_sparseIds[i];
+				id.free = 1;
+				++id.generation;
+				id.index = i + 1;
+			}
+			m_sparseIds[size - 1].index = 0xFFFFFFFF;
+		}
+	}
+
+
+	template <typename T>
+	void handle_map<T>::reset() _NOEXCEPT
+	{
+		m_freeListFront = 0xFFFFFFFF;
+		m_freeListBack = 0xFFFFFFFF;
+
+		m_items.clear();
+		m_meta.clear();
+		m_sparseIds.clear();
+	}
+
+
 	template <typename T>
 	inline T& handle_map<T>::at(Id_T handle)
 	{

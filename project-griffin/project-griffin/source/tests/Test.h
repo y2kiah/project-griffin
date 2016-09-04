@@ -9,11 +9,11 @@
 namespace griffin {
 	namespace test {
 
-		class Test {
+		/*class Test {
 		public:
 			virtual ~Test() {}
 			virtual void run() = 0;
-		};
+		};*/
 
 
 		class TestRunner {
