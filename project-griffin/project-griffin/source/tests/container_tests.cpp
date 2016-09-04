@@ -3,11 +3,17 @@
 #include <sstream>
 #include <utility/Logger.h>
 #include <utility/container/bitwise_quadtree.h>
+#include <utility/container/handle_map.h>
+#include <application/Timer.h>
 
 
 using namespace griffin;
 
-void testBitwiseQuadtree(Logger& log) {
+static Timer timer;
+
+
+void testBitwiseQuadtree()
+{
 	using namespace std;
 
 	ostringstream oss;
@@ -33,5 +39,85 @@ void testBitwiseQuadtree(Logger& log) {
 	assert(31 == result31 && L"Split Level 31, X and Y match");
 	assert(30 == result30 && L"Split Level 30, X and Y don't match");
 
-	log.info(Logger::Category_Test, oss.str().c_str());
+	logger.info(Logger::Category_Test, oss.str().c_str());
+}
+
+
+void testHandleMap()
+{
+	struct Test { int v1, v2, v3, v4; };
+	const int N = 100000;
+	int total = 0;
+
+	// create a handle_map with itemId = 0 and a capacity of 100,000
+	handle_map<Test> testMap(0, N);
+	std::vector<Id_T> testHandles;
+	std::vector<std::unique_ptr<Test>> testHeap;
+	testHandles.reserve(N);
+	testHeap.reserve(N);
+
+	auto id = testMap.emplace(1, 2, 3, 4);
+	auto& t = testMap[id];
+	logger.test("%d %d %d %d\n\n", t.v1, t.v2, t.v3, t.v4);
+
+	testMap.clear();
+
+
+	// fill up the capacity with zero-initialized objects
+	timer.start();
+	testHandles = testMap.emplaceItems(N, 1, 1, 1, 1);
+	timer.stop();
+	logger.test("handle_map: create %d items, time = %f ms\ncounts = %lld\n", N, timer.getMillisPassed(), timer.getCountsPassed());
+	
+	// create items on the heap
+	timer.start();
+	for (int i = 0; i < N; ++i) {
+		testHeap.emplace_back(new Test{ 1, 1, 1, 1 });
+	}
+	timer.stop();
+	logger.test("unique_ptr: create %d items, time = %f ms\ncounts = %lld\n", N, timer.getMillisPassed(), timer.getCountsPassed());
+
+
+	auto& items = testMap.getItems();
+	// vector iteration
+	timer.start();
+	for (int i = 0; i < N; ++i) {
+		auto& t = items[i];
+		total += t.v1 + t.v2 + t.v3 + t.v4;
+	}
+	timer.stop();
+	logger.test("handle_map: iteration over dense set, total = %d, time = %f ms\ncounts = %lld\n\n", total, timer.getMillisPassed(), timer.getCountsPassed());
+
+	// heap iteration
+	total = 0;
+	timer.start();
+	for (int p = 0; p < N; ++p) {
+		auto& t = *testHeap[p];
+		total += t.v1 + t.v2 + t.v3 + t.v4;
+	}
+	timer.stop();
+	logger.test("unique_ptr: iteration, total = %d, time = %f ms\ncounts = %lld\n\n", total, timer.getMillisPassed(), timer.getCountsPassed());
+
+	// handle iteration
+	total = 0;
+	timer.start();
+	for (int h = 0; h < N; ++h) {
+		auto& t = testMap[testHandles[h]];
+		total += t.v1 + t.v2 + t.v3 + t.v4;
+	}
+	timer.stop();
+	logger.test("handle_map: iteration by handle, total = %d, time = %f ms\ncounts = %lld\n\n", total, timer.getMillisPassed(), timer.getCountsPassed());
+
+
+	// remove all items, destroying the sparse set
+	timer.start();
+	testMap.reset();
+	timer.stop();
+	logger.test("handle_map: clear %d items, time = %f ms\ncounts = %lld\n\n", N, timer.getMillisPassed(), timer.getCountsPassed());
+
+	// remove all items from the heap
+	timer.start();
+	testHeap.clear();
+	timer.stop();
+	logger.test("unique_ptr: clear %d items, time = %f ms\ncounts = %lld\n\n", N, timer.getMillisPassed(), timer.getCountsPassed());
 }

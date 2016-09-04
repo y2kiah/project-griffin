@@ -135,6 +135,24 @@ namespace griffin {
 		Id_T insert(const T& i);
 
 		/**
+		* Removes all items, leaving the m_sparseIds set intact by adding each entry to the free-
+		* list and incrementing its generation. This operation is slower than @c reset, but safer
+		* for the detection of stale handle lookups later (in debug builds). Prefer to use @c reset
+		* if safety is not a concern.
+		* Complexity is linear.
+		*/
+		void clear() _NOEXCEPT;
+
+		/**
+		* Removes all items, destroying the m_sparseIds set. Leaves the container's capacity, but
+		* otherwise equivalent to a default-constructed container. This is faster than @c clear,
+		* but cannot safely detect lookups by stale handles obtained before the reset. Use @c clear
+		* if safety is a concern, at least until it's proven not to be a problem.
+		* Complexity is constant.
+		*/
+		void reset() _NOEXCEPT;
+
+		/**
 		* @returns true if handle handle refers to a valid item
 		*/
 		bool isValid(Id_T handle) const;
@@ -147,7 +165,7 @@ namespace griffin {
 		/**
 		* @returns capacity of the dense items array
 		*/
-		size_t capacity() const _NOEXCEPT{ return m_items.capacity(); }
+		size_t capacity() const _NOEXCEPT { return m_items.capacity(); }
 
 		/**
 		* these functions provide direct access to inner arrays, don't add or remove items, just
