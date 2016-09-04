@@ -149,6 +149,26 @@ namespace griffin {
 		size_t capacity() const _NOEXCEPT{ return m_items.capacity(); }
 
 		/**
+		* defragmentSort uses the comparison function @c comp to establish an ideal order for the
+		*	dense set in order to maximum cache locality for traversals. The dense set can become
+		*	fragmented over time due to removal operations. This can be an expensive operation, so
+		*	the sort operation is reentrant. Use the @c maxItems parameter to limit the number of
+		*	swaps that will occur before the function returns.
+		* @param[in]	comp	comparison function object, function pointer, or lambda
+		* @param[in]	maxItems	Maximum number of items to reorder in the defrag operation
+		*	before the function returns. Pass 0 (default) to run until completion.
+		* @tparam	comp	comparison function object which returns ?true if the first argument is
+		*	less than (i.e. is ordered before) the second. The signature of the comparison function
+		*	should be equivalent to the following:
+		*	@code bool cmp(const T& a, const T& b); @endcode
+		*	The signature does not need to have const &, but the function object must not modify
+		*	the objects passed to it.
+		* @returns the number of swaps that occurred
+		*/
+		template <typename Compare>
+		int	defragmentSort(Compare comp, size_t maxItems = 0);
+
+		/**
 		* these functions provide direct access to inner arrays, don't add or remove items, just
 		* use them for lookups and iterating over the items
 		*/

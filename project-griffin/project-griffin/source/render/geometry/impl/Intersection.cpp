@@ -319,7 +319,7 @@ bool beyondHorizon(const glm::dvec3& p, const glm::dvec3& camera, const glm::dve
 	auto vt = p - camera;
 	auto vc = center - camera;
 
-	float d = glm::dot(vt, vc);
+	double d = glm::dot(vt, vc);
 
 	return d > length2(vc) - offset;
 }
