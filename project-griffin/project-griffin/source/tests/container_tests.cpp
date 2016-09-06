@@ -47,11 +47,11 @@ void testBitwiseQuadtree()
 
 void testHandleMap()
 {
-	struct Test { int v1, v2, v3, v4; };
+	struct Test { int val, sort; };
 	const int N = 100000;
 	int total = 0;
 
-	// create a handle_map with itemId = 0 and a capacity of 100,000
+	// create a handle_map with itemTypeId of 0 and a capacity of 100,000
 	handle_map<Test> testMap(0, N);
 	std::vector<Id_T> testHandles;
 	std::vector<std::unique_ptr<Test>> testHeap;
@@ -63,44 +63,51 @@ void testHandleMap()
 	std::array<int, M> vals{};
 	std::array<Id_T, M> ids{};
 
-	for (int i = 0; i < M; ++i) { vals[i] = i + 1; }
+	for (int i = 0; i < M; ++i) {
+		vals[i] = i + 1;
+	}
 	std::random_shuffle(vals.begin(), vals.end());
-	for (int i = 0; i < M; ++i) { ids[i] = testMap.emplace(vals[i], 0, 0, 0); }
+	for (int i = 0; i < M; ++i) {
+		ids[i] = testMap.emplace(vals[i], vals[i]);
+	}
+
+	auto logItems = [&testMap, M]() {
+		std::string s;
+		s.reserve(M * 3);
+		for (auto& t : testMap.getItems()) {
+			s += std::to_string(t.val) + " ";
+		}
+		logger.test(s.c_str());
+	};
+
+	auto compareItems = [](const Test& a, const Test& b) { return a.sort > b.sort; };
 
 	logger.test("before defrag:");
-	for (auto& t : testMap.getItems()) {
-		logger.test("%d", t.v1);
-	}
+	logItems();
 
-	int swaps1 = testMap.defragment([](const Test& a, const Test& b) { return a.v1 > b.v1; }, M);
-	int swaps2 = testMap.defragment([](const Test& a, const Test& b) { return a.v1 > b.v1; }, M);
-	int swaps3 = testMap.defragment([](const Test& a, const Test& b) { return a.v1 > b.v1; }, M);
-	int swaps4 = testMap.defragment([](const Test& a, const Test& b) { return a.v1 > b.v1; }, M);
-	int swaps5 = testMap.defragment([](const Test& a, const Test& b) { return a.v1 > b.v1; });
-
-	logger.test("after defrag: swaps = %d, %d, %d, %d, %d", swaps1, swaps2, swaps3, swaps4, swaps5);
-	for (auto& t : testMap.getItems()) {
-		logger.test("%d", t.v1);
-	}
-
+	auto swaps = testMap.defragment(compareItems);
+	logger.test("after defrag: swaps = %llu", swaps);
+	logItems();
+	
 	logger.test("after defrag, by handle:");
 	for (int i = 0; i < M; ++i) {
-		logger.test("%d", testMap[ids[i]].v1);
+		logger.test("%d", testMap[ids[i]].val);
 	}
 
-	testMap.clear();
-
+	testMap.reset();
 
 	// fill up the capacity with zero-initialized objects
 	timer.start();
-	testHandles = testMap.emplaceItems(N, 1, 1, 1, 1);
+	for (int i = 0; i < N; ++i) {
+		testHandles.push_back(testMap.emplace(1, i));
+	}
 	timer.stop();
 	logger.test("handle_map: create %d items, time = %f ms\ncounts = %lld\n", N, timer.getMillisPassed(), timer.getCountsPassed());
 	
 	// create items on the heap
 	timer.start();
 	for (int i = 0; i < N; ++i) {
-		testHeap.emplace_back(new Test{ 1, 1, 1, 1 });
+		testHeap.emplace_back(new Test{ 1, i });
 	}
 	timer.stop();
 	logger.test("unique_ptr: create %d items, time = %f ms\ncounts = %lld\n", N, timer.getMillisPassed(), timer.getCountsPassed());
@@ -111,7 +118,7 @@ void testHandleMap()
 	timer.start();
 	for (int i = 0; i < N; ++i) {
 		auto& t = items[i];
-		total += t.v1 + t.v2 + t.v3 + t.v4;
+		total += t.val;
 	}
 	timer.stop();
 	logger.test("handle_map: iteration over dense set, total = %d, time = %f ms\ncounts = %lld\n\n", total, timer.getMillisPassed(), timer.getCountsPassed());
@@ -121,7 +128,7 @@ void testHandleMap()
 	timer.start();
 	for (int p = 0; p < N; ++p) {
 		auto& t = *testHeap[p];
-		total += t.v1 + t.v2 + t.v3 + t.v4;
+		total += t.val;
 	}
 	timer.stop();
 	logger.test("unique_ptr: iteration, total = %d, time = %f ms\ncounts = %lld\n\n", total, timer.getMillisPassed(), timer.getCountsPassed());
@@ -131,11 +138,21 @@ void testHandleMap()
 	timer.start();
 	for (int h = 0; h < N; ++h) {
 		auto& t = testMap[testHandles[h]];
-		total += t.v1 + t.v2 + t.v3 + t.v4;
+		total += t.val;
 	}
 	timer.stop();
 	logger.test("handle_map: iteration by handle, total = %d, time = %f ms\ncounts = %lld\n\n", total, timer.getMillisPassed(), timer.getCountsPassed());
 
+	// defrag
+	std::random_shuffle(testMap.begin(), testMap.end());
+	timer.start();
+	swaps = testMap.defragment(compareItems);
+	timer.stop();
+	logger.test("handle_map: defragment swaps = %llu, total = %d, time = %f ms\ncounts = %lld\n\n", swaps, total, timer.getMillisPassed(), timer.getCountsPassed());
+	timer.start();
+	swaps = testMap.defragment(compareItems);
+	timer.stop();
+	logger.test("handle_map: defragment swaps = %llu, total = %d, time = %f ms\ncounts = %lld\n\n", swaps, total, timer.getMillisPassed(), timer.getCountsPassed());
 
 	// remove all items, destroying the sparse set
 	timer.start();
@@ -148,4 +165,6 @@ void testHandleMap()
 	testHeap.clear();
 	timer.stop();
 	logger.test("unique_ptr: clear %d items, time = %f ms\ncounts = %lld\n\n", N, timer.getMillisPassed(), timer.getCountsPassed());
+
+	logger.test("test_map capacity = %d", testMap.capacity());
 }

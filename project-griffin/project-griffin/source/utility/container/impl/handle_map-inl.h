@@ -10,6 +10,7 @@
 #include "../handle_map.h"
 #include <cassert>
 #include <algorithm>
+#include <type_traits>
 
 namespace griffin {
 
@@ -26,6 +27,7 @@ namespace griffin {
 	Id_T handle_map<T>::insert(T&& i)
 	{
 		Id_T handle = { 0 };
+		m_fragmented = 1;
 
 		if (freeListEmpty()) {
 			Id_T innerId = {
@@ -76,6 +78,8 @@ namespace griffin {
 	IdSet_T handle_map<T>::emplaceItems(int n, Params... args)
 	{
 		IdSet_T handles(n);
+		assert(n > 0 && "emplaceItems called with n = 0");
+		m_fragmented = 1;
 
 		m_items.reserve(m_items.size() + n); // reserve the space we need (if not already there)
 		m_meta.reserve(m_meta.size() + n);
@@ -92,6 +96,7 @@ namespace griffin {
 		if (!isValid(handle)) {
 			return 0;
 		}
+		m_fragmented = 1;
 
 		Id_T innerId = m_sparseIds[handle.index];
 		uint32_t innerIndex = innerId.index;
@@ -150,6 +155,7 @@ namespace griffin {
 
 			m_freeListFront = 0;
 			m_freeListBack = size - 1;
+			m_fragmented = 0;
 
 			for (uint32_t i = 0; i < size; ++i) {
 				auto& id = m_sparseIds[i];
@@ -167,6 +173,7 @@ namespace griffin {
 	{
 		m_freeListFront = 0xFFFFFFFF;
 		m_freeListBack = 0xFFFFFFFF;
+		m_fragmented = 0;
 
 		m_items.clear();
 		m_meta.clear();
@@ -236,36 +243,38 @@ namespace griffin {
 
 	template <typename T>
 	template <typename Compare>
-	int	handle_map<T>::defragment(Compare comp, int maxSwaps)
+	size_t handle_map<T>::defragment(Compare comp, size_t maxSwaps)
 	{
-		int swaps = 0;
+		if (m_fragmented == 0) { return 0; }
+		size_t swaps = 0;
 		
-		for (int i = 1; i < m_items.size() && (maxSwaps == 0 || swaps < maxSwaps); ++i) {
+		int i = 1;
+		for (; i < m_items.size() && (maxSwaps == 0 || swaps < maxSwaps); ++i) {
 			T tmp = m_items[i];
 			Meta_T tmpMeta = m_meta[i];
 
 			int j = i - 1;
 			int j1 = j + 1;
 
-			/*if (std::is_trivially_copyable<T>::value) {
-				// j = i
-				// while j > 0 and A[j-1] > A[j] {
-				//   swap A[j] and A[j-1]
-				//   --j
-				// }
-
+			// trivially copyable implementation
+			if (!std::is_trivially_copyable<T>::value) {
 				while (j >= 0 && comp(m_items[j], tmp)) {
 					m_sparseIds[m_meta[j].denseToSparse].index = j1;
 					--j;
 					--j1;
 				}
-				if (j >= 0) {
-					memmove(&m_items[j1], &m_items[j], sizeof(T) * (i - j));
-					memmove(&m_meta[j1], &m_meta[j], sizeof(Meta_T) * (i - j));
+				if (j1 != i) {
+					memmove(&m_items[j1+1], &m_items[j1], sizeof(T) * (i - j1));
+					memmove(&m_meta[j1+1], &m_meta[j1], sizeof(Meta_T) * (i - j1));
 					++swaps;
+
+					m_items[j1] = tmp;
+					m_meta[j1] = tmpMeta;
+					m_sparseIds[m_meta[j1].denseToSparse].index = j1;
 				}
 			}
-			else {*/
+			// standard implementation
+			else {
 				while (j >= 0 && (maxSwaps == 0 || swaps < maxSwaps) &&
 					   comp(m_items[j], tmp))
 				{
@@ -276,13 +285,16 @@ namespace griffin {
 					--j1;
 					++swaps;
 				}
-			//}
-			
-			if (j1 != i) {
-				m_items[j1] = tmp;
-				m_meta[j1] = tmpMeta;
-				m_sparseIds[m_meta[j1].denseToSparse].index = j1;
+
+				if (j1 != i) {
+					m_items[j1] = tmp;
+					m_meta[j1] = tmpMeta;
+					m_sparseIds[m_meta[j1].denseToSparse].index = j1;
+				}
 			}
+		}
+		if (i == m_items.size()) {
+			m_fragmented = 0;
 		}
 
 		return swaps;

@@ -9,7 +9,6 @@
 
 #include <cstdint>
 #include <vector>
-#include <type_traits>
 
 namespace griffin {
 
@@ -183,10 +182,11 @@ namespace griffin {
 		*	@code bool cmp(const T& a, const T& b); @endcode
 		*	The signature does not need to have const &, but the function object must not modify
 		*	the objects passed to it.
-		* @returns the number of swaps that occurred
+		* @returns the number of swaps that occurred, keeping in mind that this value could
+		*	overflow on very large data sets
 		*/
 		template <typename Compare>
-		int	defragment(Compare comp, int maxSwaps = 0);
+		size_t	defragment(Compare comp, size_t maxSwaps = 0);
 
 
 		/**
@@ -238,7 +238,7 @@ namespace griffin {
 
 		uint16_t	m_itemTypeId;	//!< the Id_T::typeId to use for ids produced by this handle_map<T>
 		
-		uint8_t		m_fragmented = 0; //<! set to 0 upon defragment completion, set to 1 upon insert or erase
+		uint8_t		m_fragmented = 0; //<! set to 1 if modified by insert or erase since last complete defragment
 
 		IdSet_T		m_sparseIds;	//!< stores a set of Id_Ts, these are "inner" ids indexing into m_items
 		DenseSet_T	m_items;		//!< stores items of type T
