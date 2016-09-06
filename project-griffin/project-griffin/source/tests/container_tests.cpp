@@ -5,6 +5,8 @@
 #include <utility/container/bitwise_quadtree.h>
 #include <utility/container/handle_map.h>
 #include <application/Timer.h>
+#include <algorithm>
+#include <array>
 
 
 using namespace griffin;
@@ -56,9 +58,35 @@ void testHandleMap()
 	testHandles.reserve(N);
 	testHeap.reserve(N);
 
-	auto id = testMap.emplace(1, 2, 3, 4);
-	auto& t = testMap[id];
-	logger.test("%d %d %d %d\n\n", t.v1, t.v2, t.v3, t.v4);
+	// test defragment
+	const int M = 10;
+	std::array<int, M> vals{};
+	std::array<Id_T, M> ids{};
+
+	for (int i = 0; i < M; ++i) { vals[i] = i + 1; }
+	std::random_shuffle(vals.begin(), vals.end());
+	for (int i = 0; i < M; ++i) { ids[i] = testMap.emplace(vals[i], 0, 0, 0); }
+
+	logger.test("before defrag:");
+	for (auto& t : testMap.getItems()) {
+		logger.test("%d", t.v1);
+	}
+
+	int swaps1 = testMap.defragment([](const Test& a, const Test& b) { return a.v1 > b.v1; }, M);
+	int swaps2 = testMap.defragment([](const Test& a, const Test& b) { return a.v1 > b.v1; }, M);
+	int swaps3 = testMap.defragment([](const Test& a, const Test& b) { return a.v1 > b.v1; }, M);
+	int swaps4 = testMap.defragment([](const Test& a, const Test& b) { return a.v1 > b.v1; }, M);
+	int swaps5 = testMap.defragment([](const Test& a, const Test& b) { return a.v1 > b.v1; });
+
+	logger.test("after defrag: swaps = %d, %d, %d, %d, %d", swaps1, swaps2, swaps3, swaps4, swaps5);
+	for (auto& t : testMap.getItems()) {
+		logger.test("%d", t.v1);
+	}
+
+	logger.test("after defrag, by handle:");
+	for (int i = 0; i < M; ++i) {
+		logger.test("%d", testMap[ids[i]].v1);
+	}
 
 	testMap.clear();
 

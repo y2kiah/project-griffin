@@ -9,6 +9,7 @@
 
 #include <cstdint>
 #include <vector>
+#include <type_traits>
 
 namespace griffin {
 
@@ -168,24 +169,25 @@ namespace griffin {
 		size_t capacity() const _NOEXCEPT { return m_items.capacity(); }
 
 		/**
-		* defragmentSort uses the comparison function @c comp to establish an ideal order for the
-		*	dense set in order to maximum cache locality for traversals. The dense set can become
+		* defragment uses the comparison function @c comp to establish an ideal order for the dense
+		*	set in order to maximum cache locality for traversals. The dense set can become
 		*	fragmented over time due to removal operations. This can be an expensive operation, so
-		*	the sort operation is reentrant. Use the @c maxItems parameter to limit the number of
+		*	the sort operation is reentrant. Use the @c maxSwaps parameter to limit the number of
 		*	swaps that will occur before the function returns.
 		* @param[in]	comp	comparison function object, function pointer, or lambda
-		* @param[in]	maxItems	Maximum number of items to reorder in the defrag operation
+		* @param[in]	maxSwaps	maximum number of items to reorder in the insertion sort
 		*	before the function returns. Pass 0 (default) to run until completion.
-		* @tparam	comp	comparison function object which returns ?true if the first argument is
-		*	less than (i.e. is ordered before) the second. The signature of the comparison function
-		*	should be equivalent to the following:
+		* @tparam	Compare	comparison function object which returns ?true if the first argument is
+		*	greater than (i.e. is ordered after) the second. The signature of the comparison
+		*	function should be equivalent to the following:
 		*	@code bool cmp(const T& a, const T& b); @endcode
 		*	The signature does not need to have const &, but the function object must not modify
 		*	the objects passed to it.
 		* @returns the number of swaps that occurred
 		*/
 		template <typename Compare>
-		int	defragmentSort(Compare comp, size_t maxItems = 0);
+		int	defragment(Compare comp, int maxSwaps = 0);
+
 
 		/**
 		* these functions provide direct access to inner arrays, don't add or remove items, just
@@ -235,6 +237,8 @@ namespace griffin {
 		uint32_t	m_freeListBack  = 0xFFFFFFFF; //!< last index in the freelist
 
 		uint16_t	m_itemTypeId;	//!< the Id_T::typeId to use for ids produced by this handle_map<T>
+		
+		uint8_t		m_fragmented = 0; //<! set to 0 upon defragment completion, set to 1 upon insert or erase
 
 		IdSet_T		m_sparseIds;	//!< stores a set of Id_Ts, these are "inner" ids indexing into m_items
 		DenseSet_T	m_items;		//!< stores items of type T

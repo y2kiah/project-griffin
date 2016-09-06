@@ -21,7 +21,8 @@ namespace griffin {
 	/**
 	* std::vector serialization, trivially-copyable type, use one large memory write
 	*/
-	template <typename T, typename std::enable_if<std::is_trivially_copyable<T>::value>::type* = nullptr>
+	template <typename T,
+			  typename std::enable_if<std::is_trivially_copyable<T>::value>::type* = nullptr>
 	void serialize(std::ostream& out, const std::vector<T>& vec)
 	{
 		// write size
@@ -34,7 +35,8 @@ namespace griffin {
 	/**
 	* std::vector serialization, non-trivially-copyable type, iterate and serialize
 	*/
-	template <typename T, typename std::enable_if<!std::is_trivially_copyable<T>::value>::type* = nullptr>
+	template <typename T,
+			  typename std::enable_if<!std::is_trivially_copyable<T>::value>::type* = nullptr>
 	void serialize(std::ostream& out, const std::vector<T>& vec)
 	{
 		// write size
@@ -49,7 +51,8 @@ namespace griffin {
 	/**
 	* std::vector deserialization, trivially-copyable type, use one large memory read
 	*/
-	template <typename T, typename std::enable_if<std::is_trivially_copyable<T>::value>::type* = nullptr>
+	template <typename T,
+			  typename std::enable_if<std::is_trivially_copyable<T>::value>::type* = nullptr>
 	void deserialize(std::istream& in, std::vector<T>& vec)
 	{
 		std::vector<T>::size_type size = 0;
@@ -61,7 +64,8 @@ namespace griffin {
 	/**
 	* std::vector deserialization, non-trivially-copyable type, iterate and deserialize
 	*/
-	template <typename T, typename std::enable_if<!std::is_trivially_copyable<T>::value>::type* = nullptr>
+	template <typename T,
+			  typename std::enable_if<!std::is_trivially_copyable<T>::value>::type* = nullptr>
 	void deserialize(std::istream& in, std::vector<T>& vec)
 	{
 		std::vector<T>::size_type size = 0;
@@ -78,8 +82,8 @@ namespace griffin {
 	/**
 	* griffin::handle_map serialization
 	*/
-	template <typename T, class Meta_T>
-	void handle_map<T, Meta_T>::serialize(std::ostream& out, const handle_map<T, Meta_T>& map)
+	template <typename T>
+	void handle_map<T>::serialize(std::ostream& out, const handle_map<T>& map)
 	{
 		out << "handle_map";
 		out.write(reinterpret_cast<const char*>(&map.m_freeListFront), sizeof(map.m_freeListFront));
@@ -94,15 +98,15 @@ namespace griffin {
 		griffin::serialize(out, map.m_items);
 
 		// copy the meta set
-		static_assert(std::is_trivially_copyable<handle_map<T, Meta_T>::MetaSet_T::value_type>::value, "MetaSet_T is not trivially copyable");
+		static_assert(std::is_trivially_copyable<handle_map<T>::MetaSet_T::value_type>::value, "MetaSet_T is not trivially copyable");
 		griffin::serialize(out, map.m_meta);
 	}
 
 	/**
 	* griffin::handle_map deserialization
 	*/
-	template <typename T, class Meta_T>
-	void handle_map<T, Meta_T>::deserialize(std::istream& in, handle_map<T, Meta_T>& map)
+	template <typename T>
+	void handle_map<T>::deserialize(std::istream& in, handle_map<T>& map)
 	{
 		char tag[11] = {};
 		in.read(tag, 10);

@@ -11,7 +11,6 @@
 #include <cassert>
 #include <algorithm>
 
-
 namespace griffin {
 
 	// struct Id_T comparison functions
@@ -233,6 +232,62 @@ namespace griffin {
 
 		return innerId.index;
 	}
+
+
+	template <typename T>
+	template <typename Compare>
+	int	handle_map<T>::defragment(Compare comp, int maxSwaps)
+	{
+		int swaps = 0;
+		
+		for (int i = 1; i < m_items.size() && (maxSwaps == 0 || swaps < maxSwaps); ++i) {
+			T tmp = m_items[i];
+			Meta_T tmpMeta = m_meta[i];
+
+			int j = i - 1;
+			int j1 = j + 1;
+
+			/*if (std::is_trivially_copyable<T>::value) {
+				// j = i
+				// while j > 0 and A[j-1] > A[j] {
+				//   swap A[j] and A[j-1]
+				//   --j
+				// }
+
+				while (j >= 0 && comp(m_items[j], tmp)) {
+					m_sparseIds[m_meta[j].denseToSparse].index = j1;
+					--j;
+					--j1;
+				}
+				if (j >= 0) {
+					memmove(&m_items[j1], &m_items[j], sizeof(T) * (i - j));
+					memmove(&m_meta[j1], &m_meta[j], sizeof(Meta_T) * (i - j));
+					++swaps;
+				}
+			}
+			else {*/
+				while (j >= 0 && (maxSwaps == 0 || swaps < maxSwaps) &&
+					   comp(m_items[j], tmp))
+				{
+					m_items[j1] = std::move(m_items[j]);
+					m_meta[j1] = std::move(m_meta[j]);
+					m_sparseIds[m_meta[j1].denseToSparse].index = j1;
+					--j;
+					--j1;
+					++swaps;
+				}
+			//}
+			
+			if (j1 != i) {
+				m_items[j1] = tmp;
+				m_meta[j1] = tmpMeta;
+				m_sparseIds[m_meta[j1].denseToSparse].index = j1;
+			}
+		}
+
+		return swaps;
+	}
+
 }
 
 #endif
