@@ -7,6 +7,7 @@
 #include <application/Timer.h>
 #include <algorithm>
 #include <array>
+#include <unordered_map>
 
 
 using namespace griffin;
@@ -55,46 +56,11 @@ void testHandleMap()
 	handle_map<Test> testMap(0, N);
 	std::vector<Id_T> testHandles;
 	std::vector<std::unique_ptr<Test>> testHeap;
+	std::unordered_map<uint64_t, Test> testHashMap;
 	testHandles.reserve(N);
 	testHeap.reserve(N);
-
-	// test defragment
-	const int M = 10;
-	std::array<int, M> vals{};
-	std::array<Id_T, M> ids{};
-
-	for (int i = 0; i < M; ++i) {
-		vals[i] = i + 1;
-	}
-	std::random_shuffle(vals.begin(), vals.end());
-	for (int i = 0; i < M; ++i) {
-		ids[i] = testMap.emplace(vals[i], vals[i]);
-	}
-
-	auto logItems = [&testMap, M]() {
-		std::string s;
-		s.reserve(M * 3);
-		for (auto& t : testMap.getItems()) {
-			s += std::to_string(t.val) + " ";
-		}
-		logger.test(s.c_str());
-	};
-
+	testHashMap.reserve(N);
 	auto compareItems = [](const Test& a, const Test& b) { return a.sort > b.sort; };
-
-	logger.test("before defrag:");
-	logItems();
-
-	auto swaps = testMap.defragment(compareItems);
-	logger.test("after defrag: swaps = %llu", swaps);
-	logItems();
-	
-	logger.test("after defrag, by handle:");
-	for (int i = 0; i < M; ++i) {
-		logger.test("%d", testMap[ids[i]].val);
-	}
-
-	testMap.reset();
 
 	// fill up the capacity with zero-initialized objects
 	timer.start();
@@ -111,6 +77,14 @@ void testHandleMap()
 	}
 	timer.stop();
 	logger.test("unique_ptr: create %d items, time = %f ms\ncounts = %lld\n", N, timer.getMillisPassed(), timer.getCountsPassed());
+
+	// create items in hash map
+	timer.start();
+	for (int i = 0; i < N; ++i) {
+		testHashMap.emplace(testHandles[i].value, Test{ 1, i });
+	}
+	timer.stop();
+	logger.test("unordered_map: create %d items, time = %f ms\ncounts = %lld\n", N, timer.getMillisPassed(), timer.getCountsPassed());
 
 
 	auto& items = testMap.getItems();
@@ -133,6 +107,15 @@ void testHandleMap()
 	timer.stop();
 	logger.test("unique_ptr: iteration, total = %d, time = %f ms\ncounts = %lld\n\n", total, timer.getMillisPassed(), timer.getCountsPassed());
 
+	// hash map iterator
+	total = 0;
+	timer.start();
+	for (auto& test : testHashMap) {
+		total += test.second.val;
+	}
+	timer.stop();
+	logger.test("unordered_map: iteration by iterator, total = %d, time = %f ms\ncounts = %lld\n\n", total, timer.getMillisPassed(), timer.getCountsPassed());
+
 	// handle iteration
 	total = 0;
 	timer.start();
@@ -143,16 +126,24 @@ void testHandleMap()
 	timer.stop();
 	logger.test("handle_map: iteration by handle, total = %d, time = %f ms\ncounts = %lld\n\n", total, timer.getMillisPassed(), timer.getCountsPassed());
 
+	// hash map iteration by lookup
+	total = 0;
+	timer.start();
+	for (int h = 0; h < N; ++h) {
+		auto& t = testHashMap[testHandles[h].value];
+		total += t.val;
+	}
+	timer.stop();
+	logger.test("unordered_map: iteration by lookup, total = %d, time = %f ms\ncounts = %lld\n\n", total, timer.getMillisPassed(), timer.getCountsPassed());
+
+
 	// defrag
 	std::random_shuffle(testMap.begin(), testMap.end());
 	timer.start();
-	swaps = testMap.defragment(compareItems);
+	size_t swaps = testMap.defragment(compareItems);
 	timer.stop();
 	logger.test("handle_map: defragment swaps = %llu, total = %d, time = %f ms\ncounts = %lld\n\n", swaps, total, timer.getMillisPassed(), timer.getCountsPassed());
-	timer.start();
-	swaps = testMap.defragment(compareItems);
-	timer.stop();
-	logger.test("handle_map: defragment swaps = %llu, total = %d, time = %f ms\ncounts = %lld\n\n", swaps, total, timer.getMillisPassed(), timer.getCountsPassed());
+
 
 	// remove all items, destroying the sparse set
 	timer.start();
@@ -165,6 +156,13 @@ void testHandleMap()
 	testHeap.clear();
 	timer.stop();
 	logger.test("unique_ptr: clear %d items, time = %f ms\ncounts = %lld\n\n", N, timer.getMillisPassed(), timer.getCountsPassed());
+
+	// remove all items from the hash map
+	timer.start();
+	testHashMap.clear();
+	timer.stop();
+	logger.test("unordered_map: clear %d items, time = %f ms\ncounts = %lld\n\n", N, timer.getMillisPassed(), timer.getCountsPassed());
+
 
 	logger.test("test_map capacity = %d", testMap.capacity());
 }

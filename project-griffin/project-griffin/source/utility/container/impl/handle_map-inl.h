@@ -257,7 +257,7 @@ namespace griffin {
 			int j1 = j + 1;
 
 			// trivially copyable implementation
-			if (!std::is_trivially_copyable<T>::value) {
+			if (std::is_trivially_copyable<T>::value) {
 				while (j >= 0 && comp(m_items[j], tmp)) {
 					m_sparseIds[m_meta[j].denseToSparse].index = j1;
 					--j;
