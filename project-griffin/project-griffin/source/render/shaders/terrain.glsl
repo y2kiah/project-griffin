@@ -3,7 +3,7 @@
 
 #ifdef _VERTEX_
 	
-	layout(location = VertexLayout_Position) in vec3 vertexPosition_modelspace;
+	layout(location = VertexLayout_Position) in vec2 vertexPosition_modelspace;
 
 	layout(binding = SamplerBinding_Diffuse1) uniform sampler2D heightMap;
 
@@ -11,7 +11,7 @@
 
 	void main() {
 		vPosition.xy = vertexPosition_modelspace.xy * 64 * 1000; // 100 = horizontal scalar
-		vPosition.z = texture(heightMap, vec2(vertexPosition_modelspace.x, vertexPosition_modelspace.y)).r * 10000.0; // 1000.0 = height scalar
+		vPosition.z = texture(heightMap, vertexPosition_modelspace.xy).r * 10000.0; // 1000.0 = height scalar
 
 	}
 

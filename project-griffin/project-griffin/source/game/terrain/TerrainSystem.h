@@ -28,9 +28,6 @@ namespace griffin {
 			
 			static const int terrainX = 64;
 			static const int terrainY = 64;
-			
-			float tempHeight[terrainX * terrainY * 3] = {};
-			uint16_t tempIndices[(terrainX - 3)*(terrainY - 3) * 16] = {};
 
 			ResourcePtr terrainProgram = nullptr;		//<! terrain shader program
 			ResourcePtr tempNoiseTex = nullptr;
@@ -44,6 +41,16 @@ namespace griffin {
 			unsigned int terrainProgramId = 0;
 			//int basisLoc = 0;
 			//int basisTransposeLoc = 0;
+
+			struct TerrainChunk {
+				glm::dvec3 geocentricTopLeftCoord;
+				double     length;
+				uint32_t   zOrder;
+				uint8_t    level;
+
+				
+			};
+
 
 			// Public Functions
 

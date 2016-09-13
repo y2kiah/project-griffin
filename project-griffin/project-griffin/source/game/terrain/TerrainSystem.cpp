@@ -68,7 +68,8 @@ void griffin::game::TerrainSystem::draw(Engine &engine, const glm::dmat4& viewMa
 {
 	using namespace glm;
 
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	
 	auto& renderSystem = *engine.renderSystem;
 
 	auto& program = terrainProgram.get()->getResource<render::ShaderProgram_GL>();
@@ -118,7 +119,8 @@ void griffin::game::TerrainSystem::draw(Engine &engine, const glm::dmat4& viewMa
 	glDrawElements(GL_PATCHES, (terrainX - 3) * (terrainY - 3) * 16, GL_UNSIGNED_SHORT, 0);
 
 	ASSERT_GL_ERROR;
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 
@@ -137,11 +139,12 @@ void griffin::game::TerrainSystem::init(Game& game, const Engine& engine, const 
 	//basisLoc = glGetUniformLocation(terrainProgramId, "basis");
 	//basisTransposeLoc = glGetUniformLocation(terrainProgramId, "basisTranspose");
 
-	// temp
+	float vertices[terrainX * terrainY * 2] = {};
+	uint16_t indices[(terrainX - 3)*(terrainY - 3) * 16] = {};
+
 	for (int v = 0; v < (terrainX * terrainY); ++v) {
-		tempHeight[v*3]   = static_cast<float>(v % terrainX) / terrainX;
-		tempHeight[v*3+1] = static_cast<float>(v / terrainX) / terrainY;
-		tempHeight[v*3+2] = (static_cast<float>(rand()) / RAND_MAX);
+		vertices[v*2]   = static_cast<float>(v % terrainX) / terrainX;
+		vertices[v * 2 + 1] = static_cast<float>(v / terrainX) / terrainY;
 	}
 	
 	int i = 0;
@@ -151,7 +154,7 @@ void griffin::game::TerrainSystem::init(Game& game, const Engine& engine, const 
 				for (int xPatch = 0; xPatch < 4; ++xPatch) {
 					int y = yStart + yPatch;
 					int x = xStart + xPatch;
-					tempIndices[i] = y * terrainX + x;
+					indices[i] = y * terrainX + x;
 					++i;
 				}
 			}
@@ -162,11 +165,11 @@ void griffin::game::TerrainSystem::init(Game& game, const Engine& engine, const 
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 	
-	vertexBuffer.loadFromMemory(reinterpret_cast<const unsigned char*>(tempHeight), sizeof(tempHeight));
-	indexBuffer.loadFromMemory(reinterpret_cast<const unsigned char*>(tempIndices), sizeof(tempIndices), sizeof(uint16_t));
+	vertexBuffer.loadFromMemory(reinterpret_cast<const unsigned char*>(vertices), sizeof(vertices));
+	indexBuffer.loadFromMemory(reinterpret_cast<const unsigned char*>(indices), sizeof(indices), sizeof(uint16_t));
 
 	glEnableVertexAttribArray(VertexLayout_Position);
-	glVertexAttribPointer(VertexLayout_Position, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(VertexLayout_Position, 2, GL_FLOAT, GL_FALSE, 0, 0);
 	
 	glBindVertexArray(0);
 
@@ -192,3 +195,17 @@ void griffin::game::TerrainSystem::deinit()
 		glDeleteVertexArrays(1, &vao);
 	}
 }
+
+
+/* Notes
+
+Need to have:
+- center of planet (0,0,0)
+- baseline radius of planet
+- geocentric vector to camera
+- distance from center to camera
+- avg. distance from center to patch 
+- six quadtrees
+- 
+
+*/
