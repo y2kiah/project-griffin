@@ -1,6 +1,9 @@
 #include "source/render/shaders/layout.glsli"
 #include "source/render/shaders/ubo.glsli"
 
+//uniform vec3 patchPosition;
+//uniform vec3 patchCubeNormal;
+
 #ifdef _VERTEX_
 	
 	layout(location = VertexLayout_Position) in vec2 vertexPosition_modelspace;
@@ -10,8 +13,9 @@
 	out vec3 vPosition;
 
 	void main() {
-		vPosition.xy = vertexPosition_modelspace.xy * 64 * 1000; // 100 = horizontal scalar
-		vPosition.z = texture(heightMap, vertexPosition_modelspace.xy).r * 10000.0; // 1000.0 = height scalar
+		vPosition.xy = vertexPosition_modelspace.xy * 64 * 1000; // 1000 = horizontal scalar
+		vPosition.z = 0.0;
+		//vPosition.z = texture(heightMap, vertexPosition_modelspace.xy).r * 10000.0; // 1000.0 = height scalar
 
 	}
 

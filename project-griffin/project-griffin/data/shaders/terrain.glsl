@@ -39,6 +39,9 @@ layout(std140) uniform ObjectUniforms {
 };
 
 
+uniform vec3 patchTopLeftCoord;
+uniform vec3 patchCubeNormal;
+
 #ifdef _VERTEX_
 	
 	layout(location = VertexLayout_Position) in vec2 vertexPosition_modelspace;
@@ -49,7 +52,8 @@ layout(std140) uniform ObjectUniforms {
 
 	void main() {
 		vPosition.xy = vertexPosition_modelspace.xy * 64 * 1000; // 100 = horizontal scalar
-		vPosition.z = texture(heightMap, vertexPosition_modelspace.xy).r * 10000.0; // 1000.0 = height scalar
+		vPosition.z = 0.0;
+		//vPosition.z = texture(heightMap, vertexPosition_modelspace.xy).r * 10000.0; // 1000.0 = height scalar
 
 	}
 

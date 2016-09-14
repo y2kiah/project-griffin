@@ -75,48 +75,54 @@ void griffin::game::TerrainSystem::draw(Engine &engine, const glm::dmat4& viewMa
 	auto& program = terrainProgram.get()->getResource<render::ShaderProgram_GL>();
 	program.useProgram();
 
-	// bind the patch heightmap texture
-	auto& heightTex = tempNoiseTex->getResource<render::Texture2D_GL>();
-	heightTex.bind(render::SamplerBinding_Diffuse1);
+	for (int c = 0; c < 1; ++c) { // for each chunk
+		//glm::vec3 chunkTopLeftPosCameraSpace = chunks[c].cubeFaceScale;
+		//glUniform3fv(patchTopLeftCoordLoc, 1, &chunkTopLeftPosCameraSpace[0]);
 
-	// bind the rock and grass textures
-	auto& rockTex = tempRockTex->getResource<render::Texture2D_GL>();
-	rockTex.bind(render::SamplerBinding_Diffuse2);
-	auto& grassTex = tempGrassTex->getResource<render::Texture2D_GL>();
-	grassTex.bind(render::SamplerBinding_Diffuse3);
+		// bind the patch heightmap texture
+		auto& heightTex = tempNoiseTex->getResource<render::Texture2D_GL>();
+		heightTex.bind(render::SamplerBinding_Diffuse1);
 
-	// set the object UBO values
-	render::ObjectUniformsUBO objectUniformsUBO{};
-	glBindBuffer(GL_UNIFORM_BUFFER, renderSystem.getUBOHandle(render::ObjectUniforms));
-	
-	dmat4 modelToWorld;
-	dmat4 modelView_World(viewMat * modelToWorld);
+		// bind the rock and grass textures
+		auto& rockTex = tempRockTex->getResource<render::Texture2D_GL>();
+		rockTex.bind(render::SamplerBinding_Diffuse2);
+		auto& grassTex = tempGrassTex->getResource<render::Texture2D_GL>();
+		grassTex.bind(render::SamplerBinding_Diffuse3);
 
-	dvec4 nodeTranslationWorld(modelToWorld[0][3], modelToWorld[1][3], modelToWorld[2][3], 1.0);
-	vec3 nodeTranslation_Camera(nodeTranslationWorld * modelView_World);
+		// set the object UBO values
+		render::ObjectUniformsUBO objectUniformsUBO{};
+		glBindBuffer(GL_UNIFORM_BUFFER, renderSystem.getUBOHandle(render::ObjectUniforms));
 
-	mat4 modelView_Camera(modelView_World);
-	modelView_Camera[0][3] = nodeTranslation_Camera.x;
-	modelView_Camera[1][3] = nodeTranslation_Camera.y;
-	modelView_Camera[2][3] = nodeTranslation_Camera.z;
+		dmat4 modelToWorld;
+		dmat4 modelView_World(viewMat * modelToWorld);
 
-	mat4 mvp(projMat * modelView_Camera);
-	mat4 normalMat(transpose(inverse(mat3(modelView_Camera))));
+		dvec4 nodeTranslationWorld(modelToWorld[0][3], modelToWorld[1][3], modelToWorld[2][3], 1.0);
+		vec3 nodeTranslation_Camera(nodeTranslationWorld * modelView_World);
 
-	objectUniformsUBO.modelToWorld = mat4(modelToWorld);
-	objectUniformsUBO.modelView = modelView_Camera;
-	objectUniformsUBO.modelViewProjection = mvp;
-	objectUniformsUBO.normalMatrix = normalMat;
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(render::ObjectUniformsUBO), &objectUniformsUBO);
+		mat4 modelView_Camera(modelView_World);
+		modelView_Camera[0][3] = nodeTranslation_Camera.x;
+		modelView_Camera[1][3] = nodeTranslation_Camera.y;
+		modelView_Camera[2][3] = nodeTranslation_Camera.z;
 
-	// set basis matrix uniforms
-	//glUniformMatrix4fv(basisLoc, 1, GL_FALSE, &bicubicBasis[0][0]);
-	//glUniformMatrix4fv(basisTransposeLoc, 1, GL_FALSE, &bicubicBasisTranspose[0][0]);
+		mat4 mvp(projMat * modelView_Camera);
+		mat4 normalMat(transpose(inverse(mat3(modelView_Camera))));
 
-	// draw the patch
-	glBindVertexArray(vao);
-	glPatchParameteri(GL_PATCH_VERTICES, 16);
-	glDrawElements(GL_PATCHES, (terrainX - 3) * (terrainY - 3) * 16, GL_UNSIGNED_SHORT, 0);
+		objectUniformsUBO.modelToWorld = mat4(modelToWorld);
+		objectUniformsUBO.modelView = modelView_Camera;
+		objectUniformsUBO.modelViewProjection = mvp;
+		objectUniformsUBO.normalMatrix = normalMat;
+		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(render::ObjectUniformsUBO), &objectUniformsUBO);
+
+		// set basis matrix uniforms
+		//glUniformMatrix4fv(basisLoc, 1, GL_FALSE, &bicubicBasis[0][0]);
+		//glUniformMatrix4fv(basisTransposeLoc, 1, GL_FALSE, &bicubicBasisTranspose[0][0]);
+
+		// draw the patch
+		glBindVertexArray(vao);
+		glPatchParameteri(GL_PATCH_VERTICES, 16);
+		glDrawElements(GL_PATCHES, (terrainX - 3) * (terrainY - 3) * 16, GL_UNSIGNED_SHORT, 0);
+
+	}
 
 	ASSERT_GL_ERROR;
 	
@@ -138,6 +144,8 @@ void griffin::game::TerrainSystem::init(Game& game, const Engine& engine, const 
 
 	//basisLoc = glGetUniformLocation(terrainProgramId, "basis");
 	//basisTransposeLoc = glGetUniformLocation(terrainProgramId, "basisTranspose");
+//	patchTopLeftCoordLoc = glGetUniformLocation(terrainProgramId, "patchTopLeftCoord");
+//	patchCubeNormalLoc = glGetUniformLocation(terrainProgramId, "patchCubeNormal");
 
 	float vertices[terrainX * terrainY * 2] = {};
 	uint16_t indices[(terrainX - 3)*(terrainY - 3) * 16] = {};
@@ -184,6 +192,18 @@ void griffin::game::TerrainSystem::init(Game& game, const Engine& engine, const 
 	tempGrassTex = engine.resourceLoader->getResource(tmpGrass).get();
 	
 	engine.resourceLoader->executeCallbacks();
+
+	// terrain chunks
+
+	const double radius = 5000.0;
+	chunks[0] = { {  1.0,  1.0,  1.0 }, {  0.0,  0.0,  1.0 }, radius*2, 0, 0, tempNoiseTex }; // top
+	chunks[1] = { { -1.0, -1.0, -1.0 }, {  0.0,  0.0, -1.0 }, radius*2, 0, 0, tempNoiseTex }; // bottom
+
+	chunks[2] = { { -radius, -radius,  radius }, {  0.0, -1.0,  0.0 }, radius*2, 0, 0, tempNoiseTex }; // front
+	chunks[3] = { { -radius,  radius, -radius }, {  0.0,  1.0,  0.0 }, radius*2, 0, 0, tempNoiseTex }; // back
+
+	chunks[4] = { { -radius,  radius,  radius }, { -1.0,  0.0,  0.0 }, radius*2, 0, 0, tempNoiseTex }; // left
+	chunks[5] = { {  radius, -radius,  radius }, {  1.0,  0.0,  0.0 }, radius*2, 0, 0, tempNoiseTex }; // right
 
 	ASSERT_GL_ERROR;
 }

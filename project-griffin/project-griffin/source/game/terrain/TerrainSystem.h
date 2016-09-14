@@ -10,6 +10,7 @@
 #include "render/IndexBuffer_GL.h"
 
 #include <glm/mat4x4.hpp> // TEMP
+#include <glm/vec3.hpp>
 
 namespace griffin {
 	using resource::ResourcePtr;
@@ -26,8 +27,8 @@ namespace griffin {
 		struct TerrainSystem {
 			// Variables
 			
-			static const int terrainX = 64;
-			static const int terrainY = 64;
+			static const int terrainX = 32;
+			static const int terrainY = 32;
 
 			ResourcePtr terrainProgram = nullptr;		//<! terrain shader program
 			ResourcePtr tempNoiseTex = nullptr;
@@ -41,15 +42,20 @@ namespace griffin {
 			unsigned int terrainProgramId = 0;
 			//int basisLoc = 0;
 			//int basisTransposeLoc = 0;
+//			int patchTopLeftCoordLoc = 0;
+//			int patchCubeNormalLoc = 0;
 
 			struct TerrainChunk {
-				glm::dvec3 geocentricTopLeftCoord;
-				double     length;
-				uint32_t   zOrder;
-				uint8_t    level;
+				glm::dvec3  cubeFaceScale;
+				glm::dvec3  geocentricCenterCoord;
+				double      length;
+				uint32_t    zOrder;
+				uint8_t     level;
 
-				
+				ResourcePtr heightNoise;
 			};
+
+			TerrainChunk chunks[6];
 
 
 			// Public Functions
