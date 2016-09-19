@@ -27,8 +27,7 @@ namespace griffin {
 		struct TerrainSystem {
 			// Variables
 			
-			static const int terrainX = 32;
-			static const int terrainY = 32;
+			static const int patchSize = 32;
 
 			ResourcePtr terrainProgram = nullptr;		//<! terrain shader program
 			ResourcePtr tempNoiseTex = nullptr;
@@ -44,6 +43,8 @@ namespace griffin {
 			//int basisTransposeLoc = 0;
 //			int patchTopLeftCoordLoc = 0;
 //			int patchCubeNormalLoc = 0;
+			int patchLengthLoc = 0;
+			int patchToModelLoc = 0;
 
 			struct TerrainChunk {
 				glm::dvec3  cubeFaceScale;

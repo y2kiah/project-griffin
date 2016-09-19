@@ -3,20 +3,24 @@
 
 //uniform vec3 patchPosition;
 //uniform vec3 patchCubeNormal;
+uniform float patchLength;
+uniform mat4 patchToModel;
 
 #ifdef _VERTEX_
 	
-	layout(location = VertexLayout_Position) in vec2 vertexPosition_modelspace;
+	layout(location = VertexLayout_Position) in vec2 vertexPosition_patchspace;
 
 	layout(binding = SamplerBinding_Diffuse1) uniform sampler2D heightMap;
 
 	out vec3 vPosition;
+	out vec3 tempColor;
 
 	void main() {
-		vPosition.xy = vertexPosition_modelspace.xy * 64 * 1000; // 1000 = horizontal scalar
-		vPosition.z = 0.0;
-		//vPosition.z = texture(heightMap, vertexPosition_modelspace.xy).r * 10000.0; // 1000.0 = height scalar
+		vPosition = vec3(vertexPosition_patchspace.xy * patchLength,
+						 texture(heightMap, vertexPosition_patchspace.xy).r * 500000.0); // height scalar
 
+		tempColor.rg = 1.0 - vertexPosition_patchspace.xy;
+		tempColor.b = 0.0;
 	}
 
 #endif
@@ -46,6 +50,9 @@
 	const mat4 bicubicTangentBasisTranspose = transpose(bicubicTangentBasis);
 	
 	in vec3 vPosition[];
+	
+	in vec3 tempColor[];
+	out vec3 tcTempColor[];
 
 	// coefficient matrices should be "patch out" variables, but crashes AMD driver (at least on my 6900)
 	// to hack around the issue we use the first three elements of a normal out variable array
@@ -55,7 +62,7 @@
 
 	void main()
 	{
-		//tcPosition[gl_InvocationID] = vPosition[gl_InvocationID];
+		tcTempColor[gl_InvocationID] = tempColor[gl_InvocationID];// temp
 
 		switch (gl_InvocationID) {
 			case 0: {
@@ -139,18 +146,20 @@
 
 	//patch in mat4 cx, cy, cz;
 	in mat4 cMat[];
-	//in vec3 tcPosition[];
 
 	//out vec4 tePatchDistance;
-	out vec4 positionWorldspace;
+	out vec4 positionModelspace;
 	out vec4 positionViewspace;
 
-	out vec3 normalWorldspace;
+	out vec3 normalModelspace;
 	out vec3 normalViewspace;
 
 	out float linearDepth;
 	
 	out float slope;
+
+	in vec3 tcTempColor[];
+	out vec3 teTempColor;
 
 	void main()
 	{
@@ -168,10 +177,12 @@
 		float y = dot(CVy, U);
 		float z = dot(CVz, U);
 		
-		positionWorldspace = vec4(x, y, z, 1.0);
+		positionModelspace = patchToModel * vec4(x, y, 5700000.0, 1.0);
+		positionModelspace = vec4(normalize(positionModelspace.xyz) * (5700000.0 + z), 1.0);
+		//positionViewspace = vec4(x, y, z, 1.0);
 		
 		// offset surface by noise texture
-		//positionWorldspace.z += texture(heightMap, vec2(x / 64.0 / 1000.0 * 8, y / 64.0 / 1000.0 * 8)).r * 1000.0f;
+		//positionModelspace.z += texture(heightMap, vec2(x / 64.0 / 1000.0 * 8, y / 64.0 / 1000.0 * 8)).r * 1000.0f;
 
 		// derivatives with respect to u and v
 		// TODO: does not account for noise displacement of z
@@ -183,7 +194,7 @@
 		float nxV = dot(cMat[0] * dV, U);
 		float nyV = dot(cMat[1] * dV, U);
 		float nzV = dot(cMat[2] * dV, U);
-		normalWorldspace = normalize(cross(vec3(nxU, nyU, nzU), vec3(nxV, nyV, nzV)));
+		normalModelspace = normalize(cross(vec3(nxU, nyU, nzU), vec3(nxV, nyV, nzV)));
 
 		//tePatchDistance = vec4(u, v, 1.0-u, 1.0-v);
 		
@@ -192,12 +203,12 @@
 		float v = gl_TessCoord.y;
 		vec3 x = mix(tcPosition[0], tcPosition[3], u);
 		vec3 y = mix(tcPosition[12], tcPosition[15], u);
-		vec4 positionWorldspace = vec4(mix(x, y, v), 1.0);*/
+		vec4 positionModelspace = vec4(mix(x, y, v), 1.0);*/
 		/////
 
 		// Get the position and normal in viewspace
-		positionViewspace = modelView * positionWorldspace;
-		normalViewspace = normalize(vec3(normalMatrix * vec4(normalWorldspace, 0.0)));
+		positionViewspace = modelView * positionModelspace;
+		normalViewspace = normalize(vec3(normalMatrix * vec4(normalModelspace, 0.0)));
 
 		// Get dot product between surface normal and geocentric normal for slope
 		vec4 geocentricNormal = vec4(0,0,1.0,0); // simplified for now as straight up z-axis, eventually needs to be vector to center of planet
@@ -207,7 +218,10 @@
 		// linear depth for z buffer
 		linearDepth = (-positionViewspace.z - frustumNear) * inverseFrustumDistance; // map near..far linearly to 0..1
 
-		gl_Position = modelViewProjection * positionWorldspace;
+		teTempColor = tcTempColor[0]; // temp
+
+		//gl_Position = modelViewProjection * positionModelspace;
+		gl_Position = projection * positionViewspace;
 	}
 
 #endif
@@ -244,15 +258,17 @@
 
 	// Input Variables
 
-	in vec4 positionWorldspace;
+	in vec4 positionModelspace;
 	in vec4 positionViewspace;
 
-	in vec3 normalWorldspace;
+	in vec3 normalModelspace;
 	in vec3 normalViewspace;
 	
 	in float linearDepth;
 	
 	in float slope;
+
+	in vec3 teTempColor;
 
 	//in vec4 color;
 	//in vec2 uv;
@@ -315,14 +331,14 @@
 		material.metallic = 0.0;
 		/////
 
-		//vec4 d1 = texture(diffuse1, positionWorldspace.xy / 64.0 / 1000.0 * 8.0);
-		//vec4 d2 = texture(diffuse2, positionWorldspace.xy / 64.0 / 1000.0 * 8.0);
+		//vec4 d1 = texture(diffuse1, positionModelspace.xy / 64.0 / 1000.0 * 8.0);
+		//vec4 d2 = texture(diffuse2, positionModelspace.xy / 64.0 / 1000.0 * 8.0);
 		//vec4 surfaceColor = mix(d2, d1, smoothstep(0.2, 0.4, slope));
 
 		// tri-planar mapping
-		vec3 uvw = positionWorldspace.xyz / 64.0 / 1000.0 * 8.0;
+		vec3 uvw = positionModelspace.xyz / 64.0 / 1000.0 * 8.0;
 
-		vec3 blending = abs(normalWorldspace);
+		vec3 blending = abs(normalModelspace);
 		blending = normalize(max(blending, 0.0000001)); // Force weights to sum to 1.0
 		float b = 1.0 / (blending.x + blending.y + blending.z);
 		blending *= vec3(b);
@@ -334,10 +350,10 @@
 		vec4 surfaceColor = xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;
 
 		vec3 lightIntensity = blinnPhongDirectionalLight(positionViewspace, normalViewspace, light.directionViewspace, surfaceColor.rgb);
-		//vec3 lightIntensity = blinnPhongDirectionalLight(positionWorldspace, normalWorldspace, lightDir.xyz, vec3(1.0)/*surfaceColor.rgb*/);
+		//vec3 lightIntensity = blinnPhongDirectionalLight(positionModelspace, normalModelspace, lightDir.xyz, vec3(1.0)/*surfaceColor.rgb*/);
 
 		// write to g-buffer
-		albedoDisplacement = vec4(lightIntensity, 1.0);
+		albedoDisplacement = vec4(lightIntensity, 1.0) * vec4(teTempColor, 1.0);
 		eyeSpacePosition = vec4(positionViewspace.xyz, 0.0);
 		normalReflectance = vec4(normalViewspace, 0.0);
 		gl_FragDepth = linearDepth;

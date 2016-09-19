@@ -170,6 +170,8 @@ int main(int argc, char *argv[])
 	// gl context made current on the OS/Input thread for destruction
 	SDL_GL_MakeCurrent(app.getPrimaryWindow().window, app.getPrimaryWindow().glContext);
 
+	assert(gamePtr.use_count() == 1 && "game has reference count remaining");
+	assert(enginePtr.use_count() == 1 && "engine has reference count remaining");
 	gamePtr.reset();
 	enginePtr.reset(); // must delete the engine on the GL thread
 

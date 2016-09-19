@@ -10,38 +10,41 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec4.hpp>
 #include <glm/matrix.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <utility/debug.h>
+
+using namespace glm;
 
 // Local Variables
 
-glm::mat4 bezierBasis(glm::vec4( 1.0f,-3.0f, 3.0f,-1.0f),
-					  glm::vec4( 0.0f, 3.0f,-6.0f, 3.0f),
-					  glm::vec4( 0.0f, 0.0f, 3.0f,-3.0f),
-					  glm::vec4( 0.0f, 0.0f, 0.0f, 1.0f));
+mat4 bezierBasis(vec4( 1.0f,-3.0f, 3.0f,-1.0f),
+				 vec4( 0.0f, 3.0f,-6.0f, 3.0f),
+				 vec4( 0.0f, 0.0f, 3.0f,-3.0f),
+				 vec4( 0.0f, 0.0f, 0.0f, 1.0f));
 
-glm::mat4 bezierBasisTranspose(glm::transpose(bezierBasis));
+mat4 bezierBasisTranspose(transpose(bezierBasis));
 
 // x(t)  = (h0)(1/6)(1-3t+3t^2-t^3) + (h1)(1/6)(4-6t^2+3t^3) + (h2)(1/6)(1+3t+3t^2-3t^3) + (h3)(1/6)(t^3)
-glm::mat4 bicubicBasis(glm::vec4( 1.0f,-3.0f, 3.0f,-1.0f) / 6.0f,
-					   glm::vec4( 4.0f, 0.0f,-6.0f, 3.0f) / 6.0f,
-					   glm::vec4( 1.0f, 3.0f, 3.0f,-3.0f) / 6.0f,
-					   glm::vec4( 0.0f, 0.0f, 0.0f, 1.0f) / 6.0f);
+mat4 bicubicBasis(vec4( 1.0f,-3.0f, 3.0f,-1.0f) / 6.0f,
+				  vec4( 4.0f, 0.0f,-6.0f, 3.0f) / 6.0f,
+				  vec4( 1.0f, 3.0f, 3.0f,-3.0f) / 6.0f,
+				  vec4( 0.0f, 0.0f, 0.0f, 1.0f) / 6.0f);
 
-glm::mat4 bicubicBasisTranspose(glm::transpose(bicubicBasis));
+mat4 bicubicBasisTranspose(transpose(bicubicBasis));
 
-glm::mat4 bicubicTangentBasis(glm::vec4(-3.0f,  6.0f,-3.0f, 0.0f) / 6.0f,
-							  glm::vec4( 0.0f,-12.0f, 9.0f, 0.0f) / 6.0f,
-							  glm::vec4( 3.0f,  6.0f,-9.0f, 0.0f) / 6.0f,
-							  glm::vec4( 0.0f,  0.0f, 3.0f, 0.0f) / 6.0f);
+mat4 bicubicTangentBasis(vec4(-3.0f,  6.0f,-3.0f, 0.0f) / 6.0f,
+						 vec4( 0.0f,-12.0f, 9.0f, 0.0f) / 6.0f,
+						 vec4( 3.0f,  6.0f,-9.0f, 0.0f) / 6.0f,
+						 vec4( 0.0f,  0.0f, 3.0f, 0.0f) / 6.0f);
 
-glm::mat4 bicubicTangentBasisTranspose(glm::transpose(bicubicTangentBasis));
+mat4 bicubicTangentBasisTranspose(transpose(bicubicTangentBasis));
 
-glm::mat4 catmullRomBasis(glm::vec4( 0.0f,-0.5f, 1.0f,-0.5f),
-						  glm::vec4( 1.0f, 0.0f,-2.5f, 1.5f),
-						  glm::vec4( 0.0f, 0.5f, 2.0f,-1.5f),
-						  glm::vec4( 0.0f, 0.0f,-0.5f, 0.5f));
+mat4 catmullRomBasis(vec4( 0.0f,-0.5f, 1.0f,-0.5f),
+					 vec4( 1.0f, 0.0f,-2.5f, 1.5f),
+					 vec4( 0.0f, 0.5f, 2.0f,-1.5f),
+					 vec4( 0.0f, 0.0f,-0.5f, 0.5f));
 
-glm::mat4 catmullRomBasisTranspose(glm::transpose(catmullRomBasis));
+mat4 catmullRomBasisTranspose(transpose(catmullRomBasis));
 
 // class TerrainSystem
 
@@ -64,20 +67,67 @@ void griffin::game::TerrainSystem::render(Id_T entityId, scene::Scene& scene, ui
 }
 
 
-void griffin::game::TerrainSystem::draw(Engine &engine, const glm::dmat4& viewMat, const glm::mat4& projMat/*All TEMP*/)
+void griffin::game::TerrainSystem::draw(Engine &engine, const dmat4& viewMat, const mat4& projMat/*All TEMP*/)
 {
-	using namespace glm;
-
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	
 	auto& renderSystem = *engine.renderSystem;
 
 	auto& program = terrainProgram.get()->getResource<render::ShaderProgram_GL>();
 	program.useProgram();
 
-	for (int c = 0; c < 1; ++c) { // for each chunk
+	for (int c = 0; c < 6; ++c) { // for each chunk
+		dmat4 modelToWorld;
+		mat4 patchToModel;
+
+		// temp
+		if (c == 0) { // top
+			//modelToWorld = translate(modelToWorld, dvec3{ -2500.0, -2500.0, 0.0 });
+		}
+		else if (c == 1) { // left
+			patchToModel = rotate(patchToModel,
+								  pi<float>() * 0.5f,
+								  vec3{ 1.0f, 0.0f, 0.0f });
+		}
+		else if (c == 2) { // bottom
+			patchToModel = rotate(patchToModel,
+								  pi<float>(),
+								  vec3{ 1.0f, 0.0f, 0.0f });
+		}
+		else if (c == 3) { // right
+			patchToModel = rotate(patchToModel,
+								  pi<float>() * 1.5f,
+								  vec3{ 1.0f, 0.0f, 0.0f });
+		}
+		else if (c == 4) {
+			patchToModel = rotate(patchToModel,
+								  pi<float>() * 0.5f,
+								  vec3{ 0.0f, 1.0f, 0.0f });
+		}
+		else if (c == 5) {
+			patchToModel = rotate(patchToModel,
+								  pi<float>() * 1.5f,
+								  vec3{ 0.0f, 1.0f, 0.0f });
+		}
+		
+		dmat4 modelView_World(viewMat * modelToWorld);
+
+		dvec4 nodeTranslationWorld(modelToWorld[0][3], modelToWorld[1][3], modelToWorld[2][3], 1.0);
+		vec3 nodeTranslation_Camera(nodeTranslationWorld * modelView_World);
+
+		mat4 modelView_Camera(modelView_World);
+		modelView_Camera[0][3] = nodeTranslation_Camera.x;
+		modelView_Camera[1][3] = nodeTranslation_Camera.y;
+		modelView_Camera[2][3] = nodeTranslation_Camera.z;
+
+		mat4 mvp(projMat * modelView_Camera);
+		mat4 normalMat(transpose(inverse(mat3(modelView_Camera))));
+
+
 		//glm::vec3 chunkTopLeftPosCameraSpace = chunks[c].cubeFaceScale;
 		//glUniform3fv(patchTopLeftCoordLoc, 1, &chunkTopLeftPosCameraSpace[0]);
+		glUniform1f(patchLengthLoc, 11400000.0f);
+		glUniformMatrix4fv(patchToModelLoc, 1, GL_FALSE, &patchToModel[0][0]);
 
 		// bind the patch heightmap texture
 		auto& heightTex = tempNoiseTex->getResource<render::Texture2D_GL>();
@@ -93,20 +143,6 @@ void griffin::game::TerrainSystem::draw(Engine &engine, const glm::dmat4& viewMa
 		render::ObjectUniformsUBO objectUniformsUBO{};
 		glBindBuffer(GL_UNIFORM_BUFFER, renderSystem.getUBOHandle(render::ObjectUniforms));
 
-		dmat4 modelToWorld;
-		dmat4 modelView_World(viewMat * modelToWorld);
-
-		dvec4 nodeTranslationWorld(modelToWorld[0][3], modelToWorld[1][3], modelToWorld[2][3], 1.0);
-		vec3 nodeTranslation_Camera(nodeTranslationWorld * modelView_World);
-
-		mat4 modelView_Camera(modelView_World);
-		modelView_Camera[0][3] = nodeTranslation_Camera.x;
-		modelView_Camera[1][3] = nodeTranslation_Camera.y;
-		modelView_Camera[2][3] = nodeTranslation_Camera.z;
-
-		mat4 mvp(projMat * modelView_Camera);
-		mat4 normalMat(transpose(inverse(mat3(modelView_Camera))));
-
 		objectUniformsUBO.modelToWorld = mat4(modelToWorld);
 		objectUniformsUBO.modelView = modelView_Camera;
 		objectUniformsUBO.modelViewProjection = mvp;
@@ -120,13 +156,13 @@ void griffin::game::TerrainSystem::draw(Engine &engine, const glm::dmat4& viewMa
 		// draw the patch
 		glBindVertexArray(vao);
 		glPatchParameteri(GL_PATCH_VERTICES, 16);
-		glDrawElements(GL_PATCHES, (terrainX - 3) * (terrainY - 3) * 16, GL_UNSIGNED_SHORT, 0);
+		glDrawElements(GL_PATCHES, (patchSize - 3) * (patchSize - 3) * 16, GL_UNSIGNED_SHORT, 0);
 
 	}
 
 	ASSERT_GL_ERROR;
 	
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 
@@ -146,23 +182,27 @@ void griffin::game::TerrainSystem::init(Game& game, const Engine& engine, const 
 	//basisTransposeLoc = glGetUniformLocation(terrainProgramId, "basisTranspose");
 //	patchTopLeftCoordLoc = glGetUniformLocation(terrainProgramId, "patchTopLeftCoord");
 //	patchCubeNormalLoc = glGetUniformLocation(terrainProgramId, "patchCubeNormal");
+	patchLengthLoc = glGetUniformLocation(terrainProgramId, "patchLength");
+	patchToModelLoc = glGetUniformLocation(terrainProgramId, "patchToModel");
 
-	float vertices[terrainX * terrainY * 2] = {};
-	uint16_t indices[(terrainX - 3)*(terrainY - 3) * 16] = {};
+	float vertices[patchSize * patchSize * 2] = {};
+	uint16_t indices[(patchSize - 3)*(patchSize - 3) * 16] = {};
 
-	for (int v = 0; v < (terrainX * terrainY); ++v) {
-		vertices[v*2]   = static_cast<float>(v % terrainX) / terrainX;
-		vertices[v * 2 + 1] = static_cast<float>(v / terrainX) / terrainY;
+	int visiblePatchSize = patchSize - 3;
+
+	for (int v = 0; v < (patchSize * patchSize); ++v) {
+		vertices[v * 2]     = (static_cast<float>(v % patchSize) - ((patchSize - 1) * 0.5f)) / (patchSize - 3);
+		vertices[v * 2 + 1] = (static_cast<float>(v / patchSize) - ((patchSize - 1) * 0.5f)) / (patchSize - 3);
 	}
 	
 	int i = 0;
-	for (int yStart = 0; yStart < (terrainY - 3); ++yStart) {
-		for (int xStart = 0; xStart < (terrainX - 3); ++xStart) {
+	for (int yStart = 0; yStart < (patchSize - 3); ++yStart) {
+		for (int xStart = 0; xStart < (patchSize - 3); ++xStart) {
 			for (int yPatch = 0; yPatch < 4; ++yPatch) {
 				for (int xPatch = 0; xPatch < 4; ++xPatch) {
 					int y = yStart + yPatch;
 					int x = xStart + xPatch;
-					indices[i] = y * terrainX + x;
+					indices[i] = y * patchSize + x;
 					++i;
 				}
 			}
