@@ -4,7 +4,7 @@
 //uniform vec3 patchPosition;
 //uniform vec3 patchCubeNormal;
 uniform float patchLength;
-uniform mat4 patchToModel;
+uniform dmat4 patchToModel;
 
 #ifdef _VERTEX_
 	
@@ -16,8 +16,8 @@ uniform mat4 patchToModel;
 	out vec3 tempColor;
 
 	void main() {
-		vPosition = vec3(vertexPosition_patchspace.xy * patchLength,
-						 texture(heightMap, vertexPosition_patchspace.xy).r * 500000.0); // height scalar
+		vPosition = vec3(vertexPosition_patchspace.xy,
+						 texture(heightMap, vertexPosition_patchspace.xy).r); // height scalar
 
 		tempColor.rg = 1.0 - vertexPosition_patchspace.xy;
 		tempColor.b = 0.0;
@@ -32,8 +32,8 @@ uniform mat4 patchToModel;
 	//uniform mat4 basis;
 	//uniform mat4 basisTranspose;
 
-	const /*uniform*/ float tessLevelInner = 8.0;
-	const /*uniform*/ float tessLevelOuter = 16.0;
+	const /*uniform*/ float tessLevelInner = 4.0;
+	const /*uniform*/ float tessLevelOuter = 8.0;
 
 	const mat4 bicubicBasis = mat4(	1.0f/6,-3.0f/6, 3.0f/6,-1.0f/6,
 									4.0f/6, 0.0f/6,-6.0f/6, 3.0f/6,
@@ -173,12 +173,17 @@ uniform mat4 patchToModel;
 		vec4 CVy = cMat[1] * V;
 		vec4 CVz = cMat[2] * V;
 		
-		float x = dot(CVx, U);
-		float y = dot(CVy, U);
-		float z = dot(CVz, U);
-		
-		positionModelspace = patchToModel * vec4(x, y, 5700000.0, 1.0);
-		positionModelspace = vec4(normalize(positionModelspace.xyz) * (5700000.0 + z), 1.0);
+		double x = dot(CVx, U);
+		double y = dot(CVy, U);
+		double z = dot(CVz, U);
+		double pl = patchLength;
+
+		dvec4 pos = patchToModel * dvec4(x * pl, y * pl, 5700000.0, 1.0);
+		pos.xyz = normalize(pos.xyz) * (5700000.0 /*+ (z * 500000.0)*/);
+
+		positionModelspace = vec4(pos);
+		//positionModelspace = patchToModel * vec4(x * patchLength, y * patchLength, 5700000.0, 1.0);
+		//positionModelspace = vec4(normalize(positionModelspace.xyz) * (5700000.0 + (z * 500000.0)), 1.0);
 		//positionViewspace = vec4(x, y, z, 1.0);
 		
 		// offset surface by noise texture
@@ -194,7 +199,9 @@ uniform mat4 patchToModel;
 		float nxV = dot(cMat[0] * dV, U);
 		float nyV = dot(cMat[1] * dV, U);
 		float nzV = dot(cMat[2] * dV, U);
-		normalModelspace = normalize(cross(vec3(nxU, nyU, nzU), vec3(nxV, nyV, nzV)));
+		vec3 nU = vec3(nxU, nyU, nzU) * vec3(patchLength, patchLength, 500000);
+		vec3 nV = vec3(nxV, nyV, nzV) * vec3(patchLength, patchLength, 500000);
+		normalModelspace = normalize(cross(nU, nV));
 
 		//tePatchDistance = vec4(u, v, 1.0-u, 1.0-v);
 		
@@ -207,7 +214,7 @@ uniform mat4 patchToModel;
 		/////
 
 		// Get the position and normal in viewspace
-		positionViewspace = modelView * positionModelspace;
+		positionViewspace = vec4(dmat4(modelView) * pos);
 		normalViewspace = normalize(vec3(normalMatrix * vec4(normalModelspace, 0.0)));
 
 		// Get dot product between surface normal and geocentric normal for slope

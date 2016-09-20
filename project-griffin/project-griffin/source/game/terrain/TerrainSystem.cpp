@@ -78,7 +78,7 @@ void griffin::game::TerrainSystem::draw(Engine &engine, const dmat4& viewMat, co
 
 	for (int c = 0; c < 6; ++c) { // for each chunk
 		dmat4 modelToWorld;
-		mat4 patchToModel;
+		dmat4 patchToModel;
 
 		// temp
 		if (c == 0) { // top
@@ -86,28 +86,28 @@ void griffin::game::TerrainSystem::draw(Engine &engine, const dmat4& viewMat, co
 		}
 		else if (c == 1) { // left
 			patchToModel = rotate(patchToModel,
-								  pi<float>() * 0.5f,
-								  vec3{ 1.0f, 0.0f, 0.0f });
+								  pi<double>() * 0.5,
+								  dvec3{ 1.0, 0.0, 0.0 });
 		}
 		else if (c == 2) { // bottom
 			patchToModel = rotate(patchToModel,
-								  pi<float>(),
-								  vec3{ 1.0f, 0.0f, 0.0f });
+								  pi<double>(),
+								  dvec3{ 1.0, 0.0, 0.0 });
 		}
 		else if (c == 3) { // right
 			patchToModel = rotate(patchToModel,
-								  pi<float>() * 1.5f,
-								  vec3{ 1.0f, 0.0f, 0.0f });
+								  pi<double>() * 1.5,
+								  dvec3{ 1.0, 0.0, 0.0 });
 		}
 		else if (c == 4) {
 			patchToModel = rotate(patchToModel,
-								  pi<float>() * 0.5f,
-								  vec3{ 0.0f, 1.0f, 0.0f });
+								  pi<double>() * 0.5,
+								  dvec3{ 0.0, 1.0, 0.0 });
 		}
 		else if (c == 5) {
 			patchToModel = rotate(patchToModel,
-								  pi<float>() * 1.5f,
-								  vec3{ 0.0f, 1.0f, 0.0f });
+								  pi<double>() * 1.5,
+								  dvec3{ 0.0, 1.0, 0.0 });
 		}
 		
 		dmat4 modelView_World(viewMat * modelToWorld);
@@ -127,7 +127,7 @@ void griffin::game::TerrainSystem::draw(Engine &engine, const dmat4& viewMat, co
 		//glm::vec3 chunkTopLeftPosCameraSpace = chunks[c].cubeFaceScale;
 		//glUniform3fv(patchTopLeftCoordLoc, 1, &chunkTopLeftPosCameraSpace[0]);
 		glUniform1f(patchLengthLoc, 11400000.0f);
-		glUniformMatrix4fv(patchToModelLoc, 1, GL_FALSE, &patchToModel[0][0]);
+		glUniformMatrix4dv(patchToModelLoc, 1, GL_FALSE, &patchToModel[0][0]);
 
 		// bind the patch heightmap texture
 		auto& heightTex = tempNoiseTex->getResource<render::Texture2D_GL>();

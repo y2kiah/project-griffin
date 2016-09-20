@@ -63,7 +63,7 @@ namespace griffin {
 			glBindBuffer(GL_UNIFORM_BUFFER, renderSystem.getUBOHandle(ObjectUniforms));
 
 			// temp
-			modelToWorld = rotate(translate(modelToWorld, dvec3(0.0, -50.0, 0.0)),
+			modelToWorld = rotate(translate(modelToWorld, normalize(dvec3(-1, 1, 1)) * 5700000.0/*dvec3(0.0, -50.0, 0.0)*/),
 								  radians(90.0),
 								  dvec3(1.0, 0.0, 0.0));
 			modelToWorld = scale(modelToWorld, dvec3(Meters_to_Feet));
