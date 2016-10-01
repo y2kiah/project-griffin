@@ -228,16 +228,33 @@ namespace griffin {
 	*/
 	Engine::~Engine()
 	{
-		// Destroy the tools system
-		#ifdef GRIFFIN_TOOLS_BUILD
-		toolsManager.reset();
-		#endif
+		// Destroy the scene manager
+		scene::setRenderSystemPtr(render::RenderSystemPtr());
+		scene::setSceneManagerPtr(scene::SceneManagerPtr());
+		sceneManager.reset();
 
 		// Destroy the render system
 		renderSystem.reset();
 
 		// Destroy the resource system
+		render::setResourceLoaderPtr(ResourceLoaderPtr());
+		scene::setResourceLoaderPtr(ResourceLoaderPtr());
+		#ifdef GRIFFIN_TOOLS_BUILD
+		tools::setResourceLoaderPtr(ResourceLoaderPtr());
+		#endif
 		resourceLoader.reset();
+
+		// Destroy the input system
+		setInputSystemPtr(input::InputSystemPtr());
+		inputSystem.reset();
+
+		// Destroy the tools system
+		#ifdef GRIFFIN_TOOLS_BUILD
+		toolsManager.reset();
+		#endif
+
+		// Destroy the scripting system
+		scriptManager.reset();
 
 		// Destroy the thread pool
 		threadPool.reset();

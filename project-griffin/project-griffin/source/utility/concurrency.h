@@ -15,6 +15,7 @@
 #include <utility/container/concurrent_queue.h>
 #include <utility/memory_reserve.h>
 #include <utility/Logger.h>
+#include <application/platform.h>
 
 
 namespace griffin {
@@ -442,30 +443,29 @@ namespace griffin {
 	}
 
 
-	/*template <typename...Tasks>
-	task<void> when_all(Tasks...tasks) {
-		task<void> ret;
+	template <typename Iterator>
+	auto when_any(Iterator first, Iterator last) -> task<typename std::iterator_traits<Iterator>::value_type::result_type>
+	{
+		typedef std::vector<typename std::iterator_traits<Iterator>::value_type> value_type_set;
 
-		ret.run([tasks...]{
-			
-			//for (int i = 0; i < sizeof...(Tasks); ++i) {
-			//}
+		task<typename std::iterator_traits<Iterator>::value_type::result_type> newTask;
+
+		value_type_set tasks(first, last);
+
+		// newTask.run([&&tasks](){		// C++14-compatible move capture
+		newTask.run([tasks](){
+			for (;;) {
+				for (auto& t : tasks) {
+					if (t.is_ready()) {
+						return t.get();
+					}
+				}
+				platform::yieldThread();
+			}
 		});
 
-		return ret;
-	}*/
-
-	/*
-	template <typename F, typename... Tasks>
-	task<void> when_any(F&& f, Tasks&...) {
-		task<void> ret;
-		ret.run([]{
-			return f();
-		});
-
-		return ret;
+		return newTask;
 	}
-	*/
 
 
 	/**

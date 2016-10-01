@@ -22,7 +22,7 @@ void TestRunner::registerAllTests()
 	#pragma warning(disable : 4101)
 	
 	// register all tests in this section
-	//REGISTER_TEST(concurrencyTest);
+	REGISTER_TEST(concurrencyTest);
 	//REGISTER_TEST(testHandleMap);
 	//REGISTER_TEST(testReflection);
 }

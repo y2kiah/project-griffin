@@ -55,4 +55,10 @@ void concurrencyTest()
 	/*when_all(tsk, tsk2, tsk3).then([]{
 		logger.test("when_all finished");
 	});*/
+
+	auto tsk4 = when_any(whenAllTasks.cbegin(), whenAllTasks.cend());
+	tsk4.then([tsk4]{
+		logger.test("when_any finished");
+		logger.test("  value = %d", tsk4.get());
+	});
 }
