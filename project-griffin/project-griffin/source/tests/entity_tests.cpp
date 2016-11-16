@@ -58,7 +58,7 @@ void addTestComponents() {
 
 	timer.start();
 	// store 100,000 components in a ComponentStore
-	componentIds = sceneNodeStore.createComponents(numTestComponents, { { { 0, 0, 0, 0 } } });
+	componentIds = sceneNodeStore.createComponents(numTestComponents, EntityId{});
 	timer.stop();
 	logger.test("**********\ncreate components in store\ntime = %f ms\ncounts = %lld\n\n", timer.getMillisPassed(), timer.getCountsPassed());
 

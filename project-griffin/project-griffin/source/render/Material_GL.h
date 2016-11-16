@@ -95,7 +95,6 @@ namespace griffin {
 			char						name[MAX_MATERIAL_TEXTURE_NAME_SIZE] = {};
 		};
 
-
 		struct Material_GL {
 			glm::vec3	diffuseColor = {};
 			glm::vec3	ambientColor = {};

@@ -19,6 +19,8 @@
 
 #define Meters_to_Feet 3.2808398950131233595800524934383f
 
+#pragma warning (disable: 4312) // all conversions are from unsigned 32 to 64-bit pointer, should be safe: https://msdn.microsoft.com/en-us/library/h97f4b9y.aspx
+
 namespace griffin {
 	namespace render {
 		using namespace glm;

@@ -739,7 +739,7 @@ namespace griffin {
 
 				for (uint32_t c = 0; c < item.node->mNumChildren; ++c) {
 					aiNode* childNode = item.node->mChildren[c];
-					bfsQueue.push({ childNode, index, c });
+					bfsQueue.push({ childNode, static_cast<int>(index), static_cast<int>(c) });
 				}
 
 				bfsQueue.pop();

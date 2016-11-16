@@ -23,15 +23,17 @@ namespace griffin {
 		public:
 			explicit Shader_GL() = default;
 
-			Shader_GL(Shader_GL&& other) :
+			Shader_GL(Shader_GL&& other) = default;/* :
 				m_shaderId{ other.m_shaderId },
 				m_shaderType{ other.m_shaderType }
 			{
 				other.m_shaderId = 0;
 				other.m_shaderType = 0;
-			}
+			}*/
 
 			Shader_GL(const Shader_GL& other) = delete;
+
+			Shader_GL& operator=(Shader_GL&&) = default;
 
 			~Shader_GL();
 
@@ -59,8 +61,8 @@ namespace griffin {
 
 			ShaderProgram_GL(ShaderProgram_GL&& other);
 
-			ShaderProgram_GL(const Shader_GL&) = delete;
-			
+			ShaderProgram_GL(const ShaderProgram_GL&) = delete;
+
 			~ShaderProgram_GL();
 
 			/**

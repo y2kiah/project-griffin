@@ -15,6 +15,7 @@
 #include <utility/container/concurrent_queue.h>
 #include <utility/memory_reserve.h>
 #include <utility/Logger.h>
+#include <cassert>
 
 
 namespace griffin {
@@ -88,7 +89,8 @@ namespace griffin {
 			// join all worker threads
 			for (auto& t : m_threads) {
 				if (t.joinable()) {
-					logger.verbose("joining thread %llu", t.get_id().hash());
+					std::hash<std::thread::id> hasher;
+					logger.verbose("joining thread %llu", hasher(t.get_id()));
 					t.join();
 				}
 			}

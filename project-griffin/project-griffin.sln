@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "project-griffin", "project-griffin\project-griffin.vcxproj", "{0699B998-133B-4F7A-8AAF-99D139407963}"
 EndProject
@@ -13,9 +13,6 @@ Global
 		Release|Mixed Platforms = Release|Mixed Platforms
 		Release|Win32 = Release|Win32
 		Release|x64 = Release|x64
-		ReleaseCTP|Mixed Platforms = ReleaseCTP|Mixed Platforms
-		ReleaseCTP|Win32 = ReleaseCTP|Win32
-		ReleaseCTP|x64 = ReleaseCTP|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0699B998-133B-4F7A-8AAF-99D139407963}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
@@ -30,12 +27,6 @@ Global
 		{0699B998-133B-4F7A-8AAF-99D139407963}.Release|Win32.Build.0 = Release|Win32
 		{0699B998-133B-4F7A-8AAF-99D139407963}.Release|x64.ActiveCfg = Release|x64
 		{0699B998-133B-4F7A-8AAF-99D139407963}.Release|x64.Build.0 = Release|x64
-		{0699B998-133B-4F7A-8AAF-99D139407963}.ReleaseCTP|Mixed Platforms.ActiveCfg = ReleaseCTP|Win32
-		{0699B998-133B-4F7A-8AAF-99D139407963}.ReleaseCTP|Mixed Platforms.Build.0 = ReleaseCTP|Win32
-		{0699B998-133B-4F7A-8AAF-99D139407963}.ReleaseCTP|Win32.ActiveCfg = ReleaseCTP|Win32
-		{0699B998-133B-4F7A-8AAF-99D139407963}.ReleaseCTP|Win32.Build.0 = ReleaseCTP|Win32
-		{0699B998-133B-4F7A-8AAF-99D139407963}.ReleaseCTP|x64.ActiveCfg = ReleaseCTP|x64
-		{0699B998-133B-4F7A-8AAF-99D139407963}.ReleaseCTP|x64.Build.0 = ReleaseCTP|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

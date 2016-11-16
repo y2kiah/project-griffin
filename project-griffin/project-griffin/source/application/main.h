@@ -19,8 +19,8 @@ struct DisplayData {
 struct WindowData {
 	SDL_Window *				window;			//<! SDL window handle
 	SDL_GLContext				glContext;		//<! OpenGL context handle
-	int							width;			//<! width px of the window
-	int							height;			//<! height px of the window
+	uint32_t					width;			//<! width px of the window
+	uint32_t					height;			//<! height px of the window
 	shared_ptr<SDL_SysWMinfo>	wmInfo;			//<! system-dependent window information
 };
 
