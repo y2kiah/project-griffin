@@ -5,6 +5,7 @@
 //uniform vec3 patchCubeNormal;
 uniform float patchLength;
 uniform dmat4 patchToModel;
+uniform dmat4 doubleModelView;
 
 #ifdef _VERTEX_
 	
@@ -214,7 +215,7 @@ uniform dmat4 patchToModel;
 		/////
 
 		// Get the position and normal in viewspace
-		positionViewspace = vec4(dmat4(modelView) * pos);
+		positionViewspace = vec4(doubleModelView * pos);
 		normalViewspace = normalize(vec3(normalMatrix * vec4(normalModelspace, 0.0)));
 
 		// Get dot product between surface normal and geocentric normal for slope

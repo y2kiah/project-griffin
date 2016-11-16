@@ -45,6 +45,7 @@ namespace griffin {
 //			int patchCubeNormalLoc = 0;
 			int patchLengthLoc = 0;
 			int patchToModelLoc = 0;
+			int doubleModelViewLoc = 0;
 
 			struct TerrainChunk {
 				glm::dvec3  cubeFaceScale;

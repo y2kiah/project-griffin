@@ -106,8 +106,9 @@ void InputSystem::mapFrameInputs(const UpdateInfo& ui)
 						if ((mapping.bindIn == Bind_Down && evt.evt.type == SDL_KEYDOWN) ||
 							(mapping.bindIn == Bind_Up   && evt.evt.type == SDL_KEYUP))
 						{
+							uint16_t mod = evt.evt.key.keysym.mod & ~(KMOD_NUM | KMOD_CAPS | KMOD_MODE); // ignore these mods
 							matched = (evt.evt.key.keysym.sym == mapping.keycode &&
-									   evt.evt.key.keysym.mod == mapping.modifier);
+									   mod == mapping.modifier);
 						}
 						else if ((mapping.bindIn == Bind_Down && evt.evt.type == SDL_MOUSEBUTTONDOWN) ||
 								 (mapping.bindIn == Bind_Up   && evt.evt.type == SDL_MOUSEBUTTONUP))
@@ -464,14 +465,14 @@ bool InputSystem::handleMessage(const SDL_Event& event)
 {
 	bool handled = false;
 	auto timestamp = Timer::queryCounts();
-
+	
 	switch (event.type) {
 		case SDL_KEYDOWN:
 		case SDL_KEYUP: {
 			if (event.key.repeat == 0) {
 				/*logger.verbose(Logger::Category_Input,
-							   "key event=%d: state=%d: key=%d: repeat=%d: realTime=%lu\n",
-							   event.type, event.key.state, event.key.keysym.scancode, event.key.repeat, timestamp);*/
+							   "key event=%d: state=%d: key=%d: repeat=%d: realTime=%lu: name=%s\n",
+							   event.type, event.key.state, event.key.keysym.sym, event.key.repeat, timestamp, SDL_GetKeyName(event.key.keysym.sym));*/
 
 				m_eventsQueue.push({ timestamp, std::move(event), Event_Keyboard, {} });
 			}

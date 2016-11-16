@@ -69,7 +69,7 @@ void griffin::game::TerrainSystem::render(Id_T entityId, scene::Scene& scene, ui
 
 void griffin::game::TerrainSystem::draw(Engine &engine, const dmat4& viewMat, const mat4& projMat/*All TEMP*/)
 {
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	
 	auto& renderSystem = *engine.renderSystem;
 
@@ -128,6 +128,8 @@ void griffin::game::TerrainSystem::draw(Engine &engine, const dmat4& viewMat, co
 		//glUniform3fv(patchTopLeftCoordLoc, 1, &chunkTopLeftPosCameraSpace[0]);
 		glUniform1f(patchLengthLoc, 11400000.0f);
 		glUniformMatrix4dv(patchToModelLoc, 1, GL_FALSE, &patchToModel[0][0]);
+		dmat4 doubleModelView(viewMat);
+		glUniformMatrix4dv(doubleModelViewLoc, 1, GL_FALSE, &doubleModelView[0][0]);
 
 		// bind the patch heightmap texture
 		auto& heightTex = tempNoiseTex->getResource<render::Texture2D_GL>();
@@ -162,7 +164,7 @@ void griffin::game::TerrainSystem::draw(Engine &engine, const dmat4& viewMat, co
 
 	ASSERT_GL_ERROR;
 	
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 
@@ -177,13 +179,14 @@ void griffin::game::TerrainSystem::init(Game& game, const Engine& engine, const 
 
 	auto& program = terrainProgram.get()->getResource<ShaderProgram_GL>();
 	terrainProgramId = program.getProgramId();
-
+	
 	//basisLoc = glGetUniformLocation(terrainProgramId, "basis");
 	//basisTransposeLoc = glGetUniformLocation(terrainProgramId, "basisTranspose");
 //	patchTopLeftCoordLoc = glGetUniformLocation(terrainProgramId, "patchTopLeftCoord");
 //	patchCubeNormalLoc = glGetUniformLocation(terrainProgramId, "patchCubeNormal");
 	patchLengthLoc = glGetUniformLocation(terrainProgramId, "patchLength");
 	patchToModelLoc = glGetUniformLocation(terrainProgramId, "patchToModel");
+	doubleModelViewLoc = glGetUniformLocation(terrainProgramId, "doubleModelView");
 
 	float vertices[patchSize * patchSize * 2] = {};
 	uint16_t indices[(patchSize - 3)*(patchSize - 3) * 16] = {};
