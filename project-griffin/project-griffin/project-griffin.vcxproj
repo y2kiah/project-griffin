@@ -110,6 +110,9 @@
     <ClInclude Include="source\game\Game.h" />
     <ClInclude Include="source\game\impl\GameImpl.h" />
     <ClInclude Include="source\game\player\PlayerControlSystem.h" />
+    <ClInclude Include="source\game\ship\CoolingSystem.h" />
+    <ClInclude Include="source\game\ship\ElectricalSystem.h" />
+    <ClInclude Include="source\game\ship\PropulsionSystem.h" />
     <ClInclude Include="source\game\sky\atmosphere.h" />
     <ClInclude Include="source\game\sky\SkySystem.h" />
     <ClInclude Include="source\game\terrain\TerrainSystem.h" />

@@ -50,7 +50,7 @@ namespace griffin {
 		* @tparam	Cnt		Container of type T, such as vector, list, deque.
 		* @param	inData	container of items to be moved into queue
 		*/
-		template <template <class T, class = std::allocator<T>> class Cnt>
+		template <template <class T, class=std::allocator<T>> class Cnt>
 		void push_all(const Cnt<T>& inData);
 
 		/**

@@ -336,14 +336,31 @@ void InputSystem::mapFrameMotion(const UpdateInfo& ui)
 						motion.relMapped *= mapping.sensitivity * (mapping.invert == 1 ? -1.0f : 1.0f);
 					}
 					else {
-						// "curved" relative is (curve(posMapped) - curve(posMapped-relMapped)), not curve(relMapped)
-						//mapping.curve
-						//mapping.curvature
-						//mapping.deadzone
-						//mapping.saturationX
-						//mapping.saturationY
-						//mapping.slider
-						motion.relMapped *= (mapping.invert == 1 ? -1.0f : 1.0f);
+						// TODO: this new stuff needs testing
+						auto getModifiedPosition = [](float posMapped, const InputMapping& mapping) -> float {
+							// deadzone
+							float deadzone = mapping.deadzone * 0.01f;
+							float newPos = (posMapped - (posMapped >= 0 ? deadzone : -deadzone)) / (1.0f - deadzone);
+
+							// "curved" relative is (curve(posMapped) - curve(posMapped-relMapped)), not curve(relMapped)
+							//mapping.curve
+							//mapping.curvature
+
+							//mapping.saturationX
+							//mapping.saturationY
+							//mapping.slider
+
+							// inversion
+							newPos *= (mapping.invert == 1 ? -1.0f : 1.0f);
+							
+							return newPos;
+						};
+						
+						// get new motion after curves and modifications
+						// "curved" relative is (curve(posMapped) - curve(posMapped-relMapped)), not just curve(relMapped)
+						float newPos = getModifiedPosition(motion.posMapped, mapping);
+						motion.relMapped = newPos - getModifiedPosition(motion.posMapped - motion.relMapped, mapping);
+						motion.posMapped = newPos;
 					}
 					
 					MappedAxis ma{};

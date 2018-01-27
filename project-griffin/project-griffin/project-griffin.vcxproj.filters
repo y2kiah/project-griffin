@@ -182,6 +182,9 @@
     <Filter Include="tests">
       <UniqueIdentifier>{4606fcbf-46e5-4ddc-ac84-2cc2652f67ef}</UniqueIdentifier>
     </Filter>
+    <Filter Include="game\ship">
+      <UniqueIdentifier>{f3074a0f-2401-4d23-a083-6387404b3166}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">
@@ -933,6 +936,15 @@
     </ClInclude>
     <ClInclude Include="source\tests\Test.h">
       <Filter>tests</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\ship\ElectricalSystem.h">
+      <Filter>game\ship</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\ship\PropulsionSystem.h">
+      <Filter>game\ship</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\ship\CoolingSystem.h">
+      <Filter>game\ship</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
