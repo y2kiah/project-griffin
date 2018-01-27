@@ -19,7 +19,7 @@ if method == "GET" then
 	if (cgilua.QUERY.method == "griffin_tools_importMesh" and
 		cgilua.QUERY.filename)
 	then
-		local meshId = ffi.C.griffin_tools_importMesh("data/"..cgilua.QUERY.filename,
+		local meshId = ffi.C.griffin_tools_importMesh("data/assets/"..cgilua.QUERY.filename,
 													  (cgilua.QUERY.optimizeGraph == "true"),
 													  (cgilua.QUERY.preTransformVertices == "true"),
 													  (cgilua.QUERY.flipUVs == "true"))
@@ -31,7 +31,7 @@ if method == "GET" then
 		cgilua.QUERY.filename)
 	then
 		local result = ffi.C.griffin_tools_saveMesh(tonumber(cgilua.QUERY.mesh), -- TODO: this is not being accepted after import passed from client
-													"data/"..cgilua.QUERY.filename)
+													"data/assets/"..cgilua.QUERY.filename)
 		data = result
 
 	-- griffin_tools_convertMesh
@@ -39,8 +39,8 @@ if method == "GET" then
 		cgilua.QUERY.sourceFilename and
 		cgilua.QUERY.destFilename)
 	then
-		local result = ffi.C.griffin_tools_convertMesh("data/"..cgilua.QUERY.sourceFilename,
-													   "data/"..cgilua.QUERY.destFilename,
+		local result = ffi.C.griffin_tools_convertMesh("data/assets/"..cgilua.QUERY.sourceFilename,
+													   "data/assets/"..cgilua.QUERY.destFilename,
 													   (cgilua.QUERY.optimizeGraph == "true"),
 													   (cgilua.QUERY.preTransformVertices == "true"),
 													   (cgilua.QUERY.flipUVs == "true"))

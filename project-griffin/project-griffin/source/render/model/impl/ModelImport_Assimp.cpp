@@ -690,7 +690,7 @@ namespace griffin {
 						// do synchronous loading of texture since this is a utility function
 						// injects the texture into cache, pass assumeCached=true
 						// prefix texture path with the path to the model being loaded
-						auto pathStart = meshFilename.find("models");
+						auto pathStart = meshFilename.find("assets/models");
 						auto pathEnd = meshFilename.find_last_of('/');
 						string aName = meshFilename.substr(pathStart, pathEnd - pathStart) + '/' + mat.textures[samplerIndex].name;
 						wstring wName;

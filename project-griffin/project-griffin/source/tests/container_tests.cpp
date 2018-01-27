@@ -138,12 +138,13 @@ void testHandleMap()
 
 
 	// defrag
+	#ifndef _DEBUG
 	std::random_shuffle(testMap.begin(), testMap.end());
 	timer.start();
 	size_t swaps = testMap.defragment(compareItems);
 	timer.stop();
 	logger.test("handle_map: defragment swaps = %llu, total = %d, time = %f ms\ncounts = %lld\n\n", swaps, total, timer.getMillisPassed(), timer.getCountsPassed());
-
+	#endif
 
 	// remove all items, destroying the sparse set
 	timer.start();
