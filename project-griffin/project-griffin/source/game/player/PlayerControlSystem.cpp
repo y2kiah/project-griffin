@@ -70,7 +70,7 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game& game, Engine& eng
 		move.rotationDirty = 0;
 	}
 
-	// Camera movement
+	// Player movement
 	{
 		vec3 targetV = { 0, 0, 0 };
 
@@ -103,7 +103,7 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game& game, Engine& eng
 			targetV = normalize(targetV) * speedTarget;
 		}
 
-		// TODO: note that once collisions come into the play, the achieved velocity from last frame
+		// TODO: note that once collisions come into play, the achieved velocity from last frame
 		// might be different than the original velocity attempted. Verlet integration handles this
 
 		// accelerate to the targetVelocity from current velocity
