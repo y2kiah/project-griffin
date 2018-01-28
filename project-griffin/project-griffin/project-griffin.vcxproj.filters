@@ -185,6 +185,12 @@
     <Filter Include="game\ship">
       <UniqueIdentifier>{f3074a0f-2401-4d23-a083-6387404b3166}</UniqueIdentifier>
     </Filter>
+    <Filter Include="game\positionalEffects">
+      <UniqueIdentifier>{9412c92e-10f9-4bec-9bb1-5309b31cff9f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="game\positionalEffects\screenShaker">
+      <UniqueIdentifier>{881600f2-d4e6-45a4-85c0-b6692bacc806}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\application\main.cpp">
@@ -354,6 +360,9 @@
     </ClCompile>
     <ClCompile Include="source\tests\Test.cpp">
       <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\positionalEffects\screenShaker\ScreenShakerSystem.cpp">
+      <Filter>game\positionalEffects\screenShaker</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -945,6 +954,9 @@
     </ClInclude>
     <ClInclude Include="source\game\ship\CoolingSystem.h">
       <Filter>game\ship</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\positionalEffects\screenShaker\ScreenShakerSystem.h">
+      <Filter>game\positionalEffects\screenShaker</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

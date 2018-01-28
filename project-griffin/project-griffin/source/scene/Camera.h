@@ -109,7 +109,7 @@ namespace griffin {
 			float	mFarClip;
 
 			vec3	mU;	// Right vector
-			vec3	mV;	// Readjust up-vector
+			vec3	mV;	// Adjust up-vector
 			vec3	mW;	// Negative view direction
 
 			mat4	mProjectionMatrix, mInverseProjectionMatrix;

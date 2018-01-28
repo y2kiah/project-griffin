@@ -37,6 +37,7 @@
     <ClCompile Include="source\game\devConsole\DevConsoleSystem.cpp" />
     <ClCompile Include="source\game\impl\Game.cpp" />
     <ClCompile Include="source\game\player\PlayerControlSystem.cpp" />
+    <ClCompile Include="source\game\positionalEffects\screenShaker\ScreenShakerSystem.cpp" />
     <ClCompile Include="source\game\sky\SkySystem.cpp" />
     <ClCompile Include="source\game\terrain\TerrainSystem.cpp" />
     <ClCompile Include="source\input\impl\InputSystem.cpp" />
@@ -110,6 +111,7 @@
     <ClInclude Include="source\game\Game.h" />
     <ClInclude Include="source\game\impl\GameImpl.h" />
     <ClInclude Include="source\game\player\PlayerControlSystem.h" />
+    <ClInclude Include="source\game\positionalEffects\screenShaker\ScreenShakerSystem.h" />
     <ClInclude Include="source\game\ship\CoolingSystem.h" />
     <ClInclude Include="source\game\ship\ElectricalSystem.h" />
     <ClInclude Include="source\game\ship\PropulsionSystem.h" />
