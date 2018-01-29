@@ -98,6 +98,9 @@ namespace griffin {
 			// set up development tools
 			game.devConsole.init(game, engine, app);
 			
+			// set up positionalEffect systems
+			game.screenShaker.init(game, engine, app);
+
 			// ...
 		}
 

@@ -144,10 +144,11 @@ ComponentId EntityManager::addDataComponentToEntity(uint16_t typeId, EntityId en
 	}
 	auto componentId = store->addComponent(entityId);
 
-	auto previousMask = entity.componentMask;
+	//auto previousMask = entity.componentMask;
 	entity.addComponent(componentId);
-	auto newMask = entity.componentMask;
+	//auto newMask = entity.componentMask;
 
+	/* // commented out because not sure the component mask index is a keeper
 	if (newMask != previousMask) {
 		// fix up the mask index with the new mask, remove the old entry with old mask
 		auto rng = m_componentIndex.equal_range(previousMask.to_ullong());
@@ -163,6 +164,7 @@ ComponentId EntityManager::addDataComponentToEntity(uint16_t typeId, EntityId en
 		static_assert(sizeof(ComponentMask) <= sizeof(uint64_t),
 					  "ComponentMask contains more than 64 bits, need a new sort key for the ComponentMask");
 	}
+	*/
 
 	return componentId;
 }

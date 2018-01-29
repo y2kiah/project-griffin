@@ -558,7 +558,7 @@
       <Optimization>
       </Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GRIFFIN_TOOLS_BUILD=1;WIN32_LEAN_AND_MEAN;GLM_FORCE_RADIANS;GLM_MESSAGES;GLM_FORCE_SSE3;GLM_FORCE_INLINE;GLM_SWIZZLE;GL_GLEXT_PROTOTYPES;GLEW_STATIC;NANOVG_GL3_IMPLEMENTATION;_VERTEX_;_TESS_CONTROL_;_TESS_EVAL_;_GEOMETRY_;_FRAGMENT_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GRIFFIN_TOOLS_BUILD=1;WIN32_LEAN_AND_MEAN;GLM_FORCE_RADIANS;GLM_MESSAGES;GLM_FORCE_SSE3;GLM_FORCE_INLINE;GLM_FORCE_SWIZZLE;GL_GLEXT_PROTOTYPES;GLEW_STATIC;NANOVG_GL3_IMPLEMENTATION;_VERTEX_;_TESS_CONTROL_;_TESS_EVAL_;_GEOMETRY_;_FRAGMENT_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <PreprocessKeepComments>false</PreprocessKeepComments>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -614,7 +614,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GRIFFIN_PROFILE=1;GRIFFIN_TOOLS_BUILD=1;_ITERATOR_DEBUG_LEVEL=0;NDEBUG;WIN32_LEAN_AND_MEAN;GLM_FORCE_RADIANS;GLM_FORCE_SSE3;GLM_FORCE_INLINE;GLM_SWIZZLE;GL_GLEXT_PROTOTYPES;GLEW_STATIC;NANOVG_GL3_IMPLEMENTATION;_VERTEX_;_TESS_CONTROL_;_TESS_EVAL_;_GEOMETRY_;_FRAGMENT_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GRIFFIN_PROFILE=1;GRIFFIN_TOOLS_BUILD=1;_ITERATOR_DEBUG_LEVEL=0;NDEBUG;WIN32_LEAN_AND_MEAN;GLM_FORCE_RADIANS;GLM_FORCE_SSE3;GLM_FORCE_INLINE;GLM_FORCE_SWIZZLE;GL_GLEXT_PROTOTYPES;GLEW_STATIC;NANOVG_GL3_IMPLEMENTATION;_VERTEX_;_TESS_CONTROL_;_TESS_EVAL_;_GEOMETRY_;_FRAGMENT_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>

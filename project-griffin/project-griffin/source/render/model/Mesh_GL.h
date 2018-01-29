@@ -174,10 +174,10 @@ namespace griffin {
 		static_assert(sizeof(NodeAnimation) % 4 == 0, "NodeAnimation size must be multiple of 4 for alignment of mesh buffer");
 		static_assert(sizeof(AnimationTrackMetaData) % 4 == 0, "AnimationTrackMetaData size must be multiple of 4 for alignment of mesh buffer");
 		static_assert(std::is_trivially_copyable<DrawSet>::value
-					  /*&& std::is_trivially_copyable<MeshSceneNode>::value*/, // check disabled due to glm::mat, it's still safe though
+					  && std::is_trivially_copyable<MeshSceneNode>::value, // check disabled due to glm::mat, it's still safe though
 					  "Mesh structs must be trivially copyable for serialization");
-		//static_assert(std::is_trivially_copyable<Material_GL>::value,
-		//			  "Material structs must be trivially copyable for serialization");
+		static_assert(std::is_trivially_copyable<Material_GL>::value,
+					  "Material structs must be trivially copyable for serialization");
 		static_assert(std::is_trivially_copyable<PositionKeyFrame>::value && std::is_trivially_copyable<RotationKeyFrame>::value &&
 					  std::is_trivially_copyable<ScalingKeyFrame>::value && std::is_trivially_copyable<AnimationTrack>::value &&
 					  std::is_trivially_copyable<NodeAnimation>::value && std::is_trivially_copyable<AnimationTrackMetaData>::value,

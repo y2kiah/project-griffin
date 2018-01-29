@@ -6,10 +6,14 @@
 #include <application/Engine.h>
 #include <application/UpdateInfo.h>
 #include <glm/vec3.hpp>
+#include <entity/EntityTypedefs.h>
 
 
 namespace griffin {
 	namespace game {
+		using entity::EntityId;
+		using entity::ComponentId;
+
 
 		struct PlayerControlSystem {
 			enum SpeedFlag : int {
@@ -28,8 +32,8 @@ namespace griffin {
 			float		crouchT = 0.0f;							//<! crouch interpolation [0-1]
 			float		headBob = 0;							//<! current head bob value passed into sin(t)
 
-			Id_T		playerId;								//<! entity id of the player
-			Id_T		movementComponentId;					//<! movement component for the player entity
+			EntityId	playerId;								//<! entity id of the player
+			ComponentId	movementComponentId;					//<! movement component for the player entity
 			Id_T		playerfpsInputContextId;				//<! handle for the playerfps input context
 			Id_T		forwardId, backId, leftId, rightId;		//<! mapping handles for the inputs
 			Id_T		sprintId, walkId, crouchId;

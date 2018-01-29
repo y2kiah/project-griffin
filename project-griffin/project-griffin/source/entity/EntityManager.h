@@ -131,10 +131,11 @@ namespace griffin {
 				auto& store = getComponentStore<T>();
 				auto componentId = store.addComponent(std::forward<T>(component), entityId);
 
-				auto previousMask = entity.componentMask;
+				//auto previousMask = entity.componentMask;
 				entity.addComponent(componentId);
-				auto newMask = entity.componentMask;
+				//auto newMask = entity.componentMask;
 
+				/* // commented out because not sure the component mask index is a keeper
 				if (newMask != previousMask) {
 					// fix up the mask index with the new mask, remove the old entry with old mask
 					auto rng = m_componentIndex.equal_range(previousMask.to_ullong());
@@ -150,6 +151,7 @@ namespace griffin {
 					static_assert(sizeof(ComponentMask) <= sizeof(uint64_t),
 								  "ComponentMask contains more than 64 bits, need a new sort key for the ComponentMask");
 				}
+				*/
 
 				return componentId;
 			}
@@ -249,7 +251,7 @@ namespace griffin {
 			
 			EntityMap			m_entityStore;		//<! Entity indexed by handle, stores relationship to components internally
 
-			ComponentMaskMap	m_componentIndex;	//<! index of sorted ComponentMask for O(log n) entity search by multiple component types
+			//ComponentMaskMap	m_componentIndex;	//<! index of sorted ComponentMask for O(log n) entity search by multiple component types
 			//ComponentStoreMap	m_componentStores;	//<! ComponentStore indexed by componentType, stores component and parent entityId
 			ComponentStoreBasePtr m_componentStores[MAX_COMPONENTS];
 

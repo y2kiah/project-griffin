@@ -25,7 +25,7 @@ void griffin::game::ScreenShakerSystem::updateFrameTick(Game& game, Engine& engi
 	// roll  = maxRoll  * shake * getPerlinNoise(seed=2, time, ...?);
 
 	// Mouse look
-	if (pitchRaw != 0 || yawRaw != 0) {
+/*	if (pitchRaw != 0 || yawRaw != 0) {
 		const double lookRate = 2.0  * M_PI;
 
 		double yawAngle = -yawMapped * lookRate * ui.deltaT;
@@ -58,53 +58,36 @@ void griffin::game::ScreenShakerSystem::updateFrameTick(Game& game, Engine& engi
 		move.prevRotationDirty = move.rotationDirty;
 		move.rotationDirty = 0;
 	}
+*/
 }
 
 
-void griffin::game::ScreenShakerSystem::init(Game& game, const Engine& engine, const SDLApplication& app,
-                                             Id_T _playerId, Id_T _playerfpsInputContextId)
+void griffin::game::ScreenShakerSystem::init(Game& game, const Engine& engine, const SDLApplication& app)
 {
 	using namespace griffin::scene;
 	auto& scene = engine.sceneManager->getScene(game.sceneId);
 
-	playerId = _playerId;
+	playerId = game.player.playerId;
 	movementComponentId = scene.entityManager->getEntityComponentId(playerId, scene::MovementComponent::componentType);
 
-	playerfpsInputContextId = _playerfpsInputContextId;
+	playerfpsInputContextId = game.player.playerfpsInputContextId;
 
 	
 	// create game component stores for this system
-	game.gameComponentStoreIds[ScreenShakerComponentTypeId] = scene.entityManager->createScriptComponentStore(
+	game.gameComponentStoreIds[ScreenShakerComponentTypeId] = scene.entityManager->createDataComponentStore(
 		ScreenShakerComponentTypeId,
 		sizeof(ScreenShakerComponent), 1);
 
-	//movementComponentId = scene.entityManager->getEntityComponentId(devCameraId, scene::MovementComponent::componentType);
-
 	///// TEMP the devcamera store is not needed, demonstration
 	// add devcamera movement component
-	//devCameraMovementId = scene.entityManager->addScriptComponentToEntity(DevCameraMovementComponentTypeId,
+	//devCameraMovementId = scene.entityManager->addDataComponentToEntity(DevCameraMovementComponentTypeId,
 	//																	  devCameraId);
 
-	//auto devCamMove = (DevCameraMovementComponent*)scene.entityManager->getScriptComponentData(devCameraMovementId);
+	//auto devCamMove = (DevCameraMovementComponent*)scene.entityManager->getDataComponentData(devCameraMovementId);
 	///// end TEMP
 
 
-	// set up camera position and orientation
-	auto pNode = scene.entityManager->getEntityComponent<scene::SceneNode>(playerId);
-	auto pCamInst = scene.entityManager->getEntityComponent<scene::CameraInstance>(playerId);
-
-	assert(pNode != nullptr && pCamInst != nullptr && movementComponentId != NullId_T);
-	auto &node = *pNode;
-	auto &cam = *pCamInst;
-	auto& move = scene.entityManager->getComponent<scene::MovementComponent>(movementComponentId);
-
-	scene.cameras[cam.cameraId]->lookAt(vec3{ 0, 0, playerHeight }, vec3{ 1.0f, 0, playerHeight }, vec3{ 0, 0, 1.0f });
-
-	// set scene node location and orientation to the camera's
-	node.translationLocal = scene.cameras[cam.cameraId]->getEyePoint();
-	node.positionDirty = 1;
-	move.prevTranslation = move.nextTranslation = node.translationLocal;
-
+/*
 	node.rotationLocal = scene.cameras[cam.cameraId]->getOrientation();
 	node.orientationDirty = 1;
 	move.prevRotation = move.nextRotation = node.rotationLocal;
@@ -139,48 +122,7 @@ void griffin::game::ScreenShakerSystem::init(Game& game, const Engine& engine, c
 				moveForward = glm::min(moveForward + 1, 1);
 				return true;
 			});
-
-			engine.inputSystem->handleInputState(backId, mi, [this](MappedState& ms, InputContext& c) {
-				moveForward = glm::max(moveForward - 1, -1);
-				return true;
-			});
-
-			engine.inputSystem->handleInputState(leftId, mi, [this](MappedState& ms, InputContext& c) {
-				moveSide = glm::max(moveSide - 1, -1);
-				return true;
-			});
-
-			engine.inputSystem->handleInputState(rightId, mi, [this](MappedState& ms, InputContext& c) {
-				moveSide = glm::min(moveSide + 1, 1);
-				return true;
-			});
-
-			engine.inputSystem->handleInputState(sprintId, mi, [this](MappedState& ms, InputContext& c) {
-				speedToggle = SpeedFlag_Sprint;
-				return true;
-			});
-
-			engine.inputSystem->handleInputState(walkId, mi, [this](MappedState& ms, InputContext& c) {
-				speedToggle = SpeedFlag_Walk;
-				return true;
-			});
-
-			bool crouchActive = engine.inputSystem->handleInputState(crouchId, mi, [this](MappedState& ms, InputContext& c) {
-				return true;
-			});
-			crouching = crouchActive;
-
-			engine.inputSystem->handleInputAxis(lookXId, mi, [this](MappedAxis& ma, InputContext& c) {
-				yawRaw += ma.axisMotion->relRaw;
-				yawMapped += ma.axisMotion->relMapped;
-				return true;
-			});
-
-			engine.inputSystem->handleInputAxis(lookYId, mi, [this](MappedAxis& ma, InputContext& c) {
-				pitchRaw += ma.axisMotion->relRaw;
-				pitchMapped += ma.axisMotion->relMapped;
-				return true;
-			});
 		});
 	}
+*/
 }
