@@ -6,10 +6,10 @@
 
 using namespace griffin;
 
-void testSceneGraph(Logger& log) {
+void testSceneGraph() {
 	using namespace std;
 
-	ostringstream oss;
+	//ostringstream oss;
 
 	/*Scene scene("Test Scene");
 	EntityId entities[10];
@@ -25,5 +25,5 @@ void testSceneGraph(Logger& log) {
 	Assert::AreEqual(static_cast<int>(ids.size()), 1, L"One node added", LINE_INFO());
 	*/
 
-	log.info(Logger::Category_Test, oss.str().c_str());
+	//logger.info(Logger::Category_Test, oss.str().c_str());
 }

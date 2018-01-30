@@ -78,6 +78,7 @@ namespace griffin {
 			uint32_t	numMeshes = 0;
 			uint32_t	meshIndexOffset = 0;		//<! offset into array of mesh instances, numMeshes elements belong to this node
 			// scene node string name is stored in the metadata buffer with the same index
+			uint8_t		_padding_end[12];			//<! pad to 96 bytes for 16-byte alignment of MeshSceneNode arrays (supports SIMD _m128 in mat4)
 		};
 
 		struct MeshSceneNodeMetaData {

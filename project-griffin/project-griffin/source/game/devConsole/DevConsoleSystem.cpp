@@ -17,23 +17,6 @@ void griffin::game::DevConsoleSystem::init(Game& game, const Engine& engine, con
 	using namespace griffin::scene;
 	auto& scene = engine.sceneManager->getScene(game.sceneId);
 
-	// create game component stores for this system
-	///// TEMP the devcamera store is not needed, only one of these things, just testing the waters
-	//game.gameComponentStoreIds[DevCameraMovementComponentTypeId] = scene.entityManager->createScriptComponentStore(
-	//	DevCameraMovementComponentTypeId,
-	//	sizeof(DevCameraMovementComponent), 1);
-	///// end TEMP
-
-	//movementComponentId = scene.entityManager->getEntityComponentId(devCameraId, scene::MovementComponent::componentType);
-
-	///// TEMP the devcamera store is not needed, demonstration
-	// add devcamera movement component
-	//devCameraMovementId = scene.entityManager->addScriptComponentToEntity(DevCameraMovementComponentTypeId,
-	//																	  devCameraId);
-
-	//auto devCamMove = (DevCameraMovementComponent*)scene.entityManager->getScriptComponentData(devCameraMovementId);
-	///// end TEMP
-
 	// get devconsole input mapping ids
 	{
 		auto ingameCtx = engine.inputSystem->getInputContextHandle("ingame");

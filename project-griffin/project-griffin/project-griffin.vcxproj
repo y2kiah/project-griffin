@@ -179,6 +179,48 @@
     <ClInclude Include="source\utility\profile\ProfileAggregate.h" />
     <ClInclude Include="source\utility\reflection.h" />
     <ClInclude Include="vendor\glm\glm\common.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\func_common.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\func_exponential.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\func_geometric.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\func_integer.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\func_matrix.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\func_packing.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\func_trigonometric.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\func_vector_relational.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\intrinsic_common.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\intrinsic_exponential.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\intrinsic_geometric.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\intrinsic_integer.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\intrinsic_matrix.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\intrinsic_trigonometric.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\intrinsic_vector_relational.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\precision.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\setup.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\type_float.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\type_gentype.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\type_half.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\type_int.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\type_mat.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\type_mat2x2.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\type_mat2x3.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\type_mat2x4.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\type_mat3x2.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\type_mat3x3.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\type_mat3x4.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\type_mat4x2.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\type_mat4x3.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\type_mat4x4.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\type_vec.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\type_vec1.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\type_vec2.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\type_vec3.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\type_vec4.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\_features.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\_fixes.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\_noise.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\_swizzle.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\_swizzle_func.hpp" />
+    <ClInclude Include="vendor\glm\glm\detail\_vectorize.hpp" />
     <ClInclude Include="vendor\glm\glm\exponential.hpp" />
     <ClInclude Include="vendor\glm\glm\ext.hpp" />
     <ClInclude Include="vendor\glm\glm\fwd.hpp" />
@@ -371,6 +413,41 @@
     <None Include="source\utility\container\impl\concurrent_queue-inl.h" />
     <None Include="source\utility\container\impl\handle_map-inl.h" />
     <None Include="source\utility\container\impl\vector_queue-inl.h" />
+    <None Include="vendor\glm\glm\detail\func_common.inl" />
+    <None Include="vendor\glm\glm\detail\func_exponential.inl" />
+    <None Include="vendor\glm\glm\detail\func_geometric.inl" />
+    <None Include="vendor\glm\glm\detail\func_integer.inl" />
+    <None Include="vendor\glm\glm\detail\func_matrix.inl" />
+    <None Include="vendor\glm\glm\detail\func_packing.inl" />
+    <None Include="vendor\glm\glm\detail\func_trigonometric.inl" />
+    <None Include="vendor\glm\glm\detail\func_vector_relational.inl" />
+    <None Include="vendor\glm\glm\detail\intrinsic_common.inl" />
+    <None Include="vendor\glm\glm\detail\intrinsic_exponential.inl" />
+    <None Include="vendor\glm\glm\detail\intrinsic_geometric.inl" />
+    <None Include="vendor\glm\glm\detail\intrinsic_integer.inl" />
+    <None Include="vendor\glm\glm\detail\intrinsic_matrix.inl" />
+    <None Include="vendor\glm\glm\detail\intrinsic_trigonometric.inl" />
+    <None Include="vendor\glm\glm\detail\intrinsic_vector_relational.inl" />
+    <None Include="vendor\glm\glm\detail\type_gentype.inl" />
+    <None Include="vendor\glm\glm\detail\type_half.inl" />
+    <None Include="vendor\glm\glm\detail\type_mat.inl" />
+    <None Include="vendor\glm\glm\detail\type_mat2x2.inl" />
+    <None Include="vendor\glm\glm\detail\type_mat2x3.inl" />
+    <None Include="vendor\glm\glm\detail\type_mat2x4.inl" />
+    <None Include="vendor\glm\glm\detail\type_mat3x2.inl" />
+    <None Include="vendor\glm\glm\detail\type_mat3x3.inl" />
+    <None Include="vendor\glm\glm\detail\type_mat3x4.inl" />
+    <None Include="vendor\glm\glm\detail\type_mat4x2.inl" />
+    <None Include="vendor\glm\glm\detail\type_mat4x3.inl" />
+    <None Include="vendor\glm\glm\detail\type_mat4x4.inl" />
+    <None Include="vendor\glm\glm\detail\type_vec.inl" />
+    <None Include="vendor\glm\glm\detail\type_vec1.inl" />
+    <None Include="vendor\glm\glm\detail\type_vec2.inl" />
+    <None Include="vendor\glm\glm\detail\type_vec3.inl" />
+    <None Include="vendor\glm\glm\detail\type_vec4.inl" />
+    <None Include="vendor\glm\glm\detail\type_vec4_avx.inl" />
+    <None Include="vendor\glm\glm\detail\type_vec4_avx2.inl" />
+    <None Include="vendor\glm\glm\detail\type_vec4_sse2.inl" />
     <None Include="vendor\glm\glm\gtc\constants.inl" />
     <None Include="vendor\glm\glm\gtc\epsilon.inl" />
     <None Include="vendor\glm\glm\gtc\matrix_access.inl" />
@@ -558,7 +635,7 @@
       <Optimization>
       </Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GRIFFIN_TOOLS_BUILD=1;WIN32_LEAN_AND_MEAN;GLM_FORCE_RADIANS;GLM_MESSAGES;GLM_FORCE_SSE3;GLM_FORCE_INLINE;GLM_FORCE_SWIZZLE;GL_GLEXT_PROTOTYPES;GLEW_STATIC;NANOVG_GL3_IMPLEMENTATION;_VERTEX_;_TESS_CONTROL_;_TESS_EVAL_;_GEOMETRY_;_FRAGMENT_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GRIFFIN_TOOLS_BUILD=1;WIN32_LEAN_AND_MEAN;GLM_FORCE_RADIANS;GLM_FORCE_MESSAGES;GLM_FORCE_INLINE;GLM_FORCE_SWIZZLE;GLM_FORCE_CXX14;GL_GLEXT_PROTOTYPES;GLEW_STATIC;NANOVG_GL3_IMPLEMENTATION;_VERTEX_;_TESS_CONTROL_;_TESS_EVAL_;_GEOMETRY_;_FRAGMENT_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <PreprocessKeepComments>false</PreprocessKeepComments>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -566,6 +643,8 @@
       <MultiProcessorCompilation>
       </MultiProcessorCompilation>
       <AdditionalOptions>-w44351 %(AdditionalOptions)</AdditionalOptions>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -614,8 +693,8 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GRIFFIN_PROFILE=1;GRIFFIN_TOOLS_BUILD=1;_ITERATOR_DEBUG_LEVEL=0;NDEBUG;WIN32_LEAN_AND_MEAN;GLM_FORCE_RADIANS;GLM_FORCE_SSE3;GLM_FORCE_INLINE;GLM_FORCE_SWIZZLE;GL_GLEXT_PROTOTYPES;GLEW_STATIC;NANOVG_GL3_IMPLEMENTATION;_VERTEX_;_TESS_CONTROL_;_TESS_EVAL_;_GEOMETRY_;_FRAGMENT_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <PreprocessorDefinitions>GRIFFIN_PROFILE=1;GRIFFIN_TOOLS_BUILD=1;_ITERATOR_DEBUG_LEVEL=0;NDEBUG;WIN32_LEAN_AND_MEAN;GLM_FORCE_RADIANS;GLM_FORCE_INLINE;GLM_FORCE_SWIZZLE;GLM_FORCE_CXX14;GL_GLEXT_PROTOTYPES;GLEW_STATIC;NANOVG_GL3_IMPLEMENTATION;_VERTEX_;_TESS_CONTROL_;_TESS_EVAL_;_GEOMETRY_;_FRAGMENT_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
@@ -627,6 +706,7 @@
       <MultiProcessorCompilation>
       </MultiProcessorCompilation>
       <AdditionalOptions>-w44351 %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

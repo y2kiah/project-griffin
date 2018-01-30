@@ -25,4 +25,5 @@ void TestRunner::registerAllTests()
 	REGISTER_TEST(concurrencyTest);
 	//REGISTER_TEST(testHandleMap);
 	//REGISTER_TEST(testReflection);
+	REGISTER_TEST(testSceneGraph);
 }

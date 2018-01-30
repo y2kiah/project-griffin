@@ -70,7 +70,7 @@ void griffin::game::ScreenShakerSystem::init(Game& game, const Engine& engine, c
 	playerId = game.player.playerId;
 	movementComponentId = scene.entityManager->getEntityComponentId(playerId, scene::MovementComponent::componentType);
 
-	playerfpsInputContextId = game.player.playerfpsInputContextId;
+	//playerfpsInputContextId = game.player.playerfpsInputContextId;
 
 	
 	// create game component stores for this system

@@ -50,8 +50,8 @@ void griffin::game::DevCameraSystem::updateFrameTick(Game& game, Engine& engine,
 		auto& cam = *scene.cameras[camInst.cameraId];
 
 		vec3 viewDir = cam.getViewDirection();
-		vec3 right = cam.getRightVector();//cross(cam.getViewDirection(), cam.getWorldUp());
-		vec3 up = cam.getUpVector();//cross(viewDir, right);
+		vec3 right = cam.getRightVector();
+		vec3 up = cam.getUpVector();
 
 		vec3 velocity = viewDir * static_cast<float>(moveForward);
 		velocity += right * static_cast<float>(moveSide);
@@ -82,13 +82,6 @@ void griffin::game::DevCameraSystem::init(Game& game, const Engine& engine, cons
 	using namespace griffin::scene;
 	auto& scene = engine.sceneManager->getScene(game.sceneId);
 
-	// create game component stores for this system
-	///// TEMP the devcamera store is not needed, only one of these things, just testing the waters
-	//game.gameComponentStoreIds[DevCameraMovementComponentTypeId] = scene.entityManager->createScriptComponentStore(
-	//	DevCameraMovementComponentTypeId,
-	//	sizeof(DevCameraMovementComponent), 1);
-	///// end TEMP
-
 	// create dev camera scene node
 	devCameraId = createCamera(game.sceneId, CameraParameters{
 		0.1f, 53000000.0f,	// near/far clip
@@ -97,14 +90,6 @@ void griffin::game::DevCameraSystem::init(Game& game, const Engine& engine, cons
 	}, "devcamera");
 
 	movementComponentId = scene.entityManager->getEntityComponentId(devCameraId, scene::MovementComponent::componentType);
-
-	///// TEMP the devcamera store is not needed, demonstration
-	// add devcamera movement component
-	//devCameraMovementId = scene.entityManager->addScriptComponentToEntity(DevCameraMovementComponentTypeId,
-	//																	  devCameraId);
-
-	//auto devCamMove = (DevCameraMovementComponent*)scene.entityManager->getScriptComponentData(devCameraMovementId);
-	///// end TEMP
 
 	// look at the origin
 	auto pNode    = scene.entityManager->getEntityComponent<scene::SceneNode>(devCameraId);
