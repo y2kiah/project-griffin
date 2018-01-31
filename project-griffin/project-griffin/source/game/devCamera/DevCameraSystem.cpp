@@ -16,12 +16,14 @@ void griffin::game::DevCameraSystem::updateFrameTick(Game& game, Engine& engine,
 
 	auto& scene = engine.sceneManager->getScene(game.sceneId);
 	auto& move = scene.entityManager->getComponent<scene::MovementComponent>(movementComponentId);
+	
+	// TODO: to support > 1 SceneNode per entity, convert this to a function on an entity
+	auto pNode = scene.entityManager->getEntityComponent<scene::SceneNode>(devCameraId);
+	assert(pNode != nullptr && "entity expected to have a SceneNode");
+	auto& node = *pNode;
 
 	// Mouse look
 	if (pitchRaw != 0 || yawRaw != 0 || roll != 0) {
-		auto pNode = scene.entityManager->getEntityComponent<scene::SceneNode>(devCameraId);
-		assert(pNode != nullptr);
-
 		const float rollRate = 0.25f * pi<float>();
 		const float lookRate = 2.0f  * pi<float>();
 
@@ -30,7 +32,7 @@ void griffin::game::DevCameraSystem::updateFrameTick(Game& game, Engine& engine,
 		float rollAngle = roll * rollRate * ui.deltaT;
 
 		dvec3 angles(-pitchAngle, -yawAngle, -rollAngle);
-		angles = angles * inverse(pNode->orientationWorld); // transform angles into viewspace
+		angles = angles * inverse(node.orientationWorld); // transform angles into viewspace
 
 		move.prevRotation = move.nextRotation;
 		move.nextRotation = normalize(dquat(angles) * move.prevRotation);
@@ -45,13 +47,13 @@ void griffin::game::DevCameraSystem::updateFrameTick(Game& game, Engine& engine,
 
 	// Camera movement
 	if (moveForward != 0 || moveSide != 0 || moveVertical != 0) {
-		auto camInstId = scene.entityManager->getEntityComponentId(devCameraId, scene::CameraInstance::componentType);
-		auto& camInst = scene.entityManager->getComponentStore<scene::CameraInstance>().getComponent(camInstId);
-		auto& cam = *scene.cameras[camInst.cameraId];
+		const dvec3 c_xAxis(1.0, 0.0, 0.0);
+		const dvec3 c_yAxis(0.0, 1.0, 0.0);
+		const dvec3 c_zAxisNeg(0.0, 0.0, -1.0);
 
-		vec3 viewDir = cam.getViewDirection();
-		vec3 right = cam.getRightVector();
-		vec3 up = cam.getUpVector();
+		vec3 viewDir = node.orientationWorld * c_zAxisNeg;
+		vec3 right = node.orientationWorld * c_xAxis;
+		vec3 up = node.orientationWorld * c_yAxis;
 
 		vec3 velocity = viewDir * static_cast<float>(moveForward);
 		velocity += right * static_cast<float>(moveSide);

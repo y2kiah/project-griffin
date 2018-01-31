@@ -56,9 +56,12 @@ bool Entity::removeComponent(ComponentId id)
 bool Entity::removeComponentsOfType(ComponentType ct)
 {
 	if (hasComponent(ct)) {
-		std::remove_if(components.begin(), components.end(), [ct](ComponentId id){
-			return (id.typeId == ct);
-		});
+		components.erase(std::remove_if(components.begin(), components.end(),
+			[ct](ComponentId id){
+				return (id.typeId == ct);
+			}),
+			components.end());
+
 		componentMask.set(ct, false);
 
 		return true;

@@ -136,6 +136,14 @@ namespace griffin {
 			}
 
 			/**
+			* Get the ComponentId for a component iterator, useful inside of range-based for loops.
+			*/
+			inline ComponentId getComponentIdForItem(typename ComponentMap::DenseSet_T::const_iterator it)
+			{
+				return m_components.getHandleForItem(it);
+			}
+
+			/**
 			* to_string for debug and test output
 			*/
 			std::string to_string() const;

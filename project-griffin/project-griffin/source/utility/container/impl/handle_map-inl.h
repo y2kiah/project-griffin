@@ -242,6 +242,35 @@ namespace griffin {
 
 
 	template <typename T>
+	inline Id_T handle_map<T>::getHandleForInnerIndex(size_t innerIndex) const
+	{
+		assert(innerIndex < m_meta.size() && innerIndex >= 0 && "inner index out of range");
+		
+		auto sparseIndex = m_meta[innerIndex].denseToSparse;
+		Id_T handle = m_sparseIds[m_meta[innerIndex].denseToSparse];
+		handle.index = sparseIndex;
+		
+		return handle;
+	}
+
+
+	template <typename T>
+	inline Id_T handle_map<T>::getHandleForItem(typename handle_map<T>::DenseSet_T::iterator it) const
+	{
+		auto innerIndex = it - m_items.begin();
+		return getHandleForInnerIndex(innerIndex);
+	}
+
+
+	template <typename T>
+	inline Id_T handle_map<T>::getHandleForItem(typename handle_map<T>::DenseSet_T::const_iterator it) const
+	{
+		auto innerIndex = it - m_items.cbegin();
+		return getHandleForInnerIndex(innerIndex);
+	}
+
+
+	template <typename T>
 	template <typename Compare>
 	size_t handle_map<T>::defragment(Compare comp, size_t maxSwaps)
 	{

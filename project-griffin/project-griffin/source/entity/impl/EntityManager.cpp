@@ -17,7 +17,7 @@ EntityId EntityManager::createEntity()
 }
 
 
-bool EntityManager::removeComponentFromEntity(ComponentId componentId)
+bool EntityManager::removeComponent(ComponentId componentId)
 {
 	auto store = m_componentStores[componentId.typeId].get();
 	if (store == nullptr) {
@@ -30,7 +30,7 @@ bool EntityManager::removeComponentFromEntity(ComponentId componentId)
 		return false;
 	}
 
-	// TODO remove from the component mask index
+	// TODO remove from the component mask index if the index is re-introduced
 	return store->removeComponent(componentId);
 }
 
@@ -47,11 +47,17 @@ bool EntityManager::removeComponentsOfTypeFromEntity(ComponentType ct, EntityId 
 		return false;
 	}
 
-	entity.removeComponentsOfType(ct);
+	// remove from the component store
+	for (auto componentId : entity.components) {
+		if (componentId.typeId == ct) {
+			store->removeComponent(componentId);
+		}
+	}
 	
-	// TODO remove from the component mask index
-	// TODO remove from the component store
-	return true;
+	// TODO remove from the component mask index if the index is re-introduced
+
+	// remove from the entity 
+	return entity.removeComponentsOfType(ct);
 }
 
 
@@ -152,9 +158,12 @@ ComponentId EntityManager::addDataComponentToEntity(uint16_t typeId, EntityId en
 	if (newMask != previousMask) {
 		// fix up the mask index with the new mask, remove the old entry with old mask
 		auto rng = m_componentIndex.equal_range(previousMask.to_ullong());
-		std::remove_if(rng.first, rng.second, [entityId](ComponentMaskMap::value_type& val){
-			return (val.second == entityId);
-		});
+		// TODO: not sure about this erase code, test if it works and is safe to erase in a partial range like this
+		m_componentIndex.erase(std::remove_if(rng.first, rng.second,
+			[entityId](ComponentMaskMap::value_type& val){
+				return (val.second == entityId);
+			}),
+			rng.second);
 
 		// insert the new entry with new mask
 		m_componentIndex.insert(ComponentMaskMap::value_type{ newMask.to_ullong(), entityId });
@@ -172,13 +181,14 @@ ComponentId EntityManager::addDataComponentToEntity(uint16_t typeId, EntityId en
 
 void* EntityManager::getDataComponent(ComponentId componentId)
 {
-	assert(componentId.typeId < MAX_COMPONENTS && "typeId out of range");
+	uint16_t storeIndex = ComponentType::last_ComponentType_enum + componentId.typeId;
+	assert(storeIndex < MAX_COMPONENTS && "typeId out of range");
 	
-	auto cmpSize = m_dataComponentStoreSizes[componentId.typeId - ComponentType::last_ComponentType_enum];
+	auto cmpSize = m_dataComponentStoreSizes[componentId.typeId];
 	assert(cmpSize > 0 && "typeId store not created yet");
 
 	void* dataPtr = nullptr;
-	auto pStore = m_componentStores[componentId.typeId].get();
+	auto pStore = m_componentStores[storeIndex].get();
 	if (cmpSize > 0) {
 		switch (cmpSize) {
 			case 8:   { dataPtr = reinterpret_cast<ComponentStore<DataComponent8>*>(pStore)->getComponent(componentId).data; break; }

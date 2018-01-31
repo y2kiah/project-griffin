@@ -12,13 +12,13 @@
 #include <game/positionalEffects/screenShaker/ScreenShakerSystem.h>
 
 
-#define MAX_GAME_COMPONENTS		32
+//#define MAX_GAME_COMPONENTS		32
 
 namespace griffin {
 
-	enum : uint16_t {
-		ScreenShakerComponentTypeId
-	};
+	//enum : uint16_t {
+		//ScreenShakerComponentTypeId
+	//};
 
 
 	/**
@@ -36,7 +36,7 @@ namespace griffin {
 		game::DevConsoleSystem		devConsole;
 		game::ScreenShakerSystem	screenShaker;
 
-		uint16_t					gameComponentStoreIds[MAX_GAME_COMPONENTS] = {};
+		//uint16_t					gameComponentStoreIds[MAX_GAME_COMPONENTS] = {};
 
 		~Game();
 	};

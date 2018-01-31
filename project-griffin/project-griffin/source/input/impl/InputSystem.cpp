@@ -32,25 +32,26 @@ void InputSystem::updateFrameTick(const UpdateInfo& ui)
 	m_frameMappedInput.textInputHandled = false;
 
 	// remove active states that are no longer mappings in any active context
-	auto newEnd = std::remove_if(m_frameMappedInput.states.begin(), m_frameMappedInput.states.end(),
-				   [&](const MappedState& state) {
-		for (const auto& ac : m_activeInputContexts) {
-			if (!ac.active) { continue; }
-			auto& context = m_inputContexts[ac.contextId];
+	m_frameMappedInput.states.erase(
+		std::remove_if(m_frameMappedInput.states.begin(), m_frameMappedInput.states.end(),
+		   [&](const MappedState& state) {
+				for (const auto& ac : m_activeInputContexts) {
+					if (!ac.active) { continue; }
+					auto& context = m_inputContexts[ac.contextId];
 			
-			// Apply this filter to states where keypress down is active. Don't apply it to toggles
-			// or bindings where the key being unpressed is active. Also don't filter states where
-			// the mappingId is found in the active context.
-			bool hasDownUpBinding = (state.inputMapping->bindIn == Bind_Down && state.inputMapping->bindOut == Bind_Up);
-			if (!hasDownUpBinding ||
-				std::find(context.inputMappings.begin(), context.inputMappings.end(), state.mappingId) != context.inputMappings.end())
-			{
-				return false;
-			}
-		}
-		return true;
-	});
-	m_frameMappedInput.states.resize(newEnd - m_frameMappedInput.states.begin());
+					// Apply this filter to states where keypress down is active. Don't apply it to toggles
+					// or bindings where the key being unpressed is active. Also don't filter states where
+					// the mappingId is found in the active context.
+					bool hasDownUpBinding = (state.inputMapping->bindIn == Bind_Down && state.inputMapping->bindOut == Bind_Up);
+					if (!hasDownUpBinding ||
+						std::find(context.inputMappings.begin(), context.inputMappings.end(), state.mappingId) != context.inputMappings.end())
+					{
+						return false;
+					}
+				}
+				return true;
+			}),
+		m_frameMappedInput.states.end());
 
 	// loop over active states, add to totalCounts, totalMS and totalFrames, reset handled flag
 	for (auto& state : m_frameMappedInput.states) {

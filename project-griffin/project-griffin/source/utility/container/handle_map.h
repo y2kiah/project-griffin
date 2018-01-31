@@ -209,6 +209,17 @@ namespace griffin {
 		* @returns index into the inner DenseSet for a given outer id
 		*/
 		uint32_t			getInnerIndex(Id_T handle) const;
+
+		/**
+		* @return the outer id (handle) for a given dense set index
+		*/
+		Id_T				getHandleForInnerIndex(size_t innerIndex) const;
+
+		/**
+		* @return the outer id (handle) for a given dense set iterator
+		*/
+		Id_T				getHandleForItem(typename DenseSet_T::iterator it) const;
+		Id_T				getHandleForItem(typename DenseSet_T::const_iterator it) const;
 		
 		/**
 		* Constructor

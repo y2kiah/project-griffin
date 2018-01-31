@@ -3,80 +3,110 @@
 #include <entity/EntityManager.h>
 //#include <input/InputSystem.h>
 #include <game/impl/GameImpl.h>
-//#include <glm/vec3.hpp>
-//#include <glm/gtc/quaternion.hpp>
-
-//#include <api/SceneApi.h>
-//#include <scene/Camera.h>
-//#include <cmath>
-//#include <utility/blend.h>
+#include <glm/vec3.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 
-void griffin::game::ScreenShakerSystem::updateFrameTick(Game& game, Engine& engine, const UpdateInfo& ui)
+void griffin::game::ScreenShakerSystem::updateFrameTick(
+	Game& game,
+	Engine& engine,
+	const UpdateInfo& ui)
 {
 	using namespace glm;
 
 	auto& scene = engine.sceneManager->getScene(game.sceneId);
-	auto& move = scene.entityManager->getComponent<scene::MovementComponent>(movementComponentId);
+	auto& entityMgr = *scene.entityManager;
 
-	// shake = turbulence * turbulence; // * turbulence
-	// yaw   = maxYaw   * shake * getPerlinNoise(seed,   time, ...?);
-	// pitch = maxPitch * shake * getPerlinNoise(seed=1, time, ...?);
-	// roll  = maxRoll  * shake * getPerlinNoise(seed=2, time, ...?);
+	auto& producers = entityMgr.getComponentStore<ScreenShakeProducer>();
+	auto& shakeNodes = entityMgr.getComponentStore<ScreenShakeNode>();
 
-	// Mouse look
-/*	if (pitchRaw != 0 || yawRaw != 0) {
-		const double lookRate = 2.0  * M_PI;
+	// for each ScreenShakeNode (receiver)
+	for (auto& n : shakeNodes.getComponents()) {
+		auto& shakeNode = n.component;
+		auto& shakeSceneNode = entityMgr.getComponent<scene::SceneNode>(shakeNode.sceneNodeId);
+		
+		shakeNode.prevTurbulence = shakeNode.nextTurbulence;
+		shakeNode.nextTurbulence = 0;
 
-		double yawAngle = -yawMapped * lookRate * ui.deltaT;
-		double pitchAngle = -pitchMapped * lookRate * ui.deltaT;
+		// for each ScreenShakeProducer component
+		for (auto& p : producers.getComponents()) {
+			auto& producer = p.component;
 
-		// constrain pitch to +/-89 degrees
-		const double deg1 = radians(1.0);
-		const double deg179 = radians(179.0);
+			// TODO: to support > 1 SceneNode per entity, convert this to a function on an entity
+			auto pNode = entityMgr.getEntityComponent<scene::SceneNode>(p.entityId);
+			assert(pNode != nullptr && "entity expected to have a SceneNode");
+			auto& producerSceneNode = *pNode;
 
-		move.prevRotation = move.nextRotation;
+			float producerRadiusSq = producer.radius * producer.radius;
 
-		double currentPitch = pitch(move.prevRotation); // get pitch in parent node's space
-		if (currentPitch + pitchAngle < deg1) {
-			pitchAngle = deg1 - currentPitch;
+			vec3 nodeToProducer = shakeSceneNode.positionWorld - producerSceneNode.positionWorld;
+			float distSq = dot(nodeToProducer, nodeToProducer);
+
+			// determine the effectiveness based on distance ratio to radius of the producer
+			float effectiveTurbulence = (producerRadiusSq == 0.0f)
+				? producer.turbulence
+				: producer.turbulence * glm::max((producerRadiusSq - distSq) / producerRadiusSq, 0.0f);
+
+			// accumulate effective turbulence level from all producers
+			shakeNode.nextTurbulence += effectiveTurbulence;
 		}
-		else if (currentPitch + pitchAngle >= deg179) {
-			pitchAngle = deg179 - currentPitch;
-		}
-
-		move.nextRotation = normalize(
-			angleAxis(yawAngle, dvec3(0, 0, 1.0))
-			* move.prevRotation
-			* angleAxis(pitchAngle, dvec3(1.0, 0, 0)));
-
-		move.prevRotationDirty = move.rotationDirty;
-		move.rotationDirty = 1;
 	}
-	else {
-		move.prevRotation = move.nextRotation;
-		move.prevRotationDirty = move.rotationDirty;
-		move.rotationDirty = 0;
+
+	// for each ScreenShakeProducer component
+	for (auto& p : producers.getComponents()) {
+		auto& producer = p.component;
+
+		// decrease the turbulence linearly by time, unless TTL is 0 (which means it stays constant forever, probably controlled externally)
+		float turbulenceFalloff = (producer.totalTimeToLiveMS == 0) ? 0
+			: ui.deltaMs / producer.totalTimeToLiveMS;
+
+		producer.turbulence -= turbulenceFalloff;
 	}
-*/
+	
+	// remove expired components (consider adding an autoremove flag to control this)
+	entityMgr.removeComponent_if<ScreenShakeProducer>([](const ScreenShakeProducer& producer) {
+		return (producer.turbulence <= 0.0f);
+	});
 }
 
 
-void griffin::game::ScreenShakerSystem::init(Game& game, const Engine& engine, const SDLApplication& app)
+void griffin::game::ScreenShakerSystem::renderFrameTick(
+	Game& game,
+	Engine& engine,
+	float interpolation,
+	const int64_t realTime,
+	const int64_t countsPassed)
+{
+	//auto camInstId = scene.entityManager->getEntityComponentId(devCameraId, scene::CameraInstance::componentType);
+	//auto& camInst = scene.entityManager->getComponentStore<scene::CameraInstance>().getComponent(camInstId);
+	//auto& cam = *scene.cameras[camInst.cameraId];
+
+	// float turbulence = glm::mix(shakeNode.prevTurbulence, shakeNode.nextTurbulence, interpolation);
+	// float shake = turbulence * turbulence; // * turbulence;
+
+	// yaw   = maxYaw   * shake * getPerlinNoise(seed,   time, ...?);
+	// pitch = maxPitch * shake * getPerlinNoise(seed=1, time, ...?);
+	// roll  = maxRoll  * shake * getPerlinNoise(seed=2, time, ...?);
+}
+
+
+void griffin::game::ScreenShakerSystem::init(
+	Game& game,
+	const Engine& engine,
+	const SDLApplication& app)
 {
 	using namespace griffin::scene;
 	auto& scene = engine.sceneManager->getScene(game.sceneId);
 
 	playerId = game.player.playerId;
-	movementComponentId = scene.entityManager->getEntityComponentId(playerId, scene::MovementComponent::componentType);
 
 	//playerfpsInputContextId = game.player.playerfpsInputContextId;
 
 	
 	// create game component stores for this system
-	game.gameComponentStoreIds[ScreenShakerComponentTypeId] = scene.entityManager->createDataComponentStore(
+	/*game.gameComponentStoreIds[ScreenShakerComponentTypeId] = scene.entityManager->createDataComponentStore(
 		ScreenShakerComponentTypeId,
-		sizeof(ScreenShakerComponent), 1);
+		sizeof(ScreenShakerComponent), 1);*/
 
 	///// TEMP the devcamera store is not needed, demonstration
 	// add devcamera movement component

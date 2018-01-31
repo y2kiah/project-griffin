@@ -44,6 +44,8 @@ namespace griffin {
 		// TODO: consider running this less frequently, and spread the load with other systems that
 		//	don't run every frame by offsetting the frame that it runs on
 		game.sky.updateFrameTick(game, engine, ui);
+
+		game.screenShaker.updateFrameTick(game, engine, ui);
 	}
 
 
@@ -55,6 +57,8 @@ namespace griffin {
 	void gameRenderFrameTick(Game& game, Engine& engine, float interpolation,
 							 const int64_t realTime, const int64_t countsPassed)
 	{
+		game.screenShaker.renderFrameTick(game, engine, interpolation, realTime, countsPassed);
+
 		game.devConsole.renderFrameTick(game, engine, interpolation, realTime, countsPassed);
 	}
 

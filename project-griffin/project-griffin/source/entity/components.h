@@ -27,16 +27,19 @@ namespace griffin {
 		* its id. This does not actually define the component, that's done using the COMPONENT macro.
 		*/
 		COMPONENT_LIST(
-			SceneNode,				//<! System: SceneGraph, all entities that exist at a position in the scene get this
-			ModelInstance,			//<! System: SceneGraph, model instance, submitted to renderer if visible
-			CameraInstance,			//<! System: SceneGraph, camera instance, submitted to renderer if active
-			LightInstance,			//<! System: SceneGraph, light instance, submitted to renderer if visible
-			MovementComponent,		//<! System: SceneGraph, all entities that can move in the scene with auto interpolation
-			RenderCullInfo,			//<! System: SceneGraph, all entitied that can be rendered to the screen
+			SceneNode,				//<! Engine: SceneGraph: all entities that exist at a position in the scene get this
+			ModelInstance,			//<! Engine: SceneGraph: model instance, submitted to renderer if visible
+			CameraInstance,			//<! Engine: SceneGraph: camera instance, submitted to renderer if active
+			LightInstance,			//<! Engine: SceneGraph: light instance, submitted to renderer if visible
+			MovementComponent,		//<! Engine: SceneGraph: all entities that can move in the scene with auto interpolation
+			RenderCullInfo,			//<! Engine: SceneGraph: all entities that can be rendered to the screen
 
-			MeshAnimationTrack,		//<! System: Animation, mesh instance animation times and blends
-			MeshNodeAnimation,		//<! System: Animation, mesh instance interpolated and blended node transform
-			MaterialOverride		//<! System: Render, mesh instance material overrides
+			MeshAnimationTrack,		//<! Engine: Animation: mesh instance animation times and blends
+			MeshNodeAnimation,		//<! Engine: Animation: mesh instance interpolated and blended node transform
+			MaterialOverride,		//<! Engine: Render: mesh instance material overrides
+
+			ScreenShakeProducer,	//<! Game: ScreenShakerSystem: causes shake on nearby ScreenShakeNodes
+			ScreenShakeNode			//<! Game: ScreenShakerSystem: pairs with a SceneNode and receives shake from nearby ScreenShakeProducers
 		)
 
 	}

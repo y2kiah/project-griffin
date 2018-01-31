@@ -36,14 +36,14 @@ namespace griffin {
 			// Entity Functions
 
 			/**
-			* @return	true if entity id is valid
+			* @return  true if entity id is valid
 			*/
 			bool entityIsValid(EntityId entityId) const {
 				return m_entityStore.isValid(entityId);
 			}
 
 			/**
-			* @return	ComponentMask of the entity
+			* @return  ComponentMask of the entity
 			*/
 			ComponentMask getEntityComponentMask(EntityId entityId) const {
 				return m_entityStore[entityId].componentMask;
@@ -51,7 +51,7 @@ namespace griffin {
 
 			/**
 			* Uses the component mask to quickly see if a component type exists in the entity
-			* @return	true if the component type exists at least once, false if not
+			* @return  true if the component type exists at least once, false if not
 			*/
 			bool entityHasComponent(EntityId entityId, ComponentType ct) const {
 				return m_entityStore[entityId].hasComponent(ct);
@@ -59,12 +59,12 @@ namespace griffin {
 
 			/**
 			* Creates a new empty entity
-			* @return	entity id
+			* @return  entity id
 			*/
 			EntityId createEntity();
 
 			/**
-			* @return	ComponentId of a component with a certain type. Returns the first component
+			* @return  ComponentId of a component with a certain type. Returns the first component
 			*	in the list encountered. Use the getEntityComponents function if more than one
 			*	component of a type is expected.
 			*/
@@ -83,7 +83,7 @@ namespace griffin {
 
 			/**
 			* Get the ComponentIds that belong to an entity
-			* @return	const reference to the components vector, don't store it just use it
+			* @return  const reference to the components vector, don't store it just use it
 			*	immediately and discard
 			*/
 			const std::vector<ComponentId>& getAllEntityComponents(EntityId entityId) const {
@@ -91,7 +91,7 @@ namespace griffin {
 			}
 
 			/**
-			* @return	pointer to component data by entity and component type.
+			* @return  pointer to component data by entity and component type.
 			*	nullptr if component doesn't exist.
 			*	Returns the first component in the list encountered. Use the getEntityComponents
 			*	function if more than one component of a type is expected.
@@ -108,7 +108,8 @@ namespace griffin {
 			/**
 			* This call is "unsafe" if the componentId is invalid. It asserts in debug builds only.
 			* Use this function directly only when you know the component is present.
-			* @return	reference to component by id, throws if component doesn't exist
+			* @tparam T  the component type, requires member T::componentType
+			* @return  reference to component by id, throws if component doesn't exist
 			*/
 			template <typename T>
 			T& getComponent(ComponentId componentId) {
@@ -116,10 +117,10 @@ namespace griffin {
 			}
 
 			/**
-			* Adds a component to an existing entity
+			* Adds a new component to an existing entity
 			* @param entityId	entity to receive the new component
-			* @tparam T	the component type, requires member T::componentType
-			* @return	new ComponentId, or NullId_T if entityId is invalid
+			* @tparam T  the component type, requires member T::componentType
+			* @return  new ComponentId, or NullId_T if entityId is invalid
 			*/
 			template <typename T>
 			ComponentId addComponentToEntity(T&& component, EntityId entityId) {
@@ -139,9 +140,12 @@ namespace griffin {
 				if (newMask != previousMask) {
 					// fix up the mask index with the new mask, remove the old entry with old mask
 					auto rng = m_componentIndex.equal_range(previousMask.to_ullong());
-					std::remove_if(rng.first, rng.second, [entityId](ComponentMaskMap::value_type& val){
-						return (val.second == entityId);
-					});
+					// TODO: not sure about this erase code, test if it works and is safe to erase in a partial range like this
+					m_componentIndex.erase(std::remove_if(rng.first, rng.second,
+						[entityId](ComponentMaskMap::value_type& val){
+							return (val.second == entityId);
+						}),
+						rng.second);
 					
 					// insert the new entry with new mask
 					m_componentIndex.insert(ComponentMaskMap::value_type{ newMask.to_ullong(), entityId });
@@ -158,23 +162,47 @@ namespace griffin {
 			
 			/**
 			* Removes a component from the entity's components vector, and unsets the bit in the
-			* ComponentMask if the removed component is the last of its type. The entity id is
-			* known from the component record. The EntityManager is not notified by this function,
-			* so this should only be used internally or if you REALLY know what you're doing.
-			* @param componentId	the component to be removed from its entity
-			* @return	true if the component was removed, false if it does not exist
+			* ComponentMask if the removed component is the last of its type. Also removes the component
+			* from the component store. The entity id is extracted from the component record.
+			* @param componentId  the component to be removed from its entity and store
+			* @return  true if the component was removed, false if it does not exist
 			*/
-			bool removeComponentFromEntity(ComponentId componentId);
+			bool removeComponent(ComponentId componentId);
 			
 			/**
 			* Removes all components of a type from from the entity's components vector, and unsets
 			* the corresponding bit in the ComponentMask.
-			* @param ct		the component type's enum value
-			* @param entityId	the entity to remove from
-			* @return	true if the component was removed, false if the entity doesn't exist or
-			*	nothing was removed
+			* @param ct  the component type's enum value
+			* @param entityId  the entity to remove from
+			* @return  true if the component was removed, false if the entity doesn't exist or nothing was removed
 			*/
 			bool removeComponentsOfTypeFromEntity(ComponentType ct, EntityId entityId);
+
+			/**
+			* Removes all components where the predicate returns true.
+			* @tparam T  the component type, requires member T::componentType
+			* @tparam UnaryPredicate  predicate must return bool and accept a single param of type T
+			* @param p_  function pointer, lambda or functor returning a bool
+			*/
+			template <typename T, class UnaryPredicate>
+			int removeComponent_if(UnaryPredicate p_)
+			{
+				int removed = 0;
+				auto& store = getComponentStore<T>();
+				auto& components = store.getComponents();
+				for (auto it = components.cbegin(); it != components.cend();) {
+					if (p_(it->component)) {
+						auto componentId = store.getComponentIdForItem(it);
+						if (removeComponent(componentId)) {
+							++removed;
+						}
+					}
+					else {
+						++it;
+					}
+				}
+				return removed;
+			}
 
 
 			// Component Store Functions
@@ -182,8 +210,8 @@ namespace griffin {
 			/**
 			* Get a reference to component store for a specific type, assumed to be a component
 			* with ::componentType member. Useful for systems.
-			* @tparam T	the component type, requires member T::componentType
-			* @return	the ComponentStore for a given type
+			* @tparam T  the component type, requires member T::componentType
+			* @return  the ComponentStore for a given type
 			*/
 			template <typename T>
 			ComponentStore<T>& getComponentStore() {
@@ -198,7 +226,7 @@ namespace griffin {
 			/**
 			* Create a store for a specific type, assumed to be a component with ::componentType member
 			* which identifies the type id and becomes the index into the stores vector.
-			* @tparam T	the component type, requires member T::componentType
+			* @tparam T  the component type, requires member T::componentType
 			*/
 			template <typename T>
 			void createComponentStore(size_t reserve) {
@@ -209,6 +237,13 @@ namespace griffin {
 
 
 			// Size-based data component functions
+			
+			/*
+			* Note: the interface to data components is limited to single-component interactions;
+			* it is impractical to get a data component store and iteratate since type casts might
+			* yield different object sizes, so iteration might be at the wrong stride. It's safe to
+			* reinterpret_cast a single data component with a known source type.
+			*/
 
 			/**
 			* Create a store for size-based data components
@@ -224,10 +259,13 @@ namespace griffin {
 			ComponentId addDataComponentToEntity(uint16_t typeId, EntityId entityId);
 			
 			inline uint16_t getDataComponentSize(uint16_t typeId) {
-				assert(typeId < MAX_COMPONENTS - ComponentType::last_ComponentType_enum && "typeId out of range");
+				assert(typeId + ComponentType::last_ComponentType_enum < MAX_COMPONENTS && "typeId out of range");
 				return m_dataComponentStoreSizes[typeId];
 			}
 			
+			/**
+			* Get a data component from its store as raw bytes, useful for pass-throughs to Lua.
+			*/
 			void* getDataComponent(ComponentId componentId);
 
 		private:
@@ -237,13 +275,15 @@ namespace griffin {
 			/**
 			* Create a store for a specific type, without assuming that the type has a ::componentType
 			* member identiying the type id.
-			* @tparam T	the component type, requires member T::componentType
+			* @tparam T  the component type, requires member T::componentType
 			*/
 			template <typename T>
 			void createComponentStore(uint16_t typeId, size_t reserve) {
 				assert(m_componentStores[typeId] == nullptr && "componentStore already exists");
 
-				m_componentStores[typeId] = std::make_unique<ComponentStore<T>>(typeId, (reserve > RESERVE_ENTITYMANAGER_COMPONENTS ? reserve : RESERVE_ENTITYMANAGER_COMPONENTS));
+				m_componentStores[typeId] = std::make_unique<ComponentStore<T>>(
+					typeId,
+					(reserve > RESERVE_ENTITYMANAGER_COMPONENTS ? reserve : RESERVE_ENTITYMANAGER_COMPONENTS));
 			}
 
 

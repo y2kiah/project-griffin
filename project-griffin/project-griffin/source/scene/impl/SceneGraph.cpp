@@ -76,7 +76,7 @@ void SceneGraph::updateNodeTransforms()
 
 
 SceneNodeId SceneGraph::addToScene(EntityId entityId, const glm::dvec3& translationLocal,
-									const glm::dquat& rotationLocal, SceneNodeId parentNodeId)
+								   const glm::dquat& rotationLocal, SceneNodeId parentNodeId)
 {
 	auto& nodeComponents = entityMgr.getComponentStore<SceneNode>().getComponents();
 
@@ -183,7 +183,7 @@ bool SceneGraph::removeFromScene(SceneNodeId sceneNodeId, bool cascade, std::vec
 	}
 
 	// remove the component
-	bool removed = entityMgr.removeComponentFromEntity(sceneNodeId);
+	bool removed = entityMgr.removeComponent(sceneNodeId);
 
 	return removed;
 }

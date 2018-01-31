@@ -73,9 +73,8 @@ namespace griffin {
 		)
 
 		/**
-		* The CameraInstance is a component that goes along with the SceneNode to make an
-		* entity represent a camera in the scene. The cameraId is obtained from the scene by
-		* calling createCamera.
+		* The CameraInstance is a component that pairs with a SceneNode to make an entity represent
+		* a camera in the scene. The cameraId is obtained from the scene by calling createCamera.
 		*/
 		COMPONENT(CameraInstance,
 			(uint32_t,		cameraId,,			"id of the referenced camera"),
@@ -126,7 +125,7 @@ namespace griffin {
 			(uint8_t,		prevTranslationDirty,,	"previous value of translationDirty"),
 			(uint8_t,		prevRotationDirty,,		"previous value of rotationDirty"),
 			(uint8_t,		_padding_0,[4],			""),
-
+			
 			// movement vars
 			(glm::dvec3,	prevTranslation,,		"previous local translation"),
 			(glm::dvec3,	nextTranslation,,		"next local translation"),
@@ -161,7 +160,7 @@ namespace griffin {
 			void updateNodeTransforms();
 
 			/**
-			* Adds a SceneNode component to the entity and incorporate into the scene graph as a
+			* Add a SceneNode component to the entity and incorporate it into the scene graph as a
 			* child of the parentNode. If component already exists in entity, the node is moved to
 			* the new parent and position.
 			* @param entityId	entity to which a SceneNode Component is added
