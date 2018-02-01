@@ -51,40 +51,50 @@ ffi.cdef[[
 	/**
 	* Creates a new entity with a SceneNode component
 	* @scene	scene id
-	* @parentEntity	entity id of the parent scene node, 0 for root node
+	* @movable	true (default) to add a MovementComponent
+	* @parentNode	scene node id of the parent scene node, 0 for root node
 	* @return	entity id of the newly created scene node
 	*/
 	
-	uint64_t griffin_scene_createEmptySceneNode(uint64_t scene, uint64_t parentEntity);
+	uint64_t griffin_scene_createNewSceneNode(
+				uint64_t scene,
+				bool movable,
+				uint64_t parentNode);
 
 	/**
 	* Creates a new scene entity with SceneNode, ModelInstance and optional animation components
 	* @scene	scene id
-	* @parentEntity	entity id of the parent scene node, 0 for root node
 	* @model	resource id of the model to reference
+	* @movable	true (default) to add a MovementComponent
+	* @parentNode	scene node id of the parent scene node, 0 for root node
 	* @return	entity id of the newly created scene node
 	*/
 	
-	uint64_t griffin_scene_createModelInstance(uint64_t scene, uint64_t parentEntity, uint64_t model);
+	uint64_t griffin_scene_createNewModelInstance(
+				uint64_t scene,
+				uint64_t model,
+				bool movable,
+				uint64_t parentNode);
 
 	
-	uint64_t griffin_scene_createCamera(uint64_t scene, uint64_t parentEntity,
-										griffin_CameraParameters* cameraParams, const char name[32]);
+	uint64_t griffin_scene_createNewCamera(
+				uint64_t scene,
+				griffin_CameraParameters* cameraParams,
+				const char *name,
+				bool shakable,
+				uint64_t parentNode);
 
 	
 	uint64_t griffin_scene_createLight(uint64_t scene, uint64_t parentEntity);
 
-	//
-	//uint64_t griffin_scene_makeMovable(uint64_t scene, uint64_t entity);
-
 
 	// Position, Orientation, Translation, Rotation functions
 
-	
-	void griffin_scene_setRelativePosition(uint64_t scene, uint64_t entity, griffin_dvec3* pos);
+	//
+	//void griffin_scene_setRelativePosition(uint64_t scene, uint64_t entity, griffin_dvec3* pos);
 
-	
-	griffin_dvec3* griffin_scene_translate(uint64_t scene, uint64_t entity, griffin_dvec3* translation);
+	//
+	//griffin_dvec3* griffin_scene_translate(uint64_t scene, uint64_t entity, griffin_dvec3* translation);
 
 
 ]]

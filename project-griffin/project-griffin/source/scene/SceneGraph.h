@@ -26,9 +26,6 @@ namespace griffin {
 
 		using namespace griffin::entity;
 
-		typedef griffin::Id_T    SceneId;
-		typedef griffin::Id_T    SceneNodeId;
-
 		//typedef std::shared_ptr<resource::Resource_T> ResourcePtr;
 
 		// Structs
@@ -67,7 +64,8 @@ namespace griffin {
 		* entity represent a unique instance of a model object in the scene.
 		*/
 		COMPONENT(ModelInstance,
-			(Id_T,					modelId,,	"resource id of the model"),
+			(SceneNodeId,	sceneNodeId,,		"scene node containing the root of the model instance"),
+			(Id_T,			modelId,,			"resource id of the model"),
 			(resource::ResourcePtr,	modelPtr,,	"shared_ptr to model resource")
 			// TODO: consider using model manager, hold a unique index here instead of resourceptr
 		)
@@ -75,9 +73,16 @@ namespace griffin {
 		/**
 		* The CameraInstance is a component that pairs with a SceneNode to make an entity represent
 		* a camera in the scene. The cameraId is obtained from the scene by calling createCamera.
+		* The sceneNodeId references the camera's transform in the scene graph, while the movement
+		* component referenced by movementId has its own sceneNodeId, which may reference a
+		* different node. One example is to enable camera shake where the camera's node is a child
+		* of the movement node.
 		*/
 		COMPONENT(CameraInstance,
+			(SceneNodeId,	sceneNodeId,,		"scene node containing the camera instance"),
+			(ComponentId,	movementId,,		"movement component controlling the camera"),
 			(uint32_t,		cameraId,,			"id of the referenced camera"),
+			(uint8_t,		_padding_0,[4],		""),
 			(char,			name,[32],			"name of the camera")
 		)
 
@@ -92,6 +97,7 @@ namespace griffin {
 		* light and spot light is made with the isSpotLight flag. 
 		*/
 		COMPONENT(LightInstance,
+			(SceneNodeId,	sceneNodeId,,			"scene node containing the light instance"),
 			(glm::vec4,		positionViewspace,,		"position of light in viewSpace"),
 			(glm::vec3,		directionViewspace,,	"direction spotlight is pointing"),
 			(glm::vec3,		ambient,,				"ambient light color"),
@@ -109,7 +115,7 @@ namespace griffin {
 		)
 
 		/**
-		* The MovementComponent is present in all SceneNodes that aren't static. This structure
+		* The MovementComponent is present for all SceneNodes that aren't static. This structure
 		* contains prev/next values so the render loop can interpolate between them to get the
 		* final rendered position, which is then set in the SceneNode. IT IS UP TO YOU to use this
 		* component correctly for movement, in other words you have to set the prev/next values and
@@ -119,7 +125,9 @@ namespace griffin {
 		* directly.
 		*/
 		COMPONENT(MovementComponent,
-			// flags
+			(SceneNodeId,	sceneNodeId,,			"scene node controlled by this movement component"),
+
+			// flags, TODO: consider converting to bit flags
 			(uint8_t,		translationDirty,,		"position needs recalc"),
 			(uint8_t,		rotationDirty,,			"orientation needs recalc"),
 			(uint8_t,		prevTranslationDirty,,	"previous value of translationDirty"),
@@ -139,11 +147,13 @@ namespace griffin {
 		* needed to perform frustum culling.
 		*/
 		COMPONENT(RenderCullInfo,
+			(SceneNodeId,	sceneNodeId,,			"scene node related to this render culling information"),
 			(uint32_t,		visibleFrustumBits,,	"bits representing visibility in frustums"),
 			(uint32_t,		minWorldAABB,[3],		"AABB integer lower coords in worldspace"),
 			(uint32_t,		maxWorldAABB,[3],		"AABB integer upper coords in worldspace"),
 			(float,			viewspaceBSphere,[4],	"bounding sphere x,y,z,r in viewspace")
 		)
+
 
 		/**
 		*
@@ -163,6 +173,7 @@ namespace griffin {
 			* Add a SceneNode component to the entity and incorporate it into the scene graph as a
 			* child of the parentNode. If component already exists in entity, the node is moved to
 			* the new parent and position.
+			* 
 			* @param entityId	entity to which a SceneNode Component is added
 			* @param translationLocal	local position relative to the parent node
 			* @param rotationLocal	local rotation relative to the parent node
@@ -173,22 +184,13 @@ namespace griffin {
 								   const glm::dquat& rotationLocal, SceneNodeId parentNodeId);
 
 			/**
-			* See documentation for addToScene. This function takes an EntityId for the parent node
-			* rather than a SceneNodeId (component id). Otherwise they are equivalent.
-			* @param parentNodeEntityId	EntityId of parent node, NullId_T for the root node.
-			* @return	ComponentId of the SceneNode added to the entity, NullId_T if the add fails
-			*	or if the parent entity is not part of the scene
-			*/
-			SceneNodeId addEntityToScene(EntityId entityId, const glm::dvec3& translationLocal,
-										 const glm::dquat& rotationLocal, EntityId parentNodeEntityId);
-
-			/**
 			* Removes the SceneNode component from the entity and also fixes up the scene graph.
-			* Use this function when the component id is known.
+			* Use this function when you want to remove a specific SceneNode or its entire branch.
+			* 
 			* @param sceneNodeId	ComponentId of the SceneNode to remove
-			* @param cascade	If true the node's ancestors are given to the node's parent not
-			*			destroyed. If false the node's ancestors are removed.
-			* @param removedEntities	vector to push the removed ancestor entity ids, not
+			* @param cascade	If true the node's descendants are given to the node's parent not
+			*			destroyed. If false the node's descendants are removed.
+			* @param removedEntities	vector to push the removed descendant entity ids, not
 			*			including the top removed entity, or nullptr if you don't care. The caller
 			*			is responsible for the vector, this function only uses push_back.
 			* @return	true if removed, false if SceneNode component not present
@@ -196,23 +198,27 @@ namespace griffin {
 			bool removeFromScene(SceneNodeId sceneNodeId, bool cascade = true, std::vector<EntityId>* removedEntities = nullptr);
 
 			/**
-			* Removes the SceneNode component from the entity and also fixes up the scene graph.
-			* Use this function when only the entity id is known.
+			* Removes all SceneNode components from the entity and also fixes up the scene graph.
+			* Use this function for entities with many SceneNode branches (not just a single branch
+			* from one root node) when all branches should be removed.
+			* 
 			* @param sceneNodeId	ComponentId of the SceneNode to remove
-			* @param cascade	If true the node's ancestors are given to the node's parent not
-			*			destroyed. If false the node's ancestors are removed.
-			* @param removedEntities	vector to push the removed ancestor entity ids, not
+			* @param cascade	If true the node's descendants are given to the node's parent not
+			*			destroyed. If false the node's descendants are removed.
+			* @param removedEntities	vector to push the removed descendant entity ids, not
 			*			including the top removed entity, or nullptr if you don't care. The caller
 			*			is responsible for the vector, this function only uses push_back.
 			* @return	true if removed, false if SceneNode component not present
 			*/
 			bool removeEntityFromScene(EntityId entityId, bool cascade = true, std::vector<EntityId>* removedEntities = nullptr);
 
+			// TODO: may need a toggle to control switching entity owner to the new parent's entity
 			/**
 			* Moves a sceneNode referenced by sceneNodeId from its current parent to a new parent.
 			* Take care not to move the node to a parent deeper in its own branch, as that would
 			* break the tree, and the case is not checked for performance reasons. This function
-			* does cascade so all ancestors of sceneNodeId move with it.
+			* does cascade so all descendants of sceneNodeId move with it.
+			* 
 			* @param sceneNodeId	id of the scene node to move
 			* @param moveToParent	the new parent id
 			* @return	true if the node is moved, false if a given id is invalid or if
@@ -220,18 +226,22 @@ namespace griffin {
 			*/
 			bool moveNode(SceneNodeId sceneNodeId, SceneNodeId moveToParent);
 
+			// TODO: may need a toggle to control switching entity owner to the new parent's entity
 			/**
 			* Moves the sceneNode referenced by siblingToMove, and each of its siblings by getting
 			* the full list from the current parent, and moving each to the front of the new
 			* parent's child list. Take care not to move the siblings to a parent deeper in their
 			* own branch, as that would break the tree, and the case is not checked for performance
-			* reasons. This function does cascade so all ancestors of the nodes move with them.
+			* reasons. This function does cascade so all descendants of the nodes move with them.
+			* 
 			* @param siblingToMove	id of the scene node to move, along with all siblings
 			* @param moveToParent	the new parent id
+			* @param excludeEntityId	pass this to prevent moving any children owned by the
+			*	specified entity, effectively moving only scene children owned by other entities
 			* @return	true if the nodes are moved, false if a given id is invalid or if
 			*		moveToParent is already the current parent
 			*/
-			bool moveAllSiblings(SceneNodeId siblingToMove, SceneNodeId moveToParent);
+			bool moveAllSiblings(SceneNodeId siblingToMove, SceneNodeId moveToParent, EntityId excludeEntityId = NullId_T);
 
 			/**
 			* Iterates through the child linked list and returns the last child (where nextSibling
@@ -243,13 +253,14 @@ namespace griffin {
 			SceneNodeId getLastImmediateChild(SceneNodeId sceneNodeId) const;
 
 			/**
-			* Starts at sceneNodeId and push all nodes in its ancestor tree into outAncestors. The
-			* caller is responsible for the vector outAncestors, it is not cleared before pushing
-			* the nodes.
-			* @param sceneNodeId	the parent node of the ancestors to collect
-			* @param outAncestors	vector to push_back the ancestor SceneNodeIds into
+			* Starts at sceneNodeId and push all nodes in its descendant tree into outDescendants.
+			* The caller is responsible for the vector outDescendants, it is not cleared before
+			* pushing the nodes.
+			* 
+			* @param sceneNodeId	the parent node of the descendants to collect
+			* @param outDescendants	vector to push_back the descendant SceneNodeIds into
 			*/
-			void collectAncestors(SceneNodeId sceneNodeId, std::vector<SceneNodeId>& outAncestors) const;
+			void collectDescendants(SceneNodeId sceneNodeId, std::vector<SceneNodeId>& outDescendants) const;
 
 			/**
 			* Sets the sceneId of the scene owning this scene graph, stored in SceneNodes

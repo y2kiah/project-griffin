@@ -1087,6 +1087,9 @@
     <ClInclude Include="vendor\glm\glm\detail\type_vec4.hpp">
       <Filter>vendor\glm\detail</Filter>
     </ClInclude>
+    <ClInclude Include="source\game\positionalEffects\screenShaker\ScreenShakerComponents.h">
+      <Filter>game\positionalEffects\screenShaker</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="vendor\glm\glm\gtc\constants.inl">

@@ -117,21 +117,6 @@ SceneNodeId SceneGraph::addToScene(EntityId entityId, const glm::dvec3& translat
 }
 
 
-SceneNodeId SceneGraph::addEntityToScene(EntityId entityId, const glm::dvec3& translationLocal,
-										 const glm::dquat& rotationLocal, EntityId parentNodeEntityId)
-{
-	SceneNodeId newSceneNodeId{};
-	SceneNodeId parentNodeId{};
-	if (parentNodeEntityId != NullId_T) {
-		parentNodeId = entityMgr.getEntityComponentId(parentNodeEntityId, scene::SceneNode::componentType);
-	}
-
-	newSceneNodeId = addToScene(entityId, translationLocal, rotationLocal, parentNodeId);
-	
-	return newSceneNodeId;
-}
-
-
 bool SceneGraph::removeFromScene(SceneNodeId sceneNodeId, bool cascade, std::vector<EntityId>* removedEntities)
 {
 	assert(sceneNodeId.typeId == SceneNode::componentType && "component is the wrong type");
@@ -142,7 +127,8 @@ bool SceneGraph::removeFromScene(SceneNodeId sceneNodeId, bool cascade, std::vec
 		return false;
 	}
 
-	auto& node = nodeComponents[sceneNodeId].component;
+	auto& thisNodeCR = nodeComponents[sceneNodeId];
+	auto& node = thisNodeCR.component;
 	auto& parentNode = (node.parent == NullId_T) ? m_rootNode : nodeComponents[node.parent].component;
 
 	// remove from scene graph
@@ -159,30 +145,34 @@ bool SceneGraph::removeFromScene(SceneNodeId sceneNodeId, bool cascade, std::vec
 	--parentNode.numChildren;
 
 	if (node.numChildren > 0) {
-		// remove all ancestors
+		// remove all descendants
 		if (cascade) {
 			m_handleBuffer.clear();
-			collectAncestors(sceneNodeId, m_handleBuffer);
+			collectDescendants(sceneNodeId, m_handleBuffer);
 			if (removedEntities != nullptr) {
 				auto& rmvEnt = *removedEntities;
-				for (auto ancestorSceneNodeId : m_handleBuffer) {
-					rmvEnt.push_back(nodeComponents[ancestorSceneNodeId].entityId);
-					removeFromScene(ancestorSceneNodeId, false, nullptr);
+				for (auto descSceneNodeId : m_handleBuffer) {
+					auto entityIdOfRemoved = nodeComponents[descSceneNodeId].entityId;
+					if (entityIdOfRemoved != thisNodeCR.entityId) {
+						rmvEnt.push_back(entityIdOfRemoved);
+					}
+					removeFromScene(descSceneNodeId, true, removedEntities);
 				}
 			}
 			else {
-				for (auto ancestorSceneNodeId : m_handleBuffer) {
-					removeFromScene(ancestorSceneNodeId, false, nullptr);
+				for (auto descSceneNodeId : m_handleBuffer) {
+					removeFromScene(descSceneNodeId, true, nullptr);
 				}
 			}
 		}
-		// don't cascade the delete, give the node's children to its parent
+		// don't cascade the delete, give the node's children to its parent,
+		// excluding nodes that are directly owned by this entity
 		else {
-			moveAllSiblings(node.firstChild, node.parent);
+			moveAllSiblings(node.firstChild, node.parent, thisNodeCR.entityId);
 		}
 	}
 
-	// remove the component
+	// remove this SceneNode component from the store and entity
 	bool removed = entityMgr.removeComponent(sceneNodeId);
 
 	return removed;
@@ -195,14 +185,11 @@ bool SceneGraph::removeEntityFromScene(EntityId entityId, bool cascade, std::vec
 		return false;
 	}
 
-	auto& entityComponents = entityMgr.getAllEntityComponents(entityId);
-
 	bool removed = false;
-	for (auto &sceneNodeId : entityComponents) {
-		if (sceneNodeId.typeId == SceneNode::componentType) {
-			removed = removeFromScene(sceneNodeId, cascade, removedEntities);
-			if (removed) { break; }
-		}
+
+	for (SceneNodeId sceneNodeId = entityMgr.getEntityComponentId(entityId, SceneNode::componentType); sceneNodeId != NullId_T;) {
+		removed = removed &&
+			removeFromScene(sceneNodeId, cascade, removedEntities);
 	}
 
 	return removed;
@@ -211,6 +198,8 @@ bool SceneGraph::removeEntityFromScene(EntityId entityId, bool cascade, std::vec
 
 bool SceneGraph::moveNode(SceneNodeId sceneNodeId, SceneNodeId moveToParent)
 {
+	assert(sceneNodeId != moveToParent && "can't move a node into itself");
+
 	auto& nodeComponents = entityMgr.getComponentStore<SceneNode>().getComponents();
 
 	if (!nodeComponents.isValid(sceneNodeId) || !nodeComponents.isValid(moveToParent)) {
@@ -254,7 +243,10 @@ bool SceneGraph::moveNode(SceneNodeId sceneNodeId, SceneNodeId moveToParent)
 }
 
 
-bool SceneGraph::moveAllSiblings(SceneNodeId siblingToMove, SceneNodeId moveToParent)
+bool SceneGraph::moveAllSiblings(
+	SceneNodeId siblingToMove,
+	SceneNodeId moveToParent,
+	EntityId excludeEntityId)
 {
 	auto& nodeComponents = entityMgr.getComponentStore<SceneNode>().getComponents();
 
@@ -274,10 +266,19 @@ bool SceneGraph::moveAllSiblings(SceneNodeId siblingToMove, SceneNodeId moveToPa
 
 	// move each child to the new parent
 	auto childId = currentParent.firstChild;
+	
 	while (childId != NullId_T) {
-		auto& child = nodeComponents[childId].component;
-		allMoved = allMoved && moveNode(childId, moveToParent);
-		childId = child.nextSibling;
+		auto& childCR = nodeComponents[childId];
+		
+		// move the child as long as it isn't owned by the excluded entity
+		// also make sure we're not trying to move a node into itself
+		if ((excludeEntityId == NullId_T || childCR.entityId != excludeEntityId)
+			&& childId != moveToParent)
+		{
+			auto& child = childCR.component;
+			allMoved = allMoved && moveNode(childId, moveToParent);
+			childId = child.nextSibling;
+		}
 	}
 
 	assert(currentParent.numChildren == 0 && "numChildren > 0 but all siblings should have moved");
@@ -310,7 +311,9 @@ SceneNodeId SceneGraph::getLastImmediateChild(SceneNodeId sceneNodeId) const
 }
 
 
-void SceneGraph::collectAncestors(SceneNodeId sceneNodeId, std::vector<SceneNodeId>& outAncestors) const
+void SceneGraph::collectDescendants(
+	SceneNodeId sceneNodeId,
+	std::vector<SceneNodeId>& outDescendants) const
 {
 	auto& nodeComponents = entityMgr.getComponentStore<SceneNode>().getComponents();
 
@@ -326,7 +329,7 @@ void SceneGraph::collectAncestors(SceneNodeId sceneNodeId, std::vector<SceneNode
 		auto childId = node.firstChild;
 		for (uint32_t c = 0; c < node.numChildren; ++c) {
 			auto& child = nodeComponents[childId].component;
-			outAncestors.push_back(childId);
+			outDescendants.push_back(childId);
 			bfsQueue.push(childId);
 			childId = child.nextSibling;
 		}

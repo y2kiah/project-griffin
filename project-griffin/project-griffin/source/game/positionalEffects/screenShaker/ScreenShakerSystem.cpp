@@ -1,4 +1,5 @@
 #include "ScreenShakerSystem.h"
+#include "ScreenShakerComponents.h"
 #include <scene/Scene.h>
 #include <entity/EntityManager.h>
 //#include <input/InputSystem.h>
@@ -6,14 +7,20 @@
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#include <glm/gtc/random.hpp> // TEMP
 
-void griffin::game::ScreenShakerSystem::updateFrameTick(
+using namespace glm;
+using namespace griffin;
+using namespace griffin::game;
+
+using griffin::scene::SceneNode;
+
+
+void ScreenShakerSystem::updateFrameTick(
 	Game& game,
 	Engine& engine,
 	const UpdateInfo& ui)
 {
-	using namespace glm;
-
 	auto& scene = engine.sceneManager->getScene(game.sceneId);
 	auto& entityMgr = *scene.entityManager;
 
@@ -23,7 +30,7 @@ void griffin::game::ScreenShakerSystem::updateFrameTick(
 	// for each ScreenShakeNode (receiver)
 	for (auto& n : shakeNodes.getComponents()) {
 		auto& shakeNode = n.component;
-		auto& shakeSceneNode = entityMgr.getComponent<scene::SceneNode>(shakeNode.sceneNodeId);
+		auto& shakeSceneNode = entityMgr.getComponent<SceneNode>(shakeNode.sceneNodeId);
 		
 		shakeNode.prevTurbulence = shakeNode.nextTurbulence;
 		shakeNode.nextTurbulence = 0;
@@ -31,11 +38,7 @@ void griffin::game::ScreenShakerSystem::updateFrameTick(
 		// for each ScreenShakeProducer component
 		for (auto& p : producers.getComponents()) {
 			auto& producer = p.component;
-
-			// TODO: to support > 1 SceneNode per entity, convert this to a function on an entity
-			auto pNode = entityMgr.getEntityComponent<scene::SceneNode>(p.entityId);
-			assert(pNode != nullptr && "entity expected to have a SceneNode");
-			auto& producerSceneNode = *pNode;
+			auto& producerSceneNode = entityMgr.getComponent<SceneNode>(producer.sceneNodeId);
 
 			float producerRadiusSq = producer.radius * producer.radius;
 
@@ -70,27 +73,56 @@ void griffin::game::ScreenShakerSystem::updateFrameTick(
 }
 
 
-void griffin::game::ScreenShakerSystem::renderFrameTick(
+void ScreenShakerSystem::renderFrameTick(
 	Game& game,
 	Engine& engine,
 	float interpolation,
 	const int64_t realTime,
 	const int64_t countsPassed)
 {
-	//auto camInstId = scene.entityManager->getEntityComponentId(devCameraId, scene::CameraInstance::componentType);
-	//auto& camInst = scene.entityManager->getComponentStore<scene::CameraInstance>().getComponent(camInstId);
-	//auto& cam = *scene.cameras[camInst.cameraId];
+	auto& scene = engine.sceneManager->getScene(game.sceneId);
+	auto& entityMgr = *scene.entityManager;
 
-	// float turbulence = glm::mix(shakeNode.prevTurbulence, shakeNode.nextTurbulence, interpolation);
-	// float shake = turbulence * turbulence; // * turbulence;
+	auto& shakeNodes = entityMgr.getComponentStore<ScreenShakeNode>();
 
-	// yaw   = maxYaw   * shake * getPerlinNoise(seed,   time, ...?);
-	// pitch = maxPitch * shake * getPerlinNoise(seed=1, time, ...?);
-	// roll  = maxRoll  * shake * getPerlinNoise(seed=2, time, ...?);
+	// for each ScreenShakeNode (receiver)
+	for (auto& n : shakeNodes.getComponents()) {
+		auto& shakeNode = n.component;
+
+		float turbulence = glm::mix(shakeNode.prevTurbulence, shakeNode.nextTurbulence, interpolation);
+		float turbSq = turbulence * turbulence;
+
+		// TEMP, these should come from producers
+		constexpr float maxYaw   = glm::radians(2.0f);
+		constexpr float maxPitch = glm::radians(2.0f);
+		constexpr float maxRoll  = glm::radians(2.0f);
+
+		turbSq = 0.2f; // TEMP
+
+		float yawAngle   = maxYaw   * turbSq * glm::linearRand(-1.0f, 1.0f); //getPerlinNoise(seed,   time, ...?);
+		float pitchAngle = maxPitch * turbSq * glm::linearRand(-1.0f, 1.0f); //getPerlinNoise(seed=1, time, ...?);
+		float rollAngle  = maxRoll  * turbSq * glm::linearRand(-1.0f, 1.0f); //getPerlinNoise(seed=2, time, ...?);
+
+		// cameraMovementNode is the base camera transform without shake applied, so every frame we
+		// rebase the shake scene node on it so the shake doesn't wander away from view direction
+		auto* pCamInst = entityMgr.getEntityComponent<scene::CameraInstance>(n.entityId);
+		assert(pCamInst != nullptr && "a screen shake entity must contain a camera instance");
+		
+		auto& camMove = entityMgr.getComponent<scene::MovementComponent>(pCamInst->movementId);
+		auto& camMoveNode = entityMgr.getComponent<SceneNode>(camMove.sceneNodeId);
+		auto& shakeSceneNode = entityMgr.getComponent<SceneNode>(shakeNode.sceneNodeId);
+		assert(camMove.sceneNodeId != shakeNode.sceneNodeId && "camera movement shake SceneNode should be a child of the movement SceneNode, not the same node");
+		
+		dvec3 angles(pitchAngle, yawAngle, rollAngle);
+		//angles = angles * inverse(camMoveNode.orientationWorld); // transform angles into viewspace
+		
+		shakeSceneNode.rotationLocal = dquat(angles);
+		shakeSceneNode.orientationDirty = 1;
+	}
 }
 
 
-void griffin::game::ScreenShakerSystem::init(
+void ScreenShakerSystem::init(
 	Game& game,
 	const Engine& engine,
 	const SDLApplication& app)
@@ -98,30 +130,9 @@ void griffin::game::ScreenShakerSystem::init(
 	using namespace griffin::scene;
 	auto& scene = engine.sceneManager->getScene(game.sceneId);
 
-	playerId = game.player.playerId;
-
 	//playerfpsInputContextId = game.player.playerfpsInputContextId;
 
-	
-	// create game component stores for this system
-	/*game.gameComponentStoreIds[ScreenShakerComponentTypeId] = scene.entityManager->createDataComponentStore(
-		ScreenShakerComponentTypeId,
-		sizeof(ScreenShakerComponent), 1);*/
-
-	///// TEMP the devcamera store is not needed, demonstration
-	// add devcamera movement component
-	//devCameraMovementId = scene.entityManager->addDataComponentToEntity(DevCameraMovementComponentTypeId,
-	//																	  devCameraId);
-
-	//auto devCamMove = (DevCameraMovementComponent*)scene.entityManager->getDataComponentData(devCameraMovementId);
-	///// end TEMP
-
-
 /*
-	node.rotationLocal = scene.cameras[cam.cameraId]->getOrientation();
-	node.orientationDirty = 1;
-	move.prevRotation = move.nextRotation = node.rotationLocal;
-
 	// get playerfps input mapping ids
 	{
 		auto ctx = engine.inputSystem->getInputContextHandle("playerfps");
@@ -155,4 +166,29 @@ void griffin::game::ScreenShakerSystem::init(
 		});
 	}
 */
+}
+
+
+ComponentId griffin::game::addScreenShakeNodeToCamera(
+	scene::Scene& scene,
+	EntityId entityId,
+	ComponentId cameraInstanceId)
+{
+	auto& entityMgr = *scene.entityManager;
+	auto& camInst = entityMgr.getComponent<scene::CameraInstance>(cameraInstanceId);
+
+	// create a new scene node with a parent of the original camera node
+	auto shakeSceneNodeId = scene.sceneGraph->addToScene(entityId, {}, {}, camInst.sceneNodeId);
+
+	// add a shakenode component to control the new scene node
+	game::ScreenShakeNode shakeNode{};
+	shakeNode.sceneNodeId = shakeSceneNodeId;
+	
+	auto shakeNodeId = entityMgr.addComponentToEntity(std::move(shakeNode), entityId);
+
+	// put the camera onto the new shakable scene node, the camera's movement component remains
+	// unchanged and still points to the original scene node
+	camInst.sceneNodeId = shakeSceneNodeId;
+
+	return shakeNodeId;
 }

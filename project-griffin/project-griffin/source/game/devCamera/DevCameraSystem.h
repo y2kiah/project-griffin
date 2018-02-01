@@ -23,7 +23,7 @@ namespace griffin {
 			uint32_t	toggleActiveCamera = 0;
 
 			EntityId	devCameraId;							//<! entity id of the dev camera
-			ComponentId	movementComponentId;					//<! movement component for the dev camera entity
+			ComponentId	movementComponentId;					//<! movement component for the dev camera
 
 			Id_T		devCameraInputContextId;				//<! handle for the devcamera input context
 			Id_T		playerfpsInputContextId;				//<! handle for the playerfps input context

@@ -19,11 +19,18 @@ namespace griffin {
 	namespace render {
 		using namespace glm;
 
-		void Model_GL::render(Id_T entityId, scene::Scene& scene, uint8_t viewport, Engine& engine)
+		void Model_GL::render(
+			entity::ComponentId modelInstanceId,
+			scene::Scene& scene,
+			uint8_t viewport,
+			Engine& engine)
 		{
 			using scene::SceneNode;
-			
-			SceneNode* sceneNode = scene.entityManager->getEntityComponent<SceneNode>(entityId);
+			auto& entityMgr = *scene.entityManager;
+
+			auto& instanceStore = entityMgr.getComponentStore<scene::ModelInstance>();
+			auto& instance = instanceStore.getComponentRecord(modelInstanceId);
+			auto& sceneNode = entityMgr.getComponent<SceneNode>(instance.component.sceneNodeId);
 
 			uint32_t currentNodeIndex = UINT32_MAX;
 			glm::dvec4 currentWorldPosition;
@@ -37,11 +44,11 @@ namespace griffin {
 				//m_renderEntries.keys[re].key.translucentKey.backToFrontDepth;
 				
 				auto& entry = m_renderEntries.entries[re];
-				entry.entityId = entityId;
+				entry.entityId = instance.entityId;
 				
 				if (currentNodeIndex != entry.nodeIndex) {
-					currentWorldPosition = dvec4(sceneNode->positionWorld, 1.0) + entry.positionWorld;
-					currentWorldOrientation = glm::normalize(sceneNode->orientationWorld + entry.orientationWorld);
+					currentWorldPosition = dvec4(sceneNode.positionWorld, 1.0) + entry.positionWorld;
+					currentWorldOrientation = glm::normalize(sceneNode.orientationWorld + entry.orientationWorld);
 					currentNodeIndex = entry.nodeIndex;
 				}
 				entry.positionWorld = currentWorldPosition;
@@ -52,7 +59,9 @@ namespace griffin {
 		}
 
 
-		void Model_GL::draw(Id_T entityId, int drawSetIndex)
+		void Model_GL::draw(
+			entity::ComponentId modelInstanceId,
+			int drawSetIndex)
 		{
 			m_mesh.drawMesh(drawSetIndex);
 		}

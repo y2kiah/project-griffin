@@ -10,18 +10,32 @@
 #include <cstdint>
 
 #include <utility/container/handle_map.h>
+#include <entity/EntityTypedefs.h>
 
 
 namespace griffin {
 	namespace scene { struct CameraParameters; }
+	using entity::EntityId;
+	using scene::SceneId;
+	using scene::SceneNodeId;
 
-	Id_T createEmptySceneNode(Id_T sceneId, Id_T parentEntityId = NullId_T);
 
-	Id_T createModelInstance(Id_T sceneId, bool movable,
-							 Id_T parentEntityId = Id_T(NullId_T), Id_T entityId = NullId_T);
+	EntityId createNewSceneNode(
+				SceneId sceneId,
+				bool movable = true,
+				SceneNodeId parentNode = NullId_T);
 
-	Id_T createCamera(Id_T sceneId, scene::CameraParameters& cameraParams, const char name[32],
-					  Id_T parentEntityId = NullId_T);
+	EntityId createNewModelInstance(
+				SceneId sceneId,
+				bool movable = true,
+				SceneNodeId parentNode = NullId_T);
+
+	EntityId createNewCamera(
+				SceneId sceneId,
+				scene::CameraParameters& cameraParams,
+				const char *name,
+				bool shakable = true,
+				SceneNodeId parentNode = NullId_T);
 }
 
 #ifdef __cplusplus
@@ -80,40 +94,50 @@ extern "C" {
 	/**
 	* Creates a new entity with a SceneNode component
 	* @scene	scene id
-	* @parentEntity	entity id of the parent scene node, 0 for root node
+	* @movable	true (default) to add a MovementComponent
+	* @parentNode	scene node id of the parent scene node, 0 for root node
 	* @return	entity id of the newly created scene node
 	*/
 	GRIFFIN_EXPORT
-	uint64_t griffin_scene_createEmptySceneNode(uint64_t scene, uint64_t parentEntity);
+	uint64_t griffin_scene_createNewSceneNode(
+				uint64_t scene,
+				bool movable,
+				uint64_t parentNode);
 
 	/**
 	* Creates a new scene entity with SceneNode, ModelInstance and optional animation components
 	* @scene	scene id
-	* @parentEntity	entity id of the parent scene node, 0 for root node
 	* @model	resource id of the model to reference
+	* @movable	true (default) to add a MovementComponent
+	* @parentNode	scene node id of the parent scene node, 0 for root node
 	* @return	entity id of the newly created scene node
 	*/
 	GRIFFIN_EXPORT
-	uint64_t griffin_scene_createModelInstance(uint64_t scene, uint64_t parentEntity, uint64_t model);
+	uint64_t griffin_scene_createNewModelInstance(
+				uint64_t scene,
+				uint64_t model,
+				bool movable,
+				uint64_t parentNode);
 
 	GRIFFIN_EXPORT
-	uint64_t griffin_scene_createCamera(uint64_t scene, uint64_t parentEntity,
-										griffin_CameraParameters* cameraParams, const char name[32]);
+	uint64_t griffin_scene_createNewCamera(
+				uint64_t scene,
+				griffin_CameraParameters* cameraParams,
+				const char *name,
+				bool shakable,
+				uint64_t parentNode);
 
 	GRIFFIN_EXPORT
 	uint64_t griffin_scene_createLight(uint64_t scene, uint64_t parentEntity);
 
-	//GRIFFIN_EXPORT
-	//uint64_t griffin_scene_makeMovable(uint64_t scene, uint64_t entity);
-
 
 	// Position, Orientation, Translation, Rotation functions
 
-	GRIFFIN_EXPORT
-	void griffin_scene_setRelativePosition(uint64_t scene, uint64_t entity, griffin_dvec3* pos);
+	//GRIFFIN_EXPORT
+	//void griffin_scene_setRelativePosition(uint64_t scene, uint64_t entity, griffin_dvec3* pos);
 
-	GRIFFIN_EXPORT
-	griffin_dvec3* griffin_scene_translate(uint64_t scene, uint64_t entity, griffin_dvec3* translation);
+	//GRIFFIN_EXPORT
+	//griffin_dvec3* griffin_scene_translate(uint64_t scene, uint64_t entity, griffin_dvec3* translation);
 
 #endif ffi
 #undef ffi

@@ -116,18 +116,20 @@ void SceneManager::renderActiveScenes(float interpolation, Engine& engine)
 	int8_t activeViewport = 0; // TEMP, hard coded to one viewport
 
 	for (auto& s : m_scenes.getItems()) {
+		auto& entityMgr = *s.entityManager;
+
 		if (s.active) {
 			// run the movement system to interpolate all moving nodes in the scene
-			interpolateSceneNodes(*s.entityManager, interpolation);
+			interpolateSceneNodes(entityMgr, interpolation);
 			
 			// traverse scene graph, update world positions and orientations
 			s.sceneGraph->updateNodeTransforms();
 
 			// update position/orientation of active camera from the scene graph
 			//	only supports one active camera now, but the active cameras could be extended into a list to support several views
-			for (auto& camInstance : s.entityManager->getComponentStore<CameraInstance>().getComponents().getItems()) {
+			for (auto& camInstance : entityMgr.getComponentStore<CameraInstance>().getComponents().getItems()) {
 				if (camInstance.component.cameraId == s.activeRenderCamera) {
-					auto& node = *s.entityManager->getEntityComponent<SceneNode>(camInstance.entityId);
+					auto& node = entityMgr.getComponent<SceneNode>(camInstance.component.sceneNodeId);
 					auto& cam = *s.cameras[s.activeRenderCamera];
 
 					cam.setEyePoint(node.positionWorld);
@@ -161,7 +163,7 @@ void SceneManager::renderActiveScenes(float interpolation, Engine& engine)
 			frustumCullActiveScenes();
 
 			// render all visible mesh instances
-			auto& rciStore = s.entityManager->getComponentStore<RenderCullInfo>();
+			auto& rciStore = entityMgr.getComponentStore<RenderCullInfo>();
 			
 			// TODO: should we really loop through all components AGAIN? Frustum culling could build a list of entityids instead
 			using namespace entity;
@@ -169,17 +171,17 @@ void SceneManager::renderActiveScenes(float interpolation, Engine& engine)
 				// TODO: uncomment this once frustum culling is working
 				//if (rci.component.visibleFrustumBits & frustumMask != 0) {
 				
-				ComponentMask mask = s.entityManager->getEntityComponentMask(rci.entityId);
+				ComponentMask mask = entityMgr.getEntityComponentMask(rci.entityId);
 				
 				// if it's a Model_GL
 				if (mask[ModelInstance::componentType]) {
-					auto modelCmp = *s.entityManager->getEntityComponent<ModelInstance>(rci.entityId);
+					auto modelCmp = *entityMgr.getEntityComponent<ModelInstance>(rci.entityId);
 					auto modelPtr = loader.getResource(modelCmp.modelId, resource::Cache_Models);
 					auto& model = modelPtr->getResource<render::Model_GL>();
 
 					model.render(rci.entityId, s, activeViewport, engine);
 				}
-					//auto& node = *s.entityManager->getEntityComponent<SceneNode>(rci.entityId);
+					//auto& node = entityMgr.getComponent<SceneNode>(rci.component.sceneNodeId);
 					
 					// call "render" function which should only add render entries to the viewport's queue
 					// the renderer will sort the queue and call the object's "draw" function with a callback function pointer
@@ -265,9 +267,7 @@ void interpolateSceneNodes(entity::EntityManager& entityMgr, float interpolation
 			continue;
 		}
 
-		auto pNode = entityMgr.getEntityComponent<scene::SceneNode>(move.entityId);
-		assert(pNode != nullptr);
-		auto& node = *pNode;
+		auto& node = entityMgr.getComponent<scene::SceneNode>(move.component.sceneNodeId);
 
 		if (move.component.rotationDirty == 1) {
 			node.rotationLocal = glm::slerp(move.component.prevRotation,

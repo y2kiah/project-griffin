@@ -2,6 +2,7 @@
 #include <scene/Scene.h>
 #include <entity/EntityManager.h>
 #include <utility/Logger.h>
+#include <game/positionalEffects/screenShaker/ScreenShakerComponents.h>
 
 griffin::scene::SceneManagerPtr g_sceneMgrPtr = nullptr;
 
@@ -12,49 +13,20 @@ void griffin::scene::setSceneManagerPtr(const griffin::scene::SceneManagerPtr& s
 
 namespace griffin {
 
-	Id_T createEmptySceneNode(Id_T sceneId, Id_T parentEntityId)
+	EntityId createNewSceneNode(
+		SceneId sceneId,
+		bool movable,
+		SceneNodeId parentNode)
 	{
 		auto& s = g_sceneMgrPtr->getScene(sceneId);
 		auto entityId = s.entityManager->createEntity();
 
-		auto sceneNodeId = s.sceneGraph->addEntityToScene(entityId, {}, {}, parentEntityId);
-		if (sceneNodeId != NullId_T) {
-			return entityId;
-		}
-		return NullId_T;
-	}
-
-
-	// TODO: pass in model resource id, position, orientation and scale
-	Id_T createModelInstance(Id_T sceneId, bool movable, Id_T parentEntityId, Id_T entityId)
-	{
-		auto& s = g_sceneMgrPtr->getScene(sceneId);
-
-		// if existing entity is not given, create a new one in the scene graph
-		if (entityId == NullId_T) {
-			entityId = createEmptySceneNode(sceneId, parentEntityId);
-		}
-		else if (!s.entityManager->entityIsValid(entityId)) {
-			return NullId_T;
-		}
+		auto sceneNodeId = s.sceneGraph->addToScene(entityId, {}, {}, parentNode);
 		
-		auto cmpMask = s.entityManager->getEntityComponentMask(entityId);
-		
-		// ensure a SceneNode component (only necessary for existing entities)
-		if (!cmpMask[scene::SceneNode::componentType]) {
-			s.sceneGraph->addEntityToScene(entityId, {}, {}, parentEntityId);
-		}
-
-		// ensure a ModelInstance component
-		if (!cmpMask[scene::ModelInstance::componentType]) {
-			scene::ModelInstance mi{};
-			//mi.modelId = 
-			s.entityManager->addComponentToEntity(std::move(mi), entityId);
-		}
-
-		// ensure a MovementComponent if required
-		if (movable && !cmpMask[scene::MovementComponent::componentType]) {
+		if (movable) {
 			scene::MovementComponent mc{};
+			mc.sceneNodeId = sceneNodeId;
+
 			s.entityManager->addComponentToEntity(std::move(mc), entityId);
 		}
 
@@ -62,33 +34,55 @@ namespace griffin {
 	}
 
 
-	// TODO: this should take an "entityId" like createModelInstance for adding camera to existing entity,
-	//	also make it "safe" to call on any entity where it checks the component mask before adding each required component
-	//	incase the entity already has that component type
-	Id_T createCamera(Id_T sceneId, scene::CameraParameters& cameraParams, const char name[32],
-					  Id_T parentEntityId)
+	// TODO: pass in model resource id, position, orientation and scale
+	EntityId createNewModelInstance(
+		SceneId sceneId,
+		bool movable,
+		SceneNodeId parentNode)
 	{
-		auto entityId = createEmptySceneNode(sceneId, parentEntityId);
+		auto& s = g_sceneMgrPtr->getScene(sceneId);
 
-		if (entityId != NullId_T) {
-			auto& s = g_sceneMgrPtr->getScene(sceneId);
+		auto entityId = createNewSceneNode(sceneId, movable, parentNode);
+		auto sceneNodeId = s.entityManager->getEntityComponentId(entityId, scene::SceneNode::componentType);
 
-			scene::CameraInstance ci{};
-			bool makePrimary = (s.cameras.size() == 0); // if this the first camera in the scene, make it primary
-			ci.cameraId = s.createCamera(cameraParams, makePrimary);
-			strcpy_s(ci.name, 32, name);
+		// add a ModelInstance component
+		scene::ModelInstance mi{};
+		mi.sceneNodeId = sceneNodeId;
+		//mi.modelId = ?;
 
-			auto camNodeId = s.entityManager->addComponentToEntity(std::move(ci), entityId);
-			
-			scene::MovementComponent mc{};
-			auto moveId = s.entityManager->addComponentToEntity(std::move(mc), entityId);
-			
-			if (camNodeId != NullId_T && moveId != NullId_T) {
-				return entityId;
-			}
+		s.entityManager->addComponentToEntity(std::move(mi), entityId);
+
+		return entityId;
+	}
+
+
+	EntityId createNewCamera(
+		SceneId sceneId,
+		scene::CameraParameters& cameraParams,
+		const char *name,
+		bool shakable,
+		SceneNodeId parentNode)
+	{
+		auto& s = g_sceneMgrPtr->getScene(sceneId);
+
+		auto entityId = createNewSceneNode(sceneId, true, parentNode);
+		auto sceneNodeId = s.entityManager->getEntityComponentId(entityId, scene::SceneNode::componentType);
+		auto movementId  = s.entityManager->getEntityComponentId(entityId, scene::MovementComponent::componentType);
+
+		scene::CameraInstance ci{};
+		ci.sceneNodeId = sceneNodeId;
+		ci.movementId = movementId;
+		bool makePrimary = (s.cameras.size() == 0); // if this is the first camera in the scene, make it primary
+		ci.cameraId = s.createCamera(cameraParams, makePrimary);
+		strcpy_s(ci.name, sizeof(ci.name), name);
+
+		auto camInstId = s.entityManager->addComponentToEntity(std::move(ci), entityId);
+
+		if (shakable) {
+			game::addScreenShakeNodeToCamera(s, entityId, camInstId);
 		}
 
-		return NullId_T;
+		return entityId;
 	}
 }
 
@@ -151,90 +145,78 @@ extern "C" {
 
 	// Scene Node functions
 
-	uint64_t griffin_scene_createEmptySceneNode(uint64_t scene, uint64_t parentEntity)
+	uint64_t griffin_scene_createNewSceneNode(
+		uint64_t scene,
+		bool movable,
+		uint64_t parentNode)
 	{
-		SceneId sceneId;
-		sceneId.value = scene;
-		EntityId parentId;
-		parentId.value = parentEntity;
-
 		try {
-			auto& s = g_sceneMgrPtr->getScene(sceneId);
-			auto entityId = s.entityManager->createEntity();
-
-			auto sceneNodeId = s.sceneGraph->addEntityToScene(entityId, {}, {}, parentId);
-			if (sceneNodeId != NullId_T) {
-				return entityId.value;
-			}
+			SceneId sceneId{};
+			sceneId.value = scene;
+			SceneNodeId parentNodeId{};
+			parentNodeId.value = parentNode;
+			
+			auto entityId = createNewSceneNode(sceneId, movable, parentNodeId);
+			return entityId.value;
 		}
 		catch (std::exception ex) {
-			logger.error("griffin_scene_createEmptySceneNode: %s", ex.what());
+			logger.error("griffin_scene_createNewSceneNode: %s", ex.what());
+		}
+		return 0;
+	}
+
+
+	uint64_t griffin_scene_createNewModelInstance(
+		uint64_t scene,
+		uint64_t model,
+		bool movable,
+		uint64_t parentNode)
+	{
+		try {
+			SceneId sceneId{};
+			sceneId.value = scene;
+			SceneNodeId parentNodeId{};
+			parentNodeId.value = parentNode;
+			Id_T modelId{};
+			modelId.value = model;
+			
+			auto entityId = createNewModelInstance(sceneId, movable, /*modelId,*/ parentNodeId);
+			return entityId.value;
+		}
+		catch (std::exception ex) {
+			logger.error("griffin_scene_createNewModelInstance: %s", ex.what());
 		}
 		return 0;
 	}
 
 	
-	// TODO: this should call the c++ function, also make signature match
-	uint64_t griffin_scene_createModelInstance(uint64_t scene, uint64_t parentEntity, uint64_t model)
+	uint64_t griffin_scene_createNewCamera(
+		uint64_t scene,
+		griffin_CameraParameters* cameraParams,
+		const char *name,
+		bool shakable,
+		uint64_t parentNode)
 	{
-		EntityId entityId{};
-		entityId.value = griffin_scene_createEmptySceneNode(scene, parentEntity);
+		try {
+			SceneId sceneId{};
+			sceneId.value = scene;
+			SceneNodeId parentNodeId{};
+			parentNodeId.value = parentNode;
 
-		if (entityId != NullId_T) {
-			try {
-				SceneId sceneId;
-				sceneId.value = scene;
-				auto& s = g_sceneMgrPtr->getScene(sceneId);
+			CameraParameters cp{};
+			griffin_CameraParameters& inCp = *cameraParams;
+			cp.nearClipPlane = inCp.nearClipPlane;
+			cp.farClipPlane = inCp.farClipPlane;
+			cp.viewportWidth = inCp.viewportWidth;
+			cp.viewportHeight = inCp.viewportHeight;
+			cp.verticalFieldOfViewDegrees = inCp.verticalFieldOfViewDegrees;
+			cp.cameraType = inCp.cameraType;
 
-				scene::ModelInstance mi{};
-				// TODO: request the meshId from resource system
-
-				s.entityManager->addComponentToEntity<scene::ModelInstance>(std::move(mi), entityId);
-
-				return entityId.value;
-			}
-			catch (std::exception ex) {
-				logger.error("griffin_scene_createMeshInstance: %s", ex.what());
-			}
+			auto entityId = createNewCamera(sceneId, cp, name, shakable, parentNodeId);
+			return entityId.value;
 		}
-		return 0;
-	}
-
-	
-	uint64_t griffin_scene_createCamera(uint64_t scene, uint64_t parentEntity,
-										griffin_CameraParameters* cameraParams,
-										const char name[32])
-	{
-		EntityId entityId{};
-		entityId.value = griffin_scene_createEmptySceneNode(scene, parentEntity);
-
-		if (entityId != NullId_T) {
-			try {
-				SceneId sceneId;
-				sceneId.value = scene;
-				auto& s = g_sceneMgrPtr->getScene(sceneId);
-
-				CameraParameters cp{};
-				griffin_CameraParameters& inCp = *cameraParams;
-				cp.nearClipPlane	= inCp.nearClipPlane;
-				cp.farClipPlane		= inCp.farClipPlane;
-				cp.viewportWidth	= inCp.viewportWidth;
-				cp.viewportHeight	= inCp.viewportHeight;
-				cp.verticalFieldOfViewDegrees = inCp.verticalFieldOfViewDegrees;
-				cp.cameraType		= inCp.cameraType;
-
-				scene::CameraInstance ci{};
-				bool makePrimary = (s.cameras.size() == 0); // if this the first camera in the scene, make it primary
-				ci.cameraId = s.createCamera(cp, makePrimary);
-				strcpy_s(ci.name, 32, name);
-				
-				s.entityManager->addComponentToEntity<scene::CameraInstance>(std::move(ci), entityId);
-
-				return entityId.value;
-			}
-			catch (std::exception ex) {
-				logger.error("griffin_scene_createMeshInstance: %s", ex.what());
-			}
+		catch (std::exception ex) {
+			logger.error("griffin_scene_createNewCamera: %s", ex.what());
 		}
 
 		return 0;
@@ -249,7 +231,7 @@ extern "C" {
 
 	// Position, Orientation, Translation, Rotation functions
 
-	scene::SceneNode* getSceneNode(uint64_t scene, uint64_t entity)
+/*	scene::SceneNode* getSceneNode(uint64_t scene, uint64_t entity)
 	{
 		SceneId sceneId;
 		sceneId.value = scene;
@@ -293,7 +275,7 @@ extern "C" {
 			return reinterpret_cast<griffin_dvec3*>(&node.translationLocal);
 		}
 		return nullptr;
-	}
+	}*/
 
 #ifdef __cplusplus
 }

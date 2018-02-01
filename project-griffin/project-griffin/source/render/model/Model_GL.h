@@ -9,6 +9,8 @@
 #include <render/texture/Texture2D_GL.h>
 #include <render/ShaderProgram_GL.h>
 #include <render/Render.h>
+#include <entity/EntityTypedefs.h>
+
 
 namespace griffin {
 	using namespace resource;
@@ -66,8 +68,8 @@ namespace griffin {
 
 			Model_GL(const Model_GL&) = delete;
 
-			void render(Id_T entityId, scene::Scene& scene, uint8_t viewport, Engine& engine);
-			void draw(Id_T entityId, int drawSetIndex);
+			void render(entity::ComponentId modelInstanceId, scene::Scene& scene, uint8_t viewport, Engine& engine);
+			void draw(entity::ComponentId modelInstanceId, int drawSetIndex);
 			
 			/**
 			* Builds a list of render keys/entries  for

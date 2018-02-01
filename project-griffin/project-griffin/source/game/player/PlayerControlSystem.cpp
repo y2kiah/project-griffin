@@ -23,15 +23,20 @@
 #define crouchHeight			3.0f	// ft
 #define crouchRate				2.0f	// 1/s
 
+using namespace glm;
+
+const dvec3 c_zAxisNeg(0.0, 0.0, -1.0);
+
 
 void griffin::game::PlayerControlSystem::updateFrameTick(Game& game, Engine& engine, const UpdateInfo& ui)
 {
-	using namespace glm;
-
 	auto& scene = engine.sceneManager->getScene(game.sceneId);
-	auto& move = scene.entityManager->getComponent<scene::MovementComponent>(movementComponentId);
+	auto& entityMgr = *scene.entityManager;
 
-	// TODO: this all probably works for (0,1,0) worldup vector, but worldup changes with position on planet, need to make this work everywhere
+	auto& move = entityMgr.getComponent<scene::MovementComponent>(movementComponentId);
+	auto& node = entityMgr.getComponent<scene::SceneNode>(move.sceneNodeId);
+
+	// TODO: this all probably works for (0,1,0) (or (0,0,1)??) worldup vector, but worldup changes with position on planet, need to make this work everywhere
 	// if based on local coordinate system, maybe all I need to to is parent the player with a worldup aligned parent node, then localY up is
 	// still relatively correct for the fps camera controls??
 
@@ -75,10 +80,6 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game& game, Engine& eng
 		vec3 targetV = { 0, 0, 0 };
 
 		if (moveForward != 0 || moveSide != 0) {
-			auto camInstId = scene.entityManager->getEntityComponentId(playerId, scene::CameraInstance::componentType);
-			auto& camInst = scene.entityManager->getComponentStore<scene::CameraInstance>().getComponent(camInstId);
-			auto& cam = *scene.cameras[camInst.cameraId];
-
 			// determine target velocity
 			float speedTarget = (crouching ? walkSpeed : jogSpeed); // default to jog speed, or walk when crouching
 
@@ -94,8 +95,9 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game& game, Engine& eng
 			}
 			speedTarget *= ui.deltaT; // speed per timestep
 
-			vec3 forwardDir = normalize(vec3(cam.getViewDirection().x, cam.getViewDirection().y, 0));
-			vec3 right = cross(forwardDir, cam.getWorldUp());
+			vec3 viewDir = node.orientationWorld * c_zAxisNeg;
+			vec3 forwardDir = normalize(vec3(viewDir.x, viewDir.y, 0.0f));
+			vec3 right = cross(forwardDir, worldUp);
 
 			targetV = forwardDir * static_cast<float>(moveForward);
 			targetV += right * static_cast<float>(moveSide);
@@ -190,26 +192,25 @@ void griffin::game::PlayerControlSystem::updateFrameTick(Game& game, Engine& eng
 void griffin::game::PlayerControlSystem::init(Game& game, const Engine& engine, const SDLApplication& app)
 {
 	using namespace griffin::scene;
+
 	auto& scene = engine.sceneManager->getScene(game.sceneId);
+	auto& entityMgr = *scene.entityManager;
+
+	worldUp = vec3(0.0f, 0.0f, 1.0f);
 
 	// create player scene node
-	playerId = createCamera(game.sceneId, CameraParameters{
+	playerId = createNewCamera(game.sceneId, CameraParameters{
 		0.1f, 53000000.0f,	// near/far clip
 		app.getPrimaryWindow().width, app.getPrimaryWindow().height, // viewport
 		60.0f, Camera_Perspective
 	}, "player");
 
-	movementComponentId = scene.entityManager->getEntityComponentId(playerId, scene::MovementComponent::componentType);
+	auto& cam = *entityMgr.getEntityComponent<scene::CameraInstance>(playerId);
+	movementComponentId = cam.movementId;
+	auto& move = entityMgr.getComponent<scene::MovementComponent>(movementComponentId);
+	auto& node = entityMgr.getComponent<scene::SceneNode>(move.sceneNodeId);
 
 	// set up camera position and orientation
-	auto pNode    = scene.entityManager->getEntityComponent<scene::SceneNode>(playerId);
-	auto pCamInst = scene.entityManager->getEntityComponent<scene::CameraInstance>(playerId);
-	
-	assert(pNode != nullptr && pCamInst != nullptr && movementComponentId != NullId_T);
-	auto &node = *pNode;
-	auto &cam = *pCamInst;
-	auto& move = scene.entityManager->getComponent<scene::MovementComponent>(movementComponentId);
-
 	scene.cameras[cam.cameraId]->lookAt(vec3{ 0, 0, playerHeight }, vec3{ 1.0f, 0, playerHeight }, vec3{ 0, 0, 1.0f });
 
 	// set scene node location and orientation to the camera's

@@ -39,6 +39,8 @@ namespace griffin {
 			Id_T		sprintId, walkId, crouchId;
 			Id_T		lookXId, lookYId;
 
+			glm::vec3	worldUp = {};							//<! world space up vector (for fps camera orientation)
+
 			void updateFrameTick(Game& game, Engine& engine, const UpdateInfo& ui);
 			void init(Game& game, const Engine& engine, const SDLApplication& app);
 

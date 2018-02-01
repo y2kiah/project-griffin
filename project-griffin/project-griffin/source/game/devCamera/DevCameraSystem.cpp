@@ -9,23 +9,25 @@
 #include <api/SceneApi.h>
 #include <scene/Camera.h>
 
+using namespace glm;
+
+const dvec3 c_xAxis(1.0, 0.0, 0.0);
+const dvec3 c_yAxis(0.0, 1.0, 0.0);
+const dvec3 c_zAxisNeg(0.0, 0.0, -1.0);
+
 
 void griffin::game::DevCameraSystem::updateFrameTick(Game& game, Engine& engine, const UpdateInfo& ui)
 {
-	using namespace glm;
-
 	auto& scene = engine.sceneManager->getScene(game.sceneId);
-	auto& move = scene.entityManager->getComponent<scene::MovementComponent>(movementComponentId);
-	
-	// TODO: to support > 1 SceneNode per entity, convert this to a function on an entity
-	auto pNode = scene.entityManager->getEntityComponent<scene::SceneNode>(devCameraId);
-	assert(pNode != nullptr && "entity expected to have a SceneNode");
-	auto& node = *pNode;
+	auto& entityMgr = *scene.entityManager;
+
+	auto& move = entityMgr.getComponent<scene::MovementComponent>(movementComponentId);
+	auto& node = entityMgr.getComponent<scene::SceneNode>(move.sceneNodeId);
 
 	// Mouse look
 	if (pitchRaw != 0 || yawRaw != 0 || roll != 0) {
-		const float rollRate = 0.25f * pi<float>();
-		const float lookRate = 2.0f  * pi<float>();
+		constexpr float rollRate = 0.25f * pi<float>();
+		constexpr float lookRate = 2.0f  * pi<float>();
 
 		float yawAngle = yawMapped * lookRate * ui.deltaT;
 		float pitchAngle = pitchMapped * lookRate * ui.deltaT;
@@ -47,13 +49,9 @@ void griffin::game::DevCameraSystem::updateFrameTick(Game& game, Engine& engine,
 
 	// Camera movement
 	if (moveForward != 0 || moveSide != 0 || moveVertical != 0) {
-		const dvec3 c_xAxis(1.0, 0.0, 0.0);
-		const dvec3 c_yAxis(0.0, 1.0, 0.0);
-		const dvec3 c_zAxisNeg(0.0, 0.0, -1.0);
-
 		vec3 viewDir = node.orientationWorld * c_zAxisNeg;
-		vec3 right = node.orientationWorld * c_xAxis;
-		vec3 up = node.orientationWorld * c_yAxis;
+		vec3 right   = node.orientationWorld * c_xAxis;
+		vec3 up      = node.orientationWorld * c_yAxis;
 
 		vec3 velocity = viewDir * static_cast<float>(moveForward);
 		velocity += right * static_cast<float>(moveSide);
@@ -82,25 +80,23 @@ void griffin::game::DevCameraSystem::updateFrameTick(Game& game, Engine& engine,
 void griffin::game::DevCameraSystem::init(Game& game, const Engine& engine, const SDLApplication& app)
 {
 	using namespace griffin::scene;
+
 	auto& scene = engine.sceneManager->getScene(game.sceneId);
+	auto& entityMgr = *scene.entityManager;
 
 	// create dev camera scene node
-	devCameraId = createCamera(game.sceneId, CameraParameters{
+	devCameraId = createNewCamera(game.sceneId, CameraParameters{
 		0.1f, 53000000.0f,	// near/far clip
 		app.getPrimaryWindow().width, app.getPrimaryWindow().height, // viewport
 		60.0f, Camera_Perspective
 	}, "devcamera");
 
-	movementComponentId = scene.entityManager->getEntityComponentId(devCameraId, scene::MovementComponent::componentType);
-
 	// look at the origin
-	auto pNode    = scene.entityManager->getEntityComponent<scene::SceneNode>(devCameraId);
-	auto pCamInst = scene.entityManager->getEntityComponent<scene::CameraInstance>(devCameraId);
+	auto& cam = *entityMgr.getEntityComponent<scene::CameraInstance>(devCameraId);
+	movementComponentId = cam.movementId;
 
-	assert(pNode != nullptr && pCamInst != nullptr && movementComponentId != NullId_T);
-	auto &node = *pNode;
-	auto &cam = *pCamInst;
-	auto& move = scene.entityManager->getComponent<scene::MovementComponent>(movementComponentId);
+	auto& move = entityMgr.getComponent<scene::MovementComponent>(movementComponentId);
+	auto& node = entityMgr.getComponent<scene::SceneNode>(move.sceneNodeId);
 
 	scene.cameras[cam.cameraId]->lookAt(vec3{ 120.0f, 0, 40.0f }, vec3{ 0, 0, 0 }, vec3{ 0, 0, 1.0f });
 

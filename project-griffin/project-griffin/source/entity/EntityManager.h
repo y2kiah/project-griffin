@@ -28,7 +28,7 @@ namespace griffin {
 			// Functions
 
 			explicit EntityManager() :
-				m_entityStore(0, RESERVE_ENTITYMANAGER_ENTITIES),
+				m_entityStore(EntityId_typeId, RESERVE_ENTITYMANAGER_ENTITIES),
 				m_componentStores{}, // zero-init fills with nullptr, component store created on first access
 				m_dataComponentStoreSizes{}
 			{}
@@ -38,14 +38,16 @@ namespace griffin {
 			/**
 			* @return  true if entity id is valid
 			*/
-			bool entityIsValid(EntityId entityId) const {
+			bool entityIsValid(EntityId entityId) const
+			{
 				return m_entityStore.isValid(entityId);
 			}
 
 			/**
 			* @return  ComponentMask of the entity
 			*/
-			ComponentMask getEntityComponentMask(EntityId entityId) const {
+			ComponentMask getEntityComponentMask(EntityId entityId) const
+			{
 				return m_entityStore[entityId].componentMask;
 			}
 
@@ -53,7 +55,8 @@ namespace griffin {
 			* Uses the component mask to quickly see if a component type exists in the entity
 			* @return  true if the component type exists at least once, false if not
 			*/
-			bool entityHasComponent(EntityId entityId, ComponentType ct) const {
+			bool entityHasComponent(EntityId entityId, ComponentType ct) const
+			{
 				return m_entityStore[entityId].hasComponent(ct);
 			}
 
@@ -68,7 +71,8 @@ namespace griffin {
 			*	in the list encountered. Use the getEntityComponents function if more than one
 			*	component of a type is expected.
 			*/
-			ComponentId getEntityComponentId(EntityId entityId, ComponentType ct) const {
+			ComponentId getEntityComponentId(EntityId entityId, ComponentType ct) const
+			{
 				if (m_entityStore.isValid(entityId)) {
 					auto& entity = m_entityStore[entityId];
 
@@ -86,7 +90,8 @@ namespace griffin {
 			* @return  const reference to the components vector, don't store it just use it
 			*	immediately and discard
 			*/
-			const std::vector<ComponentId>& getAllEntityComponents(EntityId entityId) const {
+			const std::vector<ComponentId>& getAllEntityComponents(EntityId entityId) const
+			{
 				return m_entityStore[entityId].components;
 			}
 
@@ -97,7 +102,8 @@ namespace griffin {
 			*	function if more than one component of a type is expected.
 			*/
 			template <typename T>
-			T* getEntityComponent(EntityId entityId) {
+			T* getEntityComponent(EntityId entityId)
+			{
 				auto cmpId = getEntityComponentId(entityId, T::componentType);
 				if (cmpId == NullId_T) {
 					return nullptr;
@@ -112,7 +118,8 @@ namespace griffin {
 			* @return  reference to component by id, throws if component doesn't exist
 			*/
 			template <typename T>
-			T& getComponent(ComponentId componentId) {
+			T& getComponent(ComponentId componentId)
+			{
 				return getComponentStore<T>().getComponent(componentId);
 			}
 
@@ -123,7 +130,8 @@ namespace griffin {
 			* @return  new ComponentId, or NullId_T if entityId is invalid
 			*/
 			template <typename T>
-			ComponentId addComponentToEntity(T&& component, EntityId entityId) {
+			ComponentId addComponentToEntity(T&& component, EntityId entityId)
+			{
 				if (!m_entityStore.isValid(entityId)) {
 					return NullId_T;
 				}
@@ -214,7 +222,8 @@ namespace griffin {
 			* @return  the ComponentStore for a given type
 			*/
 			template <typename T>
-			ComponentStore<T>& getComponentStore() {
+			ComponentStore<T>& getComponentStore()
+			{
 				static_assert(T::componentType >= 0 && T::componentType < MAX_COMPONENTS, "componentType out of range");
 
 				if (m_componentStores[T::componentType] == nullptr) {
@@ -229,7 +238,8 @@ namespace griffin {
 			* @tparam T  the component type, requires member T::componentType
 			*/
 			template <typename T>
-			void createComponentStore(size_t reserve) {
+			void createComponentStore(size_t reserve)
+			{
 				static_assert(T::componentType < ComponentType::last_ComponentType_enum, "static component with dynamic id");
 
 				createComponentStore<T>(T::componentType, reserve);
@@ -258,7 +268,8 @@ namespace griffin {
 
 			ComponentId addDataComponentToEntity(uint16_t typeId, EntityId entityId);
 			
-			inline uint16_t getDataComponentSize(uint16_t typeId) {
+			inline uint16_t getDataComponentSize(uint16_t typeId)
+			{
 				assert(typeId + ComponentType::last_ComponentType_enum < MAX_COMPONENTS && "typeId out of range");
 				return m_dataComponentStoreSizes[typeId];
 			}
@@ -278,7 +289,8 @@ namespace griffin {
 			* @tparam T  the component type, requires member T::componentType
 			*/
 			template <typename T>
-			void createComponentStore(uint16_t typeId, size_t reserve) {
+			void createComponentStore(uint16_t typeId, size_t reserve)
+			{
 				assert(m_componentStores[typeId] == nullptr && "componentStore already exists");
 
 				m_componentStores[typeId] = std::make_unique<ComponentStore<T>>(

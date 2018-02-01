@@ -9,6 +9,25 @@ using namespace griffin::render;
 
 extern resource::ResourceLoaderWeakPtr g_resourceLoader; // defined in Render.cpp
 
+/*
+// pseudo code for generating seamless 2d noise texture: https://www.gamedev.net/blogs/entry/2138456-seamless-noise/
+for x = 0, bufferwidth - 1, 1 do
+	for y = 0, bufferheight - 1, 1 do
+		local s = x / bufferwidth
+		local t = y / bufferheight
+		local dx = x2 - x1
+		local dy = y2 - y1
+
+		local nx = x1 + cos(s * 2 * pi)*dx / (2 * pi)
+		local ny = y1 + cos(t * 2 * pi)*dy / (2 * pi)
+		local nz = x1 + sin(s * 2 * pi)*dx / (2 * pi)
+		local nw = y1 + sin(t * 2 * pi)*dy / (2 * pi)
+
+		buffer:set(x, y, Noise4D(nx, ny, nz, nw))
+	end
+end
+*/
+
 
 resource::ResourcePtr noise::createTestNoiseTexture() {
 	const int texSizeX = 64;

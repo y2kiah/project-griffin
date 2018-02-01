@@ -111,6 +111,7 @@
     <ClInclude Include="source\game\Game.h" />
     <ClInclude Include="source\game\impl\GameImpl.h" />
     <ClInclude Include="source\game\player\PlayerControlSystem.h" />
+    <ClInclude Include="source\game\positionalEffects\screenShaker\ScreenShakerComponents.h" />
     <ClInclude Include="source\game\positionalEffects\screenShaker\ScreenShakerSystem.h" />
     <ClInclude Include="source\game\ship\CoolingSystem.h" />
     <ClInclude Include="source\game\ship\ElectricalSystem.h" />
