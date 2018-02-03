@@ -6,8 +6,7 @@
 #include <game/impl/GameImpl.h>
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
-
-#include <glm/gtc/random.hpp> // TEMP
+#include <glm/gtc/noise.hpp>
 
 using namespace glm;
 using namespace griffin;
@@ -31,11 +30,16 @@ void ScreenShakerSystem::updateFrameTick(
 	for (auto& n : shakeNodes.getComponents()) {
 		auto& shakeNode = n.component;
 		auto& shakeSceneNode = entityMgr.getComponent<SceneNode>(shakeNode.sceneNodeId);
-		
+
 		shakeNode.prevTurbulence = shakeNode.nextTurbulence;
 		shakeNode.nextTurbulence = 0;
 
-		// for each ScreenShakeProducer component
+		shakeNode.prevMaxAngle = shakeNode.nextMaxAngle;
+		shakeNode.nextMaxAngle = 0;
+
+		float shakeFreqHz = 0;
+
+		// for each ScreenShakeProducer component, total turbulence, angle, freq for the receiver
 		for (auto& p : producers.getComponents()) {
 			auto& producer = p.component;
 			auto& producerSceneNode = entityMgr.getComponent<SceneNode>(producer.sceneNodeId);
@@ -52,7 +56,20 @@ void ScreenShakerSystem::updateFrameTick(
 
 			// accumulate effective turbulence level from all producers
 			shakeNode.nextTurbulence += effectiveTurbulence;
+
+			// take the max angle and shake freq encountered
+			shakeNode.nextMaxAngle = (producer.maxAngle > shakeNode.nextMaxAngle
+										? producer.maxAngle : shakeNode.nextMaxAngle);
+
+			shakeFreqHz = (producer.shakeFreqHz > shakeFreqHz ? producer.shakeFreqHz : shakeFreqHz);
 		}
+
+		// set noise time interpolation values
+		shakeNode.prevNoiseTime = shakeNode.nextNoiseTime;
+		if (shakeNode.prevNoiseTime > 256.0f) {
+			shakeNode.prevNoiseTime -= 256.0f;
+		}
+		shakeNode.nextNoiseTime = shakeNode.prevNoiseTime + (ui.deltaT * shakeFreqHz);
 	}
 
 	// for each ScreenShakeProducer component
@@ -92,16 +109,14 @@ void ScreenShakerSystem::renderFrameTick(
 		float turbulence = glm::mix(shakeNode.prevTurbulence, shakeNode.nextTurbulence, interpolation);
 		float turbSq = turbulence * turbulence;
 
-		// TEMP, these should come from producers
-		constexpr float maxYaw   = glm::radians(2.0f);
-		constexpr float maxPitch = glm::radians(2.0f);
-		constexpr float maxRoll  = glm::radians(2.0f);
+		float noiseTime = glm::mix(shakeNode.prevNoiseTime, shakeNode.nextNoiseTime, interpolation);
+		float maxAngle  = glm::mix(shakeNode.prevMaxAngle, shakeNode.nextMaxAngle, interpolation);
+		
+		float mult = glm::radians(maxAngle) * turbSq; // deg to radians
 
-		turbSq = 0.2f; // TEMP
-
-		float yawAngle   = maxYaw   * turbSq * glm::linearRand(-1.0f, 1.0f); //getPerlinNoise(seed,   time, ...?);
-		float pitchAngle = maxPitch * turbSq * glm::linearRand(-1.0f, 1.0f); //getPerlinNoise(seed=1, time, ...?);
-		float rollAngle  = maxRoll  * turbSq * glm::linearRand(-1.0f, 1.0f); //getPerlinNoise(seed=2, time, ...?);
+		float yawAngle   = mult * glm::perlin(vec2(noiseTime, 0.0f));
+		float pitchAngle = mult * glm::perlin(vec2(noiseTime, 11.0f));
+		float rollAngle  = mult * glm::perlin(vec2(noiseTime, 23.0f));
 
 		// cameraMovementNode is the base camera transform without shake applied, so every frame we
 		// rebase the shake scene node on it so the shake doesn't wander away from view direction
@@ -114,7 +129,6 @@ void ScreenShakerSystem::renderFrameTick(
 		assert(camMove.sceneNodeId != shakeNode.sceneNodeId && "camera movement shake SceneNode should be a child of the movement SceneNode, not the same node");
 		
 		dvec3 angles(pitchAngle, yawAngle, rollAngle);
-		//angles = angles * inverse(camMoveNode.orientationWorld); // transform angles into viewspace
 		
 		shakeSceneNode.rotationLocal = dquat(angles);
 		shakeSceneNode.orientationDirty = 1;

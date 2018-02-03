@@ -211,7 +211,7 @@ void griffin::game::PlayerControlSystem::init(Game& game, const Engine& engine, 
 	auto& node = entityMgr.getComponent<scene::SceneNode>(move.sceneNodeId);
 
 	// set up camera position and orientation
-	scene.cameras[cam.cameraId]->lookAt(vec3{ 0, 0, playerHeight }, vec3{ 1.0f, 0, playerHeight }, vec3{ 0, 0, 1.0f });
+	scene.cameras[cam.cameraId]->lookAt(vec3{ 0, 0, playerHeight }, vec3{ 1.0f, 0, playerHeight }, worldUp);
 
 	// set scene node location and orientation to the camera's
 	node.translationLocal = scene.cameras[cam.cameraId]->getEyePoint();

@@ -284,9 +284,7 @@ float noise::linearNoise4(float x, float y, float z, float w,
 }
 
 //----------------------------------------------------------------------------------------
-// Cosine noise uses the a sine curve to interpolate between integer values, and is
-// implemented to use the lookup tables of the FastMath class to avoid the slow cos
-// calculation. This function still appears slower than Perlin noise.
+// Cosine noise uses the a sine curve to interpolate between integer values.
 //----------------------------------------------------------------------------------------
 float noise::cosineNoise1(float x,
 						  int seed)
@@ -552,7 +550,7 @@ float noise::quinticNoise4(float x, float y, float z, float w,
 
 //----------------------------------------------------------------------------------------
 // The following functions output "improved" Perlin noise, and do not require the use of
-// the integer noise basis function, so are therefor not affected by the seed values. The
+// the integer noise basis function, and are not affected by the seed values. The
 // multipliers for return values are present to scale the results into the range of
 // classic Perlin noise, and prevent oversaturation of fBm results.
 //----------------------------------------------------------------------------------------
@@ -718,8 +716,8 @@ float noise::simplexNoise1(float x)
 
 float noise::simplexNoise2(float x, float y)
 {
-#define F2	0.366025403f	// F2 = 0.5*(sqrt(3.0)-1.0)
-#define G2	0.211324865f	// G2 = (3.0-sqrt(3.0))/6.0
+	const float F2 = 0.366025403f;	// F2 = 0.5*(sqrt(3.0)-1.0)
+	const float G2 = 0.211324865f;	// G2 = (3.0-sqrt(3.0))/6.0
 
 	float s = (x + y) * F2;
 	int ix = static_cast<int>(floor(x + s));
@@ -769,8 +767,8 @@ float noise::simplexNoise2(float x, float y)
 
 float noise::simplexNoise3(float x, float y, float z)
 {
-#define F3	0.333333333f
-#define G3	0.166666667f
+	const float F3 = 0.333333333f;
+	const float G3 = 0.166666667f;
 
 	float s = (x + y + z) * F3;
 	int ix = static_cast<int>(floor(x + s));
@@ -853,8 +851,8 @@ float noise::simplexNoise3(float x, float y, float z)
 float noise::simplexNoise4(float x, float y, float z, float w)
 {
 	// the skewing and unskewing factors are hairy again for the 4D case
-	#define F4	0.309016994f	// F4 = (sqrt(5.0)-1.0)/4.0
-	#define G4	0.138196601f	// G4 = (5.0-sqrt(5.0))/20.0
+	const float F4 = 0.309016994f;	// F4 = (sqrt(5.0)-1.0)/4.0
+	const float G4 = 0.138196601f;	// G4 = (5.0-sqrt(5.0))/20.0
 
 	// skew the (x,y,z,w) space to determine which cell of 24 simplices we're in
 	float s = (x + y + z + w) * F4;	// factor for 4D skewing

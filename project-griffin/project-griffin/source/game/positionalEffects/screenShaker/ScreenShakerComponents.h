@@ -22,7 +22,9 @@ namespace griffin {
 			(float,			startTurbulence,,	"starting strength of screen shake, 0=none, 0.25=light, 0.75=heavy, 1.0=severe"),
 			(float,			turbulence,,		"current turbulence level"),
 			(float,			totalTimeToLiveMS,,	"total time the shaker is active, turbulence goes from startTurbulence to 0 linearly over this time"),
-			(float,			radius,,			"radius of the effective area in feet")
+			(float,			radius,,			"radius of the effective area in feet"),
+			(float,			shakeFreqHz,,		"frequency of shake oscillations in Hz, somewhere in the ballpark of 10.0 tends to work well"),
+			(float,			maxAngle,,			"max possible shake angle for yaw, pitch and roll")
 		)
 
 		/**
@@ -31,7 +33,11 @@ namespace griffin {
 		COMPONENT(ScreenShakeNode,
 			(SceneNodeId,	sceneNodeId,,		"scene node for the camera instance to base shake angles on"),
 			(float,			prevTurbulence,,	"previous effective turbulence used for interpolation"),
-			(float,			nextTurbulence,,	"next effective turbulence used for interpolation")
+			(float,			nextTurbulence,,	"next effective turbulence used for interpolation"),
+			(float,			prevNoiseTime,,		"previous time for perlin noise used for interpolation"),
+			(float,			nextNoiseTime,,		"next time for perlin noise used for interpolation"),
+			(float,			prevMaxAngle,,		"previous max shake angle in degrees used for interpolation"),
+			(float,			nextMaxAngle,,		"next max shake angle in degrees used for interpolation")
 		)
 
 
