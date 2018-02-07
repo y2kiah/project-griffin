@@ -9,7 +9,7 @@
 #include <game/devConsole/DevConsoleSystem.h>
 #include <game/sky/SkySystem.h>
 #include <game/terrain/TerrainSystem.h>
-#include <game/positionalEffects/screenShaker/ScreenShakerSystem.h>
+#include <game/positionalEffects/screenShake/ScreenShakeSystem.h>
 
 
 //#define MAX_GAME_COMPONENTS		32
@@ -34,7 +34,7 @@ namespace griffin {
 		game::TerrainSystem			terrain;
 		game::DevCameraSystem		devCamera;
 		game::DevConsoleSystem		devConsole;
-		game::ScreenShakerSystem	screenShaker;
+		game::ScreenShakeSystem		screenShaker;
 
 		//uint16_t					gameComponentStoreIds[MAX_GAME_COMPONENTS] = {};
 

@@ -2,7 +2,7 @@
 #include <scene/Scene.h>
 #include <entity/EntityManager.h>
 #include <utility/Logger.h>
-#include <game/positionalEffects/screenShaker/ScreenShakerComponents.h>
+#include <game/positionalEffects/screenShake/ScreenShakeComponents.h>
 
 griffin::scene::SceneManagerPtr g_sceneMgrPtr = nullptr;
 

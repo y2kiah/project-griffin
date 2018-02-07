@@ -142,11 +142,6 @@ Goals:
 	7. don't be intrusive, resource implementers don't inherit from a common base class, prefer
 		duck typing over polymorphism
 
-Myths (to dispell):
-	1. using shared_ptr is a performance concern, causes synchronization - Copies are rare,
-		synchronization only occurs when banging on the same shared_ptr at the same time, which is
-		unlikely with this system.
-
 Gotchas (things to watch out for):
 	1. storing shared_ptrs to resources within other resources will possibly circumvent the caching
 		system, making the cache algorithm (e.g. LRU) of dependencies moot since the cache of the

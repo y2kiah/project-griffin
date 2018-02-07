@@ -188,11 +188,11 @@
     <Filter Include="game\positionalEffects">
       <UniqueIdentifier>{9412c92e-10f9-4bec-9bb1-5309b31cff9f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="game\positionalEffects\screenShaker">
-      <UniqueIdentifier>{881600f2-d4e6-45a4-85c0-b6692bacc806}</UniqueIdentifier>
-    </Filter>
     <Filter Include="vendor\glm\detail">
       <UniqueIdentifier>{e799fee8-f052-4654-a23c-a3e39454ee6f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="game\positionalEffects\screenShake">
+      <UniqueIdentifier>{881600f2-d4e6-45a4-85c0-b6692bacc806}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -364,8 +364,8 @@
     <ClCompile Include="source\tests\Test.cpp">
       <Filter>tests</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\positionalEffects\screenShaker\ScreenShakerSystem.cpp">
-      <Filter>game\positionalEffects\screenShaker</Filter>
+    <ClCompile Include="source\game\positionalEffects\screenShake\ScreenShakeSystem.cpp">
+      <Filter>game\positionalEffects\screenShake</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -958,9 +958,6 @@
     <ClInclude Include="source\game\ship\CoolingSystem.h">
       <Filter>game\ship</Filter>
     </ClInclude>
-    <ClInclude Include="source\game\positionalEffects\screenShaker\ScreenShakerSystem.h">
-      <Filter>game\positionalEffects\screenShaker</Filter>
-    </ClInclude>
     <ClInclude Include="vendor\glm\glm\detail\_features.hpp">
       <Filter>vendor\glm\detail</Filter>
     </ClInclude>
@@ -1087,8 +1084,11 @@
     <ClInclude Include="vendor\glm\glm\detail\type_vec4.hpp">
       <Filter>vendor\glm\detail</Filter>
     </ClInclude>
-    <ClInclude Include="source\game\positionalEffects\screenShaker\ScreenShakerComponents.h">
-      <Filter>game\positionalEffects\screenShaker</Filter>
+    <ClInclude Include="source\game\positionalEffects\screenShake\ScreenShakeComponents.h">
+      <Filter>game\positionalEffects\screenShake</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\positionalEffects\screenShake\ScreenShakeSystem.h">
+      <Filter>game\positionalEffects\screenShake</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

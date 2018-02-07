@@ -37,7 +37,7 @@ namespace griffin {
 		resource::ResourceLoaderWeakPtr g_resourceLoader;
 
 		// TEMP
-		ResourcePtr	g_tempModel[4] = {};
+		ResourcePtr	g_tempModel[5] = {};
 		Game*		g_pGame; // temp
 
 		// defined in RenderHelpers.cpp
@@ -449,6 +449,8 @@ namespace griffin {
 				//auto mdl8 = loadModel(L"assets/models/ring/ring.gmd", CacheType::Cache_Models);
 				//auto mdl9 = loadModel(L"assets/models/building_001.gmd", CacheType::Cache_Models);
 				//auto mdl10 = loadModel(L"assets/models/scene/scene.gmd", CacheType::Cache_Models);
+				//auto mdl11 = loadModel(L"assets/models/mrx22/mrx22.gmd", CacheType::Cache_Models);
+				//auto mdl12 = loadModel(L"assets/models/a10.gmd", CacheType::Cache_Models);
 
 				using namespace resource;
 				auto loader = g_resourceLoader.lock();
@@ -460,6 +462,18 @@ namespace griffin {
 				//g_tempModel[2] = loader->getResource(mdl8).get();
 				//g_tempModel[3] = loader->getResource(mdl9).get();
 				loader->executeCallbacks();
+				
+				// BEGIN TEMP
+				/*std::unique_ptr<Mesh_GL> meshPtr = importModelFile("data/assets/models/MRX22 Recon Flyer/MRX22 Recon Flyer.obj", true, false, false);
+				Mesh_GL* mesh = meshPtr.release();
+				Model_GL mdl(Mesh_GL(std::move(*mesh)));
+				mdl.initRenderEntries();
+				mdl.loadMaterialResources(L"assets/models/MRX22 Recon Flyer/");
+				ResourcePtr mdlResPtr = std::make_shared<Resource_T>(std::move(mdl), 0);
+				auto res = loader->addResourceToCache<Model_GL>(mdlResPtr, CacheType::Cache_Models);
+				g_tempModel[4] = loader->getResource(res).get();
+				loader->executeCallbacks();*/
+				// END TEMP
 			}
 			catch (std::exception ex) {
 				logger.error(Logger::Category_Error, "%s", ex.what());

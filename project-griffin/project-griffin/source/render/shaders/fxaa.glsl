@@ -110,7 +110,7 @@ vec2 rcpFrame = vec2(1.0/viewportWidth, 1.0/viewportHeight);
 		//     Use this for sRGB and FP16 formats. 
 		//     Works with either FXAA_ALGORITHM = 1 or 0. 
 		//
-		#define FXAA_LINEAR 0
+		#define FXAA_LINEAR 1
 	#endif
 
 	#ifndef FXAA_QUALITY__EDGE_THRESHOLD
@@ -123,7 +123,7 @@ vec2 rcpFrame = vec2(1.0/viewportWidth, 1.0/viewportHeight);
 		// 1/8 - high quality
 		// 1/16 - overkill
 		//
-		#define FXAA_QUALITY__EDGE_THRESHOLD (1.0/6.0)
+		#define FXAA_QUALITY__EDGE_THRESHOLD (1.0/8.0)
 	#endif
 
 	#ifndef FXAA_QUALITY__EDGE_THRESHOLD_MIN
@@ -134,7 +134,7 @@ vec2 rcpFrame = vec2(1.0/viewportWidth, 1.0/viewportHeight);
 		// 1/16 - high quality
 		// 1/12 - upper limit (default, the start of visible unfiltered edges)
 		//
-		#define FXAA_QUALITY__EDGE_THRESHOLD_MIN (1.0/12.0)
+		#define FXAA_QUALITY__EDGE_THRESHOLD_MIN (1.0/32.0)
 	#endif
 
 	#ifndef FXAA_QUALITY__SUBPIX_CAP
@@ -159,7 +159,7 @@ vec2 rcpFrame = vec2(1.0/viewportWidth, 1.0/viewportHeight);
 		// 1/8 - high removal
 		// 0 - complete removal (softer but less sub-pixel aliasing)
 		//
-		#define FXAA_QUALITY__SUBPIX_TRIM (1.0/4.0)
+		#define FXAA_QUALITY__SUBPIX_TRIM (1.0/16.0)
 	#endif
 
 	vec4 fxaaPixelShader(
