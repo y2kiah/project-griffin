@@ -177,7 +177,7 @@ namespace griffin {
 									interp = (animTime - time1) / (time2 - time1);
 								}
 
-								nodeRotation = slerp(rot1, rot2, interp);
+								nodeRotation = normalize(lerp(rot1, rot2, interp));
 							}
 							// Scaling keyframes
 							{
@@ -229,21 +229,19 @@ namespace griffin {
 				// transform world space to camera space on CPU in double precision, then send single to GPU
 				// see http://blogs.agi.com/insight3d/index.php/2008/09/03/precisions-precisions/
 				dmat4 modelView_World(viewMat * modelToWorld);
-				
-				dvec4 nodeTranslationWorld(modelToWorld[0][3], modelToWorld[1][3], modelToWorld[2][3], 1.0);
-				vec3 nodeTranslation_Camera(nodeTranslationWorld * modelView_World);
 
+				// camera space is defined as world space rotation without the translation component
 				mat4 modelView_Camera(modelView_World);
-				modelView_Camera[0][3] = nodeTranslation_Camera.x;
-				modelView_Camera[1][3] = nodeTranslation_Camera.y;
-				modelView_Camera[2][3] = nodeTranslation_Camera.z;
+				modelView_Camera[0][3] = 0;
+				modelView_Camera[1][3] = 0;
+				modelView_Camera[2][3] = 0;
 
 				mat4 mvp(projMat * modelView_Camera);
 				mat4 normalMat(transpose(inverse(mat3(modelView_Camera))));
 				
 				// set the object UBO values
 				objectUniformsUBO.modelToWorld = mat4(modelToWorld);
-				objectUniformsUBO.modelView = modelView_Camera;
+				objectUniformsUBO.modelView = /*modelView;*/modelView_Camera;
 				objectUniformsUBO.modelViewProjection = mvp;
 				objectUniformsUBO.normalMatrix = normalMat;
 				glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ObjectUniformsUBO), &objectUniformsUBO);

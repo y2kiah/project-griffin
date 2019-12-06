@@ -181,6 +181,7 @@ uniform dmat4 doubleModelView;
 
 		dvec4 pos = patchToModel * dvec4(x * pl, y * pl, 5700000.0, 1.0);
 		pos.xyz = normalize(pos.xyz) * (5700000.0 /*+ (z * 500000.0)*/);
+//		dvec4 pos = patchToModel * dvec4(x * pl, y * pl, z * 500.0, 1.0);
 
 		positionModelspace = vec4(pos);
 		//positionModelspace = patchToModel * vec4(x * patchLength, y * patchLength, 5700000.0, 1.0);

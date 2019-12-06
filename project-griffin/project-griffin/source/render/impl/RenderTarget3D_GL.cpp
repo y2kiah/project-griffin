@@ -144,7 +144,7 @@ namespace griffin {
 
 		void RenderTarget3D_GL::bind(unsigned int renderTarget, unsigned int textureSlot) const
 		{
-			assert(renderTarget >= 0 && renderTarget < m_numRenderTargets && "invalid renderTarget index");
+			assert(renderTarget >= 0 && renderTarget < (unsigned int)m_numRenderTargets && "invalid renderTarget index");
 			assert(textureSlot >= 0 && textureSlot < 32 && "textureSlot must be in 0-31 range");
 
 			glActiveTexture(GL_TEXTURE0 + textureSlot);

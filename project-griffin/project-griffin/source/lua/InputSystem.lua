@@ -121,7 +121,7 @@ function initInputSystem()
 			setInputBinding(contextName, mapping, config.inputMappings.states)
 		end
 
-		-- create state mappings from inputcontexts.json
+		-- create axis mappings from inputcontexts.json
 		for m = 1,#context.axes do
 			local axis = context.axes[m]
 

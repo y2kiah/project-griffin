@@ -446,7 +446,7 @@ namespace griffin {
 				//auto mdl5 = loadModel(L"assets/models/A-10C Pit.gmd", CacheType::Cache_Models);
 				//auto mdl6 = loadModel(L"assets/models/other_pit.gmd", CacheType::Cache_Models);
 				//auto mdl7 = loadModel(L"assets/models/Bill/Bill.gmd", CacheType::Cache_Models);
-				//auto mdl8 = loadModel(L"assets/models/ring/ring.gmd", CacheType::Cache_Models);
+				auto mdl8 = loadModel(L"assets/models/ring/ring.gmd", CacheType::Cache_Models);
 				//auto mdl9 = loadModel(L"assets/models/building_001.gmd", CacheType::Cache_Models);
 				//auto mdl10 = loadModel(L"assets/models/scene/scene.gmd", CacheType::Cache_Models);
 				//auto mdl11 = loadModel(L"assets/models/mrx22/mrx22.gmd", CacheType::Cache_Models);
@@ -459,8 +459,9 @@ namespace griffin {
 				}
 				g_tempModel[0] = loader->getResource(mdl2).get();
 				//g_tempModel[1] = loader->getResource(mdl5).get();
-				//g_tempModel[2] = loader->getResource(mdl8).get();
+				g_tempModel[2] = loader->getResource(mdl8).get();
 				//g_tempModel[3] = loader->getResource(mdl9).get();
+				//g_tempModel[4] = loader->getResource(mdl4).get();
 				loader->executeCallbacks();
 				
 				// BEGIN TEMP

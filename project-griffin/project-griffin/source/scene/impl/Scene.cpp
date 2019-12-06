@@ -269,15 +269,24 @@ void interpolateSceneNodes(entity::EntityManager& entityMgr, float interpolation
 
 		auto& node = entityMgr.getComponent<scene::SceneNode>(move.component.sceneNodeId);
 
+		// nlerp the rotation
 		if (move.component.rotationDirty == 1) {
-			node.rotationLocal = glm::slerp(move.component.prevRotation,
-											move.component.nextRotation,
-											static_cast<double>(interpolation));
+			node.rotationLocal = 
+				glm::normalize(
+					glm::lerp(
+						move.component.prevRotation,
+						move.component.nextRotation,
+						static_cast<double>(interpolation)));
 			node.orientationDirty = 1;
 		}
+		// This is needed when rotation stops to ensure the orientation isn't left where the last
+		// interpolation step put it, which is most likely approaching but not quite reaching the
+		// target "next" orientation. We continue interpolating for one frame beyond movement
+		// stopping so the orientation can be set to the exact simulated value.
 		else if (move.component.prevRotationDirty == 1) {
 			node.rotationLocal = move.component.nextRotation;
 			node.orientationDirty = 1;
+			move.component.prevRotationDirty = 0;
 		}
 
 		if (move.component.translationDirty == 1) {
@@ -289,6 +298,7 @@ void interpolateSceneNodes(entity::EntityManager& entityMgr, float interpolation
 		else if (move.component.prevTranslationDirty == 1) {
 			node.translationLocal = move.component.nextTranslation;
 			node.positionDirty = 1;
+			move.component.prevTranslationDirty = 0;
 		}
 	}
 }

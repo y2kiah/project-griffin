@@ -63,6 +63,9 @@ void ScreenShakeSystem::updateFrameTick(
 
 			shakeFreqHz = (producer.shakeFreqHz > shakeFreqHz ? producer.shakeFreqHz : shakeFreqHz);
 		}
+//		shakeFreqHz = 10.0f;
+//		shakeNode.nextTurbulence = 0.7;
+//		shakeNode.nextMaxAngle = 2.0f;
 
 		// set noise time interpolation values
 		shakeNode.prevNoiseTime = shakeNode.nextNoiseTime;

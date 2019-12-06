@@ -107,7 +107,7 @@ NodeAnimationTransform getNodeTransformForTrack(const MeshAnimations& animations
 		}
 
 		// TODO: allow interpolation curves other than linear... hermite, cubic, spring system, etc.
-		result.rotation = slerp(rot1, rot2, interp);
+		result.rotation = normalize(lerp(rot1, rot2, interp));
 	}
 	// Scaling keyframes
 	{
@@ -228,7 +228,7 @@ void updateMeshInstanceAnimations(entity::EntityManager& entityMgr)
 						for (int t = 1; t < numAnimationsBlended; ++t) {
 							float relativeWeight = trackTransforms[t - 1].weight / (trackTransforms[t - 1].weight + trackTransforms[t].weight);
 							trackTransforms[t].translation = mix(trackTransforms[t - 1].translation, trackTransforms[t].translation, relativeWeight);
-							trackTransforms[t].rotation = slerp(trackTransforms[t - 1].rotation, trackTransforms[t].rotation, relativeWeight);
+							trackTransforms[t].rotation = normalize(lerp(trackTransforms[t - 1].rotation, trackTransforms[t].rotation, relativeWeight));
 							trackTransforms[t].scaling = mix(trackTransforms[t - 1].scaling, trackTransforms[t].scaling, relativeWeight);
 							trackTransforms[t].weight = trackTransforms[t - 1].weight + trackTransforms[t].weight;
 						}

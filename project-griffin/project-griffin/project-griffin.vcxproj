@@ -599,7 +599,8 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>
       </Optimization>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>
+      </SDLCheck>
       <PreprocessorDefinitions>GRIFFIN_TOOLS_BUILD=1;WIN32_LEAN_AND_MEAN;GLM_FORCE_RADIANS;GLM_FORCE_MESSAGES;GLM_FORCE_INLINE;GLM_FORCE_SWIZZLE;GLM_FORCE_CXX14;GL_GLEXT_PROTOTYPES;GLEW_STATIC;NANOVG_GL3_IMPLEMENTATION;_VERTEX_;_TESS_CONTROL_;_TESS_EVAL_;_GEOMETRY_;_FRAGMENT_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <PreprocessKeepComments>false</PreprocessKeepComments>
@@ -608,12 +609,22 @@
       <MultiProcessorCompilation>
       </MultiProcessorCompilation>
       <AdditionalOptions>-w44351 %(AdditionalOptions)</AdditionalOptions>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <EnableEnhancedInstructionSet>
+      </EnableEnhancedInstructionSet>
+      <LanguageStandard>
+      </LanguageStandard>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <StringPooling>true</StringPooling>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;glew32sd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib</IgnoreSpecificDefaultLibraries>
       <EmbedManagedResourceFile>
@@ -639,15 +650,19 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <Optimization>Disabled</Optimization>
+      <FunctionLevelLinking>
+      </FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>
+      </SDLCheck>
       <PreprocessorDefinitions>GRIFFIN_PROFILE=1;GRIFFIN_TOOLS_BUILD=1;_ITERATOR_DEBUG_LEVEL=0;NDEBUG;WIN32_LEAN_AND_MEAN;GLM_FORCE_RADIANS;GLM_FORCE_INLINE;GLM_FORCE_SWIZZLE;GLM_FORCE_CXX14;GL_GLEXT_PROTOTYPES;GLEW_STATIC;NANOVG_GL3_IMPLEMENTATION;_VERTEX_;_TESS_CONTROL_;_TESS_EVAL_;_GEOMETRY_;_FRAGMENT_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>
+      </EnableEnhancedInstructionSet>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <EnableParallelCodeGeneration>
+      </EnableParallelCodeGeneration>
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
       <PreprocessToFile>false</PreprocessToFile>
@@ -656,7 +671,14 @@
       <MultiProcessorCompilation>
       </MultiProcessorCompilation>
       <AdditionalOptions>-w44351 %(AdditionalOptions)</AdditionalOptions>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard>
+      </LanguageStandard>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

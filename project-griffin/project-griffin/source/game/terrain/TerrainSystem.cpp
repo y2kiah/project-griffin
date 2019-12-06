@@ -69,7 +69,7 @@ void griffin::game::TerrainSystem::render(Id_T entityId, scene::Scene& scene, ui
 
 void griffin::game::TerrainSystem::draw(Engine &engine, const dmat4& viewMat, const mat4& projMat/*All TEMP*/)
 {
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	
 	auto& renderSystem = *engine.renderSystem;
 
@@ -112,13 +112,13 @@ void griffin::game::TerrainSystem::draw(Engine &engine, const dmat4& viewMat, co
 		
 		dmat4 modelView_World(viewMat * modelToWorld);
 
-		dvec4 nodeTranslationWorld(modelToWorld[0][3], modelToWorld[1][3], modelToWorld[2][3], 1.0);
-		vec3 nodeTranslation_Camera(nodeTranslationWorld * modelView_World);
+		//dvec4 nodeTranslationWorld(modelToWorld[0][3], modelToWorld[1][3], modelToWorld[2][3], 1.0);
+		//vec3 nodeTranslation_Camera(nodeTranslationWorld * modelView_World);
 
 		mat4 modelView_Camera(modelView_World);
-		modelView_Camera[0][3] = nodeTranslation_Camera.x;
-		modelView_Camera[1][3] = nodeTranslation_Camera.y;
-		modelView_Camera[2][3] = nodeTranslation_Camera.z;
+		modelView_Camera[0][3] = 0; //nodeTranslation_Camera.x;
+		modelView_Camera[1][3] = 0; //nodeTranslation_Camera.y;
+		modelView_Camera[2][3] = 0; //nodeTranslation_Camera.z;
 
 		mat4 mvp(projMat * modelView_Camera);
 		mat4 normalMat(transpose(inverse(mat3(modelView_Camera))));
@@ -126,7 +126,8 @@ void griffin::game::TerrainSystem::draw(Engine &engine, const dmat4& viewMat, co
 
 		//glm::vec3 chunkTopLeftPosCameraSpace = chunks[c].cubeFaceScale;
 		//glUniform3fv(patchTopLeftCoordLoc, 1, &chunkTopLeftPosCameraSpace[0]);
-		glUniform1f(patchLengthLoc, 11400000.0f);
+//		glUniform1f(patchLengthLoc, 11400000.0f);
+glUniform1f(patchLengthLoc, 6000.0f);
 		glUniformMatrix4dv(patchToModelLoc, 1, GL_FALSE, &patchToModel[0][0]);
 		dmat4 doubleModelView(viewMat);
 		glUniformMatrix4dv(doubleModelViewLoc, 1, GL_FALSE, &doubleModelView[0][0]);
@@ -182,8 +183,8 @@ void griffin::game::TerrainSystem::init(Game& game, const Engine& engine, const 
 	
 	//basisLoc = glGetUniformLocation(terrainProgramId, "basis");
 	//basisTransposeLoc = glGetUniformLocation(terrainProgramId, "basisTranspose");
-//	patchTopLeftCoordLoc = glGetUniformLocation(terrainProgramId, "patchTopLeftCoord");
-//	patchCubeNormalLoc = glGetUniformLocation(terrainProgramId, "patchCubeNormal");
+	//patchTopLeftCoordLoc = glGetUniformLocation(terrainProgramId, "patchTopLeftCoord");
+	//patchCubeNormalLoc = glGetUniformLocation(terrainProgramId, "patchCubeNormal");
 	patchLengthLoc = glGetUniformLocation(terrainProgramId, "patchLength");
 	patchToModelLoc = glGetUniformLocation(terrainProgramId, "patchToModel");
 	doubleModelViewLoc = glGetUniformLocation(terrainProgramId, "doubleModelView");

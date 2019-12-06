@@ -254,7 +254,7 @@ bool DDSImage::loadFromMemory(unsigned char* data, bool flipImage, bool sRGB)
 		memcpy_s(img, size, dp, size);
 		dp += size;
 
-		align_memory(&img);
+		//align_memory(&img);
 
 		if (!cubemap && flipImage) {
 			flip(img, width, height, depth, size);

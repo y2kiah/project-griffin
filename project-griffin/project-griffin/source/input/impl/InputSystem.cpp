@@ -67,10 +67,10 @@ void InputSystem::updateFrameTick(const UpdateInfo& ui)
 
 	// TEMP output mapped inputs
 	/*for (const auto& s : m_frameMappedInput.states) {
-		logger.debug(Logger::Category_Input, "state \"%s\" active", s.inputMapping->name);
+		logger.info(Logger::Category_Input, "state \"%s\" active", s.inputMapping->name);
 	}
 	for (const auto& a : m_frameMappedInput.actions) {
-		logger.debug(Logger::Category_Input, "action \"%s\" triggered", a.inputMapping->name);
+		logger.info(Logger::Category_Input, "action \"%s\" triggered", a.inputMapping->name);
 	}*/
 
 	// invoke all callbacks in priority order, passing this frame's mapped input

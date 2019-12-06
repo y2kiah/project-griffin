@@ -10,11 +10,54 @@ namespace griffin {
 	namespace scene {
 		using namespace glm;
 
-		mat4 alignZAxisWithTarget(vec3 targetDir, vec3 upDir);
-
 		const vec3 c_xAxis(1.0f, 0.0f, 0.0f);
 		const vec3 c_yAxis(0.0f, 1.0f, 0.0f);
 		const vec3 c_zAxis(0.0f, 0.0f, 1.0f);
+
+
+		mat4 alignZAxisWithTarget(vec3 targetDir, vec3 upDir, vec3 eyePoint, vec3 target)
+		{
+			// Ensure that the target direction is non-zero.
+			if (length2(targetDir) == 0) {
+				targetDir = c_zAxis;
+			}
+
+			// Ensure that the up direction is non-zero.
+			if (length2(upDir) == 0) {
+				upDir = c_yAxis;
+			}
+
+			// Check for degeneracies.  If the upDir and targetDir are parallel 
+			// or opposite, then compute a new, arbitrary up direction that is
+			// not parallel or opposite to the targetDir.
+			if (length2(cross(upDir, targetDir)) == 0) {
+				upDir = cross(targetDir, c_xAxis);
+				if (length2(upDir) == 0) {
+					upDir = cross(targetDir, c_zAxis);
+				}
+			}
+
+			// Compute the x-, y-, and z-axis vectors of the new coordinate system.
+			vec3 targetPerpDir = cross(upDir, targetDir);
+			vec3 targetUpDir = cross(targetDir, targetPerpDir);
+
+			// Rotate the x-axis into targetPerpDir (row 0),
+			// rotate the y-axis into targetUpDir   (row 1),
+			// rotate the z-axis into targetDir     (row 2).
+			vec3 row[3];
+			row[0] = normalize(targetPerpDir);
+			row[1] = normalize(targetUpDir);
+			row[2] = normalize(targetDir);
+
+			mat4 mat(row[0].x, row[0].y, row[0].z, 0,
+				row[1].x, row[1].y, row[1].z, 0,
+				row[2].x, row[2].y, row[2].z, 0,
+				0, 0, 0, 1);
+
+			mat = glm::inverse(glm::lookAtRH(eyePoint, target, upDir));
+			
+			return mat;
+		}
 
 
 		///////////////////////////////////////////////////////////////////////////////////////////
@@ -56,6 +99,58 @@ namespace griffin {
 		///////////////////////////////////////////////////////////////////////////////////////////
 		// Camera
 
+		quat quat_lookAlongRH(
+			const vec3& viewDir,
+			const vec3& worldUp)
+		{
+			//assert(fabs(viewDir.length2() - 1.0f) <= FLT_EPSILON);
+			vec3 F(-viewDir);
+			vec3 S(normalize(cross(worldUp, F)));	// side axis
+			vec3 U(cross(F, S));					// rotation up axis
+
+			float trace = S.x + U.y + F.z;
+			if (trace > 0.0f)
+			{
+				float s = 0.5f / sqrtf(trace + 1.0f);
+				return quat{
+					0.25f / s,
+					(U.z - F.y) * s,
+					(F.x - S.z) * s,
+					(S.y - U.x) * s };
+			}
+			else {
+				if (S.x > U.y && S.x > F.z)
+				{
+					float s = 2.0f * sqrtf(1.0f + S.x - U.y - F.z);
+					float invS = 1.0f / s;
+					return quat{
+						(U.z - F.y) * invS,
+						0.25f * s,
+						(U.x + S.y) * invS,
+						(F.x + S.z) * invS };
+				}
+				else if (U.y > F.z)
+				{
+					float s = 2.0f * sqrtf(1.0f + U.y - S.x - F.z);
+					float invS = 1.0f / s;
+					return quat{
+						(F.x - S.z) * invS,
+						(U.x + S.y) * invS,
+						0.25f * s,
+						(F.y + U.z) * invS };
+				}
+				else {
+					float s = 2.0f * sqrtf(1.0f + F.z - S.x - U.y);
+					float invS = 1.0f / s;
+					return quat{
+						(S.y - U.x) * invS,
+						(F.x + S.z) * invS,
+						(F.y + U.z) * invS,
+						0.25f * s };
+				}
+			}
+		}
+
 		void Camera::setEyePoint(const dvec3 &aEyePoint)
 		{
 			mEyePoint = aEyePoint;
@@ -85,14 +180,16 @@ namespace griffin {
 		void Camera::setWorldUp(const vec3 &aWorldUp)
 		{
 			mWorldUp = normalize(aWorldUp);
-			mOrientation = normalize(quat(alignZAxisWithTarget(-mViewDirection, mWorldUp)));
+			//mOrientation = quat_lookAlongRH(mViewDirection, mWorldUp);
+			mOrientation = normalize(quat(alignZAxisWithTarget(-mViewDirection, mWorldUp, mEyePoint, mEyePoint + dvec3(mViewDirection))));
 			mModelViewCached = false;
 		}
 
 		void Camera::lookAt(const dvec3 &target)
 		{
 			mViewDirection = normalize(target - mEyePoint);
-			mOrientation = normalize(quat(alignZAxisWithTarget(-mViewDirection, mWorldUp)));
+			//mOrientation = quat_lookAlongRH(mViewDirection, mWorldUp);
+			mOrientation = normalize(quat(alignZAxisWithTarget(-mViewDirection, mWorldUp, mEyePoint, target)));
 			mModelViewCached = false;
 		}
 
@@ -100,7 +197,8 @@ namespace griffin {
 		{
 			mEyePoint = aEyePoint;
 			mViewDirection = normalize(target - mEyePoint);
-			mOrientation = normalize(quat(alignZAxisWithTarget(-mViewDirection, mWorldUp)));
+			//mOrientation = quat_lookAlongRH(mViewDirection, mWorldUp);
+			mOrientation = normalize(quat(alignZAxisWithTarget(-mViewDirection, mWorldUp, mEyePoint, target)));
 			mModelViewCached = false;
 		}
 
@@ -109,7 +207,8 @@ namespace griffin {
 			mEyePoint = aEyePoint;
 			mWorldUp = normalize(aWorldUp);
 			mViewDirection = normalize(target - mEyePoint);
-			mOrientation = normalize(quat(alignZAxisWithTarget(-mViewDirection, mWorldUp)));
+			//mOrientation = quat_lookAlongRH(mViewDirection, mWorldUp);
+			mOrientation = normalize(quat(alignZAxisWithTarget(-mViewDirection, mWorldUp, mEyePoint, target)));
 			mModelViewCached = false;
 		}
 
@@ -548,47 +647,5 @@ namespace griffin {
 			mProjectionCached = true;
 		}
 
-
-		mat4 alignZAxisWithTarget(vec3 targetDir, vec3 upDir)
-		{
-			// Ensure that the target direction is non-zero.
-			if (length2(targetDir) == 0) {
-				targetDir = c_zAxis;
-			}
-
-			// Ensure that the up direction is non-zero.
-			if (length2(upDir) == 0) {
-				upDir = c_yAxis;
-			}
-
-			// Check for degeneracies.  If the upDir and targetDir are parallel 
-			// or opposite, then compute a new, arbitrary up direction that is
-			// not parallel or opposite to the targetDir.
-			if (length2(cross(upDir, targetDir)) == 0) {
-				upDir = cross(targetDir, c_xAxis);
-				if (length2(upDir) == 0) {
-					upDir = cross(targetDir, c_zAxis);
-				}
-			}
-
-			// Compute the x-, y-, and z-axis vectors of the new coordinate system.
-			vec3 targetPerpDir = cross(upDir, targetDir);
-			vec3 targetUpDir = cross(targetDir, targetPerpDir);
-
-			// Rotate the x-axis into targetPerpDir (row 0),
-			// rotate the y-axis into targetUpDir   (row 1),
-			// rotate the z-axis into targetDir     (row 2).
-			vec3 row[3];
-			row[0] = normalize(targetPerpDir);
-			row[1] = normalize(targetUpDir);
-			row[2] = normalize(targetDir);
-
-			mat4 mat(row[0].x, row[0].y, row[0].z, 0,
-					 row[1].x, row[1].y, row[1].z, 0,
-					 row[2].x, row[2].y, row[2].z, 0,
-					 0, 0, 0, 1);
-
-			return mat;
-		}
 	}
 }
